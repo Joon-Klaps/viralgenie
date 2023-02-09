@@ -38,6 +38,10 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
 include { INPUT_CHECK } from '../subworkflows/local/input_check'
+// TODO: Add quality checking for reads
+// TODO: Add consensus reconstruction of genome
+// TODO: Add metagenome diversity identification
+// TODO: Add identification intrahost variability
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -72,6 +76,8 @@ workflow VIRALGENIE {
         ch_input
     )
     ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
+
+    // TODO: !!!! CHECK viralrecon at illumina.nf at line 166 for more info on how to collapse paired reads
 
     //
     // MODULE: Run FastQC
