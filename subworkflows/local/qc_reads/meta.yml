@@ -1,0 +1,46 @@
+name: "qc_reads"
+description: Run a quality control either with fastqc or falco, depending on the configuration
+keywords:
+  - fastqc
+  - quality check
+  - falco
+
+modules:
+  - fastqc
+  - falco
+input:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. [ id:'test']
+  - reads:
+    type: file
+    description: |
+        List of input FastQ files of size 1 and 2 for single-end and paired-end data,
+        respectively.
+  - qc_tool:
+    type: value
+    description: |
+        'fastqc' or 'falco' string indicating which qc tool to use
+
+output:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. [ id:'test', single_end:false ]
+  - html:
+      type: file
+      description: FastQC or FastQC like report
+      pattern: "*{.html}"
+  - zip | txt:
+      type: file
+      description: FastQC report archive or data & summary files of Falco
+      pattern: "*{.zip|txt}"
+  - versions:
+      type: file
+      description: File containing software versions
+      pattern: "versions.yml"
+authors:
+  - "@Joon-Klaps"

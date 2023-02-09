@@ -1,0 +1,45 @@
+name: "trimming_timmomatic_fastp"
+## TODO nf-core: Add a description of the subworkflow and list keywords
+description: Sort trim reads
+keywords:
+  - trimming
+  - adapter removal
+
+modules:
+  - fastp
+  - trimmomatic
+
+input:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. [ id:'test' ]
+  - reads:
+      type: file
+      description: fastq file
+      pattern: "*.{fastq,gz}"
+  - adapter_fasta:
+      type: file
+      description: fasta file containing the adapters that were used during sequencing or amplification
+      pattern: "*.{fa,fasta,ffn}"
+output:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. [ id:'test' ]
+  - reads:
+      type: file
+      description: trimmed fastq file
+      pattern: "*.{fastq,gz}"
+  - mqc:
+      type: file
+      description: multiqc file
+      pattern: "*.{json,log}"
+  - versions:
+      type: file
+      description: File containing software versions
+      pattern: "versions.yml"
+authors:
+  - "@Joon-Klaps"

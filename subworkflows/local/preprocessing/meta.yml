@@ -1,11 +1,11 @@
-name: "trimming_timmomatic_fastp"
-## TODO nf-core: Add a description of the subworkflow and list keywords
-description: Sort SAM/BAM/CRAM file
+name: "preprocessing"
+description: Preprocessing of reads, trimming, complexity removal, host reads removal while checking for quality after each step
 keywords:
-  - sort
-  - bam
-  - sam
-  - cram
+  - read trimming
+  - low complexity filtering
+  - host read removal
+  - samtools
+  - quality check
 ## TODO nf-core: Add a list of the modules used in the subworkflow
 modules:
   - samtools/sort

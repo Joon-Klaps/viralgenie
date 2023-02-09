@@ -4,7 +4,7 @@
 
 include { TRIMMOMATIC                                       } from '../../../modules/nf-core/trimmomatic/main'
 include { FASTP                                             } from '../../../modules/nf-core/fastp/main'
-include { MULTIQC_TSV_FROM_LIST as MULTIQC_TSV_FAIL_READS   } from '../../../modules/local/multiqc_tsv_from_list'
+//include { MULTIQC_TSV_FROM_LIST as MULTIQC_TSV_FAIL_READS   } from '../../../modules/local/multiqc_tsv_from_list'
 
 workflow TRIMMING_TIMMOMATIC_FASTP {
 
@@ -15,30 +15,34 @@ workflow TRIMMING_TIMMOMATIC_FASTP {
 
     main:
 
-    trim_reads   = reads
-    ch_versions  = Channel.empty()
-    trim_log     = Channel.empty()
-    trim_summ    = Channel.empty()
+    trim_reads          = reads
+    ch_versions         = Channel.empty()
+    ch_multiqc_files    = Channel.empty()
 
     if (trim_tool == 'trimmomatic') {
         TRIMMOMATIC( reads )
 
-        trim_reads  = TRIMMOMATIC.out.trimmed_reads
-        trim_log    = TRIMMOMATIC.out.log
-        trim_summ   = TRIMMOMATIC.out.summary
+        trim_reads          = TRIMMOMATIC.out.trimmed_reads
+        trim_log            = TRIMMOMATIC.out.log
+        trim_summ           = TRIMMOMATIC.out.summary
 
-        ch_versions = ch_versions.mix(TRIMMOMATIC.out.versions)
+        ch_multiqc_files    = ch_multiqc_files.mix(TRIMMOMATIC.out.log)
+
+        ch_versions         = ch_versions.mix(TRIMMOMATIC.out.versions)
 
     } else if  (trim_tool == 'fastp') {
         FASTP( reads, adapter_fasta, false, false )
 
-        trim_log    = FASTP.out.log
-        trim_reads  = FASTP.out.reads
-        trim_summ   = FASTP.out.json
+        trim_log            = FASTP.out.log
+        trim_reads          = FASTP.out.reads
+        trim_summ           = FASTP.out.json
 
-        ch_versions = ch_versions.mix(FASTP.out.versions.first())
+        ch_multiqc_files    = ch_multiqc_files.mix(FASTP.out.json)
+
+        ch_versions         = ch_versions.mix(FASTP.out.versions.first())
     }
 
+    // TODO: make this work
     // //
     // // Filter empty FastQ files after adapter trimming so fastqc will not crash
     // //
@@ -76,10 +80,10 @@ workflow TRIMMING_TIMMOMATIC_FASTP {
 
 
     emit:
-    reads               = trim_reads            // channel: [ val(meta), [ *.fastq ] ]
-    trim_log                                    // channel: [ val(meta), [ *.log ] ]
+    reads       = trim_reads            // channel: [ val(meta), [ *.fastq ] ]
+    mqc         = ch_multiqc_files      // channel: [ val(meta), [ *.log ] ]
     //fail_reads_multiqc                          // channel: [ *.tsv ]
 
-    versions            = ch_versions           // channel: [ versions.yml ]
+    versions    = ch_versions           // channel: [ versions.yml ]
 }
 
