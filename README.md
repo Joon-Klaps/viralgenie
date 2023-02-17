@@ -14,7 +14,7 @@
 
 <!-- TODO nf-core: Write a 1-2 sentence summary of what data the pipeline is for and what it does -->
 
-**nf-core/viralgenie** is a bioinformatics best-practice analysis pipeline for A pipeline to reconstruct consensus genomes and identify intrahost variants from metagenomic sequencing data or enriched based sequencing data like hybrid capture.  .
+**nf-core/viralgenie** is a bioinformatics best-practice analysis pipeline for reconstructing consensus denovo genomes and identify intra-host variants from metagenomic sequencing data or enriched based sequencing data like hybrid capture.
 
 The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It uses Docker/Singularity containers making installation trivial and results highly reproducible. The [Nextflow DSL2](https://www.nextflow.io/docs/latest/dsl2.html) implementation of this pipeline uses one container per process which makes it much easier to maintain and update software dependencies. Where possible, these processes have been submitted to and installed from [nf-core/modules](https://github.com/nf-core/modules) in order to make them available to all nf-core pipelines, and to everyone within the Nextflow community!
 
@@ -24,10 +24,31 @@ On release, automated continuous integration tests run the pipeline on a full-si
 
 ## Pipeline summary
 
+__Pipeline is still under active development and not all steps have been implemented.__
+
+![viral-genie-workflow](docs/images/workflow-v3.png)
 <!-- TODO nf-core: Fill in short bullet-pointed list of the default steps in the pipeline -->
 
-1. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/))
-2. Present QC for raw reads ([`MultiQC`](http://multiqc.info/))
+Tools given for each step can change as benchmarking is in progress.
+1. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/),[`falco`](https://github.com/smithlabcode/falco))
+2. Performs optional read pre-processing
+   - Adapter trimming([fastp](https://github.com/OpenGene/fastp), [Trimmomatic](https://github.com/usadellab/Trimmomatic))
+   - Low complexity and quality filtering ([bbduk](https://jgi.doe.gov/data-and-tools/software-tools/bbtools/), [PRINSEQ++](https://github.com/Adrian-Cantu/PRINSEQ-plus-plus))
+   - Host-read removal ([BowTie2](http://bowtie-bio.sourceforge.net/bowtie2/)
+3. Supports statistics for host-read removal ([Samtools](http://www.htslib.org/))
+4. Metagenomic diveristy mapping
+   - Performs taxonomic classification and/or profiling using one or more of:
+     + [Kraken2](https://ccb.jhu.edu/software/kraken2/)
+     + [DIAMOND](https://github.com/bbuchfink/diamond)
+     + [Centrifuge](https://ccb.jhu.edu/software/centrifuge/)
+     + [Kaiju](https://kaiju.binf.ku.dk/)
+     + [KrakenUniq](https://github.com/fbreitwieser/krakenuniq)
+   - Perform optional post-processing ([bracken](https://ccb.jhu.edu/software/bracken/))
+   - Plotting Kraken2, Centrifuge, Kaiju and MALT results ([`Krona`](https://hpc.nih.gov/apps/kronatools.html))
+5. Denovo assembly ([`SPAdes`](http://cab.spbu.ru/software/spades/), [`Unicycler`](https://github.com/rrwick/Unicycler), [`minia`](https://github.com/GATB/minia))
+6. Taxonomy annotation and contig reference identification ([`blastn`](https://blast.ncbi.nlm.nih.gov/Blast.cgi?PAGE_TYPE=BlastSearch))
+7. Scaffolding of contigs ([`AGA`](https://github.com/emweb/aga), [`minimap2`](https://github.com/lh3/minimap2), [`MUMMER`](https://github.com/mummer4/mummer)
+<!-- TODO continue here  -->
 
 ## Quick Start
 
