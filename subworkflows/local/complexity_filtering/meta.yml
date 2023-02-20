@@ -1,0 +1,44 @@
+name: "complexity_filtering"
+description: Removal of low complexity regions i.e. stretches of nucleotides with limited information content but false positive search hits in DBs
+keywords:
+  - quality control
+  - complexity filtering
+  - bbduk
+  - prinseqplusplus
+
+modules:
+  - bbduk
+  - prinseqplusplus
+
+input:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. [ id:'test', single_end:false ]
+  - reads:
+      type: file
+      description: |
+        List of input FastQ files of size 1 and 2 for single-end and paired-end data,
+        respectively.
+  - complexityfilter_tool:
+      type: value
+      description: |
+        The complexity filter tool that is used 'bbduk' or 'prinseqplusplus'
+
+output:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. [ id:'test', single_end:false ]
+  - reads:
+      type: file
+      description: |
+        List of input FastQ files of size 1 and 2 for single-end and paired-end data,
+        respectively.
+  - mqc:
+      type: file
+      description: Bbduk log file
+      pattern: "*bbduk.log"
+
