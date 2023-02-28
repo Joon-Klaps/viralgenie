@@ -99,8 +99,8 @@ The nf-core/viralgenie pipeline comes with documentation about the pipeline [usa
 viralgenie was originally written by joon.klaps@kuleuven.be.
 
 We thank the following people for their extensive assistance in the development of this pipeline:
-- `[Philippe Lemey]`(https://github.com/plemey)
-- `[Liana Kafetzopoulou]`(https://github.com/LianaKafetzopoulou)
+- [`Philippe Lemey`](https://github.com/plemey)
+- [`Liana Kafetzopoulou`](https://github.com/LianaKafetzopoulou)
 
 <!-- TODO nf-core: If applicable, make list of people who have also contributed -->
 
