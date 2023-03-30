@@ -54,7 +54,7 @@ Tools given for each step can change as benchmarking is in progress.
 8. Creation of hybrid supercontig by combining contigs and the reference.
 9. Mapping filtered reads to hybrid supercontig ([`BowTie2`](http://bowtie-bio.sourceforge.net/bowtie2/),[`minimap2`](https://github.com/lh3/minimap2)
 10. Update consensus genome with mapped reads ([`BCFTools`](http://samtools.github.io/bcftools/bcftools.html),[`GATK`](https://github.com/broadinstitute/gatk))
-11. Repeat step 9-10 x times
+11. Repeat step 9-10 multiple times
 12. Variant calling and annotation ([`BCFTools`](http://samtools.github.io/bcftools/bcftools.html),[`GATK`](https://github.com/broadinstitute/gatk),[`SnpEff`](http://snpeff.sourceforge.net/SnpEff.html), [`SnpSift`](http://snpeff.sourceforge.net/SnpSift.html))
 13. Assembly & contig evaluation ([`QUAST`](http://quast.sourceforge.net/quast),[`CheckV`](https://bitbucket.org/berkeleylab/checkv/src/master/))
 14. Present QC and visualisation for raw read, alignment, assembly and variant calling results ([`MultiQC`](http://multiqc.info/))
