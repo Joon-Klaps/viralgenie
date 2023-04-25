@@ -101,7 +101,8 @@ class RowChecker:
             first_col_suffix = Path(row[self._first_col]).suffixes[-2:]
             second_col_suffix = Path(row[self._second_col]).suffixes[-2:]
             if first_col_suffix != second_col_suffix:
-                raise AssertionError("FASTQ pairs must have the same file extensions.")
+                raise AssertionError(
+                    "FASTQ pairs must have the same file extensions.")
         else:
             row[self._single_col] = True
 
@@ -122,7 +123,8 @@ class RowChecker:
 
         """
         if len(self._seen) != len(self.modified):
-            raise AssertionError("The pair of sample name and FASTQ must be unique.")
+            raise AssertionError(
+                "The pair of sample name and FASTQ must be unique.")
         seen = Counter()
         for row in self.modified:
             sample = row[self._sample_col]
@@ -159,7 +161,8 @@ def sniff_format(handle):
     handle.seek(0)
     sniffer = csv.Sniffer()
     if not sniffer.has_header(peek):
-        logger.critical("The given sample sheet does not appear to contain a header.")
+        logger.critical(
+            "The given sample sheet does not appear to contain a header.")
         sys.exit(1)
     dialect = sniffer.sniff(peek)
     return dialect
@@ -198,7 +201,8 @@ def check_samplesheet(file_in, file_out):
         # Validate the existence of the expected header columns.
         if not required_columns.issubset(reader.fieldnames):
             req_cols = ", ".join(required_columns)
-            logger.critical(f"The sample sheet **must** contain these column headers: {req_cols}.")
+            logger.critical(
+                f"The sample sheet **must** contain these column headers: {req_cols}.")
             sys.exit(1)
         # Validate each row.
         checker = RowChecker()
@@ -250,7 +254,8 @@ def parse_args(argv=None):
 def main(argv=None):
     """Coordinate argument parsing and program execution."""
     args = parse_args(argv)
-    logging.basicConfig(level=args.log_level, format="[%(levelname)s] %(message)s")
+    logging.basicConfig(level=args.log_level,
+                        format="[%(levelname)s] %(message)s")
     if not args.file_in.is_file():
         logger.error(f"The given input file {args.file_in} was not found!")
         sys.exit(2)

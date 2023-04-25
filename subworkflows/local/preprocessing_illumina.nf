@@ -10,7 +10,7 @@ workflow PREPROCESSING_ILLUMINA {
 
     take:
     reads                   // channel: [ [ meta ], [ reads ] ]
-    reference               //    file: /path/to.fasta
+    host                    //    file: /path/to.fasta
     index                   //    file: /path/to.index
     adapterlist             //    file: /path/to.adapterlist
 
@@ -78,7 +78,7 @@ workflow PREPROCESSING_ILLUMINA {
 
     // Host removal with Bowtie2
     if (params.skip_hostremoval){
-        FASTQ_BOWTIE2_SAMTOOLS ( ch_reads_decomplexified, reference, index )
+        FASTQ_BOWTIE2_SAMTOOLS ( ch_reads_decomplexified, host, index )
         ch_reads_hostremoved   = FASTQ_BOWTIE2_SAMTOOLS.out.reads
 
         ch_multiqc_files       = ch_multiqc_files.mix( FASTQ_BOWTIE2_SAMTOOLS.out.mqc )

@@ -37,8 +37,8 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
-include { INPUT_CHECK   } from '../subworkflows/local/input_check'
-include { PREPROCESSING } from '../subworkflows/local/preprocessing/main'
+include { INPUT_CHECK              } from '../subworkflows/local/input_check'
+include { PREPROCESSING_ILLUMINA   } from '../subworkflows/local/preprocessing_illumina/main'
 // TODO: Add consensus reconstruction of genome
 // TODO: Add metagenome diversity identification
 // TODO: Add identification intrahost variability
@@ -92,14 +92,13 @@ workflow VIRALGENIE {
     .set { ch_fastq }
     ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
 
-
-    //
-    // MODULE: Run FastQC
-    //
-    FASTQC (
-        INPUT_CHECK.out.reads
+    // preprocessing illumina reads
+    PREPROCESSING_ILLUMINA (
+        ch_fastq,
+        params.host,
+        params.index,
+        params.adapterlist
     )
-    ch_versions = ch_versions.mix(FASTQC.out.versions.first())
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')

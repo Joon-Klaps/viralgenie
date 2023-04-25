@@ -41,7 +41,7 @@ Tools given for each step can change as benchmarking is in progress.
 1. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/),[`falco`](https://github.com/smithlabcode/falco))
 2. Performs optional read pre-processing
    - Adapter trimming([`fastp`](https://github.com/OpenGene/fastp), [`Trimmomatic`](https://github.com/usadellab/Trimmomatic))
-   - Low complexity and quality filtering ([`bbduk`](https://jgi.doe.gov/data-and-tools/software-tools/bbtools/), [`PRINSEQ++`](https://github.com/Adrian-Cantu/PRINSEQ-plus-plus))
+   - Low complexity and quality filtering ([`bbduk`](https://jgi.doe.gov/data-and-tools/software-tools/bbtools/))
    - Host-read removal ([`BowTie2`](http://bowtie-bio.sourceforge.net/bowtie2/))
 3. Supports statistics for host-read removal ([`Samtools`](http://www.htslib.org/))
 4. Metagenomic diveristy mapping
