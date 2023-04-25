@@ -9,12 +9,12 @@ include { SAMTOOLS_INDEX            } from '../../../modules/nf-core/samtools/in
 include { SAMTOOLS_STATS            } from '../../../modules/nf-core/samtools/stats/main'
 include { SAMTOOLS_VIEW             } from '../../../modules/nf-core/samtools/view/main'
 
-//TODO include kraken?
-workflow HOSTREMOVAL_BOWTIE2_SAMTOOLS {
+
+workflow FASTQ_BOWTIE2_SAMTOOLS {
     take:
-    reads     // [ [ meta ], [ reads ] ]
-    reference // /path/to/fasta
-    index     // /path/to/index
+    reads       // channel:  [ [ meta ], [ reads ] ]
+    reference   //    file:  /path/to/fasta
+    index       //    file:  /path/to/index
 
     main:
     ch_versions       = Channel.empty()

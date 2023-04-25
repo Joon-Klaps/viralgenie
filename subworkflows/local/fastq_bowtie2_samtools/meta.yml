@@ -53,4 +53,3 @@ output:
   - mqc:
       type: file
       description: statistics and logs of samtools and bowtie2
-

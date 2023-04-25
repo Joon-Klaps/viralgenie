@@ -3,20 +3,23 @@
 <!--[![AWS CI](https://img.shields.io/badge/CI%20tests-full%20size-FF9900?labelColor=000000&logo=Amazon%20AWS)](https://nf-co.re/viralgenie/results)
 [![Cite with Zenodo](http://img.shields.io/badge/DOI-10.5281/zenodo.XXXXXXX-1073c8?labelColor=000000)](https://doi.org/10.5281/zenodo.XXXXXXX)
 -->
+
 [![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A522.10.1-23aa62.svg)](https://www.nextflow.io/)
 [![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/)
 [![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)
 [![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
+
 <!--
 [![Launch on Nextflow Tower](https://img.shields.io/badge/Launch%20%F0%9F%9A%80-Nextflow%20Tower-%234256e7)](https://tower.nf/launch?pipeline=https://github.com/nf-core/viralgenie)
 
 [![Get help on Slack](http://img.shields.io/badge/slack-nf--core%20%23viralgenie-4A154B?labelColor=000000&logo=slack)](https://nfcore.slack.com/channels/viralgenie)
 -->
+
 [![Follow on Twitter](http://img.shields.io/badge/twitter-%40nf__core-1DA1F2?labelColor=000000&logo=twitter)](https://twitter.com/nf_core)[![Watch on YouTube](http://img.shields.io/badge/youtube-nf--core-FF0000?labelColor=000000&logo=youtube)](https://www.youtube.com/c/nf-core)
 
 ## Introduction
-**nf-core/viralgenie** is a bioinformatics best-practice analysis pipeline for reconstructing consensus denovo genomes and identify intra-host variants from metagenomic sequencing data or enriched based sequencing data like hybrid capture.
 
+**nf-core/viralgenie** is a bioinformatics best-practice analysis pipeline for reconstructing consensus denovo genomes and identify intra-host variants from metagenomic sequencing data or enriched based sequencing data like hybrid capture.
 
 The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It uses Docker/Singularity containers making installation trivial and results highly reproducible. The [Nextflow DSL2](https://www.nextflow.io/docs/latest/dsl2.html) implementation of this pipeline uses one container per process which makes it much easier to maintain and update software dependencies. Where possible, these processes have been submitted to and installed from [nf-core/modules](https://github.com/nf-core/modules) in order to make them available to all nf-core pipelines, and to everyone within the Nextflow community!
 
@@ -26,13 +29,15 @@ On release, automated continuous integration tests run the pipeline on a full-si
 
 ## Pipeline summary
 
-__Pipeline is still under active development and not all steps have been implemented.__
+**Pipeline is still under active development and not all steps have been implemented.**
 
 ![viral-genie-workflow](docs/images/workflow-v3.png)
+
 <!-- TODO nf-core: Fill in short bullet-pointed list of the default steps in the pipeline -->
 <!-- TODO nf-core: include the [`???`] in all steps-->
 
 Tools given for each step can change as benchmarking is in progress.
+
 1. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/),[`falco`](https://github.com/smithlabcode/falco))
 2. Performs optional read pre-processing
    - Adapter trimming([`fastp`](https://github.com/OpenGene/fastp), [`Trimmomatic`](https://github.com/usadellab/Trimmomatic))
@@ -41,11 +46,11 @@ Tools given for each step can change as benchmarking is in progress.
 3. Supports statistics for host-read removal ([`Samtools`](http://www.htslib.org/))
 4. Metagenomic diveristy mapping
    - Performs taxonomic classification and/or profiling using one or more of:
-     + [`Kraken2`](https://ccb.jhu.edu/software/kraken2/)
-     + [`DIAMOND`](https://github.com/bbuchfink/diamond)
-     + [`Centrifuge`](https://ccb.jhu.edu/software/centrifuge/)
-     + [`Kaiju`](https://kaiju.binf.ku.dk/)
-     + [`KrakenUniq`](https://github.com/fbreitwieser/krakenuniq)
+     - [`Kraken2`](https://ccb.jhu.edu/software/kraken2/)
+     - [`DIAMOND`](https://github.com/bbuchfink/diamond)
+     - [`Centrifuge`](https://ccb.jhu.edu/software/centrifuge/)
+     - [`Kaiju`](https://kaiju.binf.ku.dk/)
+     - [`KrakenUniq`](https://github.com/fbreitwieser/krakenuniq)
    - Perform optional post-processing ([`bracken`](https://ccb.jhu.edu/software/bracken/))
    - Plotting Kraken2, Centrifuge, Kaiju and MALT results ([`Krona`](https://hpc.nih.gov/apps/kronatools.html))
 5. Denovo assembly ([`SPAdes`](http://cab.spbu.ru/software/spades/), [`Unicycler`](https://github.com/rrwick/Unicycler), [`minia`](https://github.com/GATB/minia))
@@ -66,6 +71,7 @@ Tools given for each step can change as benchmarking is in progress.
 2. Install any of [`Docker`](https://docs.docker.com/engine/installation/), [`Singularity`](https://www.sylabs.io/guides/3.0/user-guide/) (you can follow [this tutorial](https://singularity-tutorial.github.io/01-installation/)), [`Podman`](https://podman.io/), [`Shifter`](https://nersc.gitlab.io/development/shifter/how-to-use/) or [`Charliecloud`](https://hpc.github.io/charliecloud/) for full pipeline reproducibility _(you can use [`Conda`](https://conda.io/miniconda.html) both to install Nextflow itself and also to manage software within pipelines. Please only use it within pipelines as a last resort; see [docs](https://nf-co.re/usage/configuration#basic-configuration-profiles))_.
 
 3. Download the repository
+
    ```bash
    git clone git@github.com:Joon-Klaps/viralgenie.git
    ```
@@ -83,7 +89,7 @@ Tools given for each step can change as benchmarking is in progress.
    > - If you are using `singularity`, please use the [`nf-core download`](https://nf-co.re/tools/#downloading-pipelines-for-offline-use) command to download images first, before running the pipeline. Setting the [`NXF_SINGULARITY_CACHEDIR` or `singularity.cacheDir`](https://www.nextflow.io/docs/latest/singularity.html?#singularity-docker-hub) Nextflow options enables you to store and re-use the images from a central location for future pipeline runs.
    > - If you are using `conda`, it is highly recommended to use the [`NXF_CONDA_CACHEDIR` or `conda.cacheDir`](https://www.nextflow.io/docs/latest/conda.html) settings to store the environments in a central location for future pipeline runs.
 
-4. Start running your own analysis!
+5. Start running your own analysis!
 
    ```bash
    nextflow run viralgenie/main.nf --input samplesheet.csv --outdir <OUTDIR> -profile <docker/singularity/podman/shifter/charliecloud/conda/institute>
@@ -94,11 +100,13 @@ Tools given for each step can change as benchmarking is in progress.
 
 The nf-core/viralgenie pipeline comes with documentation about the pipeline [usage](https://nf-co.re/viralgenie/usage), [parameters](https://nf-co.re/viralgenie/parameters) and [output](https://nf-co.re/viralgenie/output).
 -->
+
 ## Credits
 
 viralgenie was originally written by joon.klaps@kuleuven.be.
 
 We thank the following people for their extensive assistance in the development of this pipeline:
+
 - [`Philippe Lemey`](https://github.com/plemey)
 - [`Liana Kafetzopoulou`](https://github.com/LianaKafetzopoulou)
 
@@ -107,6 +115,7 @@ We thank the following people for their extensive assistance in the development 
 ## Contributions and Support
 
 If you would like to contribute to this pipeline, please see the [contributing guidelines](.github/CONTRIBUTING.md).
+
 <!--
 For further information or help, don't hesitate to get in touch on the [Slack `#viralgenie` channel](https://nfcore.slack.com/channels/viralgenie) (you can join with [this invite](https://nf-co.re/join/slack)).
 -->
