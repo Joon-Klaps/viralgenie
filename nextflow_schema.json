@@ -265,6 +265,90 @@
                     "help_text": "By default, parameters set as _hidden_ in the schema are not shown on the command line when a user runs with `--help`. Specifying this option will tell the pipeline to show all parameters."
                 }
             }
+        },
+        "preprocessing_options": {
+            "title": "Preprocessing options",
+            "type": "object",
+            "description": "Options related to the trimming, low complexity and host removal steps of the reads",
+            "default": "",
+            "properties": {
+                "skip_fastqc": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward"
+                },
+                "with_umi": {
+                    "type": "boolean"
+                },
+                "skip_umi_extract": {
+                    "type": "boolean",
+                    "default": true,
+                    "fa_icon": "fas fa-forward"
+                },
+                "umi_discard_read": {
+                    "type": "integer",
+                    "default": 0
+                },
+                "trim_tool": {
+                    "type": "string",
+                    "default": "fastp"
+                },
+                "skip_trimming": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward"
+                },
+                "adapter_fasta": {
+                    "type": "string",
+                    "default": "None"
+                },
+                "save_trimmed_fail": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-file-download"
+                },
+                "save_merged": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-file-download"
+                },
+                "min_trimmed_reads": {
+                    "type": "integer",
+                    "default": 1
+                },
+                "skip_complexity_filtering": {
+                    "type": "boolean",
+                    "default": true,
+                    "fa_icon": "fas fa-forward"
+                },
+                "contaminants": {
+                    "type": "string",
+                    "default": "None"
+                },
+                "skip_hostremoval": {
+                    "type": "string",
+                    "default": "false",
+                    "fa_icon": "fas fa-forward"
+                },
+                "host_reference": {
+                    "type": "string",
+                    "default": "None"
+                },
+                "host_index": {
+                    "type": "string",
+                    "default": "None"
+                },
+                "save_hostremoval_index": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-file-download"
+                },
+                "save_hostremoval_bam": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-file-download"
+                },
+                "save_hostremoval_unmapped": {
+                    "type": "boolean",
+                    "default": true,
+                    "fa_icon": "fas fa-file-download"
+                }
+            },
+            "fa_icon": "fas fa-bahai"
         }
     },
     "allOf": [
@@ -282,6 +366,9 @@
         },
         {
             "$ref": "#/definitions/generic_options"
+        },
+        {
+            "$ref": "#/definitions/preprocessing_options"
         }
     ]
 }

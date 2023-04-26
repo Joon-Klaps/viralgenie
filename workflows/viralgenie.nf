@@ -4,6 +4,11 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
+def valid_params = [
+    trim_tool        : ['fastp', 'trimmomatic'],
+    spades_modes     : ['rnaviral', 'corona', 'metaviral', 'meta', 'metaplasmid', 'plasmid', 'isolate', 'rna', 'bio']
+]
+
 def summary_params = NfcoreSchema.paramsSummaryMap(workflow, params)
 
 // Validate input parameters
@@ -18,8 +23,11 @@ def checkPathParamList = [
 for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
 
 // Check mandatory parameters
-if (params.input) { ch_input = file(params.input) } else { exit 1, 'Input samplesheet not specified!' }
-
+if (params.input         ) { ch_input = file(params.input)                    } else { exit 1, 'Input samplesheet not specified!' }
+if (params.adapter_fasta ) { ch_adapter_fasta = file(params.adapter_fasta)    } else { ch_adapter_fasta  = []                     }
+if (params.host_reference) { ch_host_reference = file(params.host_reference)  } else { ch_host_reference = []                     }
+if (params.host_index    ) { ch_host_index = file(params.host_index)          } else { ch_host_index = []                         }
+if (params.contaminants  ) { ch_contaminants = file(params.host_index)        } else { ch_contaminants = []                       }
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     CONFIG FILES
@@ -84,9 +92,10 @@ workflow VIRALGENIE {
     // preprocessing illumina reads
     PREPROCESSING_ILLUMINA (
         INPUT_CHECK.out.reads,
-        params.host_reference,
-        params.host_index,
-        params.adapter_fasta)
+        ch_host_reference,
+        ch_host_index,
+        ch_adapter_fasta,
+        ch_contaminants)
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
@@ -105,7 +114,7 @@ workflow VIRALGENIE {
     ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
-    ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]}.ifEmpty([]))
+    ch_multiqc_files = ch_multiqc_files.mix(PREPROCESSING_ILLUMINA.out.mqc.collect{it[1]}.ifEmpty([]))
 
     MULTIQC (
         ch_multiqc_files.collect(),

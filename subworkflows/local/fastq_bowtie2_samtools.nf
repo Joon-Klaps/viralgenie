@@ -47,5 +47,5 @@ workflow FASTQ_BOWTIE2_SAMTOOLS {
     stats    = SAMTOOLS_STATS.out.stats
     reads    = BOWTIE2_ALIGN.out.fastq   // channel: [ val(meta), [ reads ] ]
     versions = ch_versions               // channel: [ versions.yml ]
-    mqc      = ch_multiqc_files
+    mqc      = ch_multiqc_files          // channel: [ val(meta), [mqc] ]
 }

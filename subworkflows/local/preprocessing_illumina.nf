@@ -11,10 +11,11 @@ include { FASTQ_FASTQC_UMITOOLS_FASTP       } from '../nf-core/fastq_fastqc_umit
 workflow PREPROCESSING_ILLUMINA {
 
     take:
-    reads                   // channel: [ [ meta ], [ reads ] ]
-    host                    //    file: /path/to.fasta
-    index                   //    file: /path/to.index
-    adapter_fasta             //    file: /path/to.adapter_fasta
+    ch_reads                   // channel: [ [ meta ], [ ch_reads ] ]
+    ch_host                    // channel: [ path(host_fasta) ]
+    ch_index                   // channel: [ path(index) ]
+    ch_adapter_fasta           // channel: [ path(adapter_fasta) ]
+    ch_contaminants            // channel: [ path(contaminants_fasta) ]
 
     main:
     ch_versions         = Channel.empty()
@@ -23,7 +24,7 @@ workflow PREPROCESSING_ILLUMINA {
     // QC & UMI & Trimming with fastp or trimmomatic
     if (params.trim_tool == 'trimmomatic') {
         FASTQ_FASTQC_UMITOOLS_TRIMMOMATIC (
-            reads,
+            ch_reads,
             params.skip_fastqc,
             params.with_umi,
             params.skip_umi_extract,
@@ -44,13 +45,13 @@ workflow PREPROCESSING_ILLUMINA {
     }
     else if (params.trim_tool == 'fastp') {
         FASTQ_FASTQC_UMITOOLS_FASTP (
-            reads,
+            ch_reads,
             params.skip_fastqc,
             params.with_umi,
             params.skip_umi_extract,
             params.umi_discard_read,
             params.skip_trimming,
-            adapter_fasta,
+            ch_adapter_fasta,
             params.save_trimmed_fail,
             params.save_merged,
             params.min_trimmed_reads
@@ -71,16 +72,16 @@ workflow PREPROCESSING_ILLUMINA {
 
     // Decomplexification with BBDuk
     if (params.skip_complexity_filtering) {
-        BMAP_BBDUK ( ch_reads_trim, params.contaminants )
-        ch_reads_decomplexified = BMAP_BBDUK.out.reads
-        ch_multiqc_files = BMAP_BBDUK.out.log
+        BBMAP_BBDUK ( ch_reads_trim, ch_contaminants )
+        ch_reads_decomplexified = BBMAP_BBDUK.out.reads
+        ch_multiqc_files = BBMAP_BBDUK.out.log
     } else {
         ch_reads_decomplexified = ch_reads_trim
     }
 
     // Host removal with Bowtie2
     if (params.skip_hostremoval){
-        FASTQ_BOWTIE2_SAMTOOLS ( ch_reads_decomplexified, host, index )
+        FASTQ_BOWTIE2_SAMTOOLS ( ch_reads_decomplexified, ch_host, ch_index )
         ch_reads_hostremoved   = FASTQ_BOWTIE2_SAMTOOLS.out.reads
 
         ch_multiqc_files       = ch_multiqc_files.mix( FASTQ_BOWTIE2_SAMTOOLS.out.mqc )
