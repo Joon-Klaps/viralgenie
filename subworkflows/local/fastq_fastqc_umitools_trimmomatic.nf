@@ -93,7 +93,7 @@ workflow FASTQ_FASTQC_UMITOOLS_TRIMMOMATIC {
         //
         TRIMMOMATIC
             .out
-            .reads
+            .trimmed_reads
             .join(trim_summ)
             .map { meta, reads, summ -> [ meta, reads, getTrimmomaticReadsAfterFiltering(summ) ] }
             .set { ch_num_trimmed_reads }
