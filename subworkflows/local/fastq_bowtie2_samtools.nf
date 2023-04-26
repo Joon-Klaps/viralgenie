@@ -3,11 +3,11 @@
 // COPIED & slightly modified from taxprofiler: shortread_hostremoval https://github.com/nf-core/taxprofiler/blob/dev/subworkflows/local/shortread_hostremoval.nf
 //
 
-include { BOWTIE2_BUILD             } from '../../../modules/nf-core/bowtie2/build/main'
-include { BOWTIE2_ALIGN             } from '../../../modules/nf-core/bowtie2/align/main'
-include { SAMTOOLS_INDEX            } from '../../../modules/nf-core/samtools/index/main'
-include { SAMTOOLS_STATS            } from '../../../modules/nf-core/samtools/stats/main'
-include { SAMTOOLS_VIEW             } from '../../../modules/nf-core/samtools/view/main'
+include { BOWTIE2_BUILD             } from '../../modules/nf-core/bowtie2/build/main'
+include { BOWTIE2_ALIGN             } from '../../modules/nf-core/bowtie2/align/main'
+include { SAMTOOLS_INDEX            } from '../../modules/nf-core/samtools/index/main'
+include { SAMTOOLS_STATS            } from '../../modules/nf-core/samtools/stats/main'
+include { SAMTOOLS_VIEW             } from '../../modules/nf-core/samtools/view/main'
 
 
 workflow FASTQ_BOWTIE2_SAMTOOLS {

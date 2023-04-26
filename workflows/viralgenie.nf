@@ -11,7 +11,10 @@ WorkflowViralgenie.initialise(params, log)
 
 // TODO nf-core: Add all file path parameters for the pipeline to the list below
 // Check input path parameters to see if they exist
-def checkPathParamList = [ params.input, params.multiqc_config, params.fasta ]
+def checkPathParamList = [
+    params.input, params.multiqc_config, params.adapter_fasta,
+    params.host_index,params.host_reference,params.contaminants
+    ]
 for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
 
 // Check mandatory parameters
@@ -38,7 +41,7 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
 include { INPUT_CHECK              } from '../subworkflows/local/input_check'
-include { PREPROCESSING_ILLUMINA   } from '../subworkflows/local/preprocessing_illumina/main'
+include { PREPROCESSING_ILLUMINA   } from '../subworkflows/local/preprocessing_illumina'
 // TODO: Add consensus reconstruction of genome
 // TODO: Add metagenome diversity identification
 // TODO: Add identification intrahost variability
@@ -75,30 +78,15 @@ workflow VIRALGENIE {
     INPUT_CHECK (
         ch_input,
     )
-    .reads
-    .map {
-        meta, fastq ->
-            meta.id = meta.id.split('_')[0..-2].join('_')
-            [ meta, fastq ]
-    }
-    .groupTuple(by: [0])
-    .branch {
-        meta, fastq ->
-            single  : fastq.size() == 1
-                return [ meta, fastq.flatten() ]
-            multiple: fastq.size() > 1
-                return [ meta, fastq.flatten() ]
-    }
-    .set { ch_fastq }
+
     ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
 
     // preprocessing illumina reads
     PREPROCESSING_ILLUMINA (
-        ch_fastq,
-        params.host,
-        params.index,
-        params.adapterlist
-    )
+        INPUT_CHECK.out.reads,
+        params.host_reference,
+        params.host_index,
+        params.adapter_fasta)
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')

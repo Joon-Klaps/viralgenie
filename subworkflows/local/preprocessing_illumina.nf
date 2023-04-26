@@ -1,10 +1,12 @@
 // modules
-include { BMAP_BBDUK } from '../modules/nf-core/bbmap/bbduk/main'
+include { BBMAP_BBDUK } from '../../modules/nf-core/bbmap/bbduk/main'
 
 // Subworkflows
-include { FASTQ_FASTQC_UMITOOLS_FASTP       } from '../subworkflows/nf-core/fastq_fastqc_umitools_fastp/main'
-include { FASTQ_FASTQC_UMITOOLS_TRIMMOMATIC } from '../subworkflows/local/fastq_fastqc_umitools_trimmomatic/main'
-include { FASTQ_BOWTIE2_SAMTOOLS            } from '../subworkflows/local/fastq_bowtie2_samtools/main'
+// > local
+include { FASTQ_FASTQC_UMITOOLS_TRIMMOMATIC } from './fastq_fastqc_umitools_trimmomatic'
+include { FASTQ_BOWTIE2_SAMTOOLS            } from './fastq_bowtie2_samtools'
+// > nf-core
+include { FASTQ_FASTQC_UMITOOLS_FASTP       } from '../nf-core/fastq_fastqc_umitools_fastp/main'
 
 workflow PREPROCESSING_ILLUMINA {
 
@@ -12,22 +14,22 @@ workflow PREPROCESSING_ILLUMINA {
     reads                   // channel: [ [ meta ], [ reads ] ]
     host                    //    file: /path/to.fasta
     index                   //    file: /path/to.index
-    adapterlist             //    file: /path/to.adapterlist
+    adapter_fasta             //    file: /path/to.adapter_fasta
 
     main:
     ch_versions         = Channel.empty()
     ch_multiqc_files    = Channel.empty()
 
     // QC & UMI & Trimming with fastp or trimmomatic
-    if (trim_tool == 'trimmomatic') {
-        FASTQ_FASTQC_UMITOOLS_FASTP (
+    if (params.trim_tool == 'trimmomatic') {
+        FASTQ_FASTQC_UMITOOLS_TRIMMOMATIC (
             reads,
             params.skip_fastqc,
             params.with_umi,
             params.skip_umi_extract,
             params.umi_discard_read,
             params.skip_trimming,
-            params.skip_trimmed_fail,
+            params.save_trimmed_fail,
             params.save_merged,
             params.min_trimmed_reads
             )
@@ -40,7 +42,7 @@ workflow PREPROCESSING_ILLUMINA {
 
         ch_reads_trim = FASTQ_FASTQC_UMITOOLS_TRIMMOMATIC.out.reads
     }
-    else if (trim_tool == 'fastp') {
+    else if (params.trim_tool == 'fastp') {
         FASTQ_FASTQC_UMITOOLS_FASTP (
             reads,
             params.skip_fastqc,
@@ -48,8 +50,8 @@ workflow PREPROCESSING_ILLUMINA {
             params.skip_umi_extract,
             params.umi_discard_read,
             params.skip_trimming,
-            adapterlist,
-            params.skip_trimmed_fail,
+            adapter_fasta,
+            params.save_trimmed_fail,
             params.save_merged,
             params.min_trimmed_reads
             )
@@ -64,7 +66,7 @@ workflow PREPROCESSING_ILLUMINA {
         ch_reads_trim = FASTQ_FASTQC_UMITOOLS_FASTP.out.reads
     }
     else {
-        exit 1
+        throw new Exception("Unknown trim tool: ${trim_tool}")
     }
 
     // Decomplexification with BBDuk
