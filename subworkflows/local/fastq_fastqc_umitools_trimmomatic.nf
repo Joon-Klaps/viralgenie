@@ -83,7 +83,7 @@ workflow FASTQ_FASTQC_UMITOOLS_TRIMMOMATIC {
         TRIMMOMATIC (
             reads
         )
-        trim_summ             = TRIMMOMATIC.out.json
+        trim_summ             = TRIMMOMATIC.out.summary
         trim_log              = TRIMMOMATIC.out.log
         trim_unpaired_reads   = TRIMMOMATIC.out.unpaired_reads
         ch_versions           = ch_versions.mix(TRIMMOMATIC.out.versions.first())

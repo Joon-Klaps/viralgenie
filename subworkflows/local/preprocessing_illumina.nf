@@ -38,7 +38,7 @@ workflow PREPROCESSING_ILLUMINA {
 
         ch_multiqc_files = ch_multiqc_files.mix(FASTQ_FASTQC_UMITOOLS_TRIMMOMATIC.out.fastqc_raw_zip)
         ch_multiqc_files = ch_multiqc_files.mix(FASTQ_FASTQC_UMITOOLS_TRIMMOMATIC.out.fastqc_trim_html)
-        ch_multiqc_files = ch_multiqc_files.mix(FASTQ_FASTQC_UMITOOLS_TRIMMOMATIC.out.trim_json)
+        ch_multiqc_files = ch_multiqc_files.mix(FASTQ_FASTQC_UMITOOLS_TRIMMOMATIC.out.trim_log)
         ch_multiqc_files = ch_multiqc_files.mix(FASTQ_FASTQC_UMITOOLS_TRIMMOMATIC.out.umi_log)
 
         ch_reads_trim = FASTQ_FASTQC_UMITOOLS_TRIMMOMATIC.out.reads
@@ -71,7 +71,7 @@ workflow PREPROCESSING_ILLUMINA {
     }
 
     // Decomplexification with BBDuk
-    if (params.skip_complexity_filtering) {
+    if (!params.skip_complexity_filtering) {
         BBMAP_BBDUK ( ch_reads_trim, ch_contaminants )
         ch_reads_decomplexified = BBMAP_BBDUK.out.reads
         ch_multiqc_files = BBMAP_BBDUK.out.log
@@ -80,7 +80,7 @@ workflow PREPROCESSING_ILLUMINA {
     }
 
     // Host removal with Bowtie2
-    if (params.skip_hostremoval){
+    if (!params.skip_hostremoval){
         FASTQ_BOWTIE2_SAMTOOLS ( ch_reads_decomplexified, ch_host, ch_index )
         ch_reads_hostremoved   = FASTQ_BOWTIE2_SAMTOOLS.out.reads
 
