@@ -42,44 +42,6 @@
                 }
             }
         },
-        "reference_genome_options": {
-            "title": "Reference genome options",
-            "type": "object",
-            "fa_icon": "fas fa-dna",
-            "description": "Reference genome related files and options required for the workflow.",
-            "properties": {
-                "genome": {
-                    "type": "string",
-                    "description": "Name of iGenomes reference.",
-                    "fa_icon": "fas fa-book",
-                    "help_text": "If using a reference genome configured in the pipeline using iGenomes, use this parameter to give the ID for the reference. This is then used to build the full paths for all required reference genome files e.g. `--genome GRCh38`. \n\nSee the [nf-core website docs](https://nf-co.re/usage/reference_genomes) for more details."
-                },
-                "fasta": {
-                    "type": "string",
-                    "format": "file-path",
-                    "mimetype": "text/plain",
-                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
-                    "description": "Path to FASTA genome file.",
-                    "help_text": "This parameter is *mandatory* if `--genome` is not specified. If you don't have a BWA index available this will be generated for you automatically. Combine with `--save_reference` to save BWA index for future runs.",
-                    "fa_icon": "far fa-file-code"
-                },
-                "igenomes_base": {
-                    "type": "string",
-                    "format": "directory-path",
-                    "description": "Directory / URL base for iGenomes references.",
-                    "default": "s3://ngi-igenomes/igenomes",
-                    "fa_icon": "fas fa-cloud-download-alt",
-                    "hidden": true
-                },
-                "igenomes_ignore": {
-                    "type": "boolean",
-                    "description": "Do not load the iGenomes reference config.",
-                    "fa_icon": "fas fa-ban",
-                    "hidden": true,
-                    "help_text": "Do not load `igenomes.config` when running the pipeline. You may choose this option if you observe clashes between custom parameters and those supplied in `igenomes.config`."
-                }
-            }
-        },
         "institutional_config_options": {
             "title": "Institutional config options",
             "type": "object",
@@ -322,8 +284,7 @@
                     "default": "None"
                 },
                 "skip_hostremoval": {
-                    "type": "string",
-                    "default": "false",
+                    "type": "boolean",
                     "fa_icon": "fas fa-forward"
                 },
                 "host_reference": {
@@ -349,14 +310,106 @@
                 }
             },
             "fa_icon": "fas fa-bahai"
+        },
+        "metagenomic_diveristy": {
+            "title": "Metagenomic diveristy",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
+                "skip_metagenomic_diversity": {
+                    "type": "boolean"
+                },
+                "save_databases": {
+                    "type": "boolean"
+                },
+                "skip_kraken2": {
+                    "type": "boolean",
+                    "fa_icon": "fab fa-gitkraken"
+                },
+                "kraken2_db": {
+                    "type": "string",
+                    "default": "https://genome-idx.s3.amazonaws.com/kraken/k2_viral_20230314.tar.gz",
+                    "fa_icon": "fab fa-gitkraken",
+                    "format": "path"
+                },
+                "kraken2_save_reads": {
+                    "type": "boolean",
+                    "fa_icon": "fab fa-gitkraken"
+                },
+                "kraken2_save_readclassification": {
+                    "type": "boolean",
+                    "fa_icon": "fab fa-gitkraken"
+                },
+                "skip_bracken": {
+                    "type": "boolean",
+                    "default": true,
+                    "fa_icon": "fab fa-gitkraken"
+                },
+                "bracken_db": {
+                    "type": "string",
+                    "default": null,
+                    "fa_icon": "fab fa-gitkraken",
+                    "format": "path"
+                },
+                "skip_kaiju": {
+                    "type": "boolean"
+                },
+                "kaiju_db": {
+                    "type": "string",
+                    "default": "https://kaiju.binf.ku.dk/database/kaiju_db_rvdb_2022-04-07.tgz",
+                    "format": "path"
+                },
+                "kaiju_taxon_rank": {
+                    "type": "string",
+                    "default": "species",
+                    "fa_icon": "fas fa-align-justify"
+                }
+            },
+            "fa_icon": "fas fa-chart-bar"
+        },
+        "reference_genome_options": {
+            "title": "Reference genome options",
+            "type": "object",
+            "fa_icon": "fas fa-dna",
+            "description": "Reference genome related files and options required for the workflow.",
+            "properties": {
+                "genome": {
+                    "type": "string",
+                    "description": "Name of iGenomes reference.",
+                    "fa_icon": "fas fa-book",
+                    "help_text": "If using a reference genome configured in the pipeline using iGenomes, use this parameter to give the ID for the reference. This is then used to build the full paths for all required reference genome files e.g. `--genome GRCh38`. \n\nSee the [nf-core website docs](https://nf-co.re/usage/reference_genomes) for more details."
+                },
+                "fasta": {
+                    "type": "string",
+                    "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
+                    "description": "Path to FASTA genome file.",
+                    "help_text": "This parameter is *mandatory* if `--genome` is not specified. If you don't have a BWA index available this will be generated for you automatically. Combine with `--save_reference` to save BWA index for future runs.",
+                    "fa_icon": "far fa-file-code"
+                },
+                "igenomes_base": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "description": "Directory / URL base for iGenomes references.",
+                    "default": "s3://ngi-igenomes/igenomes",
+                    "fa_icon": "fas fa-cloud-download-alt",
+                    "hidden": true
+                },
+                "igenomes_ignore": {
+                    "type": "boolean",
+                    "description": "Do not load the iGenomes reference config.",
+                    "fa_icon": "fas fa-ban",
+                    "hidden": true,
+                    "help_text": "Do not load `igenomes.config` when running the pipeline. You may choose this option if you observe clashes between custom parameters and those supplied in `igenomes.config`."
+                }
+            }
         }
     },
     "allOf": [
         {
             "$ref": "#/definitions/input_output_options"
-        },
-        {
-            "$ref": "#/definitions/reference_genome_options"
         },
         {
             "$ref": "#/definitions/institutional_config_options"
@@ -369,6 +422,12 @@
         },
         {
             "$ref": "#/definitions/preprocessing_options"
+        },
+        {
+            "$ref": "#/definitions/metagenomic_diveristy"
+        },
+        {
+            "$ref": "#/definitions/reference_genome_options"
         }
     ]
 }
