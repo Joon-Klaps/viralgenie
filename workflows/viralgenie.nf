@@ -98,17 +98,17 @@ workflow VIRALGENIE {
         ch_adapter_fasta,
         ch_contaminants)
     ch_multiqc_files = ch_multiqc_files.mix(PREPROCESSING_ILLUMINA.out.mqc.collect{it[1]}.ifEmpty([]))
-    ch_versions = ch_versions.mix(PREPROCESSING_ILLUMINA.out.versions)
+    ch_versions      = ch_versions.mix(PREPROCESSING_ILLUMINA.out.versions)
 
     // Determining metagenomic diversity
-    if {!params.skip_metagenomic_diversity} {
+    if (!params.skip_metagenomic_diversity) {
         FASTQ_KRAKEN_KAIJU(
             PREPROCESSING_ILLUMINA.out.reads,
             params.kraken2_db,
             params.bracken_db,
             params.kaiju_db )
         ch_multiqc_files = ch_multiqc_files.mix(FASTQ_KRAKEN_KAIJU.out.mqc.collect{it[1]}.ifEmpty([]))
-        ch_versions = ch_versions.mix(FASTQ_KRAKEN_KAIJU.out.versions)
+        ch_versions      = ch_versions.mix(FASTQ_KRAKEN_KAIJU.out.versions)
     }
 
     CUSTOM_DUMPSOFTWAREVERSIONS (

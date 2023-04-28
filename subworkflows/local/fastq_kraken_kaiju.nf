@@ -25,7 +25,7 @@ workflow FASTQ_KRAKEN_KAIJU {
     ch_multiqc_files        = Channel.empty()
 
     ch_versions = Channel.empty()
-    if {!params.skip_kraken2}{
+    if (!params.skip_kraken2){
             if (kraken2_db.endsWith('.tar.gz')) {
                 UNTAR_KRAKEN2_DB (
                     [ [:], kraken2_db ]
@@ -57,7 +57,7 @@ workflow FASTQ_KRAKEN_KAIJU {
         }
     }
 
-    if {!params.skip_kaiju}{
+    if (!params.skip_kaiju){
         if (kaiju_db.endsWith('.tar.gz')) {
                 UNTAR_KAIJU_DB (
                     [ [:], kaiju_db ]

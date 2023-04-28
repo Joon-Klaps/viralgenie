@@ -318,19 +318,21 @@
             "default": "",
             "properties": {
                 "skip_metagenomic_diversity": {
-                    "type": "boolean"
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward"
                 },
                 "save_databases": {
-                    "type": "boolean"
+                    "type": "boolean",
+                    "fa_icon": "fas fa-cloud-download-alt"
                 },
                 "skip_kraken2": {
                     "type": "boolean",
-                    "fa_icon": "fab fa-gitkraken"
+                    "fa_icon": "fas fa-forward"
                 },
                 "kraken2_db": {
                     "type": "string",
                     "default": "https://genome-idx.s3.amazonaws.com/kraken/k2_viral_20230314.tar.gz",
-                    "fa_icon": "fab fa-gitkraken",
+                    "fa_icon": "fas fa-database",
                     "format": "path"
                 },
                 "kraken2_save_reads": {
@@ -341,24 +343,30 @@
                     "type": "boolean",
                     "fa_icon": "fab fa-gitkraken"
                 },
+                "kraken2_save_minimizers": {
+                    "type": "boolean",
+                    "fa_icon": "fab fa-gitkraken"
+                },
                 "skip_bracken": {
                     "type": "boolean",
                     "default": true,
-                    "fa_icon": "fab fa-gitkraken"
+                    "fa_icon": "fas fa-forward"
                 },
                 "bracken_db": {
                     "type": "string",
-                    "default": null,
-                    "fa_icon": "fab fa-gitkraken",
+                    "default": "None",
+                    "fa_icon": "fas fa-database",
                     "format": "path"
                 },
                 "skip_kaiju": {
-                    "type": "boolean"
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward"
                 },
                 "kaiju_db": {
                     "type": "string",
                     "default": "https://kaiju.binf.ku.dk/database/kaiju_db_rvdb_2022-04-07.tgz",
-                    "format": "path"
+                    "format": "path",
+                    "fa_icon": "fas fa-database"
                 },
                 "kaiju_taxon_rank": {
                     "type": "string",
