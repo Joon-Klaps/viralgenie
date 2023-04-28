@@ -78,6 +78,7 @@ def multiqc_report = []
 workflow VIRALGENIE {
 
     ch_versions = Channel.empty()
+    ch_multiqc_files = Channel.empty()
 
     //
     // SUBWORKFLOW: Read in samplesheet, validate and stage input files
@@ -96,10 +97,24 @@ workflow VIRALGENIE {
         ch_host_index,
         ch_adapter_fasta,
         ch_contaminants)
+    ch_multiqc_files = ch_multiqc_files.mix(PREPROCESSING_ILLUMINA.out.mqc.collect{it[1]}.ifEmpty([]))
+    ch_versions = ch_versions.mix(PREPROCESSING_ILLUMINA.out.versions)
+
+    // Determining metagenomic diversity
+    if {!params.skip_metagenomic_diversity} {
+        FASTQ_KRAKEN_KAIJU(
+            PREPROCESSING_ILLUMINA.out.reads,
+            params.kraken2_db,
+            params.bracken_db,
+            params.kaiju_db )
+        ch_multiqc_files = ch_multiqc_files.mix(FASTQ_KRAKEN_KAIJU.out.mqc.collect{it[1]}.ifEmpty([]))
+        ch_versions = ch_versions.mix(FASTQ_KRAKEN_KAIJU.out.versions)
+    }
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
     )
+    ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
 
     //
     // MODULE: MultiQC
@@ -113,8 +128,8 @@ workflow VIRALGENIE {
     ch_multiqc_files = Channel.empty()
     ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml'))
-    ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
-    ch_multiqc_files = ch_multiqc_files.mix(PREPROCESSING_ILLUMINA.out.mqc.collect{it[1]}.ifEmpty([]))
+
+
 
     MULTIQC (
         ch_multiqc_files.collect(),
