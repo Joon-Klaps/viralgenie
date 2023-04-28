@@ -4,13 +4,13 @@
 //               https://nf-co.re/join
 // TODO nf-core: A subworkflow SHOULD import at least two modules
 
-include { KRAKEN2_KRAKEN2           } from '../../../modules/nf-core/kraken2/kraken2/main'
-include { BRACKEN_BRACKEN           } from '../../../modules/nf-core/bracken/bracken/main'
-include { KAIJU_KAIJU               } from '../../../modules/nf-core/kaiju/kaiju/main'
+include { KRAKEN2_KRAKEN2           } from '../../modules/nf-core/kraken2/kraken2/main'
+include { BRACKEN_BRACKEN           } from '../../modules/nf-core/bracken/bracken/main'
+include { KAIJU_KAIJU               } from '../../modules/nf-core/kaiju/kaiju/main'
 include { KAIJU_KAIJU2TABLE         } from '../../modules/nf-core/kaiju/kaiju2table/main'
-include { UNTAR as UNTAR_KRAKEN2_DB } from '../../../modules/nf-core/kaiju/kaiju/main'
-include { UNTAR as UNTAR_BRACKEN_DB } from '../../../modules/nf-core/kaiju/kaiju/main'
-include { UNTAR as UNTAR_KAIJU_DB   } from '../../../modules/nf-core/kaiju/kaiju/main'
+include { UNTAR as UNTAR_KRAKEN2_DB } from '../../modules/nf-core/untar/main'
+include { UNTAR as UNTAR_BRACKEN_DB } from '../../modules/nf-core/untar/main'
+include { UNTAR as UNTAR_KAIJU_DB   } from '../../modules/nf-core/untar/main'
 
 workflow FASTQ_KRAKEN_KAIJU {
 

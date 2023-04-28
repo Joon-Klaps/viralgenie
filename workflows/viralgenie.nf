@@ -50,8 +50,8 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 //
 include { INPUT_CHECK              } from '../subworkflows/local/input_check'
 include { PREPROCESSING_ILLUMINA   } from '../subworkflows/local/preprocessing_illumina'
+include { FASTQ_KRAKEN_KAIJU       } from '../subworkflows/local/fastq_kraken_kaiju'
 // TODO: Add consensus reconstruction of genome
-// TODO: Add metagenome diversity identification
 // TODO: Add identification intrahost variability
 
 /*
