@@ -44,6 +44,7 @@ workflow FASTQ_KRAKEN_KAIJU {
         ch_versions            = ch_versions.mix( KRAKEN2_KRAKEN2.out.versions.first() )
 
         // Bracken: get more accurate estimates of abundance
+        // TODO TEST
         if (!params.skip_bracken){
             // decompress bracken_db if needed
             if (bracken_db.endsWith('.tar.gz') || bracken_db.endsWith('.tgz')) {
@@ -56,7 +57,6 @@ workflow FASTQ_KRAKEN_KAIJU {
                         ch_bracken_db = Channel.value(file(bracken_db))
             }
             BRACKEN_BRACKEN (KRAKEN2_KRAKEN2.out.report, ch_bracken_db )
-            ch_multiqc_files = ch_multiqc_files.mix( BRACKEN_BRACKEN.out.report )
             ch_versions      = ch_versions.mix( BRACKEN_BRACKEN.out.versions.first() )
         }
     }
