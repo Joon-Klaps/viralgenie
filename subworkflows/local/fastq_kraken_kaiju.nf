@@ -23,10 +23,12 @@ workflow FASTQ_KRAKEN_KAIJU {
     main:
     ch_versions             = Channel.empty()
     ch_multiqc_files        = Channel.empty()
+    ch_raw_classifications  = Channel.empty()
 
-    ch_versions = Channel.empty()
+    // Kraken
     if (!params.skip_kraken2){
-            if (kraken2_db.endsWith('.tar.gz')) {
+            // decompress kraken2_db if needed
+            if (kraken2_db.endsWith('.tar.gz') || kraken2_db.endsWith('.tgz')) {
                 UNTAR_KRAKEN2_DB (
                     [ [:], kraken2_db ]
                 )
@@ -37,12 +39,14 @@ workflow FASTQ_KRAKEN_KAIJU {
             }
 
         KRAKEN2_KRAKEN2 ( reads, ch_kraken2_db, params.kraken2_save_reads, params.kraken2_save_readclassification )
-        ch_raw_classifications = ch_raw_classifications.mix( KRAKEN2_KRAKEN2.out.classified_reads_assignment )
+        ch_raw_classifications = ch_raw_classifications.mix(KRAKEN2_KRAKEN2.out.classified_reads_assignment)
         ch_multiqc_files       = ch_multiqc_files.mix( KRAKEN2_KRAKEN2.out.report )
         ch_versions            = ch_versions.mix( KRAKEN2_KRAKEN2.out.versions.first() )
 
+        // Bracken: get more accurate estimates of abundance
         if (!params.skip_bracken){
-            if (bracken_db.endsWith('.tar.gz')) {
+            // decompress bracken_db if needed
+            if (bracken_db.endsWith('.tar.gz') || bracken_db.endsWith('.tgz')) {
                 UNTAR_BRACKEN_DB (
                     [ [:], bracken_db ]
                 )
@@ -57,8 +61,10 @@ workflow FASTQ_KRAKEN_KAIJU {
         }
     }
 
+    // Kaiju
     if (!params.skip_kaiju){
-        if (kaiju_db.endsWith('.tar.gz')) {
+        // decompress kaiju_db if needed
+        if (kaiju_db.endsWith('.tar.gz') || kaiju_db.endsWith('.tgz')) {
                 UNTAR_KAIJU_DB (
                     [ [:], kaiju_db ]
                 )
@@ -70,14 +76,15 @@ workflow FASTQ_KRAKEN_KAIJU {
         KAIJU_KAIJU(reads, ch_kaiju_db)
         ch_versions            = ch_versions.mix( KAIJU_KAIJU.out.versions.first() )
 
-        KAIJU_KAIJU2TABLE ( KAIJU_KAIJU.out.results, ch_input_for_kaiju.db, params.kaiju_taxon_rank)
+        KAIJU_KAIJU2TABLE ( KAIJU_KAIJU.out.results, ch_kaiju_db, params.kaiju_taxon_rank)
         ch_versions = ch_versions.mix( KAIJU_KAIJU2TABLE.out.versions )
         ch_multiqc_files = ch_multiqc_files.mix( KAIJU_KAIJU2TABLE.out.summary )
 
     }
 
     emit:
-    mqc      = ch_multiqc_files   // channel: [ val(meta), multiqc_file ]
-    versions = ch_versions        // channel: [ versions.yml ]
+    read_classifications = ch_raw_classifications // channel: [ val(meta), [ classified_reads ] ]
+    mqc                  = ch_multiqc_files       // channel: [ val(meta), multiqc_file ]
+    versions             = ch_versions            // channel: [ versions.yml ]
 }
 
