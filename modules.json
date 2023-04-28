@@ -20,6 +20,11 @@
                         "git_sha": "c8e35eb2055c099720a75538d1b8adb3fb5a464c",
                         "installed_by": ["modules"]
                     },
+                    "bracken/bracken": {
+                        "branch": "master",
+                        "git_sha": "c8e35eb2055c099720a75538d1b8adb3fb5a464c",
+                        "installed_by": ["modules"]
+                    },
                     "custom/dumpsoftwareversions": {
                         "branch": "master",
                         "git_sha": "7101db4432d3268b7fcb5b8f75fa0a022dc5561b",
@@ -34,6 +39,16 @@
                         "branch": "master",
                         "git_sha": "c8e35eb2055c099720a75538d1b8adb3fb5a464c",
                         "installed_by": ["fastq_fastqc_umitools_fastp"]
+                    },
+                    "kaiju/kaiju": {
+                        "branch": "master",
+                        "git_sha": "c8e35eb2055c099720a75538d1b8adb3fb5a464c",
+                        "installed_by": ["modules"]
+                    },
+                    "kraken2/kraken2": {
+                        "branch": "master",
+                        "git_sha": "7c695e0147df1157413e06246d9b0094617d3e6b",
+                        "installed_by": ["modules"]
                     },
                     "multiqc": {
                         "branch": "master",
