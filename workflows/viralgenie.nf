@@ -6,6 +6,7 @@
 
 def valid_params = [
     trim_tool        : ['fastp', 'trimmomatic'],
+    assemblers       : ['spades', 'trinity', 'megahit'],
     spades_modes     : ['rnaviral', 'corona', 'metaviral', 'meta', 'metaplasmid', 'plasmid', 'isolate', 'rna', 'bio']
 ]
 
@@ -28,6 +29,8 @@ if (params.adapter_fasta ) { ch_adapter_fasta = file(params.adapter_fasta)    } 
 if (params.host_reference) { ch_host_reference = file(params.host_reference)  } else { ch_host_reference = []                     }
 if (params.host_index    ) { ch_host_index = file(params.host_index)          } else { ch_host_index = []                         }
 if (params.contaminants  ) { ch_contaminants = file(params.host_index)        } else { ch_contaminants = []                       }
+
+def assemblers = params.assemblers ? params.assemblers.split(',').collect{ it.trim().toLowerCase() } : []
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     CONFIG FILES
@@ -110,6 +113,18 @@ workflow VIRALGENIE {
         ch_multiqc_files = ch_multiqc_files.mix(FASTQ_KRAKEN_KAIJU.out.mqc.collect{it[1]}.ifEmpty([]))
         ch_versions      = ch_versions.mix(FASTQ_KRAKEN_KAIJU.out.versions)
     }
+
+    if (!params.skip_assembly) {
+        FASTQ_SPADES_TRINITY_MEGAHIT(
+            PREPROCESSING_ILLUMINA.out.reads,
+            assemblers)
+        ch_multiqc_files = ch_multiqc_files.mix(FASTQ_SPADES_TRINITY_MEGAHIT.out.mqc.collect{it[1]}.ifEmpty([]))
+        ch_versions      = ch_versions.mix(FASTQ_SPADES_TRINITY_MEGAHIT.out.versions)
+
+        //TODO: Reference Identification
+
+        //TODO: Scaffolding & consensus reconstruction of genome
+        }
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
