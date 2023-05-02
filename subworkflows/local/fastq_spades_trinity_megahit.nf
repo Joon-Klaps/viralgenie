@@ -4,7 +4,6 @@
 include { SPADES   } from '../../modules/nf-core/spades/main'
 include { TRINITY  } from '../../modules/nf-core/trinity/main'
 include { MEGAHIT  } from '../../modules/nf-core/megahit/main'
-include { GUNZIP   } from '../../modules/nf-core/gunzip/main'
 include { CAT_CAT  } from '../../modules/nf-core/cat/cat/main'
 
 workflow FASTQ_SPADES_TRINITY_MEGAHIT  {
@@ -16,10 +15,9 @@ workflow FASTQ_SPADES_TRINITY_MEGAHIT  {
     ch_spades_hmm   // channel: ['path/to/hmm']
 
     main:
-    ch_versions  = Channel.empty()
-    ch_multiqc   = Channel.empty()
-    ch_scaffolds = Channel.empty()
-    ch_scaffolds_spades = Channel.empty()
+    ch_versions          = Channel.empty()
+    ch_scaffolds         = reads.map{meta,reads -> [meta]}
+    ch_scaffolds_spades  = Channel.empty()
     ch_scaffolds_trinity = Channel.empty()
     ch_scaffolds_megahit = Channel.empty()
 
@@ -34,19 +32,16 @@ workflow FASTQ_SPADES_TRINITY_MEGAHIT  {
 
         ch_versions         = ch_versions.mix(SPADES.out.versions.first())
         ch_scaffolds_spades = SPADES.out.scaffolds
-        ch_scaffolds        = ch_scaffolds.join(ch_scaffolds_spades)
+        ch_scaffolds        = ch_scaffolds.join(ch_scaffolds_spades,remainder: true)
     }
 
     // TRINITY
     if ('trinity' in assemblers) {
         TRINITY(reads)
 
-        GUNZIP(TRINITY.out.transcript_fasta)
-
         ch_versions          = ch_versions.mix(TRINITY.out.versions.first())
-        ch_versions          = ch_versions.mix(GUNZIP.out.versions.first())
-        ch_scaffolds_trinity = GUNZIP.out.gunzip
-        ch_scaffolds         = ch_scaffolds.join(ch_scaffolds_trinity)
+        ch_scaffolds_trinity = TRINITY.out.transcript_fasta
+        ch_scaffolds         = ch_scaffolds.join(ch_scaffolds_trinity,remainder: true)
     }
 
     // MEGAHIT
@@ -55,14 +50,14 @@ workflow FASTQ_SPADES_TRINITY_MEGAHIT  {
 
         ch_versions          = ch_versions.mix(MEGAHIT.out.versions.first())
         ch_scaffolds_megahit = MEGAHIT.out.contigs
-        ch_scaffolds         = ch_scaffolds.join(ch_scaffolds_megahit)
+        ch_scaffolds         = ch_scaffolds.join(ch_scaffolds_megahit,remainder: true)
     }
 
     // ch_scaffolds, go from [meta,scaffold1,scaffold2] to [meta,[scaffolds]]
     ch_scaffolds
         .map{
             it ->
-            [it[0],[it[1..it.size()].flatten()]]
+            [it[0],it[1..-1]]
         }
         .set{ch_scaffolds_combined}
 
