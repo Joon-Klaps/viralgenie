@@ -65,7 +65,7 @@ workflow  {
         .set{ch_scaffolds_combined}
 
     CAT_CAT(ch_scaffolds_combined)
-    ch_versions =CAT_CAT.out.versions.first()
+    ch_versions = CAT_CAT.out.versions.first()
 
 
 
