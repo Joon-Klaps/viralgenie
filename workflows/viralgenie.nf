@@ -13,13 +13,14 @@ def valid_params = [
 def summary_params = NfcoreSchema.paramsSummaryMap(workflow, params)
 
 // Validate input parameters
-WorkflowViralgenie.initialise(params, log)
+WorkflowViralgenie.initialise(params, log,valid_params)
 
 // TODO nf-core: Add all file path parameters for the pipeline to the list below
 // Check input path parameters to see if they exist
 def checkPathParamList = [
     params.input, params.multiqc_config, params.adapter_fasta,
-    params.host_index,params.host_reference,params.contaminants
+    params.host_index,params.host_reference,params.contaminants,
+    params.spades_yml,params.spades_hmm
     ]
 for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
 
@@ -28,9 +29,12 @@ if (params.input         ) { ch_input = file(params.input)                    } 
 if (params.adapter_fasta ) { ch_adapter_fasta = file(params.adapter_fasta)    } else { ch_adapter_fasta  = []                     }
 if (params.host_reference) { ch_host_reference = file(params.host_reference)  } else { ch_host_reference = []                     }
 if (params.host_index    ) { ch_host_index = file(params.host_index)          } else { ch_host_index = []                         }
-if (params.contaminants  ) { ch_contaminants = file(params.host_index)        } else { ch_contaminants = []                       }
+if (params.contaminants  ) { ch_contaminants = file(params.contaminants)      } else { ch_contaminants = []                       }
+if (params.spades_yml    ) { ch_spades_yml = file(params.spades_yml)          } else { ch_spades_yml = []                         }
+if (params.spades_hmm    ) { ch_spades_hmm = file(params.spades_hmm)          } else { ch_spades_hmm = []                         }
 
 def assemblers = params.assemblers ? params.assemblers.split(',').collect{ it.trim().toLowerCase() } : []
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     CONFIG FILES
@@ -51,9 +55,10 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
-include { INPUT_CHECK              } from '../subworkflows/local/input_check'
-include { PREPROCESSING_ILLUMINA   } from '../subworkflows/local/preprocessing_illumina'
-include { FASTQ_KRAKEN_KAIJU       } from '../subworkflows/local/fastq_kraken_kaiju'
+include { INPUT_CHECK                  } from '../subworkflows/local/input_check'
+include { PREPROCESSING_ILLUMINA       } from '../subworkflows/local/preprocessing_illumina'
+include { FASTQ_KRAKEN_KAIJU           } from '../subworkflows/local/fastq_kraken_kaiju'
+include { FASTQ_SPADES_TRINITY_MEGAHIT } from '../subworkflows/local/fastq_spades_trinity_megahit'
 // TODO: Add consensus reconstruction of genome
 // TODO: Add identification intrahost variability
 
@@ -117,8 +122,9 @@ workflow VIRALGENIE {
     if (!params.skip_assembly) {
         FASTQ_SPADES_TRINITY_MEGAHIT(
             PREPROCESSING_ILLUMINA.out.reads,
-            assemblers)
-        ch_multiqc_files = ch_multiqc_files.mix(FASTQ_SPADES_TRINITY_MEGAHIT.out.mqc.collect{it[1]}.ifEmpty([]))
+            assemblers,
+            ch_spades_yml,
+            ch_spades_hmm)
         ch_versions      = ch_versions.mix(FASTQ_SPADES_TRINITY_MEGAHIT.out.versions)
 
         //TODO: Reference Identification

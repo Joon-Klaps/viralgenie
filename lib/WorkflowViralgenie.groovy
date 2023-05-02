@@ -9,10 +9,23 @@ class WorkflowViralgenie {
     //
     // Check and validate parameters
     //
-    public static void initialise(params, log) {
+    public static void initialise(params, log, valid_params) {
 
-        if (!['fastp','trimmomatic'].contains(params.trim_tool)) {
+        if (!valid_params['trim_tool'].contains(params.trim_tool)) {
             log.error "Please specify a valid trimming tool: 'fastp' or 'trimmomatic' not ${params.trim_tool}."
+            System.exit(1)
+        }
+        //check if all values of assembler are in valid_params.assemblers
+        if (params.assemblers) {
+            for (assembler in params.assemblers.split(',').collect{ it.trim().toLowerCase() }) {
+                if (!(assembler in valid_params['assemblers'])) {
+                    log.error "${assembler} is not a valid assembler. Please choose from ${valid_params['assemblers'].join(', ')}"
+                    System.exit(1)
+                }
+            }
+        }
+        if (!valid_params['spades_modes'].contains(params.spades_mode)) {
+            log.error "${params.spades_modes} is not a valid spades mode. Please choose from ${valid_params['spades_mode'].join(', ')}"
             System.exit(1)
         }
     }

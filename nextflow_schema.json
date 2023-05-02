@@ -376,6 +376,40 @@
             },
             "fa_icon": "fas fa-chart-bar"
         },
+        "assembly": {
+            "title": "Assembly",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
+                "skip_assembly": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward"
+                },
+                "assemblers": {
+                    "type": "string",
+                    "default": "spades,trinity,megahit",
+                    "fa_icon": "fas fa-bezier-curve"
+                },
+                "spades_mode": {
+                    "type": "string",
+                    "default": "rnaviral",
+                    "fa_icon": "fas fa-bezier-curve"
+                },
+                "spades_hmm": {
+                    "type": "string",
+                    "default": "None",
+                    "fa_icon": "fas fa-file"
+                },
+                "spades_yml": {
+                    "type": "string",
+                    "default": "None",
+                    "hidden": true,
+                    "fa_icon": "fas fa-file"
+                }
+            },
+            "fa_icon": "fas fa-bezier-curve"
+        },
         "reference_genome_options": {
             "title": "Reference genome options",
             "type": "object",
@@ -433,6 +467,9 @@
         },
         {
             "$ref": "#/definitions/metagenomic_diveristy"
+        },
+        {
+            "$ref": "#/definitions/assembly"
         },
         {
             "$ref": "#/definitions/reference_genome_options"

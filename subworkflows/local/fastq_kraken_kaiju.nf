@@ -1,8 +1,6 @@
 //
 // Determine metagenomic diversity using Kraken2 and Kaiju
 //
-
-
 include { KRAKEN2_KRAKEN2           } from '../../modules/nf-core/kraken2/kraken2/main'
 include { BRACKEN_BRACKEN           } from '../../modules/nf-core/bracken/bracken/main'
 include { KAIJU_KAIJU               } from '../../modules/nf-core/kaiju/kaiju/main'

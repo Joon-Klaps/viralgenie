@@ -4,14 +4,16 @@
 include { SPADES   } from '../../modules/nf-core/spades/main'
 include { TRINITY  } from '../../modules/nf-core/trinity/main'
 include { MEGAHIT  } from '../../modules/nf-core/megahit/main'
-include { GUNZIP   } from '../../modules/nf-core/megahit/main'
+include { GUNZIP   } from '../../modules/nf-core/gunzip/main'
 include { CAT_CAT  } from '../../modules/nf-core/cat/cat/main'
 
-workflow  {
+workflow FASTQ_SPADES_TRINITY_MEGAHIT  {
 
     take:
-    reads       // channel: [ val(meta), [ reads ] ]
-    assemblers  // value ['spades','trinity','megahit']
+    reads           // channel: [ val(meta), [ reads ] ]
+    assemblers      // value ['spades','trinity','megahit']
+    ch_spades_yml   // channel: ['path/to/yml']
+    ch_spades_hmm   // channel: ['path/to/hmm']
 
     main:
     ch_versions  = Channel.empty()
@@ -26,8 +28,8 @@ workflow  {
 
         SPADES(
             reads.map {meta, reads -> [meta, reads, [], []]},
-            params.spades_yml,
-            params.spades_hmm
+            ch_spades_yml,
+            ch_spades_hmm
             )
 
         ch_versions         = ch_versions.mix(SPADES.out.versions.first())
