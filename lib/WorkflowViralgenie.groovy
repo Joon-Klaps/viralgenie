@@ -2,6 +2,7 @@
 // This file holds several functions specific to the workflow/viralgenie.nf in the nf-core/viralgenie pipeline
 //
 
+import nextflow.Nextflow
 import groovy.text.SimpleTemplateEngine
 
 class WorkflowViralgenie {

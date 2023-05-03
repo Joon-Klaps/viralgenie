@@ -4,7 +4,6 @@
     nf-core/viralgenie
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Github : https://github.com/nf-core/viralgenie
-
     Website: https://nf-co.re/viralgenie
     Slack  : https://nfcore.slack.com/channels/viralgenie
 ----------------------------------------------------------------------------------------
