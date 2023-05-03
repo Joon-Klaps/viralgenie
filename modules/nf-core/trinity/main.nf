@@ -31,7 +31,7 @@ process TRINITY {
     seqType_args = reads[0] ==~ /(.*fasta(.gz)?$)|(.*fa(.gz)?$)/ ? "fa" : "fq"
 
     // Define the memory requirements. Trinity needs this as an option.
-    def avail_mem = 7.1
+    def avail_mem = 7
     if (!task.memory) {
         log.info '[Trinity] Available memory not known - defaulting to 7GB. Specify process memory requirements to change this.'
     } else {
@@ -47,9 +47,9 @@ process TRINITY {
     ${reads_args} \\
     --output ${prefix}_trinity \\
     --CPU $task.cpus \\
-    $args 
-    
-    gzip ${prefix}_trinity.Trinity.fasta > ${prefix}.fa.gz
+    $args
+
+    gzip -cf ${prefix}_trinity.Trinity.fasta > ${prefix}.fa.gz
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
