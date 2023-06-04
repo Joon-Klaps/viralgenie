@@ -7,7 +7,6 @@ include { BOWTIE2_BUILD             } from '../../modules/nf-core/bowtie2/build/
 include { BOWTIE2_ALIGN             } from '../../modules/nf-core/bowtie2/align/main'
 include { SAMTOOLS_INDEX            } from '../../modules/nf-core/samtools/index/main'
 include { SAMTOOLS_STATS            } from '../../modules/nf-core/samtools/stats/main'
-include { SAMTOOLS_VIEW             } from '../../modules/nf-core/samtools/view/main'
 
 
 workflow FASTQ_BOWTIE2_SAMTOOLS {
@@ -39,7 +38,7 @@ workflow FASTQ_BOWTIE2_SAMTOOLS {
     bam_bai = BOWTIE2_ALIGN.out.bam
         .join(SAMTOOLS_INDEX.out.bai, remainder: true)
 
-    SAMTOOLS_STATS ( bam_bai, reference )
+    SAMTOOLS_STATS ( bam_bai,  [ [], reference ] )
     ch_versions = ch_versions.mix(SAMTOOLS_STATS.out.versions.first())
     ch_multiqc_files = ch_multiqc_files.mix( SAMTOOLS_STATS.out.stats )
 
