@@ -127,7 +127,16 @@ workflow VIRALGENIE {
             ch_spades_hmm)
         ch_versions      = ch_versions.mix(FASTQ_SPADES_TRINITY_MEGAHIT.out.versions)
 
-        //TODO: Reference Identification
+        //TODO: Binning of assemblies
+        FASTA_FASTQ_BOWTIE2_METABAT2(
+            FASTQ_SPADES_TRINITY_MEGAHIT.out.assemblies,
+            PREPROCESSING_ILLUMINA.out.reads
+        )
+
+        //TODO: Filter bins further down if necessary
+
+        //TODO: reference Identification
+
 
         //TODO: Scaffolding & consensus reconstruction of genome
         }
