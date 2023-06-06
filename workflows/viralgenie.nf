@@ -59,7 +59,8 @@ include { INPUT_CHECK                  } from '../subworkflows/local/input_check
 include { PREPROCESSING_ILLUMINA       } from '../subworkflows/local/preprocessing_illumina'
 include { FASTQ_KRAKEN_KAIJU           } from '../subworkflows/local/fastq_kraken_kaiju'
 include { FASTQ_SPADES_TRINITY_MEGAHIT } from '../subworkflows/local/fastq_spades_trinity_megahit'
-// TODO: Add consensus reconstruction of genome
+//  Add consensus reconstruction of genome
+include { FASTA_FASTQ_BOWTIE2_METABAT2 } from '../subworkflows/local/fasta_fastq_bowtie2_metabat2'
 // TODO: Add identification intrahost variability
 
 /*
@@ -129,7 +130,7 @@ workflow VIRALGENIE {
 
         //TODO: Binning of assemblies
         FASTA_FASTQ_BOWTIE2_METABAT2(
-            FASTQ_SPADES_TRINITY_MEGAHIT.out.assemblies,
+            FASTQ_SPADES_TRINITY_MEGAHIT.out.scaffolds,
             PREPROCESSING_ILLUMINA.out.reads
         )
 

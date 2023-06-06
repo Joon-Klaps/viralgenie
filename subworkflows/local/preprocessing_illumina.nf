@@ -1,12 +1,14 @@
 // modules
-include { BBMAP_BBDUK } from '../../modules/nf-core/bbmap/bbduk/main'
+include { BBMAP_BBDUK   } from '../../modules/nf-core/bbmap/bbduk/main'
+include { BOWTIE2_BUILD } from '../../modules/nf-core/bowtie2/build/main'
 
 // Subworkflows
 // > local
 include { FASTQ_FASTQC_UMITOOLS_TRIMMOMATIC } from './fastq_fastqc_umitools_trimmomatic'
-include { FASTQ_BOWTIE2_SAMTOOLS            } from './fastq_bowtie2_samtools'
+
 // > nf-core
 include { FASTQ_FASTQC_UMITOOLS_FASTP       } from '../nf-core/fastq_fastqc_umitools_fastp/main'
+include { FASTQ_ALIGN_BOWTIE2               } from '../nf-core/fastq_align_bowtie2/main'
 
 workflow PREPROCESSING_ILLUMINA {
 
@@ -81,11 +83,21 @@ workflow PREPROCESSING_ILLUMINA {
 
     // Host removal with Bowtie2
     if (!params.skip_hostremoval){
-        FASTQ_BOWTIE2_SAMTOOLS ( ch_reads_decomplexified, ch_host, ch_index )
-        ch_reads_hostremoved   = FASTQ_BOWTIE2_SAMTOOLS.out.reads
 
-        ch_multiqc_files       = ch_multiqc_files.mix( FASTQ_BOWTIE2_SAMTOOLS.out.mqc )
-        ch_versions            = ch_versions.mix(FASTQ_BOWTIE2_SAMTOOLS.out.versions)
+        // check if index needs to be build
+        if ( !ch_index ) {
+            ch_bowtie2_index = BOWTIE2_BUILD ( [ [], ch_host ] ).index
+            ch_versions      = ch_versions.mix( BOWTIE2_BUILD.out.versions )
+        } else {
+            ch_bowtie2_index = index.first()
+        }
+
+        FASTQ_ALIGN_BOWTIE2 ( ch_reads_decomplexified, ch_bowtie2_index, true,true, ch_host )
+        ch_reads_hostremoved   = FASTQ_ALIGN_BOWTIE2.out.fastq
+
+        ch_multiqc_files       = ch_multiqc_files.mix( FASTQ_ALIGN_BOWTIE2.out.log_out)
+        ch_multiqc_files       = ch_multiqc_files.mix( FASTQ_ALIGN_BOWTIE2.out.stats)
+        ch_versions            = ch_versions.mix(FASTQ_ALIGN_BOWTIE2.out.versions)
 
     } else {
         ch_reads_hostremoved = ch_reads_decomplexified
