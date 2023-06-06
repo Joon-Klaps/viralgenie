@@ -9,7 +9,7 @@ include { FASTQ_ALIGN_BOWTIE2                  } from '../../subworkflows/nf-cor
 include { METABAT2_METABAT2                    } from '../../modules/nf-core/metabat2/metabat2/main'
 include { METABAT2_JGISUMMARIZEBAMCONTIGDEPTHS } from '../../modules/nf-core/metabat2/jgisummarizebamcontigdepths/main'
 
-workflow  {
+workflow FASTA_FASTQ_BOWTIE2_METABAT2 {
 
     take:
     ch_contigs // channel: [ val(meta), [ fasta ] ]
