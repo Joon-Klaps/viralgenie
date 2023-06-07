@@ -92,7 +92,7 @@ workflow PREPROCESSING_ILLUMINA {
             ch_bowtie2_index = index.first()
         }
 
-        FASTQ_ALIGN_BOWTIE2 ( ch_reads_decomplexified, ch_bowtie2_index, true,true, ch_host )
+        FASTQ_ALIGN_BOWTIE2 ( ch_reads_decomplexified, ch_bowtie2_index, true,true, [ [], ch_host ] )
         ch_reads_hostremoved   = FASTQ_ALIGN_BOWTIE2.out.fastq
 
         ch_multiqc_files       = ch_multiqc_files.mix( FASTQ_ALIGN_BOWTIE2.out.log_out)

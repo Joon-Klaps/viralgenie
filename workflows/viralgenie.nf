@@ -129,17 +129,20 @@ workflow VIRALGENIE {
         ch_versions      = ch_versions.mix(FASTQ_SPADES_TRINITY_MEGAHIT.out.versions)
 
         //TODO: Binning of assemblies
-        FASTA_FASTQ_BOWTIE2_METABAT2(
-            FASTQ_SPADES_TRINITY_MEGAHIT.out.scaffolds,
-            PREPROCESSING_ILLUMINA.out.reads
-        )
+        if (!params.skip_polishing){
+            FASTA_FASTQ_BOWTIE2_METABAT2(
+                FASTQ_SPADES_TRINITY_MEGAHIT.out.scaffolds,
+                PREPROCESSING_ILLUMINA.out.reads
+            )
 
-        //TODO: Filter bins further down if necessary
+            //TODO: Filter bins further down if necessary
 
-        //TODO: reference Identification
+            //TODO: reference Identification
 
 
-        //TODO: Scaffolding & consensus reconstruction of genome
+            //TODO: Scaffolding & consensus reconstruction of genome
+
+            }
         }
 
     CUSTOM_DUMPSOFTWAREVERSIONS (

@@ -30,9 +30,9 @@ workflow FASTA_FASTQ_BOWTIE2_METABAT2 {
     METABAT2_JGISUMMARIZEBAMCONTIGDEPTHS ( ch_bam_bai )
     ch_versions= ch_versions.mix( METABAT2_JGISUMMARIZEBAMCONTIGDEPTHS.out.versions.first())
 
-    ch_contigs_depths= ch_contigs.join(METABAT2_JGISUMMARIZEBAMCONTIGDEPTHS.out.depth)
+    ch_contigs_depths= ch_contigs.join(METABAT2_JGISUMMARIZEBAMCONTIGDEPTHS.out.depth, by:[0], remainder: true)
 
-    METABAT2_METABAT2 ( ch_contigs )
+    METABAT2_METABAT2 ( ch_contigs_depths )
 
     emit:
     tooshort        = METABAT2_METABAT2.out.tooshort                    // channel: [ val(meta), [ fasta.gz ] ]
