@@ -10,6 +10,16 @@
                         "git_sha": "911696ea0b62df80e900ef244d7867d177971f73",
                         "installed_by": ["modules"]
                     },
+                    "blast/blastn": {
+                        "branch": "master",
+                        "git_sha": "911696ea0b62df80e900ef244d7867d177971f73",
+                        "installed_by": ["modules"]
+                    },
+                    "blast/makeblastdb": {
+                        "branch": "master",
+                        "git_sha": "911696ea0b62df80e900ef244d7867d177971f73",
+                        "installed_by": ["modules"]
+                    },
                     "bowtie2/align": {
                         "branch": "master",
                         "git_sha": "fe54581f8bed20e4c4a51c616c93fd3379d89820",
@@ -26,6 +36,11 @@
                         "installed_by": ["modules"]
                     },
                     "cat/cat": {
+                        "branch": "master",
+                        "git_sha": "911696ea0b62df80e900ef244d7867d177971f73",
+                        "installed_by": ["modules"]
+                    },
+                    "cdhit/cdhit": {
                         "branch": "master",
                         "git_sha": "911696ea0b62df80e900ef244d7867d177971f73",
                         "installed_by": ["modules"]
@@ -104,6 +119,11 @@
                         "branch": "master",
                         "git_sha": "735e1e04e7e01751d2d6e97055bbdb6f70683cc1",
                         "installed_by": ["modules", "bam_stats_samtools"]
+                    },
+                    "seqkit/grep": {
+                        "branch": "master",
+                        "git_sha": "fd08c25c759d5d1f30422e73c9be153dbf657724",
+                        "installed_by": ["modules"]
                     },
                     "spades": {
                         "branch": "master",
