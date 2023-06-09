@@ -60,7 +60,8 @@ include { PREPROCESSING_ILLUMINA       } from '../subworkflows/local/preprocessi
 include { FASTQ_KRAKEN_KAIJU           } from '../subworkflows/local/fastq_kraken_kaiju'
 include { FASTQ_SPADES_TRINITY_MEGAHIT } from '../subworkflows/local/fastq_spades_trinity_megahit'
 //  Add consensus reconstruction of genome
-include { FASTA_FASTQ_BOWTIE2_METABAT2 } from '../subworkflows/local/fasta_fastq_bowtie2_metabat2'
+//include { FASTA_FASTQ_BOWTIE2_METABAT2 } from '../subworkflows/local/fasta_fastq_bowtie2_metabat2'
+include { FASTA_BLAST_CDHIT            } from '../subworkflows/local/fasta_blast_cdhit'
 // TODO: Add identification intrahost variability
 
 /*
@@ -72,6 +73,8 @@ include { FASTA_FASTQ_BOWTIE2_METABAT2 } from '../subworkflows/local/fasta_fastq
 //
 // MODULE: Installed directly from nf-core/modules
 //
+include { UNTAR as UNTAR_BLAST_DB     } from '../modules/nf-core/untar/main'
+include { BLAST_MAKEBLASTDB           } from '../modules/nf-core/blast/makeblastdb/main'
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 
@@ -130,10 +133,28 @@ workflow VIRALGENIE {
 
         //TODO: Binning of assemblies
         if (!params.skip_polishing){
-            FASTA_FASTQ_BOWTIE2_METABAT2(
+            // FASTA_FASTQ_BOWTIE2_METABAT2(
+            //     FASTQ_SPADES_TRINITY_MEGAHIT.out.scaffolds,
+            //     PREPROCESSING_ILLUMINA.out.reads
+            // )
+            db_blast= params.reference_fasta
+            if (db_blast.endsWith('.gz')) {
+                UNTAR_BLAST_DB (
+                    [ [:], db_blast ]
+                )
+                ch_db_blast = UNTAR_BLAST_DB.out.untar.map { it[1] }
+                ch_versions   = ch_versions.mix(UNTAR_BLAST_DB.out.versions)
+            } else {
+                        ch_db_blast = Channel.value(file(db_blast))
+            }
+            BLAST_MAKEBLASTDB ( ch_db_blast )
+            ch_versions = ch_versions.mix(BLAST_MAKEBLASTDB.out.versions.first())
+
+            FASTA_BLAST_CDHIT (
                 FASTQ_SPADES_TRINITY_MEGAHIT.out.scaffolds,
-                PREPROCESSING_ILLUMINA.out.reads
-            )
+                BLAST_MAKEBLASTDB.out.db,
+                ch_db_blast
+                )
 
             //TODO: Filter bins further down if necessary
 

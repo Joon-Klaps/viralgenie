@@ -1,41 +1,44 @@
-include { BLAST_MAKEBLASTDB } from '../../modules/nf-core/blast/makeblastdb/main'
+include { GUNZIP            } from '../../modules/nf-core/gunzip/main'
 include { BLAST_BLASTN      } from '../../modules/nf-core/blast/blastn/main'
 include { SEQKIT_GREP       } from '../../modules/nf-core/seqkit/grep/main'
 include { CDHIT_CDHIT       } from '../../modules/nf-core/cdhit/cdhit/main'
-include { UNTAR             } from '../../modules/nf-core/untar/main'
 include { CAT_CAT           } from '../../modules/nf-core/cat/cat/main'
 
-workflow  {
+workflow FASTA_BLAST_CDHIT {
 
     take:
-    fasta    // channel: [ val(meta), [ fasta ] ]
-    db       // channel: [ path(db_fasta) ]
+    fasta          // channel: [ val(meta), [ fasta.gz ] ]
+    blast_db       // channel: [ path(db) ]
+    blast_db_fasta // channel: [path(db) ]
 
     main:
     ch_versions = Channel.empty()
 
+    GUNZIP(fasta)
+    ch_versions = ch_versions.mix(GUNZIP.out.versions.first())
+    ch_fasta_gunzip = GUNZIP.out.gunzip
 
-    if (db.endsWith('.gz')) {
-                UNTAR (
-                    [ [:], db ]
-                )
-                ch_db = UNTAR.out.untar.map { it[1] }
-                ch_versions   = ch_versions.mix(UNTAR.out.versions)
-            } else {
-                        ch_db = Channel.value(file(db))
-            }
-
-    BLAST_MAKEBLASTDB ( ch_db )
-    ch_versions = ch_versions.mix(BLAST_MAKEBLASTDB.out.versions.first())
-
+    // Blast results, to a reference database, to find a complete genome that's already assembled
     BLAST_BLASTN (
-        fasta,
-        BLAST_MAKEBLASTDB.out.db
+        ch_fasta_gunzip,
+        blast_db
     )
+    ch_versions = ch_versions.mix(BLAST_BLASTN.out.versions.first())
 
-    SEQKIT_GREP (ch_db, BLAST_BLASTN.out.txt)
+    // give the result meta again so we can use it again
+    blast_db_fasta
+        .combine(BLAST_BLASTN.out.txt)
+        .map{
+            it -> [it[1],it[0]]
+        }
+        .set{ch_blast_db_fasta}
+
+    ch_hits = BLAST_BLASTN.out.txt.map{it -> it[1]}
+    // isolate the hits from the database to a fasta file
+    SEQKIT_GREP (ch_blast_db_fasta, ch_hits)
     ch_versions = ch_versions.mix(SEQKIT_GREP.out.versions.first())
 
+    // put refernece hits and contigs together
     fasta.join(
             SEQKIT_GREP.out.filter,
             by: [0],
@@ -47,7 +50,12 @@ workflow  {
             }
         .set {ch_reference_contigs_comb}
 
-    CDHIT_CDHIT (ch_reference_contigs_comb)
+    ch_reference_contigs_comb.view()
+
+    CAT_CAT(ch_reference_contigs_comb)
+
+    // cluster our reference hits and contigs
+    CDHIT_CDHIT (CAT_CAT.out.file_out)
     ch_versions = ch_versions.mix(CDHIT_CDHIT.out.versions.first())
 
 
@@ -57,16 +65,9 @@ workflow  {
 
     // TODO: New subworkflow - Map to cluster representative & create frakenstein
 
-    ch_versions = ch_versions.mix(BLAST_BLASTN.out.versions.first())
-
 
 
     emit:
-    // TODO nf-core: edit emitted channels
-    bam      = SAMTOOLS_SORT.out.bam           // channel: [ val(meta), [ bam ] ]
-    bai      = SAMTOOLS_INDEX.out.bai          // channel: [ val(meta), [ bai ] ]
-    csi      = SAMTOOLS_INDEX.out.csi          // channel: [ val(meta), [ csi ] ]
-
     versions = ch_versions                     // channel: [ versions.yml ]
 }
 
