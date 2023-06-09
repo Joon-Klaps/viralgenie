@@ -3,6 +3,7 @@ include { BLAST_BLASTN      } from '../../modules/nf-core/blast/blastn/main'
 include { SEQKIT_GREP       } from '../../modules/nf-core/seqkit/grep/main'
 include { CDHIT_CDHIT       } from '../../modules/nf-core/cdhit/cdhit/main'
 include { UNTAR             } from '../../modules/nf-core/untar/main'
+include { CAT_CAT           } from '../../modules/nf-core/cat/cat/main'
 
 workflow  {
 
@@ -35,8 +36,20 @@ workflow  {
     SEQKIT_GREP (ch_db, BLAST_BLASTN.out.txt)
     ch_versions = ch_versions.mix(SEQKIT_GREP.out.versions.first())
 
-    CDHIT_CDHIT (SEQKIT_GREP.out.filter)
+    fasta.join(
+            SEQKIT_GREP.out.filter,
+            by: [0],
+            remainder: true
+            )
+        .map {
+            it ->
+                [it[0],it[1..-1]]
+            }
+        .set {ch_reference_contigs_comb}
+
+    CDHIT_CDHIT (ch_reference_contigs_comb)
     ch_versions = ch_versions.mix(CDHIT_CDHIT.out.versions.first())
+
 
     //TODO: Make a script that extracts the members of the clusters from the cdhit output
 
