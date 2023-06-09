@@ -33,12 +33,13 @@ workflow FASTA_BLAST_CDHIT {
         }
         .set{ch_blast_db_fasta}
 
+    // TODO: add another small process that extracts the hits as the blast run is quite informative
+
     ch_hits = BLAST_BLASTN.out.txt.map{it -> it[1]}
     // isolate the hits from the database to a fasta file
     SEQKIT_GREP (ch_blast_db_fasta, ch_hits)
     ch_versions = ch_versions.mix(SEQKIT_GREP.out.versions.first())
 
-    fasta.view()
     // put refernece hits and contigs together
     fasta.join(
             SEQKIT_GREP.out.filter,
@@ -50,16 +51,16 @@ workflow FASTA_BLAST_CDHIT {
                 [it[0],it[1..-1]]
             }
         .set {ch_reference_contigs_comb}
-
-    ch_reference_contigs_comb.view()
-
     CAT_CAT(ch_reference_contigs_comb)
+
     // cluster our reference hits and contigs
     CDHIT_CDHIT (CAT_CAT.out.file_out)
     ch_versions = ch_versions.mix(CDHIT_CDHIT.out.versions.first())
 
 
     //TODO: Make a script that extracts the members of the clusters from the cdhit output
+    // > don't polish groups that contain only out of references
+    // >
 
     //TODO: Reextract the members from the original fasta file
 
