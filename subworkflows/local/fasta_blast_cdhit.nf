@@ -25,7 +25,7 @@ workflow FASTA_BLAST_CDHIT {
     )
     ch_versions = ch_versions.mix(BLAST_BLASTN.out.versions.first())
 
-    // give the result meta again so we can use it again
+    // give the references a meta again so it can be used in seqkit
     blast_db_fasta
         .combine(BLAST_BLASTN.out.txt)
         .map{
@@ -38,13 +38,14 @@ workflow FASTA_BLAST_CDHIT {
     SEQKIT_GREP (ch_blast_db_fasta, ch_hits)
     ch_versions = ch_versions.mix(SEQKIT_GREP.out.versions.first())
 
+    fasta.view()
     // put refernece hits and contigs together
     fasta.join(
             SEQKIT_GREP.out.filter,
             by: [0],
             remainder: true
             )
-        .map {
+    .map {
             it ->
                 [it[0],it[1..-1]]
             }
@@ -53,7 +54,6 @@ workflow FASTA_BLAST_CDHIT {
     ch_reference_contigs_comb.view()
 
     CAT_CAT(ch_reference_contigs_comb)
-
     // cluster our reference hits and contigs
     CDHIT_CDHIT (CAT_CAT.out.file_out)
     ch_versions = ch_versions.mix(CDHIT_CDHIT.out.versions.first())
