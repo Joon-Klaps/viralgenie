@@ -25,13 +25,13 @@ def checkPathParamList = [
 for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
 
 // Check mandatory parameters
-if (params.input         ) { ch_input = file(params.input)                    } else { exit 1, 'Input samplesheet not specified!' }
-if (params.adapter_fasta ) { ch_adapter_fasta = file(params.adapter_fasta)    } else { ch_adapter_fasta  = []                     }
-if (params.host_reference) { ch_host_reference = file(params.host_reference)  } else { ch_host_reference = []                     }
-if (params.host_index    ) { ch_host_index = file(params.host_index)          } else { ch_host_index = []                         }
-if (params.contaminants  ) { ch_contaminants = file(params.contaminants)      } else { ch_contaminants = []                       }
-if (params.spades_yml    ) { ch_spades_yml = file(params.spades_yml)          } else { ch_spades_yml = []                         }
-if (params.spades_hmm    ) { ch_spades_hmm = file(params.spades_hmm)          } else { ch_spades_hmm = []                         }
+if (params.input         ) { ch_input = file(params.input)                                      } else { exit 1, 'Input samplesheet not specified!' }
+if (params.adapter_fasta ) { ch_adapter_fasta = file(params.adapter_fasta)                      } else { ch_adapter_fasta  = []                     }
+if (params.host_reference) { ch_host_reference = file(params.host_reference)                    } else { ch_host_reference = []                     }
+if (params.host_index    ) { ch_host_index = Channel.fromPath(params.host_index).map{[[], it]}  } else { ch_host_index = []                         }
+if (params.contaminants  ) { ch_contaminants = file(params.contaminants)                        } else { ch_contaminants = []                       }
+if (params.spades_yml    ) { ch_spades_yml = file(params.spades_yml)                            } else { ch_spades_yml = []                         }
+if (params.spades_hmm    ) { ch_spades_hmm = file(params.spades_hmm)                            } else { ch_spades_hmm = []                         }
 
 def assemblers = params.assemblers ? params.assemblers.split(',').collect{ it.trim().toLowerCase() } : []
 

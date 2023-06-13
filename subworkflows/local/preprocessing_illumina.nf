@@ -15,7 +15,7 @@ workflow PREPROCESSING_ILLUMINA {
     take:
     ch_reads                   // channel: [ [ meta ], [ ch_reads ] ]
     ch_host                    // channel: [ path(host_fasta) ]
-    ch_index                   // channel: [ path(index) ]
+    ch_index                   // channel: [ [ meta ], path(index) ]
     ch_adapter_fasta           // channel: [ path(adapter_fasta) ]
     ch_contaminants            // channel: [ path(contaminants_fasta) ]
 
@@ -89,7 +89,7 @@ workflow PREPROCESSING_ILLUMINA {
             ch_bowtie2_index = BOWTIE2_BUILD ( [ [], ch_host ] ).index
             ch_versions      = ch_versions.mix( BOWTIE2_BUILD.out.versions )
         } else {
-            ch_bowtie2_index = ch_index.first()
+            ch_bowtie2_index = ch_index
         }
 
         BOWTIE2_ALIGN ( ch_reads_decomplexified, ch_bowtie2_index, true, false )
