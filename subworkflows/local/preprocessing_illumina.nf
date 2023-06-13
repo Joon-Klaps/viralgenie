@@ -89,7 +89,7 @@ workflow PREPROCESSING_ILLUMINA {
             ch_bowtie2_index = BOWTIE2_BUILD ( [ [], ch_host ] ).index
             ch_versions      = ch_versions.mix( BOWTIE2_BUILD.out.versions )
         } else {
-            ch_bowtie2_index = index.first()
+            ch_bowtie2_index = ch_index.first()
         }
 
         FASTQ_ALIGN_BOWTIE2 ( ch_reads_decomplexified, ch_bowtie2_index, true,true, [ [], ch_host ] )
