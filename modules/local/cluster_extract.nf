@@ -1,4 +1,4 @@
-process CDHIT_EXTRACT {
+process CLUSTER_EXTRACT {
     tag "meta.id"
     label 'process_single'
 
@@ -9,19 +9,21 @@ process CDHIT_EXTRACT {
 
     input:
     tuple val(meta) , path(cluster)
+    val(module)
 
     output:
-    tuple val(meta), path('*_members.txt')   , emit: members
-    tuple val(meta), path('*_reference.txt') , emit: clstr
-    path "versions.yml"                      , emit: versions
+    tuple val(meta), path('*_members.txt'), path('*_reference.txt')  , emit: members_references
+    path "versions.yml"                                              , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
 
     script:
     def prefix = task.ext.prefix ?: "${meta.id}"
+    def module = task.ext.args ?: "${module}"
     """
-    extract_cdhit.py \\
+    extract_clust.py \\
+        $module \\
         $cluster \\
         --prefix $prefix
 

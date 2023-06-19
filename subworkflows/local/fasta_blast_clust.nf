@@ -4,6 +4,7 @@ include { SEQKIT_GREP       } from '../../modules/nf-core/seqkit/grep/main'
 include { CDHIT_CDHIT       } from '../../modules/nf-core/cdhit/cdhit/main'
 include { VSEARCH_CLUSTER   } from '../../modules/nf-core/vsearch/cluster/main'
 include { CAT_CAT           } from '../../modules/nf-core/cat/cat/main'
+include { CLUST_SEQ_EXTRACT } from '../../subworkflows/local/clust_seq_extract'
 
 workflow FASTA_BLAST_CLUST {
 
@@ -58,12 +59,20 @@ workflow FASTA_BLAST_CLUST {
     // cluster our reference hits and contigs
     if (cluster_method == "vsearch"){
         VSEARCH_CLUSTER (CAT_CAT.out.file_out)
+        ch_clusters = VSEARCH_CLUSTER.out.
         ch_versions = ch_versions.mix(VSEARCH_CLUSTER.out.versions.first())
     }
     else if (cluster_method == "cdhit") {
         CDHIT_CDHIT (CAT_CAT.out.file_out)
         ch_versions = ch_versions.mix(CDHIT_CDHIT.out.versions.first())
     }
+
+    CLUST_SEQ_EXTRACT(
+        ch_clusters,
+        cluster_method,
+        blast_db_fasta
+    )
+
 
 
 
@@ -72,12 +81,9 @@ workflow FASTA_BLAST_CLUST {
     // > don't polish groups that contain only out of references
     // >
 
-    //TODO: Reextract the members from the original fasta file
-
-    // TODO: New subworkflow - Map to cluster representative & create frakenstein
 
 
-
+    // TODO: update output channels
     emit:
     versions = ch_versions                     // channel: [ versions.yml ]
 }
