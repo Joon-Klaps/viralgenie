@@ -62,9 +62,10 @@ workflow FASTA_BLAST_CLUST {
     }
     else if (cluster_method == "cdhit") {
         CDHIT_CDHIT (CAT_CAT.out.file_out)
+        ch_versions = ch_versions.mix(CDHIT_CDHIT.out.versions.first())
     }
 
-    ch_versions = ch_versions.mix(CDHIT_CDHIT.out.versions.first())
+
 
 
     //TODO: Make a script that extracts the members of the clusters from the cdhit output
