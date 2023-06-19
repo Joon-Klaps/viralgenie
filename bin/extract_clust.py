@@ -5,6 +5,7 @@
 import argparse
 import re
 import logging
+import gzip
 import sys
 from pathlib import Path
 
@@ -20,6 +21,12 @@ class Cluster:
         self.id = id
         self.reference = reference
         self.members = members
+
+    def set_reference(self, reference):
+        """
+        Set the reference sequence for the cluster.
+        """
+        self.reference = reference
 
     def __iter__(self):
         yield "id", self.row
@@ -48,7 +55,7 @@ class Cluster:
             file.write(f"{self.reference}\n")
 
 
-def parse_clusters(file_in):
+def parse_clusters_chdit(file_in):
     """
     Extract sequence names from cdhit's cluster files.
     """
@@ -90,6 +97,38 @@ def parse_clusters(file_in):
 
     return clusters
 
+def parse_clusters_vsearch (file_in):
+    """
+    Extract sequence names from vsearch gzipped cluster files.
+    """
+    clusters = {}  # Dictionary to store clusters {cluster_id: Cluster}
+
+    with gzip.open(file_in, 'rt') as file:
+        for line in file:
+            line = line.strip()
+
+            if line.startswith('C\t'):
+                continue  # Skip the centroid line
+
+            parts = line.split('\t')
+            # parts = ['member_type', 'cluster_id', 'length', 'ANI', '...', '...', '...', '...', 'member_name', 'reference_name']
+            cluster_id = parts[1]
+            member_name = parts[-2]
+
+            # Create a new cluster object if the cluster ID is not present in the dictionary
+            if cluster_id not in clusters.keys():
+                clusters[cluster_id] = Cluster(cluster_id, None, [])
+
+            # Set the reference of the corresponding cluster
+            if line.startswith('S\t'):
+                clusters[cluster_id].set_reference(member_name)
+
+            # Append the member to the corresponding cluster
+            elif line.startswith('H\t'):
+                clusters[cluster_id].members.append(member_name)
+
+    # Convert the dictionary values to a list of clusters and return
+    return list(clusters.values())
 
 def filter_clusters(clusters, pattern):
     """
@@ -100,16 +139,10 @@ def filter_clusters(clusters, pattern):
 
     for cluster in clusters:
         if cluster.members:
-            all_members = [cluster.reference] + cluster.members
-        else:
-            all_members = [cluster.reference]
-
-        # Check if any members match the pattern
-        matching_members = [member for member in all_members if regex.search(member)]
-
-        # If there are matching members, keep the cluster
-        if matching_members:
+            matching_members = [member for member in cluster.members if regex.search(member)]
             filtered_clusters.append(Cluster(cluster.id, cluster.reference, matching_members))
+        else:
+            filtered_clusters.append(cluster)
 
     return filtered_clusters
 
@@ -164,7 +197,13 @@ def main(argv=None):
         logger.error(f"The given input file {args.file_in} was not found!")
         sys.exit(2)
 
-    cluster_list = parse_clusters(args.file_in)
+    if args.option == "cdhit":
+        cluster_list = parse_clusters_chdit(args.file_in)
+    elif args.option == "vsearch":
+        cluster_list = parse_clusters_vsearch(args.file_in)
+    else:
+        logger.error(f"Option {args.option} is not supported!")
+        sys.exit(2)
     filtered_clusters = filter_clusters(cluster_list, args.pattern)
 
     for cluster in filtered_clusters:

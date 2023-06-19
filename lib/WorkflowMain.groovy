@@ -22,7 +22,7 @@ class WorkflowMain {
 
     //
     // Generate help string
-    //
+    // TODO: Update with correct command
     public static String help(workflow, params) {
         def command = "nextflow run ${workflow.manifest.name} --input samplesheet.csv --genome GRCh37 -profile docker"
         def help_string = ''
