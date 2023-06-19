@@ -2,14 +2,16 @@ include { GUNZIP            } from '../../modules/nf-core/gunzip/main'
 include { BLAST_BLASTN      } from '../../modules/nf-core/blast/blastn/main'
 include { SEQKIT_GREP       } from '../../modules/nf-core/seqkit/grep/main'
 include { CDHIT_CDHIT       } from '../../modules/nf-core/cdhit/cdhit/main'
+include { VSEARCH_CLUSTER   } from '../../modules/nf-core/vsearch/cluster/main'
 include { CAT_CAT           } from '../../modules/nf-core/cat/cat/main'
 
-workflow FASTA_BLAST_CDHIT {
+workflow FASTA_BLAST_CLUST {
 
     take:
     fasta          // channel: [ val(meta), [ fasta.gz ] ]
     blast_db       // channel: [ path(db) ]
     blast_db_fasta // channel: [path(db) ]
+    cluster_method // string
 
     main:
     ch_versions = Channel.empty()
@@ -54,7 +56,14 @@ workflow FASTA_BLAST_CDHIT {
     CAT_CAT(ch_reference_contigs_comb)
 
     // cluster our reference hits and contigs
-    CDHIT_CDHIT (CAT_CAT.out.file_out)
+    if (cluster_method == "vsearch"){
+        VSEARCH_CLUSTER (CAT_CAT.out.file_out)
+        ch_versions = ch_versions.mix(VSEARCH_CLUSTER.out.versions.first())
+    }
+    else if (cluster_method == "cdhit") {
+        CDHIT_CDHIT (CAT_CAT.out.file_out)
+    }
+
     ch_versions = ch_versions.mix(CDHIT_CDHIT.out.versions.first())
 
 

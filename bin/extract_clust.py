@@ -13,7 +13,7 @@ logger = logging.getLogger()
 
 class Cluster:
     """
-    A Cdhit cluster contains the reference sequence, members of the cluster, size of reference.
+    A cluster contains the reference sequence, members of the cluster, size of reference.
     """
 
     def __init__(self, id, reference, members):
@@ -118,13 +118,19 @@ def parse_args(argv=None):
     """Define and immediately parse command line arguments."""
     parser = argparse.ArgumentParser(
         description="Provide a command line tool to extract sequence names from cdhit's cluster files.",
-        epilog="Example: python extract_cdhit.py chdit.clstr prefix",
+        epilog="Example: python extract_cluster.py [cdhit|vsearch] in.clstr prefix",
+    )
+    parser.add_argument(
+        "option",
+        metavar="OPTION",
+        type=str,
+        help=".clstr file from cdhit containing cluster information.",
     )
     parser.add_argument(
         "file_in",
         metavar="FILE_IN",
         type=Path,
-        help=".clstr file from cdhit containing cluster information.",
+        help="cluster file from chdit or vsearch containing cluster information.",
     )
     parser.add_argument(
         "file_out_prefix",

@@ -7,7 +7,8 @@
 def valid_params = [
     trim_tool        : ['fastp', 'trimmomatic'],
     assemblers       : ['spades', 'trinity', 'megahit'],
-    spades_modes     : ['rnaviral', 'corona', 'metaviral', 'meta', 'metaplasmid', 'plasmid', 'isolate', 'rna', 'bio']
+    spades_modes     : ['rnaviral', 'corona', 'metaviral', 'meta', 'metaplasmid', 'plasmid', 'isolate', 'rna', 'bio'],
+    cluster_method   : ['cdhit', 'vsearch']
 ]
 
 def summary_params = NfcoreSchema.paramsSummaryMap(workflow, params)
@@ -61,7 +62,7 @@ include { FASTQ_KRAKEN_KAIJU           } from '../subworkflows/local/fastq_krake
 include { FASTQ_SPADES_TRINITY_MEGAHIT } from '../subworkflows/local/fastq_spades_trinity_megahit'
 //  Add consensus reconstruction of genome
 //include { FASTA_FASTQ_BOWTIE2_METABAT2 } from '../subworkflows/local/fasta_fastq_bowtie2_metabat2'
-include { FASTA_BLAST_CDHIT            } from '../subworkflows/local/fasta_blast_cdhit'
+include { FASTA_BLAST_CLUST            } from '../subworkflows/local/fasta_blast_clust'
 // TODO: Add identification intrahost variability
 
 /*
@@ -150,10 +151,11 @@ workflow VIRALGENIE {
             BLAST_MAKEBLASTDB ( ch_db_blast )
             ch_versions = ch_versions.mix(BLAST_MAKEBLASTDB.out.versions.first())
 
-            FASTA_BLAST_CDHIT (
+            FASTA_BLAST_CLUST (
                 FASTQ_SPADES_TRINITY_MEGAHIT.out.scaffolds,
                 BLAST_MAKEBLASTDB.out.db,
-                ch_db_blast
+                ch_db_blast,
+                params.cluster_method
                 )
 
             //TODO: Filter bins further down if necessary
