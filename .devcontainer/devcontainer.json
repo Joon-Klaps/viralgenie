@@ -30,5 +30,13 @@
                 "streetsidesoftware.code-spell-checker"
             ]
         }
+    },
+
+    "features": {
+        "docker-in-docker": {
+            "version": "latest",
+            "moby": true,
+            "dockerDashComposeVersion": "v1"
+        }
     }
 }
