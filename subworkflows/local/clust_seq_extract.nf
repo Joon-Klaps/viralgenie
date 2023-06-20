@@ -27,8 +27,6 @@ workflow CLUST_SEQ_EXTRACT {
     // Update the meta data to include the cluster ID
     ch_members_centroids = members_centroids_transposed.map { create_member_ref_channel(it) }
 
-    ch_members_centroids.view()
-
     // split up members, centroids and db for downstream processing
     ch_members_centroids
         .map { [ it[1] ] }
@@ -39,8 +37,6 @@ workflow CLUST_SEQ_EXTRACT {
     ch_members_centroids
         .map { [ it[0], it[3] ] }
         .set { ch_db_seq_anno }
-
-    ch_db_seq_anno.view()
 
     SEQKIT_GREP_MEMBERS(ch_db_seq_anno,ch_members )
     ch_seq_members   =  SEQKIT_GREP_MEMBERS.out.filter

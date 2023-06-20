@@ -64,6 +64,7 @@ workflow FASTA_BLAST_CLUST {
     }
     else if (cluster_method == "cdhit") {
         CDHIT_CDHIT (CAT_CAT.out.file_out)
+        ch_clusters = CDHIT_CDHIT.out.clusters
         ch_versions = ch_versions.mix(CDHIT_CDHIT.out.versions.first())
     }
 
