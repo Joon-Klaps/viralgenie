@@ -47,14 +47,16 @@ Tools given for each step can change as benchmarking is in progress.
 4. Metagenomic diveristy mapping
    - Performs taxonomic classification and/or profiling using one or more of:
      - [`Kraken2`](https://ccb.jhu.edu/software/kraken2/)
-     - [`DIAMOND`](https://github.com/bbuchfink/diamond)
-     - [`Centrifuge`](https://ccb.jhu.edu/software/centrifuge/)
      - [`Kaiju`](https://kaiju.binf.ku.dk/)
-     - [`KrakenUniq`](https://github.com/fbreitwieser/krakenuniq)
    - Perform optional post-processing ([`bracken`](https://ccb.jhu.edu/software/bracken/))
    - Plotting Kraken2, Centrifuge, Kaiju and MALT results ([`Krona`](https://hpc.nih.gov/apps/kronatools.html))
-5. Denovo assembly ([`SPAdes`](http://cab.spbu.ru/software/spades/), [`Unicycler`](https://github.com/rrwick/Unicycler), [`minia`](https://github.com/GATB/minia))
+5. Denovo assembly ([`SPAdes`](http://cab.spbu.ru/software/spades/), [`TRINITY`](https://github.com/trinityrnaseq/trinityrnaseq), [`megahit`](https://github.com/voutcn/megahit)), combine contigs.
 6. Taxonomy annotation and contig reference identification ([`blastn`](https://blast.ncbi.nlm.nih.gov/Blast.cgi?PAGE_TYPE=BlastSearch))
+
+- Identify top 5 blast hits
+- Merge blast hit seqs and contigs into a single file & cluster ([`cdhit`](https://sites.google.com/view/cd-hit), [`vsearch`](https://github.com/torognes/vsearch/wiki/Clustering))
+- Filter for only contigs that correspond to the identified centroid
+
 7. Scaffolding of contigs ([`AGA`](https://github.com/emweb/aga), [`minimap2`](https://github.com/lh3/minimap2), [`MUMMER`](https://github.com/mummer4/mummer)
 8. Creation of hybrid supercontig by combining contigs and the reference.
 9. Mapping filtered reads to hybrid supercontig ([`BowTie2`](http://bowtie-bio.sourceforge.net/bowtie2/),[`minimap2`](https://github.com/lh3/minimap2)
