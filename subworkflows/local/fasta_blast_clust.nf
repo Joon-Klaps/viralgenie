@@ -59,7 +59,7 @@ workflow FASTA_BLAST_CLUST {
     // cluster our reference hits and contigs
     if (cluster_method == "vsearch"){
         VSEARCH_CLUSTER (CAT_CAT.out.file_out)
-        ch_clusters = VSEARCH_CLUSTER.out.
+        ch_clusters = VSEARCH_CLUSTER.out.uc
         ch_versions = ch_versions.mix(VSEARCH_CLUSTER.out.versions.first())
     }
     else if (cluster_method == "cdhit") {
@@ -70,7 +70,7 @@ workflow FASTA_BLAST_CLUST {
     CLUST_SEQ_EXTRACT(
         ch_clusters,
         cluster_method,
-        blast_db_fasta
+        CAT_CAT.out.file_out
     )
 
 

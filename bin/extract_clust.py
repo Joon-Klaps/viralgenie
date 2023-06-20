@@ -14,27 +14,27 @@ logger = logging.getLogger()
 
 class Cluster:
     """
-    A cluster contains the reference sequence, members of the cluster, size of reference.
+    A cluster contains the centroid sequence, members of the cluster, size of centroid.
     """
 
-    def __init__(self, id, reference, members):
+    def __init__(self, id, centroid, members):
         self.id = id
-        self.reference = reference
+        self.centroid = centroid
         self.members = members
 
-    def set_reference(self, reference):
+    def set_centroid(self, centroid):
         """
-        Set the reference sequence for the cluster.
+        Set the centroid sequence for the cluster.
         """
-        self.reference = reference
+        self.centroid = centroid
 
     def __iter__(self):
         yield "id", self.row
-        yield "reference", self.reference
+        yield "centroid", self.centroid
         yield "members", self.members
 
     def __str__(self):
-        return f"Cluster {self.id} with reference {self.reference} and members {self.members}"
+        return f"Cluster {self.id} with centroid {self.centroid} and members {self.members}"
 
     def _save_cluster_members(self, prefix):
         """
@@ -47,12 +47,12 @@ class Cluster:
             else:
                 file.write(f"\n")
 
-    def _save_cluster_reference(self, prefix):
+    def _save_cluster_centroid(self, prefix):
         """
         Save the cluster to a file.
         """
-        with open(f"{prefix}_{self.id}_reference.txt", "w") as file:
-            file.write(f"{self.reference}\n")
+        with open(f"{prefix}_{self.id}_centroid.txt", "w") as file:
+            file.write(f"{self.centroid}\n")
 
 
 def parse_clusters_chdit(file_in):
@@ -65,34 +65,34 @@ def parse_clusters_chdit(file_in):
 
     current_cluster_id = None
     current_members = []
-    current_reference = None
+    current_centroid = None
 
     for line in lines:
         if line.startswith(">Cluster"):
             # New cluster detected, add previous Cluster object to the list
             if current_cluster_id is not None:
-                cluster = Cluster(current_cluster_id, current_reference, current_members)
+                cluster = Cluster(current_cluster_id, current_centroid, current_members)
                 clusters.append(cluster)
 
-            # Extract the cluster ID from the line and reset the members and reference
+            # Extract the cluster ID from the line and reset the members and centroid
             current_cluster_id = line.strip().split()[1]
             current_members = []
-            current_reference = None
+            current_centroid = None
         else:
             # Extract the name from the line
             parts = line.strip().split(">")
             member_name = parts[1].split("...")[0]
 
-            # Check if the line indicates the reference member
+            # Check if the line indicates the centroid member
             if parts[1].endswith("*"):
-                current_reference = member_name
+                current_centroid = member_name
             else:
                 # Add the member to the list of members
                 current_members.append(member_name)
 
     # Create a Cluster object for the last cluster
     if current_cluster_id is not None:
-        cluster = Cluster(current_cluster_id, current_reference, current_members)
+        cluster = Cluster(current_cluster_id, current_centroid, current_members)
         clusters.append(cluster)
 
     return clusters
@@ -111,7 +111,7 @@ def parse_clusters_vsearch (file_in):
                 continue  # Skip the centroid line
 
             parts = line.split('\t')
-            # parts = ['member_type', 'cluster_id', 'length', 'ANI', '...', '...', '...', '...', 'member_name', 'reference_name']
+            # parts = ['member_type', 'cluster_id', 'length', 'ANI', '...', '...', '...', '...', 'member_name', 'centroid_name']
             cluster_id = parts[1]
             member_name = parts[-2]
 
@@ -119,9 +119,9 @@ def parse_clusters_vsearch (file_in):
             if cluster_id not in clusters.keys():
                 clusters[cluster_id] = Cluster(cluster_id, None, [])
 
-            # Set the reference of the corresponding cluster
+            # Set the centroid of the corresponding cluster
             if line.startswith('S\t'):
-                clusters[cluster_id].set_reference(member_name)
+                clusters[cluster_id].set_centroid(member_name)
 
             # Append the member to the corresponding cluster
             elif line.startswith('H\t'):
@@ -140,7 +140,7 @@ def filter_clusters(clusters, pattern):
     for cluster in clusters:
         if cluster.members:
             matching_members = [member for member in cluster.members if regex.search(member)]
-            filtered_clusters.append(Cluster(cluster.id, cluster.reference, matching_members))
+            filtered_clusters.append(Cluster(cluster.id, cluster.centroid, matching_members))
         else:
             filtered_clusters.append(cluster)
 
@@ -176,7 +176,7 @@ def parse_args(argv=None):
         "--pattern",
         metavar="PATTERN",
         type=str,
-        help="Regex pattern to filter clusters by reference sequence name.",
+        help="Regex pattern to filter clusters by centroid sequence name.",
         default="^(TRINITY)|(NODE)|(k\d+)",  # Default pattern matches Trinity, SPADes and MEGAHIT assembly names
     )
     parser.add_argument(
@@ -208,7 +208,7 @@ def main(argv=None):
 
     for cluster in filtered_clusters:
         cluster._save_cluster_members(args.file_out_prefix)
-        cluster._save_cluster_reference(args.file_out_prefix)
+        cluster._save_cluster_centroid(args.file_out_prefix)
 
 
 if __name__ == "__main__":

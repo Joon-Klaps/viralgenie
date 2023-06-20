@@ -12,7 +12,7 @@ process CLUSTER_EXTRACT {
     val(module)
 
     output:
-    tuple val(meta), path('*_members.txt'), path('*_reference.txt')  , emit: members_references
+    tuple val(meta), path('*_members.txt'), path('*_centroid.txt')   , emit: members_centroids
     path "versions.yml"                                              , emit: versions
 
     when:
@@ -25,7 +25,7 @@ process CLUSTER_EXTRACT {
     extract_clust.py \\
         $module \\
         $cluster \\
-        --prefix $prefix
+        $prefix
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
