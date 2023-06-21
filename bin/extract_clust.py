@@ -97,20 +97,21 @@ def parse_clusters_chdit(file_in):
 
     return clusters
 
-def parse_clusters_vsearch (file_in):
+
+def parse_clusters_vsearch(file_in):
     """
     Extract sequence names from vsearch gzipped cluster files.
     """
     clusters = {}  # Dictionary to store clusters {cluster_id: Cluster}
 
-    with gzip.open(file_in, 'rt') as file:
+    with gzip.open(file_in, "rt") as file:
         for line in file:
             line = line.strip()
 
-            if line.startswith('C\t'):
+            if line.startswith("C\t"):
                 continue  # Skip the centroid line
 
-            parts = line.split('\t')
+            parts = line.split("\t")
             # parts = ['member_type', 'cluster_id', 'length', 'ANI', '...', '...', '...', '...', 'member_name', 'centroid_name']
             cluster_id = parts[1]
             member_name = parts[-2]
@@ -120,15 +121,16 @@ def parse_clusters_vsearch (file_in):
                 clusters[cluster_id] = Cluster(cluster_id, None, [])
 
             # Set the centroid of the corresponding cluster
-            if line.startswith('S\t'):
+            if line.startswith("S\t"):
                 clusters[cluster_id].set_centroid(member_name)
 
             # Append the member to the corresponding cluster
-            elif line.startswith('H\t'):
+            elif line.startswith("H\t"):
                 clusters[cluster_id].members.append(member_name)
 
     # Convert the dictionary values to a list of clusters and return
     return list(clusters.values())
+
 
 def filter_clusters(clusters, pattern):
     """
@@ -141,7 +143,7 @@ def filter_clusters(clusters, pattern):
         if cluster.members:
             matching_members = [member for member in cluster.members if regex.search(member)]
             filtered_clusters.append(Cluster(cluster.id, cluster.centroid, matching_members))
-        else:
+        elif regex.search(cluster.centroid):
             filtered_clusters.append(cluster)
 
     return filtered_clusters

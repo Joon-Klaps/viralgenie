@@ -1,5 +1,5 @@
 process CLUSTER_EXTRACT {
-    tag "meta.id"
+    tag "${meta.id}"
     label 'process_single'
 
     conda "conda-forge::python=3.8.3"

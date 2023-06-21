@@ -60,7 +60,7 @@ def create_member_ref_channel(ArrayList row) {
     sequence = row[3]
 
     new_meta.sample     = String.valueOf(new_meta.id) // just to make sure we don't pass by reference
-    new_meta.cluster    = (members =~ /.*\/.*([0-9]+)_members.txt/)[0][1] // try and extract the correct cluster ID associated to the sample
+    new_meta.cluster    = (members =~ /.*\/.*_([0-9]+)_members.txt/)[0][1] // try and extract the correct cluster ID associated to the sample
     new_meta.id = "${new_meta.sample}_${new_meta.cluster}"
 
     def result = [ new_meta, members, centroids, sequence]
