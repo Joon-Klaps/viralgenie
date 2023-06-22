@@ -7,7 +7,8 @@
 def valid_params = [
     trim_tool        : ['fastp', 'trimmomatic'],
     assemblers       : ['spades', 'trinity', 'megahit'],
-    spades_modes     : ['rnaviral', 'corona', 'metaviral', 'meta', 'metaplasmid', 'plasmid', 'isolate', 'rna', 'bio']
+    spades_modes     : ['rnaviral', 'corona', 'metaviral', 'meta', 'metaplasmid', 'plasmid', 'isolate', 'rna', 'bio'],
+    cluster_method   : ['cdhit', 'vsearch']
 ]
 
 def summary_params = NfcoreSchema.paramsSummaryMap(workflow, params)
@@ -25,13 +26,13 @@ def checkPathParamList = [
 for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
 
 // Check mandatory parameters
-if (params.input         ) { ch_input = file(params.input)                    } else { exit 1, 'Input samplesheet not specified!' }
-if (params.adapter_fasta ) { ch_adapter_fasta = file(params.adapter_fasta)    } else { ch_adapter_fasta  = []                     }
-if (params.host_reference) { ch_host_reference = file(params.host_reference)  } else { ch_host_reference = []                     }
-if (params.host_index    ) { ch_host_index = file(params.host_index)          } else { ch_host_index = []                         }
-if (params.contaminants  ) { ch_contaminants = file(params.contaminants)      } else { ch_contaminants = []                       }
-if (params.spades_yml    ) { ch_spades_yml = file(params.spades_yml)          } else { ch_spades_yml = []                         }
-if (params.spades_hmm    ) { ch_spades_hmm = file(params.spades_hmm)          } else { ch_spades_hmm = []                         }
+if (params.input         ) { ch_input = file(params.input)                                      } else { exit 1, 'Input samplesheet not specified!' }
+if (params.adapter_fasta ) { ch_adapter_fasta = file(params.adapter_fasta)                      } else { ch_adapter_fasta  = []                     }
+if (params.host_reference) { ch_host_reference = file(params.host_reference)                    } else { ch_host_reference = []                     }
+if (params.host_index    ) { ch_host_index = Channel.fromPath(params.host_index).map{[[], it]}  } else { ch_host_index = []                         }
+if (params.contaminants  ) { ch_contaminants = file(params.contaminants)                        } else { ch_contaminants = []                       }
+if (params.spades_yml    ) { ch_spades_yml = file(params.spades_yml)                            } else { ch_spades_yml = []                         }
+if (params.spades_hmm    ) { ch_spades_hmm = file(params.spades_hmm)                            } else { ch_spades_hmm = []                         }
 
 def assemblers = params.assemblers ? params.assemblers.split(',').collect{ it.trim().toLowerCase() } : []
 
@@ -60,7 +61,8 @@ include { PREPROCESSING_ILLUMINA       } from '../subworkflows/local/preprocessi
 include { FASTQ_KRAKEN_KAIJU           } from '../subworkflows/local/fastq_kraken_kaiju'
 include { FASTQ_SPADES_TRINITY_MEGAHIT } from '../subworkflows/local/fastq_spades_trinity_megahit'
 //  Add consensus reconstruction of genome
-include { FASTA_FASTQ_BOWTIE2_METABAT2 } from '../subworkflows/local/fasta_fastq_bowtie2_metabat2'
+//include { FASTA_FASTQ_BOWTIE2_METABAT2 } from '../subworkflows/local/fasta_fastq_bowtie2_metabat2'
+include { FASTA_BLAST_CLUST            } from '../subworkflows/local/fasta_blast_clust'
 // TODO: Add identification intrahost variability
 
 /*
@@ -72,6 +74,8 @@ include { FASTA_FASTQ_BOWTIE2_METABAT2 } from '../subworkflows/local/fasta_fastq
 //
 // MODULE: Installed directly from nf-core/modules
 //
+include { UNTAR as UNTAR_BLAST_DB     } from '../modules/nf-core/untar/main'
+include { BLAST_MAKEBLASTDB           } from '../modules/nf-core/blast/makeblastdb/main'
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 
@@ -130,10 +134,29 @@ workflow VIRALGENIE {
 
         //TODO: Binning of assemblies
         if (!params.skip_polishing){
-            FASTA_FASTQ_BOWTIE2_METABAT2(
+            // FASTA_FASTQ_BOWTIE2_METABAT2(
+            //     FASTQ_SPADES_TRINITY_MEGAHIT.out.scaffolds,
+            //     PREPROCESSING_ILLUMINA.out.reads
+            // )
+            db_blast= params.reference_fasta
+            if (db_blast.endsWith('.gz')) {
+                UNTAR_BLAST_DB (
+                    [ [:], db_blast ]
+                )
+                ch_db_blast = UNTAR_BLAST_DB.out.untar.map { it[1] }
+                ch_versions   = ch_versions.mix(UNTAR_BLAST_DB.out.versions)
+            } else {
+                        ch_db_blast = Channel.value(file(db_blast))
+            }
+            BLAST_MAKEBLASTDB ( ch_db_blast )
+            ch_versions = ch_versions.mix(BLAST_MAKEBLASTDB.out.versions.first())
+
+            FASTA_BLAST_CLUST (
                 FASTQ_SPADES_TRINITY_MEGAHIT.out.scaffolds,
-                PREPROCESSING_ILLUMINA.out.reads
-            )
+                BLAST_MAKEBLASTDB.out.db,
+                ch_db_blast,
+                params.cluster_method
+                )
 
             //TODO: Filter bins further down if necessary
 

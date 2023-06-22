@@ -26,6 +26,9 @@ class WorkflowViralgenie {
         if (!valid_params['spades_modes'].contains(params.spades_mode)) {
             Nextflow.error("${params.spades_modes} is not a valid spades mode. Please choose from ${valid_params['spades_mode'].join(', ')}")
         }
+        if (!valid_params['cluster_method'].contains(params.cluster_method)) {
+            Nextflow.error("${params.cluster_method} is not a valid cluster mode. Please choose from ${valid_params['cluster_method'].join(', ')}")
+        }
     }
 
     //

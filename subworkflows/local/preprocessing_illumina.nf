@@ -1,6 +1,7 @@
 // modules
 include { BBMAP_BBDUK   } from '../../modules/nf-core/bbmap/bbduk/main'
 include { BOWTIE2_BUILD } from '../../modules/nf-core/bowtie2/build/main'
+include { BOWTIE2_ALIGN } from '../../modules/nf-core/bowtie2/align/main'
 
 // Subworkflows
 // > local
@@ -8,14 +9,13 @@ include { FASTQ_FASTQC_UMITOOLS_TRIMMOMATIC } from './fastq_fastqc_umitools_trim
 
 // > nf-core
 include { FASTQ_FASTQC_UMITOOLS_FASTP       } from '../nf-core/fastq_fastqc_umitools_fastp/main'
-include { FASTQ_ALIGN_BOWTIE2               } from '../nf-core/fastq_align_bowtie2/main'
 
 workflow PREPROCESSING_ILLUMINA {
 
     take:
     ch_reads                   // channel: [ [ meta ], [ ch_reads ] ]
     ch_host                    // channel: [ path(host_fasta) ]
-    ch_index                   // channel: [ path(index) ]
+    ch_index                   // channel: [ [ meta ], path(index) ]
     ch_adapter_fasta           // channel: [ path(adapter_fasta) ]
     ch_contaminants            // channel: [ path(contaminants_fasta) ]
 
@@ -89,15 +89,15 @@ workflow PREPROCESSING_ILLUMINA {
             ch_bowtie2_index = BOWTIE2_BUILD ( [ [], ch_host ] ).index
             ch_versions      = ch_versions.mix( BOWTIE2_BUILD.out.versions )
         } else {
-            ch_bowtie2_index = index.first()
+            ch_bowtie2_index = ch_index.first()
         }
 
-        FASTQ_ALIGN_BOWTIE2 ( ch_reads_decomplexified, ch_bowtie2_index, true,true, [ [], ch_host ] )
-        ch_reads_hostremoved   = FASTQ_ALIGN_BOWTIE2.out.fastq
+        BOWTIE2_ALIGN ( ch_reads_decomplexified, ch_bowtie2_index, true, false )
 
-        ch_multiqc_files       = ch_multiqc_files.mix( FASTQ_ALIGN_BOWTIE2.out.log_out)
-        ch_multiqc_files       = ch_multiqc_files.mix( FASTQ_ALIGN_BOWTIE2.out.stats)
-        ch_versions            = ch_versions.mix(FASTQ_ALIGN_BOWTIE2.out.versions)
+        ch_reads_hostremoved   = BOWTIE2_ALIGN.out.fastq
+
+        ch_multiqc_files       = ch_multiqc_files.mix( BOWTIE2_ALIGN.out.log)
+        ch_versions            = ch_versions.mix(BOWTIE2_ALIGN.out.versions)
 
     } else {
         ch_reads_hostremoved = ch_reads_decomplexified
