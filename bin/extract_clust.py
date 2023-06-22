@@ -21,6 +21,10 @@ class Cluster:
         self.id = id
         self.centroid = centroid
         self.members = members
+        if members is not None:
+            self.size = len(members)
+        else:
+            self.size = 0
 
     def set_centroid(self, centroid):
         """
@@ -32,15 +36,16 @@ class Cluster:
         yield "id", self.row
         yield "centroid", self.centroid
         yield "members", self.members
+        yield "size", self.size
 
     def __str__(self):
-        return f"Cluster {self.id} with centroid {self.centroid} and members {self.members}"
+        return f"Cluster {self.id} with centroid {self.centroid} and {self.size} members {self.members}"
 
     def _save_cluster_members(self, prefix):
         """
         Save the cluster to a file.
         """
-        with open(f"{prefix}_{self.id}_members.txt", "w") as file:
+        with open(f"{prefix}_{self.id}_n{self.size}_members.txt", "w") as file:
             if self.members:
                 for member in self.members:
                     file.write(f"{member}\n")
@@ -51,7 +56,7 @@ class Cluster:
         """
         Save the cluster to a file.
         """
-        with open(f"{prefix}_{self.id}_centroid.txt", "w") as file:
+        with open(f"{prefix}_{self.id}_n{self.size}_centroid.txt", "w") as file:
             file.write(f"{self.centroid}\n")
 
 
