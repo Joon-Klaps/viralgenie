@@ -142,7 +142,8 @@ def filter_clusters(clusters, pattern):
     for cluster in clusters:
         if cluster.members:
             matching_members = [member for member in cluster.members if regex.search(member)]
-            filtered_clusters.append(Cluster(cluster.id, cluster.centroid, matching_members))
+            if matching_members or regex.search(cluster.centroid):
+                filtered_clusters.append(Cluster(cluster.id, cluster.centroid, matching_members))
         elif regex.search(cluster.centroid):
             filtered_clusters.append(cluster)
 

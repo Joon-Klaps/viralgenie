@@ -12,7 +12,8 @@ process BLAST_BLASTN {
     path  db
 
     output:
-    tuple val(meta), path('*.blastn.txt'), emit: txt
+    tuple val(meta), path('*.blastn.txt'), emit: summary
+    tuple val(meta), path('*.hits.txt')  , emit: txt
     path "versions.yml"                  , emit: versions
 
     when:
@@ -29,6 +30,9 @@ process BLAST_BLASTN {
         -query $fasta \\
         $args \\
         -out ${prefix}.blastn.txt
+
+    cut -f2 ${prefix}.blastn.txt | sort -u  > ${prefix}.hits.txt
+
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         blast: \$(blastn -version 2>&1 | sed 's/^.*blastn: //; s/ .*\$//')

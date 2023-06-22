@@ -1,5 +1,5 @@
 include { GUNZIP            } from '../../modules/nf-core/gunzip/main'
-include { BLAST_BLASTN      } from '../../modules/nf-core/blast/blastn/main'
+include { BLAST_BLASTN      } from '../../modules/local/blast_blastn'
 include { SEQKIT_GREP       } from '../../modules/nf-core/seqkit/grep/main'
 include { CDHIT_CDHIT       } from '../../modules/nf-core/cdhit/cdhit/main'
 include { VSEARCH_CLUSTER   } from '../../modules/nf-core/vsearch/cluster/main'
