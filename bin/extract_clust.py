@@ -159,13 +159,13 @@ def parse_args(argv=None):
     """Define and immediately parse command line arguments."""
     parser = argparse.ArgumentParser(
         description="Provide a command line tool to extract sequence names from cdhit's cluster files.",
-        epilog="Example: python extract_cluster.py [cdhit|vsearch] in.clstr prefix",
+        epilog="Example: python extract_cluster.py [cdhitest|vsearch] in.clstr prefix",
     )
     parser.add_argument(
         "option",
         metavar="OPTION",
         type=str,
-        help=".clstr file from cdhit containing cluster information.",
+        help=".clstr file from cdhitestcontaining cluster information.",
     )
     parser.add_argument(
         "file_in",
@@ -205,7 +205,7 @@ def main(argv=None):
         logger.error(f"The given input file {args.file_in} was not found!")
         sys.exit(2)
 
-    if args.option == "cdhit":
+    if args.option == "cdhitest":
         cluster_list = parse_clusters_chdit(args.file_in)
     elif args.option == "vsearch":
         cluster_list = parse_clusters_vsearch(args.file_in)

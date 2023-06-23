@@ -1,7 +1,7 @@
 include { GUNZIP            } from '../../modules/nf-core/gunzip/main'
 include { BLAST_BLASTN      } from '../../modules/local/blast_blastn'
 include { SEQKIT_GREP       } from '../../modules/nf-core/seqkit/grep/main'
-include { CDHIT_CDHIT       } from '../../modules/nf-core/cdhit/cdhit/main'
+include { CDHIT_CDHITEST      } from '../../modules/nf-core/cdhit/cdhit/main'
 include { VSEARCH_CLUSTER   } from '../../modules/nf-core/vsearch/cluster/main'
 include { CAT_CAT           } from '../../modules/nf-core/cat/cat/main'
 include { CLUST_SEQ_EXTRACT } from '../../subworkflows/local/clust_seq_extract'
@@ -62,10 +62,10 @@ workflow FASTA_BLAST_CLUST {
         ch_clusters = VSEARCH_CLUSTER.out.uc
         ch_versions = ch_versions.mix(VSEARCH_CLUSTER.out.versions.first())
     }
-    else if (cluster_method == "cdhit") {
-        CDHIT_CDHIT (CAT_CAT.out.file_out)
-        ch_clusters = CDHIT_CDHIT.out.clusters
-        ch_versions = ch_versions.mix(CDHIT_CDHIT.out.versions.first())
+    else if (cluster_method == "cdhitest") {
+        CDHIT_CDHITEST(CAT_CAT.out.file_out)
+        ch_clusters = CDHIT_CDHITEST.out.clusters
+        ch_versions = ch_versions.mix(CDHIT_CDHITEST.out.versions.first())
     }
 
     CLUST_SEQ_EXTRACT(
@@ -78,7 +78,7 @@ workflow FASTA_BLAST_CLUST {
 
 
 
-    //TODO: Make a script that extracts the members of the clusters from the cdhit output
+    //TODO: Make a script that extracts the members of the clusters from the cdhitestoutput
     // > don't polish groups that contain only out of references
     // >
 

@@ -8,7 +8,7 @@ def valid_params = [
     trim_tool        : ['fastp', 'trimmomatic'],
     assemblers       : ['spades', 'trinity', 'megahit'],
     spades_modes     : ['rnaviral', 'corona', 'metaviral', 'meta', 'metaplasmid', 'plasmid', 'isolate', 'rna', 'bio'],
-    cluster_method   : ['cdhit', 'vsearch']
+    cluster_method   : ['cdhitest', 'vsearch']
 ]
 
 def summary_params = NfcoreSchema.paramsSummaryMap(workflow, params)
@@ -75,6 +75,7 @@ include { FASTA_BLAST_CLUST            } from '../subworkflows/local/fasta_blast
 // MODULE: Installed directly from nf-core/modules
 //
 include { UNTAR as UNTAR_BLAST_DB     } from '../modules/nf-core/untar/main'
+include { GZUNIP as GZUNIP_BLAST_DB   } from '../modules/nf-core/gzunip/main'
 include { BLAST_MAKEBLASTDB           } from '../modules/nf-core/blast/makeblastdb/main'
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
@@ -132,24 +133,25 @@ workflow VIRALGENIE {
             ch_spades_hmm)
         ch_versions      = ch_versions.mix(FASTQ_SPADES_TRINITY_MEGAHIT.out.versions)
 
-        //TODO: Binning of assemblies
         if (!params.skip_polishing){
-            // FASTA_FASTQ_BOWTIE2_METABAT2(
-            //     FASTQ_SPADES_TRINITY_MEGAHIT.out.scaffolds,
-            //     PREPROCESSING_ILLUMINA.out.reads
-            // )
             db_blast= params.reference_fasta
-            if (db_blast.endsWith('.gz')) {
+            if (db_blast.endsWith('.tar.gz')) {
                 UNTAR_BLAST_DB (
                     [ [:], db_blast ]
                 )
                 ch_db_blast = UNTAR_BLAST_DB.out.untar.map { it[1] }
                 ch_versions   = ch_versions.mix(UNTAR_BLAST_DB.out.versions)
+            } else if (db_blast.endsWith('.gz')) {
+                GZUNIP_BLAST_DB (
+                    [ [:], db_blast ]
+                )
+                ch_db_blast = GZUNIP_BLAST_DB.out.gunzip.map { it[1] }
+                ch_versions   = ch_versions.mix(GZUNIP_BLAST_DB.out.versions)
             } else {
-                        ch_db_blast = Channel.value(file(db_blast))
+                ch_db_blast = Channel.value(file(db_blast))
             }
             BLAST_MAKEBLASTDB ( ch_db_blast )
-            ch_versions = ch_versions.mix(BLAST_MAKEBLASTDB.out.versions.first())
+            ch_versions = ch_versions.mix(BLAST_MAKEBLASTDB.out.versions)
 
             FASTA_BLAST_CLUST (
                 FASTQ_SPADES_TRINITY_MEGAHIT.out.scaffolds,

@@ -1,5 +1,4 @@
-// TODO: update & remove THIS IS NOT CDHIT but CDHIT-EST 
-process CDHIT_CDHIT {
+process CDHIT_CDHITEST {
     tag "$meta.id"
     label 'process_medium'
 
@@ -13,8 +12,8 @@ process CDHIT_CDHIT {
 
     output:
     tuple val(meta), path("*.{fa,fq}")    ,emit: fasta
-    tuple val(meta), path("*.clstr")            ,emit: clusters
-    path "versions.yml"                         ,emit: versions
+    tuple val(meta), path("*.clstr")      ,emit: clusters
+    path "versions.yml"                   ,emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -37,6 +36,7 @@ process CDHIT_CDHIT {
         -o ${meta.id}.${suffix} \\
         -M $avail_mem \\
         -T $task.cpus
+
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         cdhit: \$(cd-hit-est -h | head -n 1 | sed 's/^.*====== CD-HIT version //;s/ (built on .*) ======//' )
@@ -50,6 +50,7 @@ process CDHIT_CDHIT {
     """
     touch ${meta.id}.${suffix}
     touch ${meta.id}.${suffix}.clstr
+
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         cdhit: \$(cd-hit-est -h | head -n 1 | sed 's/^.*====== CD-HIT version //;s/ (built on .*) ======//' )

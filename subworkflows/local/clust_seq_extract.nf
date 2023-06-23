@@ -7,7 +7,7 @@ workflow CLUST_SEQ_EXTRACT {
 
     take:
     ch_clusters     // channel: [ [ meta ], [ clusters ] ]
-    cluster_method  // value: cdhit | vsearch
+    cluster_method  // value: cdhitest| vsearch
     db_seq          // channel: [ [ meta ], [ db ] ]
 
 
