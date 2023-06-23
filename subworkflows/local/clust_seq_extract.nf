@@ -47,8 +47,8 @@ workflow CLUST_SEQ_EXTRACT {
     ch_versions =  ch_versions.mix(SEQKIT_GREP_CENTROIDS.out.versions.first())
 
     emit:
-    // seq_members     = ch_seq_members        // channel: [ [ meta ], [ seq_members.fa] ]
-    // seq_centroids  = ch_seq_centroids     // channel: [ [ meta ], [ seq_centroids.fa ] ]
+    seq_members     = SEQKIT_GREP_MEMBERS.out.filter        // channel: [ [ meta ], [ seq_members.fa] ]
+    seq_centroids   = SEQKIT_GREP_CENTROIDS.out.filter      // channel: [ [ meta ], [ seq_centroids.fa ] ]
     versions        = ch_versions
 }
 

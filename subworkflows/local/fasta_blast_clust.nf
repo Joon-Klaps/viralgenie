@@ -1,7 +1,7 @@
 include { GUNZIP            } from '../../modules/nf-core/gunzip/main'
 include { BLAST_BLASTN      } from '../../modules/local/blast_blastn'
 include { SEQKIT_GREP       } from '../../modules/nf-core/seqkit/grep/main'
-include { CDHIT_CDHITEST      } from '../../modules/nf-core/cdhit/cdhit/main'
+include { CDHIT_CDHITEST      } from '../../modules/nf-core/cdhit/cdhitest/main'
 include { VSEARCH_CLUSTER   } from '../../modules/nf-core/vsearch/cluster/main'
 include { CAT_CAT           } from '../../modules/nf-core/cat/cat/main'
 include { CLUST_SEQ_EXTRACT } from '../../subworkflows/local/clust_seq_extract'
@@ -36,14 +36,12 @@ workflow FASTA_BLAST_CLUST {
         }
         .set{ch_blast_db_fasta}
 
-    // TODO: add another small process that extracts the hits as the blast run is quite informative
-
     ch_hits = BLAST_BLASTN.out.txt.map{it -> it[1]}
     // isolate the hits from the database to a fasta file
     SEQKIT_GREP (ch_blast_db_fasta, ch_hits)
     ch_versions = ch_versions.mix(SEQKIT_GREP.out.versions.first())
 
-    // put refernece hits and contigs together
+    // put reference hits and contigs together
     fasta.join(
             SEQKIT_GREP.out.filter,
             by: [0],
@@ -74,18 +72,11 @@ workflow FASTA_BLAST_CLUST {
         CAT_CAT.out.file_out
     )
 
-
-
-
-
-    //TODO: Make a script that extracts the members of the clusters from the cdhitestoutput
-    // > don't polish groups that contain only out of references
-    // >
-
-
-
-    // TODO: update output channels
     emit:
-    versions = ch_versions                     // channel: [ versions.yml ]
+    clusters    = ch_clusters                           // channel: [ [ meta ], [ clusters ] ]
+    members     = CLUST_SEQ_EXTRACT.out.seq_members     // channel: [ [ meta ], [ seq_members.fa] ]
+    centroids   = CLUST_SEQ_EXTRACT.out.seq_centroids   // channel: [ [ meta ], [ seq_centroids.fa ] ]
+    versions    = ch_versions                           // channel: [ versions.yml ]
+
 }
 

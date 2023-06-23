@@ -75,7 +75,7 @@ include { FASTA_BLAST_CLUST            } from '../subworkflows/local/fasta_blast
 // MODULE: Installed directly from nf-core/modules
 //
 include { UNTAR as UNTAR_BLAST_DB     } from '../modules/nf-core/untar/main'
-include { GZUNIP as GZUNIP_BLAST_DB   } from '../modules/nf-core/gzunip/main'
+include { GUNZIP as GUNZIP_BLAST_DB   } from '../modules/nf-core/gunzip/main'
 include { BLAST_MAKEBLASTDB           } from '../modules/nf-core/blast/makeblastdb/main'
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
@@ -142,11 +142,11 @@ workflow VIRALGENIE {
                 ch_db_blast = UNTAR_BLAST_DB.out.untar.map { it[1] }
                 ch_versions   = ch_versions.mix(UNTAR_BLAST_DB.out.versions)
             } else if (db_blast.endsWith('.gz')) {
-                GZUNIP_BLAST_DB (
+                GUNZIP_BLAST_DB (
                     [ [:], db_blast ]
                 )
-                ch_db_blast = GZUNIP_BLAST_DB.out.gunzip.map { it[1] }
-                ch_versions   = ch_versions.mix(GZUNIP_BLAST_DB.out.versions)
+                ch_db_blast = GUNZIP_BLAST_DB.out.gunzip.map { it[1] }
+                ch_versions   = ch_versions.mix(GUNZIP_BLAST_DB.out.versions)
             } else {
                 ch_db_blast = Channel.value(file(db_blast))
             }
