@@ -12,6 +12,10 @@
                 "pattern": "^\\S+$",
                 "errorMessage": "Sample name must be provided and cannot contain spaces"
             },
+            "single_end": {
+                "type": "boolean",
+                "errorMessage": "Single end must be a boolean value (true/false)"
+            },
             "fastq_1": {
                 "type": "string",
                 "pattern": "^\\S+\\.f(ast)?q\\.gz$",
@@ -31,6 +35,6 @@
                 ]
             }
         },
-        "required": ["sample", "fastq_1"]
+        "required": ["sample", "single_end", "fastq_1"]
     }
 }
