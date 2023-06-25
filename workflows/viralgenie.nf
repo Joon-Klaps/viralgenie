@@ -153,6 +153,7 @@ workflow VIRALGENIE {
             BLAST_MAKEBLASTDB ( ch_db_blast )
             ch_versions = ch_versions.mix(BLAST_MAKEBLASTDB.out.versions)
 
+            // blast contigs against reference & identify clustering contigs & references
             FASTA_BLAST_CLUST (
                 FASTQ_SPADES_TRINITY_MEGAHIT.out.scaffolds,
                 BLAST_MAKEBLASTDB.out.db,
@@ -160,15 +161,18 @@ workflow VIRALGENIE {
                 params.cluster_method
                 )
 
-            //TODO: Filter bins further down if necessary
-
-            //TODO: reference Identification
-
-
             //TODO: Scaffolding & consensus reconstruction of genome
 
+            //TODO: subworkflow for iterative refinement, contains another subworkflow if we just give a single reference
+
             }
+
+        } else {
+            ch_reference = params.mapping_sequence
         }
+
+
+
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
