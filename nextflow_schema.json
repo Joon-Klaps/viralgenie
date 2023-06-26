@@ -15,9 +15,9 @@
                 "input": {
                     "type": "string",
                     "format": "file-path",
+                    "exists": true,
                     "mimetype": "text/csv",
                     "pattern": "^\\S+\\.csv$",
-                    "schema": "assets/schema_input.json",
                     "description": "Path to comma-separated file containing information about the samples in the experiment.",
                     "help_text": "You will need to create a design file with information about the samples in your experiment before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row. See [usage docs](https://nf-co.re/viralgenie/usage#samplesheet-input).",
                     "fa_icon": "fas fa-file-csv"
@@ -39,6 +39,45 @@
                     "type": "string",
                     "description": "MultiQC report title. Printed as page header, used for filename if not otherwise specified.",
                     "fa_icon": "fas fa-file-signature"
+                }
+            }
+        },
+        "reference_genome_options": {
+            "title": "Reference genome options",
+            "type": "object",
+            "fa_icon": "fas fa-dna",
+            "description": "Reference genome related files and options required for the workflow.",
+            "properties": {
+                "genome": {
+                    "type": "string",
+                    "description": "Name of iGenomes reference.",
+                    "fa_icon": "fas fa-book",
+                    "help_text": "If using a reference genome configured in the pipeline using iGenomes, use this parameter to give the ID for the reference. This is then used to build the full paths for all required reference genome files e.g. `--genome GRCh38`. \n\nSee the [nf-core website docs](https://nf-co.re/usage/reference_genomes) for more details."
+                },
+                "fasta": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
+                    "description": "Path to FASTA genome file.",
+                    "help_text": "This parameter is *mandatory* if `--genome` is not specified. If you don't have a BWA index available this will be generated for you automatically. Combine with `--save_reference` to save BWA index for future runs.",
+                    "fa_icon": "far fa-file-code"
+                },
+                "igenomes_base": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "description": "Directory / URL base for iGenomes references.",
+                    "default": "s3://ngi-igenomes/igenomes",
+                    "fa_icon": "fas fa-cloud-download-alt",
+                    "hidden": true
+                },
+                "igenomes_ignore": {
+                    "type": "boolean",
+                    "description": "Do not load the iGenomes reference config.",
+                    "fa_icon": "fas fa-ban",
+                    "hidden": true,
+                    "help_text": "Do not load `igenomes.config` when running the pipeline. You may choose this option if you observe clashes between custom parameters and those supplied in `igenomes.config`."
                 }
             }
         },
@@ -119,7 +158,7 @@
                     "description": "Maximum amount of time that can be requested for any single job.",
                     "default": "240.h",
                     "fa_icon": "far fa-clock",
-                    "pattern": "^(\\d+\\.?\\s*(s|m|h|day)\\s*)+$",
+                    "pattern": "^(\\d+\\.?\\s*(s|m|h|d|day)\\s*)+$",
                     "hidden": true,
                     "help_text": "Use to set an upper-limit for the time requirement for each process. Should be a string in the format integer-unit e.g. `--max_time '2.h'`"
                 }
@@ -136,12 +175,14 @@
                     "type": "boolean",
                     "description": "Display help text.",
                     "fa_icon": "fas fa-question-circle",
+                    "default": false,
                     "hidden": true
                 },
                 "version": {
                     "type": "boolean",
                     "description": "Display version and exit.",
                     "fa_icon": "fas fa-question-circle",
+                    "default": false,
                     "hidden": true
                 },
                 "publish_dir_mode": {
@@ -165,6 +206,7 @@
                     "type": "boolean",
                     "description": "Send plain-text email instead of HTML.",
                     "fa_icon": "fas fa-remove-format",
+                    "default": false,
                     "hidden": true
                 },
                 "max_multiqc_email_size": {
@@ -179,6 +221,7 @@
                     "type": "boolean",
                     "description": "Do not use coloured log outputs.",
                     "fa_icon": "fas fa-palette",
+                    "default": false,
                     "hidden": true
                 },
                 "hook_url": {
@@ -190,6 +233,7 @@
                 },
                 "multiqc_config": {
                     "type": "string",
+                    "format": "file-path",
                     "description": "Custom config file to supply to MultiQC.",
                     "fa_icon": "fas fa-cog",
                     "hidden": true
@@ -205,13 +249,6 @@
                     "description": "Custom MultiQC yaml file containing HTML including a methods description.",
                     "fa_icon": "fas fa-cog"
                 },
-                "tracedir": {
-                    "type": "string",
-                    "description": "Directory to keep pipeline Nextflow logs and reports.",
-                    "default": "${params.outdir}/pipeline_info",
-                    "fa_icon": "fas fa-cogs",
-                    "hidden": true
-                },
                 "validate_params": {
                     "type": "boolean",
                     "description": "Boolean whether to validate parameters against the schema at runtime",
@@ -219,12 +256,249 @@
                     "fa_icon": "fas fa-check-square",
                     "hidden": true
                 },
-                "show_hidden_params": {
+                "validationShowHiddenParams": {
                     "type": "boolean",
                     "fa_icon": "far fa-eye-slash",
                     "description": "Show all params when using `--help`",
+                    "default": false,
                     "hidden": true,
                     "help_text": "By default, parameters set as _hidden_ in the schema are not shown on the command line when a user runs with `--help`. Specifying this option will tell the pipeline to show all parameters."
+                },
+                "validationFailUnrecognisedParams": {
+                    "type": "boolean",
+                    "fa_icon": "far fa-check-circle",
+                    "description": "Validation of parameters fails when an unrecognised parameter is found.",
+                    "default": false,
+                    "hidden": true,
+                    "help_text": "By default, when an unrecognised parameter is found, it returns a warinig."
+                },
+                "validationLenientMode": {
+                    "type": "boolean",
+                    "fa_icon": "far fa-check-circle",
+                    "description": "Validation of parameters in lenient more.",
+                    "default": false,
+                    "hidden": true,
+                    "help_text": "Allows string values that are parseable as numbers or booleans. For further information see [JSONSchema docs](https://github.com/everit-org/json-schema#lenient-mode)."
+                }
+            }
+        },
+        "preprocessing_options": {
+            "title": "Preprocessing options",
+            "type": "object",
+            "description": "Options related to the trimming, low complexity and host removal steps of the reads",
+            "default": "",
+            "properties": {
+                "skip_fastqc": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward"
+                },
+                "with_umi": {
+                    "type": "boolean"
+                },
+                "skip_umi_extract": {
+                    "type": "boolean",
+                    "default": true,
+                    "fa_icon": "fas fa-forward"
+                },
+                "umi_discard_read": {
+                    "type": "integer",
+                    "default": 0
+                },
+                "trim_tool": {
+                    "type": "string",
+                    "default": "fastp"
+                },
+                "skip_trimming": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward"
+                },
+                "adapter_fasta": {
+                    "type": "string",
+                    "default": "None"
+                },
+                "save_trimmed_fail": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-file-download"
+                },
+                "save_merged": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-file-download"
+                },
+                "min_trimmed_reads": {
+                    "type": "integer",
+                    "default": 1
+                },
+                "skip_complexity_filtering": {
+                    "type": "boolean",
+                    "default": true,
+                    "fa_icon": "fas fa-forward"
+                },
+                "contaminants": {
+                    "type": "string",
+                    "default": "None"
+                },
+                "skip_hostremoval": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward"
+                },
+                "host_reference": {
+                    "type": "string",
+                    "default": "None"
+                },
+                "host_index": {
+                    "type": "string",
+                    "default": "None"
+                },
+                "save_hostremoval_index": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-file-download"
+                },
+                "save_hostremoval_bam": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-file-download"
+                },
+                "save_hostremoval_unmapped": {
+                    "type": "boolean",
+                    "default": true,
+                    "fa_icon": "fas fa-file-download"
+                }
+            },
+            "fa_icon": "fas fa-bahai"
+        },
+        "metagenomic_diveristy": {
+            "title": "Metagenomic diveristy",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
+                "skip_metagenomic_diversity": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward"
+                },
+                "save_databases": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-cloud-download-alt"
+                },
+                "skip_kraken2": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward"
+                },
+                "kraken2_db": {
+                    "type": "string",
+                    "default": "https://genome-idx.s3.amazonaws.com/kraken/k2_viral_20230314.tar.gz",
+                    "fa_icon": "fas fa-database",
+                    "format": "path"
+                },
+                "kraken2_save_reads": {
+                    "type": "boolean",
+                    "fa_icon": "fab fa-gitkraken"
+                },
+                "kraken2_save_readclassification": {
+                    "type": "boolean",
+                    "fa_icon": "fab fa-gitkraken"
+                },
+                "kraken2_save_minimizers": {
+                    "type": "boolean",
+                    "fa_icon": "fab fa-gitkraken"
+                },
+                "skip_bracken": {
+                    "type": "boolean",
+                    "default": true,
+                    "fa_icon": "fas fa-forward"
+                },
+                "bracken_db": {
+                    "type": "string",
+                    "default": "None",
+                    "fa_icon": "fas fa-database",
+                    "format": "path"
+                },
+                "skip_kaiju": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward"
+                },
+                "kaiju_db": {
+                    "type": "string",
+                    "default": "https://kaiju.binf.ku.dk/database/kaiju_db_rvdb_2022-04-07.tgz",
+                    "format": "path",
+                    "fa_icon": "fas fa-database"
+                },
+                "kaiju_taxon_rank": {
+                    "type": "string",
+                    "default": "species",
+                    "fa_icon": "fas fa-align-justify"
+                }
+            },
+            "fa_icon": "fas fa-chart-bar"
+        },
+        "assembly": {
+            "title": "Assembly",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
+                "skip_assembly": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward"
+                },
+                "assemblers": {
+                    "type": "string",
+                    "default": "spades,trinity,megahit",
+                    "fa_icon": "fas fa-bezier-curve"
+                },
+                "spades_mode": {
+                    "type": "string",
+                    "default": "rnaviral",
+                    "fa_icon": "fas fa-bezier-curve"
+                },
+                "spades_hmm": {
+                    "type": "string",
+                    "default": "None",
+                    "fa_icon": "fas fa-file"
+                },
+                "spades_yml": {
+                    "type": "string",
+                    "default": "None",
+                    "hidden": true,
+                    "fa_icon": "fas fa-file"
+                }
+            },
+            "fa_icon": "fas fa-bezier-curve"
+        },
+        "reference_genome_options": {
+            "title": "Reference genome options",
+            "type": "object",
+            "fa_icon": "fas fa-dna",
+            "description": "Reference genome related files and options required for the workflow.",
+            "properties": {
+                "genome": {
+                    "type": "string",
+                    "description": "Name of iGenomes reference.",
+                    "fa_icon": "fas fa-book",
+                    "help_text": "If using a reference genome configured in the pipeline using iGenomes, use this parameter to give the ID for the reference. This is then used to build the full paths for all required reference genome files e.g. `--genome GRCh38`. \n\nSee the [nf-core website docs](https://nf-co.re/usage/reference_genomes) for more details."
+                },
+                "fasta": {
+                    "type": "string",
+                    "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
+                    "description": "Path to FASTA genome file.",
+                    "help_text": "This parameter is *mandatory* if `--genome` is not specified. If you don't have a BWA index available this will be generated for you automatically. Combine with `--save_reference` to save BWA index for future runs.",
+                    "fa_icon": "far fa-file-code"
+                },
+                "igenomes_base": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "description": "Directory / URL base for iGenomes references.",
+                    "default": "s3://ngi-igenomes/igenomes",
+                    "fa_icon": "fas fa-cloud-download-alt",
+                    "hidden": true
+                },
+                "igenomes_ignore": {
+                    "type": "boolean",
+                    "description": "Do not load the iGenomes reference config.",
+                    "fa_icon": "fas fa-ban",
+                    "hidden": true,
+                    "help_text": "Do not load `igenomes.config` when running the pipeline. You may choose this option if you observe clashes between custom parameters and those supplied in `igenomes.config`."
                 }
             }
         },
