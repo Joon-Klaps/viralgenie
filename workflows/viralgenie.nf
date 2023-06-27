@@ -11,7 +11,7 @@ def valid_params = [
     cluster_method   : ['cdhitest', 'vsearch']
 ]
 
-include { paramsSummaryLog; paramsSummaryMap } from 'plugin/nf-validation'
+include { paramsSummaryLog; paramsSummaryMap; fromSamplesheet } from 'plugin/nf-validation'
 
 def logo = NfcoreTemplate.logo(workflow, params.monochrome_logs)
 def citation = '\n' + WorkflowMain.citation(workflow) + '\n'
@@ -105,9 +105,7 @@ workflow VIRALGENIE {
     // SUBWORKFLOW: Read in samplesheet, validate and stage input files
     // Taken from viralrecon
     //
-    INPUT_CHECK (
-        file(params.input)
-    )
+   INPUT_CHECK(ch_input)
 
     ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
     // TODO: OPTIONAL, you can use nf-validation plugin to create an input channel from the samplesheet with Channel.fromSamplesheet("input")
