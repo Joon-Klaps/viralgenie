@@ -57,7 +57,6 @@
                 "fasta": {
                     "type": "string",
                     "format": "file-path",
-                    "exists": true,
                     "mimetype": "text/plain",
                     "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
                     "description": "Path to FASTA genome file.",
@@ -175,14 +174,12 @@
                     "type": "boolean",
                     "description": "Display help text.",
                     "fa_icon": "fas fa-question-circle",
-                    "default": false,
                     "hidden": true
                 },
                 "version": {
                     "type": "boolean",
                     "description": "Display version and exit.",
                     "fa_icon": "fas fa-question-circle",
-                    "default": false,
                     "hidden": true
                 },
                 "publish_dir_mode": {
@@ -206,7 +203,6 @@
                     "type": "boolean",
                     "description": "Send plain-text email instead of HTML.",
                     "fa_icon": "fas fa-remove-format",
-                    "default": false,
                     "hidden": true
                 },
                 "max_multiqc_email_size": {
@@ -221,7 +217,6 @@
                     "type": "boolean",
                     "description": "Do not use coloured log outputs.",
                     "fa_icon": "fas fa-palette",
-                    "default": false,
                     "hidden": true
                 },
                 "hook_url": {
@@ -260,7 +255,6 @@
                     "type": "boolean",
                     "fa_icon": "far fa-eye-slash",
                     "description": "Show all params when using `--help`",
-                    "default": false,
                     "hidden": true,
                     "help_text": "By default, parameters set as _hidden_ in the schema are not shown on the command line when a user runs with `--help`. Specifying this option will tell the pipeline to show all parameters."
                 },
@@ -268,7 +262,6 @@
                     "type": "boolean",
                     "fa_icon": "far fa-check-circle",
                     "description": "Validation of parameters fails when an unrecognised parameter is found.",
-                    "default": false,
                     "hidden": true,
                     "help_text": "By default, when an unrecognised parameter is found, it returns a warinig."
                 },
@@ -276,7 +269,6 @@
                     "type": "boolean",
                     "fa_icon": "far fa-check-circle",
                     "description": "Validation of parameters in lenient more.",
-                    "default": false,
                     "hidden": true,
                     "help_text": "Allows string values that are parseable as numbers or booleans. For further information see [JSONSchema docs](https://github.com/everit-org/json-schema#lenient-mode)."
                 }
@@ -290,77 +282,105 @@
             "properties": {
                 "skip_fastqc": {
                     "type": "boolean",
-                    "fa_icon": "fas fa-forward"
+                    "fa_icon": "fas fa-forward",
+                    "description": "Skip read quality statistics summary tool 'fastqc'"
                 },
                 "with_umi": {
-                    "type": "boolean"
+                    "type": "boolean",
+                    "description": "With or without umi detection",
+                    "fa_icon": "fas fa-align-center"
                 },
                 "skip_umi_extract": {
                     "type": "boolean",
                     "default": true,
-                    "fa_icon": "fas fa-forward"
+                    "fa_icon": "fas fa-forward",
+                    "description": "With or without umi extraction"
                 },
                 "umi_discard_read": {
                     "type": "integer",
-                    "default": 0
+                    "default": 0,
+                    "description": "Discard R1 / R2 if required",
+                    "fa_icon": "fas fa-filter"
                 },
                 "trim_tool": {
                     "type": "string",
-                    "default": "fastp"
+                    "default": "fastp",
+                    "description": "The used trimming tool",
+                    "enum": ["fastp", "trimmomatic"],
+                    "fa_icon": "fas fa-filter"
                 },
                 "skip_trimming": {
                     "type": "boolean",
-                    "fa_icon": "fas fa-forward"
+                    "fa_icon": "fas fa-forward",
+                    "description": "Skip read trimming"
                 },
                 "adapter_fasta": {
                     "type": "string",
-                    "default": "None"
+                    "default": "None",
+                    "description": "Fasta file of adapters",
+                    "fa_icon": "fas fa-file-alt"
                 },
                 "save_trimmed_fail": {
                     "type": "boolean",
-                    "fa_icon": "fas fa-file-download"
+                    "fa_icon": "fas fa-file-download",
+                    "description": "Specify true to save files that failed to pass trimming thresholds ending in `*.fail.fastq.gz`"
                 },
                 "save_merged": {
                     "type": "boolean",
-                    "fa_icon": "fas fa-file-download"
+                    "fa_icon": "fas fa-file-download",
+                    "description": "Specify true to save all merged reads to the a file ending in `*.merged.fastq.gz`"
                 },
                 "min_trimmed_reads": {
                     "type": "integer",
-                    "default": 1
+                    "default": 1,
+                    "description": "Inputs with fewer than this reads will be filtered out of the \"reads\" output channel",
+                    "fa_icon": "fas fa-compress-alt"
                 },
                 "skip_complexity_filtering": {
                     "type": "boolean",
                     "default": true,
-                    "fa_icon": "fas fa-forward"
+                    "fa_icon": "fas fa-forward",
+                    "description": "Skip filtering of low complexity regions in reads",
+                    "help_text": "Low-complexity sequences are defined as having commonly found stretches of nucleotides with limited information content (e.g. the dinucleotide repeat CACACACACA). Such sequences can produce a large number of high-scoring but biologically insignificant results in database searches"
                 },
                 "contaminants": {
                     "type": "string",
-                    "default": "None"
+                    "default": "None",
+                    "description": "Reference files containing adapter and/or contaminant sequences for sequence kmer matching (used by bbduk)",
+                    "fa_icon": "fas fa-filter"
                 },
                 "skip_hostremoval": {
                     "type": "boolean",
-                    "fa_icon": "fas fa-forward"
+                    "fa_icon": "fas fa-forward",
+                    "description": "Skip the removal of host read sequences"
                 },
-                "host_reference": {
+                "host_genome": {
                     "type": "string",
-                    "default": "None"
+                    "default": "None",
+                    "description": "Fasta file containing the genome(s) of the host(s)",
+                    "fa_icon": "far fa-file-alt"
                 },
                 "host_index": {
                     "type": "string",
-                    "default": "None"
+                    "default": "None",
+                    "description": "Bowtie2 index file of host(s) genome(s)",
+                    "fa_icon": "far fa-file-alt"
                 },
                 "save_hostremoval_index": {
                     "type": "boolean",
-                    "fa_icon": "fas fa-file-download"
+                    "fa_icon": "fas fa-file-download",
+                    "description": "Save Bowtie2 index file of host(s) genome(s)"
                 },
                 "save_hostremoval_bam": {
                     "type": "boolean",
-                    "fa_icon": "fas fa-file-download"
+                    "fa_icon": "fas fa-file-download",
+                    "description": "Save bam file of reads mapped to host genome"
                 },
                 "save_hostremoval_unmapped": {
                     "type": "boolean",
                     "default": true,
-                    "fa_icon": "fas fa-file-download"
+                    "fa_icon": "fas fa-file-download",
+                    "description": "Save reads not mapping to host genome"
                 }
             },
             "fa_icon": "fas fa-bahai"
@@ -368,64 +388,77 @@
         "metagenomic_diveristy": {
             "title": "Metagenomic diveristy",
             "type": "object",
-            "description": "",
+            "description": "Parameters used to determine the metagenomic diversity of the sample",
             "default": "",
             "properties": {
                 "skip_metagenomic_diversity": {
                     "type": "boolean",
-                    "fa_icon": "fas fa-forward"
+                    "fa_icon": "fas fa-forward",
+                    "description": "Skip determining the metagenomic diversity of the sample"
                 },
                 "save_databases": {
                     "type": "boolean",
-                    "fa_icon": "fas fa-cloud-download-alt"
+                    "fa_icon": "fas fa-cloud-download-alt",
+                    "description": "Save the used databases"
                 },
                 "skip_kraken2": {
                     "type": "boolean",
-                    "fa_icon": "fas fa-forward"
+                    "fa_icon": "fas fa-forward",
+                    "description": "Skip the use of Kraken2 to determine metagenomic diversity"
                 },
                 "kraken2_db": {
                     "type": "string",
                     "default": "https://genome-idx.s3.amazonaws.com/kraken/k2_viral_20230314.tar.gz",
                     "fa_icon": "fas fa-database",
-                    "format": "path"
+                    "format": "path",
+                    "description": "Location of the Kraken2 database"
                 },
                 "kraken2_save_reads": {
                     "type": "boolean",
-                    "fa_icon": "fab fa-gitkraken"
+                    "fa_icon": "fab fa-gitkraken",
+                    "description": "Save classified and unclassified reads  as fastq files"
                 },
                 "kraken2_save_readclassification": {
                     "type": "boolean",
-                    "fa_icon": "fab fa-gitkraken"
+                    "fa_icon": "fab fa-gitkraken",
+                    "description": "Save summary overview of read classifications in a txt file"
                 },
                 "kraken2_save_minimizers": {
                     "type": "boolean",
-                    "fa_icon": "fab fa-gitkraken"
+                    "fa_icon": "fab fa-gitkraken",
+                    "description": "Save kraken2's used minimizers"
                 },
                 "skip_bracken": {
                     "type": "boolean",
                     "default": true,
-                    "fa_icon": "fas fa-forward"
+                    "fa_icon": "fas fa-forward",
+                    "description": "Skip recalculation of taxa abundance using bracken"
                 },
                 "bracken_db": {
                     "type": "string",
                     "default": "None",
                     "fa_icon": "fas fa-database",
-                    "format": "path"
+                    "format": "path",
+                    "description": "Location of bracken database"
                 },
                 "skip_kaiju": {
                     "type": "boolean",
-                    "fa_icon": "fas fa-forward"
+                    "fa_icon": "fas fa-forward",
+                    "description": "kip the use of Kaiju to determine metagenomic diversity"
                 },
                 "kaiju_db": {
                     "type": "string",
                     "default": "https://kaiju.binf.ku.dk/database/kaiju_db_rvdb_2022-04-07.tgz",
                     "format": "path",
-                    "fa_icon": "fas fa-database"
+                    "fa_icon": "fas fa-database",
+                    "description": "Location of Kaiju database"
                 },
                 "kaiju_taxon_rank": {
                     "type": "string",
                     "default": "species",
-                    "fa_icon": "fas fa-align-justify"
+                    "fa_icon": "fas fa-align-justify",
+                    "description": "Level of taxa rank that needs to be determined",
+                    "enum": ["superkingdom", "phylum", "class", "order", "family", "genus", "species"]
                 }
             },
             "fa_icon": "fas fa-chart-bar"
@@ -433,299 +466,145 @@
         "assembly": {
             "title": "Assembly",
             "type": "object",
-            "description": "",
+            "description": "Parameters relating to the used assembly methods",
             "default": "",
             "properties": {
                 "skip_assembly": {
                     "type": "boolean",
-                    "fa_icon": "fas fa-forward"
+                    "fa_icon": "fas fa-forward",
+                    "description": "Skip de novo assembly of reads"
                 },
                 "assemblers": {
                     "type": "string",
                     "default": "spades,trinity,megahit",
-                    "fa_icon": "fas fa-bezier-curve"
+                    "fa_icon": "fas fa-bezier-curve",
+                    "enum": [
+                        "spades,trinity,megahit",
+                        "spades",
+                        "trinity",
+                        "megahit",
+                        "trinity,megahit",
+                        "megahit,trinity",
+                        "megahit,spades",
+                        "spades,megahit",
+                        "trinity,spades",
+                        "spades,trinity"
+                    ],
+                    "description": "The specified tools for denovo assembly, multiple options are possible"
                 },
                 "spades_mode": {
                     "type": "string",
                     "default": "rnaviral",
-                    "fa_icon": "fas fa-bezier-curve"
+                    "fa_icon": "fas fa-bezier-curve",
+                    "description": "specific SPAdes mode to run",
+                    "enum": [
+                        "rnaviral",
+                        "corona",
+                        "metaviral",
+                        "meta",
+                        "metaplasmid",
+                        "plasmid",
+                        "isolate",
+                        "rna",
+                        "bio"
+                    ]
                 },
                 "spades_hmm": {
                     "type": "string",
                     "default": "None",
-                    "fa_icon": "fas fa-file"
+                    "fa_icon": "fas fa-file",
+                    "description": "File or directory with amino acid HMMs for Spades HMM-guided mode."
                 },
                 "spades_yml": {
                     "type": "string",
                     "default": "None",
                     "hidden": true,
-                    "fa_icon": "fas fa-file"
+                    "fa_icon": "fas fa-file",
+                    "description": "Path to yml file containing read information.",
+                    "help_text": "The raw FASTQ files listed in this YAML file MUST be supplied to the respective illumina/pacbio/nanopore input channel(s) _in addition_ to this YML. File entries in this yml must contain only the file name and no paths."
                 }
             },
             "fa_icon": "fas fa-bezier-curve"
         },
-        "reference_genome_options": {
-            "title": "Reference genome options",
+        "polishing": {
+            "title": "Polishing",
             "type": "object",
-            "fa_icon": "fas fa-dna",
-            "description": "Reference genome related files and options required for the workflow.",
-            "properties": {
-                "genome": {
-                    "type": "string",
-                    "description": "Name of iGenomes reference.",
-                    "fa_icon": "fas fa-book",
-                    "help_text": "If using a reference genome configured in the pipeline using iGenomes, use this parameter to give the ID for the reference. This is then used to build the full paths for all required reference genome files e.g. `--genome GRCh38`. \n\nSee the [nf-core website docs](https://nf-co.re/usage/reference_genomes) for more details."
-                },
-                "fasta": {
-                    "type": "string",
-                    "format": "file-path",
-                    "mimetype": "text/plain",
-                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
-                    "description": "Path to FASTA genome file.",
-                    "help_text": "This parameter is *mandatory* if `--genome` is not specified. If you don't have a BWA index available this will be generated for you automatically. Combine with `--save_reference` to save BWA index for future runs.",
-                    "fa_icon": "far fa-file-code"
-                },
-                "igenomes_base": {
-                    "type": "string",
-                    "format": "directory-path",
-                    "description": "Directory / URL base for iGenomes references.",
-                    "default": "s3://ngi-igenomes/igenomes",
-                    "fa_icon": "fas fa-cloud-download-alt",
-                    "hidden": true
-                },
-                "igenomes_ignore": {
-                    "type": "boolean",
-                    "description": "Do not load the iGenomes reference config.",
-                    "fa_icon": "fas fa-ban",
-                    "hidden": true,
-                    "help_text": "Do not load `igenomes.config` when running the pipeline. You may choose this option if you observe clashes between custom parameters and those supplied in `igenomes.config`."
-                }
-            }
-        },
-        "preprocessing_options": {
-            "title": "Preprocessing options",
-            "type": "object",
-            "description": "Options related to the trimming, low complexity and host removal steps of the reads",
+            "description": "Parameters relating to the refinement of denovo contigs",
             "default": "",
             "properties": {
-                "skip_fastqc": {
+                "skip_polishing": {
                     "type": "boolean",
+                    "description": "Skip the refinement/polishing of contigs through reference based scaffolding and read mapping",
                     "fa_icon": "fas fa-forward"
                 },
-                "with_umi": {
-                    "type": "boolean"
-                },
-                "skip_umi_extract": {
+                "save_intermediate_polishing": {
                     "type": "boolean",
-                    "default": true,
-                    "fa_icon": "fas fa-forward"
-                },
-                "umi_discard_read": {
-                    "type": "integer",
-                    "default": 0
-                },
-                "trim_tool": {
-                    "type": "string",
-                    "default": "fastp"
-                },
-                "skip_trimming": {
-                    "type": "boolean",
-                    "fa_icon": "fas fa-forward"
-                },
-                "adapter_fasta": {
-                    "type": "string",
-                    "default": "None"
-                },
-                "save_trimmed_fail": {
-                    "type": "boolean",
+                    "description": "Save intermediate polishing files",
+                    "help_text": "There are multiple processes within the polishing subworkflow that might not contain relevant information  ",
                     "fa_icon": "fas fa-file-download"
                 },
-                "save_merged": {
-                    "type": "boolean",
-                    "fa_icon": "fas fa-file-download"
-                },
-                "min_trimmed_reads": {
-                    "type": "integer",
-                    "default": 1
-                },
-                "skip_complexity_filtering": {
-                    "type": "boolean",
-                    "default": true,
-                    "fa_icon": "fas fa-forward"
-                },
-                "contaminants": {
+                "reference_fasta": {
                     "type": "string",
-                    "default": "None"
-                },
-                "skip_hostremoval": {
-                    "type": "boolean",
-                    "fa_icon": "fas fa-forward"
-                },
-                "host_reference": {
-                    "type": "string",
-                    "default": "None"
-                },
-                "host_index": {
-                    "type": "string",
-                    "default": "None"
-                },
-                "save_hostremoval_index": {
-                    "type": "boolean",
-                    "fa_icon": "fas fa-file-download"
-                },
-                "save_hostremoval_bam": {
-                    "type": "boolean",
-                    "fa_icon": "fas fa-file-download"
-                },
-                "save_hostremoval_unmapped": {
-                    "type": "boolean",
-                    "default": true,
-                    "fa_icon": "fas fa-file-download"
-                }
-            },
-            "fa_icon": "fas fa-bahai"
-        },
-        "metagenomic_diveristy": {
-            "title": "Metagenomic diveristy",
-            "type": "object",
-            "description": "",
-            "default": "",
-            "properties": {
-                "skip_metagenomic_diversity": {
-                    "type": "boolean",
-                    "fa_icon": "fas fa-forward"
-                },
-                "save_databases": {
-                    "type": "boolean",
-                    "fa_icon": "fas fa-cloud-download-alt"
-                },
-                "skip_kraken2": {
-                    "type": "boolean",
-                    "fa_icon": "fas fa-forward"
-                },
-                "kraken2_db": {
-                    "type": "string",
-                    "default": "https://genome-idx.s3.amazonaws.com/kraken/k2_viral_20230314.tar.gz",
-                    "fa_icon": "fas fa-database",
-                    "format": "path"
-                },
-                "kraken2_save_reads": {
-                    "type": "boolean",
-                    "fa_icon": "fab fa-gitkraken"
-                },
-                "kraken2_save_readclassification": {
-                    "type": "boolean",
-                    "fa_icon": "fab fa-gitkraken"
-                },
-                "kraken2_save_minimizers": {
-                    "type": "boolean",
-                    "fa_icon": "fab fa-gitkraken"
-                },
-                "skip_bracken": {
-                    "type": "boolean",
-                    "default": true,
-                    "fa_icon": "fas fa-forward"
-                },
-                "bracken_db": {
-                    "type": "string",
-                    "default": "None",
-                    "fa_icon": "fas fa-database",
-                    "format": "path"
-                },
-                "skip_kaiju": {
-                    "type": "boolean",
-                    "fa_icon": "fas fa-forward"
-                },
-                "kaiju_db": {
-                    "type": "string",
-                    "default": "https://kaiju.binf.ku.dk/database/kaiju_db_rvdb_2022-04-07.tgz",
-                    "format": "path",
+                    "default": "https://rvdb.dbi.udel.edu/download/C-RVDBv26.0.fasta.gz",
+                    "description": "Set of fasta sequences used as potential references for the contigs",
                     "fa_icon": "fas fa-database"
                 },
-                "kaiju_taxon_rank": {
+                "cluster_method": {
                     "type": "string",
-                    "default": "species",
-                    "fa_icon": "fas fa-align-justify"
+                    "default": "cdhitest",
+                    "description": "Cluster algorithm used for contigs",
+                    "enum": ["cdhitest", "vsearch"],
+                    "fa_icon": "fas fa-bezier-curve"
+                },
+                "identity_threshold": {
+                    "type": "number",
+                    "default": 0.9,
+                    "description": "Identity threshold value used in clustering algorithms",
+                    "fa_icon": "fas fa-list-ol"
+                },
+                "min_contig_size": {
+                    "type": "integer",
+                    "default": 200,
+                    "description": "Minimum allowed contig size",
+                    "help_text": "Setting this to a low value will result in a large number of questionable contigs and an increase in computation time ",
+                    "fa_icon": "fas fa-compress-alt"
+                },
+                "max_contig_size": {
+                    "type": "integer",
+                    "default": 10000000,
+                    "description": "Maximum allowed contig size",
+                    "fa_icon": "fas fa-expand-alt"
                 }
             },
-            "fa_icon": "fas fa-chart-bar"
+            "fa_icon": "fas fa-hand-sparkles"
         },
-        "assembly": {
-            "title": "Assembly",
+        "variant_analysis": {
+            "title": "Variant analysis",
             "type": "object",
-            "description": "",
+            "description": "Parameters relating to the analysis of variants associated to contigs and scaffolds",
             "default": "",
             "properties": {
-                "skip_assembly": {
+                "skip_variant_calling": {
                     "type": "boolean",
-                    "fa_icon": "fas fa-forward"
+                    "fa_icon": "fas fa-forward",
+                    "description": "Skip the analysis of variants for the external reference or contigs"
                 },
-                "assemblers": {
-                    "type": "string",
-                    "default": "spades,trinity,megahit",
-                    "fa_icon": "fas fa-bezier-curve"
-                },
-                "spades_mode": {
-                    "type": "string",
-                    "default": "rnaviral",
-                    "fa_icon": "fas fa-bezier-curve"
-                },
-                "spades_hmm": {
+                "mapping_sequence": {
                     "type": "string",
                     "default": "None",
-                    "fa_icon": "fas fa-file"
-                },
-                "spades_yml": {
-                    "type": "string",
-                    "default": "None",
-                    "hidden": true,
-                    "fa_icon": "fas fa-file"
+                    "description": "Sequence to use as a mapping reference instead of the de novo contigs or scaffolds",
+                    "fa_icon": "far fa-file-alt"
                 }
             },
-            "fa_icon": "fas fa-bezier-curve"
-        },
-        "reference_genome_options": {
-            "title": "Reference genome options",
-            "type": "object",
-            "fa_icon": "fas fa-dna",
-            "description": "Reference genome related files and options required for the workflow.",
-            "properties": {
-                "genome": {
-                    "type": "string",
-                    "description": "Name of iGenomes reference.",
-                    "fa_icon": "fas fa-book",
-                    "help_text": "If using a reference genome configured in the pipeline using iGenomes, use this parameter to give the ID for the reference. This is then used to build the full paths for all required reference genome files e.g. `--genome GRCh38`. \n\nSee the [nf-core website docs](https://nf-co.re/usage/reference_genomes) for more details."
-                },
-                "fasta": {
-                    "type": "string",
-                    "format": "file-path",
-                    "mimetype": "text/plain",
-                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
-                    "description": "Path to FASTA genome file.",
-                    "help_text": "This parameter is *mandatory* if `--genome` is not specified. If you don't have a BWA index available this will be generated for you automatically. Combine with `--save_reference` to save BWA index for future runs.",
-                    "fa_icon": "far fa-file-code"
-                },
-                "igenomes_base": {
-                    "type": "string",
-                    "format": "directory-path",
-                    "description": "Directory / URL base for iGenomes references.",
-                    "default": "s3://ngi-igenomes/igenomes",
-                    "fa_icon": "fas fa-cloud-download-alt",
-                    "hidden": true
-                },
-                "igenomes_ignore": {
-                    "type": "boolean",
-                    "description": "Do not load the iGenomes reference config.",
-                    "fa_icon": "fas fa-ban",
-                    "hidden": true,
-                    "help_text": "Do not load `igenomes.config` when running the pipeline. You may choose this option if you observe clashes between custom parameters and those supplied in `igenomes.config`."
-                }
-            }
+            "fa_icon": "fas fa-layer-group"
         }
     },
     "allOf": [
         {
             "$ref": "#/definitions/input_output_options"
+        },
+        {
+            "$ref": "#/definitions/reference_genome_options"
         },
         {
             "$ref": "#/definitions/institutional_config_options"
@@ -746,7 +625,16 @@
             "$ref": "#/definitions/assembly"
         },
         {
-            "$ref": "#/definitions/reference_genome_options"
+            "$ref": "#/definitions/polishing"
+        },
+        {
+            "$ref": "#/definitions/variant_analysis"
         }
-    ]
+    ],
+    "properties": {
+        "validationSchemaIgnoreParams": {
+            "type": "string",
+            "default": "genomes"
+        }
+    }
 }

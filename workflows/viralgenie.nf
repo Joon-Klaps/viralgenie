@@ -21,13 +21,13 @@ def summary_params = paramsSummaryMap(workflow)
 log.info logo + paramsSummaryLog(workflow) + citation
 
 // Validate input parameters
-WorkflowViralgenie.initialise(params, log,valid_params)
+WorkflowViralgenie.initialise(params, log)
 
 // TODO nf-core: Add all file path parameters for the pipeline to the list below
 // Check input path parameters to see if they exist
 def checkPathParamList = [
     params.input, params.multiqc_config, params.adapter_fasta,
-    params.host_index,params.host_reference,params.contaminants,
+    params.host_index,params.host_genome,params.contaminants,
     params.spades_yml,params.spades_hmm
     ]
 for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
@@ -35,7 +35,7 @@ for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true
 // Check mandatory parameters
 if (params.input         ) { ch_input = file(params.input)                                      } else { exit 1, 'Input samplesheet not specified!' }
 if (params.adapter_fasta ) { ch_adapter_fasta = file(params.adapter_fasta)                      } else { ch_adapter_fasta  = []                     }
-if (params.host_reference) { ch_host_reference = file(params.host_reference)                    } else { ch_host_reference = []                     }
+if (params.host_genome   ) { ch_host_genome = file(params.host_genome)                          } else { ch_host_genome = []                        }
 if (params.host_index    ) { ch_host_index = Channel.fromPath(params.host_index).map{[[], it]}  } else { ch_host_index = []                         }
 if (params.contaminants  ) { ch_contaminants = file(params.contaminants)                        } else { ch_contaminants = []                       }
 if (params.spades_yml    ) { ch_spades_yml = file(params.spades_yml)                            } else { ch_spades_yml = []                         }
@@ -117,7 +117,7 @@ workflow VIRALGENIE {
     // preprocessing illumina reads
     PREPROCESSING_ILLUMINA (
         INPUT_CHECK.out.reads,
-        ch_host_reference,
+        ch_host_genome,
         ch_host_index,
         ch_adapter_fasta,
         ch_contaminants)
