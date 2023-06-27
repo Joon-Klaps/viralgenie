@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # This file contains the [pre-commit](https://pre-commit.com/) configuration of this repository.
 # More on which specific pre-commit hooks we use can be found in README.md.
 ---
@@ -74,11 +73,3 @@ repos:
 #        require_serial: true
 #        additional_dependencies:
 #          - mypy
-||||||| e6d1543
-=======
-repos:
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: "v2.7.1"
-    hooks:
-      - id: prettier
->>>>>>> TEMPLATE
