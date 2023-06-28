@@ -105,16 +105,24 @@ workflow VIRALGENIE {
     // SUBWORKFLOW: Read in samplesheet, validate and stage input files
     // Taken from viralrecon
     //
-   INPUT_CHECK(ch_input)
+    // INPUT_CHECK(ch_input)
 
-    ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
+    // ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
     // TODO: OPTIONAL, you can use nf-validation plugin to create an input channel from the samplesheet with Channel.fromSamplesheet("input")
     // See the documentation https://nextflow-io.github.io/nf-validation/samplesheets/fromSamplesheet/
     // ! There is currently no tooling to help you write a sample sheet schema
 
+    ch_samplesheet = Channel.fromSamplesheet(
+        'input',
+        immmutable_meta: false
+        ).map{
+            meta, read1, read2 ->
+            [meta , [read1, read2]]
+            }
+
     // preprocessing illumina reads
     PREPROCESSING_ILLUMINA (
-        INPUT_CHECK.out.reads,
+        ch_samplesheet,
         ch_host_genome,
         ch_host_index,
         ch_adapter_fasta,
