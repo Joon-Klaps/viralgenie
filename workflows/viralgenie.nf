@@ -102,12 +102,13 @@ workflow VIRALGENIE {
 
     // Importing samplesheet
     ch_samplesheet = Channel.fromSamplesheet(
-        'input',
-        immmutable_meta: false
+        'input'
         ).map{
             meta, read1, read2 ->
             [meta , [read1, read2]]
             }
+
+    ch_samplesheet.view()
 
     // preprocessing illumina reads
     PREPROCESSING_ILLUMINA (
