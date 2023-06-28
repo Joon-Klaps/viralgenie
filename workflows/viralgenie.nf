@@ -108,8 +108,6 @@ workflow VIRALGENIE {
             [meta , [read1, read2]]
             }
 
-    ch_samplesheet.view()
-
     // preprocessing illumina reads
     PREPROCESSING_ILLUMINA (
         ch_samplesheet,
