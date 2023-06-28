@@ -63,7 +63,6 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
-include { INPUT_CHECK                  } from '../subworkflows/local/input_check'
 include { PREPROCESSING_ILLUMINA       } from '../subworkflows/local/preprocessing_illumina'
 include { FASTQ_KRAKEN_KAIJU           } from '../subworkflows/local/fastq_kraken_kaiju'
 include { FASTQ_SPADES_TRINITY_MEGAHIT } from '../subworkflows/local/fastq_spades_trinity_megahit'
@@ -101,17 +100,7 @@ workflow VIRALGENIE {
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
 
-    //
-    // SUBWORKFLOW: Read in samplesheet, validate and stage input files
-    // Taken from viralrecon
-    //
-    // INPUT_CHECK(ch_input)
-
-    // ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
-    // TODO: OPTIONAL, you can use nf-validation plugin to create an input channel from the samplesheet with Channel.fromSamplesheet("input")
-    // See the documentation https://nextflow-io.github.io/nf-validation/samplesheets/fromSamplesheet/
-    // ! There is currently no tooling to help you write a sample sheet schema
-
+    // Importing samplesheet
     ch_samplesheet = Channel.fromSamplesheet(
         'input',
         immmutable_meta: false
