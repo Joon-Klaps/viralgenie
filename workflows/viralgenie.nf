@@ -68,8 +68,8 @@ include { PREPROCESSING_ILLUMINA       } from '../subworkflows/local/preprocessi
 include { FASTQ_KRAKEN_KAIJU           } from '../subworkflows/local/fastq_kraken_kaiju'
 include { FASTQ_SPADES_TRINITY_MEGAHIT } from '../subworkflows/local/fastq_spades_trinity_megahit'
 //  Add consensus reconstruction of genome
-//include { FASTA_FASTQ_BOWTIE2_METABAT2 } from '../subworkflows/local/fasta_fastq_bowtie2_metabat2'
 include { FASTA_BLAST_CLUST            } from '../subworkflows/local/fasta_blast_clust'
+include { ALIGN_COLLAPSE_CONTIGS       } from '../subworkflows/local/align_collapse_contigs'
 // TODO: Add identification intrahost variability
 
 /*
@@ -170,6 +170,15 @@ workflow VIRALGENIE {
                 )
 
             //TODO: Scaffolding & consensus reconstruction of genome
+            //TODO: branch those with a single or no members
+            ch_members = FASTA_BLAST_CLUST.out.members
+            ch_centroids  = FASTA_BLAST_CLUST.out.centroids
+            ALIGN_COLLAPSE_CONTIGS(
+                ch_members,
+                ch_members
+                params.align_method
+                )
+
 
             //TODO: subworkflow for iterative refinement, contains another subworkflow if we just give a single reference
 
