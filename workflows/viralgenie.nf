@@ -70,6 +70,8 @@ include { FASTQ_SPADES_TRINITY_MEGAHIT } from '../subworkflows/local/fastq_spade
 //  Add consensus reconstruction of genome
 include { FASTA_BLAST_CLUST            } from '../subworkflows/local/fasta_blast_clust'
 include { ALIGN_COLLAPSE_CONTIGS       } from '../subworkflows/local/align_collapse_contigs'
+include { CONSENSUS_QC                 } from '../subworkflows/local/consensus_qc'
+
 // TODO: Add identification intrahost variability
 
 /*
@@ -107,7 +109,7 @@ workflow VIRALGENIE {
     // SUBWORKFLOW: Read in samplesheet, validate and stage input files
     // Taken from viralrecon
     //
-   INPUT_CHECK(ch_input)
+    INPUT_CHECK(ch_input)
 
     ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
     // TODO: OPTIONAL, you can use nf-validation plugin to create an input channel from the samplesheet with Channel.fromSamplesheet("input")
@@ -180,6 +182,7 @@ workflow VIRALGENIE {
                 params.align_method
                 )
 
+            ch_consensus = ALIGN_COLLAPSE_CONTIGS.out.consensus
             //TODO: subworkflow for iterative refinement, contains another subworkflow if we just give a single reference
 
             }
@@ -192,14 +195,18 @@ workflow VIRALGENIE {
             if (!skip_checkv) {
                 checkv_db = params.checkv_db
                 if (checkv_db.endsWith('.tar.gz')){
-
+                    ch_checkv_db = UNTAR_CHECKV_DB([ [:], checkv_db ]).untar
+                } else if(checkv_db.endsWith('.gz')){
+                    ch_checkv_db = GUNZIP_CHECKV_DB([ [:], checkv_db ]).gunzip
+                } else {
+                    ch_checkv_db = CHECKV_DOWNLOADDATABASE().checkv_db
                 }
-                CHECKV_DOWNLOADDATABASE()
             }
-            consensus_qc(
-                ch_reference,
-                FASTQ_SPADES_TRINITY_MEGAHIT.out.scaffolds,
-                params.consensus_qc_method
+            CONSENSUS_QC(
+                ch_consensus,
+                ch_checkv_db,
+                params.skip_checkv,
+                params.skip_quast,
                 )
         }
 
