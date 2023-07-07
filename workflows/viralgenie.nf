@@ -82,7 +82,9 @@ include { ALIGN_COLLAPSE_CONTIGS       } from '../subworkflows/local/align_colla
 // MODULE: Installed directly from nf-core/modules
 //
 include { UNTAR as UNTAR_BLAST_DB     } from '../modules/nf-core/untar/main'
+include { UNTAR as UNTAR_CHECKV_DB    } from '../modules/nf-core/untar/main'
 include { GUNZIP as GUNZIP_BLAST_DB   } from '../modules/nf-core/gunzip/main'
+include { GUNZIP as GUNZIP_CHECKV_DB  } from '../modules/nf-core/gunzip/main'
 include { BLAST_MAKEBLASTDB           } from '../modules/nf-core/blast/makeblastdb/main'
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
@@ -169,16 +171,14 @@ workflow VIRALGENIE {
                 params.cluster_method
                 )
 
-            //TODO: Scaffolding & consensus reconstruction of genome
             //TODO: branch those with a single or no members
             ch_members = FASTA_BLAST_CLUST.out.members
             ch_centroids  = FASTA_BLAST_CLUST.out.centroids
             ALIGN_COLLAPSE_CONTIGS(
                 ch_members,
-                ch_members
+                ch_centroids
                 params.align_method
                 )
-
 
             //TODO: subworkflow for iterative refinement, contains another subworkflow if we just give a single reference
 
@@ -186,6 +186,21 @@ workflow VIRALGENIE {
 
         } else {
             ch_reference = params.mapping_sequence
+        }
+
+        if (!params.skip_consensus_qc) {
+            if (!skip_checkv) {
+                checkv_db = params.checkv_db
+                if (checkv_db.endsWith('.tar.gz')){
+
+                }
+                CHECKV_DOWNLOADDATABASE()
+            }
+            consensus_qc(
+                ch_reference,
+                FASTQ_SPADES_TRINITY_MEGAHIT.out.scaffolds,
+                params.consensus_qc_method
+                )
         }
 
 
