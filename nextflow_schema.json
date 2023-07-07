@@ -265,6 +265,10 @@
                     "hidden": true,
                     "help_text": "By default, when an unrecognised parameter is found, it returns a warinig."
                 },
+                "validationSchemaIgnoreParams": {
+                    "type": "string",
+                    "default": "genomes"
+                },
                 "validationLenientMode": {
                     "type": "boolean",
                     "fa_icon": "far fa-check-circle",
@@ -597,6 +601,36 @@
                 }
             },
             "fa_icon": "fas fa-layer-group"
+        },
+        "genome_qc": {
+            "title": "Genome QC",
+            "type": "object",
+            "description": "Apply different quality control techniques on the generated consensus genomes",
+            "default": "",
+            "properties": {
+                "skip_consensus_qc": {
+                    "type": "boolean",
+                    "description": "Skip the quality measurements on consensus genomes",
+                    "fa_icon": "fas fa-forward"
+                },
+                "skip_checkv": {
+                    "type": "boolean",
+                    "description": "Skip the use of checkv for quality check",
+                    "fa_icon": "fas fa-forward"
+                },
+                "checkv_db": {
+                    "type": "string",
+                    "default": null,
+                    "format": "path",
+                    "fa_icon": "fas fa-database"
+                },
+                "skip_quast": {
+                    "type": "boolean",
+                    "description": "Skip the use of QUAST for quality check",
+                    "fa_icon": "fas fa-forward"
+                }
+            },
+            "fa_icon": "fas fa-balance-scale"
         }
     },
     "allOf": [
@@ -629,12 +663,9 @@
         },
         {
             "$ref": "#/definitions/variant_analysis"
+        },
+        {
+            "$ref": "#/definitions/genome_qc"
         }
-    ],
-    "properties": {
-        "validationSchemaIgnoreParams": {
-            "type": "string",
-            "default": "genomes"
-        }
-    }
+    ]
 }

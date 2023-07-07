@@ -194,13 +194,17 @@ workflow VIRALGENIE {
         if (!params.skip_consensus_qc) {
             if (!skip_checkv) {
                 checkv_db = params.checkv_db
-                if (checkv_db.endsWith('.tar.gz')){
+                if (!checkv_db) {
+                    ch_checkv_db = CHECKV_DOWNLOADDATABASE().checkv_db
+                } else if (checkv_db.endsWith('.tar.gz')){
                     ch_checkv_db = UNTAR_CHECKV_DB([ [:], checkv_db ]).untar
                 } else if(checkv_db.endsWith('.gz')){
                     ch_checkv_db = GUNZIP_CHECKV_DB([ [:], checkv_db ]).gunzip
-                } else {
-                    ch_checkv_db = CHECKV_DOWNLOADDATABASE().checkv_db
-                }
+                } else if (checkv_db){
+                    ch_checkv_db = checkv_db
+                } else (
+                    Nextflow.error("Checkv database, ${checkv_db} not found/recognized")
+                )
             }
             CONSENSUS_QC(
                 ch_consensus,
