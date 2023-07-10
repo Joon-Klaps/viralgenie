@@ -25,6 +25,7 @@ run_modules:
   - samtools/flagstat
   - samtools/idxstats
   - samtools/stats
+  - picard
 
 top_modules:
   - "fastqc":

@@ -63,14 +63,16 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
-include { INPUT_CHECK                  } from '../subworkflows/local/input_check'
-include { PREPROCESSING_ILLUMINA       } from '../subworkflows/local/preprocessing_illumina'
-include { FASTQ_KRAKEN_KAIJU           } from '../subworkflows/local/fastq_kraken_kaiju'
-include { FASTQ_SPADES_TRINITY_MEGAHIT } from '../subworkflows/local/fastq_spades_trinity_megahit'
+include { INPUT_CHECK                   } from '../subworkflows/local/input_check'
+include { PREPROCESSING_ILLUMINA        } from '../subworkflows/local/preprocessing_illumina'
+include { FASTQ_KRAKEN_KAIJU            } from '../subworkflows/local/fastq_kraken_kaiju'
+include { FASTQ_SPADES_TRINITY_MEGAHIT  } from '../subworkflows/local/fastq_spades_trinity_megahit'
 //  Add consensus reconstruction of genome
-include { FASTA_BLAST_CLUST            } from '../subworkflows/local/fasta_blast_clust'
-include { ALIGN_COLLAPSE_CONTIGS       } from '../subworkflows/local/align_collapse_contigs'
-include { CONSENSUS_QC                 } from '../subworkflows/local/consensus_qc'
+include { FASTA_BLAST_CLUST             } from '../subworkflows/local/fasta_blast_clust'
+include { ALIGN_COLLAPSE_CONTIGS        } from '../subworkflows/local/align_collapse_contigs'
+include { CONSENSUS_QC                  } from '../subworkflows/local/consensus_qc'
+include { UNPACK_DB as UNPACK_DB_BLAST  } from '../subworkflows/local/unpack_db'
+include { UNPACK_DB as UNPACK_DB_CHECKV } from '../subworkflows/local/unpack_db'
 
 // TODO: Add identification intrahost variability
 
@@ -83,10 +85,6 @@ include { CONSENSUS_QC                 } from '../subworkflows/local/consensus_q
 //
 // MODULE: Installed directly from nf-core/modules
 //
-include { UNTAR as UNTAR_BLAST_DB     } from '../modules/nf-core/untar/main'
-include { UNTAR as UNTAR_CHECKV_DB    } from '../modules/nf-core/untar/main'
-include { GUNZIP as GUNZIP_BLAST_DB   } from '../modules/nf-core/gunzip/main'
-include { GUNZIP as GUNZIP_CHECKV_DB  } from '../modules/nf-core/gunzip/main'
 include { BLAST_MAKEBLASTDB           } from '../modules/nf-core/blast/makeblastdb/main'
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
@@ -112,9 +110,6 @@ workflow VIRALGENIE {
     INPUT_CHECK(ch_input)
 
     ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
-    // TODO: OPTIONAL, you can use nf-validation plugin to create an input channel from the samplesheet with Channel.fromSamplesheet("input")
-    // See the documentation https://nextflow-io.github.io/nf-validation/samplesheets/fromSamplesheet/
-    // ! There is currently no tooling to help you write a sample sheet schema
 
     // preprocessing illumina reads
     PREPROCESSING_ILLUMINA (
@@ -146,22 +141,8 @@ workflow VIRALGENIE {
         ch_versions      = ch_versions.mix(FASTQ_SPADES_TRINITY_MEGAHIT.out.versions)
 
         if (!params.skip_polishing){
-            db_blast= params.reference_fasta
-            if (db_blast.endsWith('.tar.gz')) {
-                UNTAR_BLAST_DB (
-                    [ [:], db_blast ]
-                )
-                ch_db_blast = UNTAR_BLAST_DB.out.untar.map { it[1] }
-                ch_versions   = ch_versions.mix(UNTAR_BLAST_DB.out.versions)
-            } else if (db_blast.endsWith('.gz')) {
-                GUNZIP_BLAST_DB (
-                    [ [:], db_blast ]
-                )
-                ch_db_blast = GUNZIP_BLAST_DB.out.gunzip.map { it[1] }
-                ch_versions   = ch_versions.mix(GUNZIP_BLAST_DB.out.versions)
-            } else {
-                ch_db_blast = Channel.value(file(db_blast))
-            }
+            ch_db_blast = UNPACK_DB_BLAST (params.reference_fasta).db
+            ch_versions = ch_versions.mix(UNPACK_DB_BLAST.out.versions)
             BLAST_MAKEBLASTDB ( ch_db_blast )
             ch_versions = ch_versions.mix(BLAST_MAKEBLASTDB.out.versions)
 
@@ -183,12 +164,13 @@ workflow VIRALGENIE {
                 )
 
             ch_consensus = ALIGN_COLLAPSE_CONTIGS.out.consensus
+
             //TODO: subworkflow for iterative refinement, contains another subworkflow if we just give a single reference
 
             }
-
         } else {
             ch_reference = params.mapping_sequence
+
         }
 
         if (!params.skip_consensus_qc) {
@@ -196,16 +178,11 @@ workflow VIRALGENIE {
                 checkv_db = params.checkv_db
                 if (!checkv_db) {
                     ch_checkv_db = CHECKV_DOWNLOADDATABASE().checkv_db
-                } else if (checkv_db.endsWith('.tar.gz')){
-                    ch_checkv_db = UNTAR_CHECKV_DB([ [:], checkv_db ]).untar
-                } else if(checkv_db.endsWith('.gz')){
-                    ch_checkv_db = GUNZIP_CHECKV_DB([ [:], checkv_db ]).gunzip
-                } else if (checkv_db){
-                    ch_checkv_db = checkv_db
-                } else (
-                    Nextflow.error("Checkv database, ${checkv_db} not found/recognized")
-                )
+                } else {
+                    ch_checkv_db = UNPACK_DB_CHECKV(checkv_db).db
+                }
             }
+
             CONSENSUS_QC(
                 ch_consensus,
                 ch_checkv_db,
