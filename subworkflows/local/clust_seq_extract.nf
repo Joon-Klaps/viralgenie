@@ -54,7 +54,6 @@ workflow CLUST_SEQ_EXTRACT {
 
 // Function to get list of [ meta, [ fastq_1, fastq_2 ] ]
 def create_member_ref_channel(ArrayList row) {
-    new_meta = row[0].clone()
     members = row[1]
     centroids = row[2]
     sequence = row[3]
