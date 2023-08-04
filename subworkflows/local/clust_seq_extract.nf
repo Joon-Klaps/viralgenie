@@ -54,16 +54,17 @@ workflow CLUST_SEQ_EXTRACT {
 
 // Function to get list of [ meta, [ fastq_1, fastq_2 ] ]
 def create_member_ref_channel(ArrayList row) {
-    new_meta = row[0].clone()
     members = row[1]
     centroids = row[2]
     sequence = row[3]
 
-    new_meta.sample     = String.valueOf(new_meta.id) // just to make sure we don't pass by reference
+    sample     = String.valueOf(row[0].id) // just to make sure we don't pass by reference
     regex       = (members =~ /.*\/.*_([0-9]+)_n([0-9]+)_members.txt/) // try and extract the correct cluster ID and size associated to the sample
-    new_meta.cluster    = regex[0][1]
-    new_meta.size       = regex[0][2]
-    new_meta.id = "${new_meta.sample}_${new_meta.cluster}"
+    cluster    = regex[0][1]
+    size       = regex[0][2]
+    id = "${sample}_${cluster}"
+
+    new_meta = row[0] + [ id: id, cluster: cluster, size: size, sample: sample]
 
     def result = [ new_meta, members, centroids, sequence]
     return result

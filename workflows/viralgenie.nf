@@ -63,10 +63,10 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
-include { INPUT_CHECK                   } from '../subworkflows/local/input_check'
-include { PREPROCESSING_ILLUMINA        } from '../subworkflows/local/preprocessing_illumina'
-include { FASTQ_KRAKEN_KAIJU            } from '../subworkflows/local/fastq_kraken_kaiju'
-include { FASTQ_SPADES_TRINITY_MEGAHIT  } from '../subworkflows/local/fastq_spades_trinity_megahit'
+include { PREPROCESSING_ILLUMINA       } from '../subworkflows/local/preprocessing_illumina'
+include { FASTQ_KRAKEN_KAIJU           } from '../subworkflows/local/fastq_kraken_kaiju'
+include { FASTQ_SPADES_TRINITY_MEGAHIT } from '../subworkflows/local/fastq_spades_trinity_megahit'
+
 //  Add consensus reconstruction of genome
 include { FASTA_BLAST_CLUST             } from '../subworkflows/local/fasta_blast_clust'
 include { ALIGN_COLLAPSE_CONTIGS        } from '../subworkflows/local/align_collapse_contigs'
@@ -103,17 +103,17 @@ workflow VIRALGENIE {
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
 
-    //
-    // SUBWORKFLOW: Read in samplesheet, validate and stage input files
-    // Taken from viralrecon
-    //
-    INPUT_CHECK(ch_input)
-
-    ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
+    // Importing samplesheet
+    ch_samplesheet = Channel.fromSamplesheet(
+        'input'
+        ).map{
+            meta, read1, read2 ->
+            [meta , [read1, read2]]
+            }
 
     // preprocessing illumina reads
     PREPROCESSING_ILLUMINA (
-        INPUT_CHECK.out.reads,
+        ch_samplesheet,
         ch_host_genome,
         ch_host_index,
         ch_adapter_fasta,
