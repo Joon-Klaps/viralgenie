@@ -579,6 +579,16 @@
                     "default": 10000000,
                     "description": "Maximum allowed contig size",
                     "fa_icon": "fas fa-expand-alt"
+                },
+                "skip_consensus_calling_contigs": {
+                    "type": "boolean",
+                    "description": "Skip the consensus construction of  multiple contigs, instead use only the representative",
+                    "fa_icon": "fas fa-forward"
+                },
+                "skip_consensus_calling_reads": {
+                    "type": "boolean",
+                    "description": "Skip further polishing of consensus by mapping reads",
+                    "fa_icon": "fas fa-forward"
                 }
             },
             "fa_icon": "fas fa-hand-sparkles"
@@ -593,6 +603,13 @@
                     "type": "boolean",
                     "fa_icon": "fas fa-forward",
                     "description": "Skip the analysis of variants for the external reference or contigs"
+                },
+                "mapper": {
+                    "type": "string",
+                    "default": "bwamem2",
+                    "fa_icon": "fas fa-align-center",
+                    "description": "Define which mapping tool needs to be used when mapping reads to reference",
+                    "enum": ["bwamem2", "bowtie2"]
                 },
                 "mapping_sequence": {
                     "type": "string",
@@ -621,7 +638,7 @@
                 },
                 "checkv_db": {
                     "type": "string",
-                    "default": null,
+                    "default": "None",
                     "format": "path",
                     "fa_icon": "fas fa-database"
                 },
