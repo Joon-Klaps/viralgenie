@@ -157,18 +157,19 @@ workflow VIRALGENIE {
                 )
 
             FASTA_BLAST_CLUST.out.centroids_members
-                .branch{
-                    multiple: it[0].cluster_size > 0
-                    singletons: it[0].cluster_size == 0
+                .branch{ meta, centroids, members ->
+                    singletons: meta.cluster_size == 0
+                    multiple: meta.cluster_size > 0
                 }
                 .set{ch_centroids_members}
             ch_versions = ch_versions.mix(FASTA_BLAST_CLUST.out.versions)
-
-            //ch_centroids_members.multiple.view()
-            ch_centroids_members.singletons.view()
+            
+            //TODO: ch_centroids_members.multiple still not working properly
+            ch_centroids_members.multiple.view()
+            //ch_centroids_members.singletons.view()
 
             ALIGN_COLLAPSE_CONTIGS(
-                ch_centroids_members.multiple,
+                FASTA_BLAST_CLUST.out.centroids_members,
                 params.contig_align_method
                 )
             ch_versions = ch_versions.mix(ALIGN_COLLAPSE_CONTIGS.out.versions)
