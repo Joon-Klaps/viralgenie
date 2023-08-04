@@ -1,13 +1,13 @@
 include { MAP_READS                                 } from './map_reads'
-include { SAMTOOLS_FAIDX                            } from '../../../modules/nf-core/samtools/faidx/main'
-include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_RAW      } from '../../../modules/nf-core/samtools/index/main'
-include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_DEDUP    } from '../../../modules/nf-core/samtools/index/main'
-include { UMITOOLS_DEDUP                            } from '../../../modules/nf-core/umittools/dedup/main'
-include { PICARD_DEDUPLICATE                        } from '../../../modules/nf-core/umittools/dedup/main'
-include { SAMTOOLS_SORT                            } from '../../../modules/nf-core/samtools/sort/main'
-include { PICARD_COLLECTMULTIPLEMETRICS             } from '../../../modules/nf-core/umittools/collectmultiplemetrics/main'
-include { BAM_SORT_STATS_SAMTOOLS                   } from '../../../modules/nf-core/samtools/sort/main'
-include { IVAR_CONSENSUS                            } from '../../../modules/nf-core/ivar/consensus/main'
+include { SAMTOOLS_FAIDX                            } from '../../modules/nf-core/samtools/faidx/main'
+include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_RAW      } from '../../modules/nf-core/samtools/index/main'
+include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_DEDUP    } from '../../modules/nf-core/samtools/index/main'
+include { UMITOOLS_DEDUP                            } from '../../modules/nf-core/umittools/dedup/main'
+include { PICARD_DEDUPLICATE                        } from '../../modules/nf-core/umittools/dedup/main'
+include { SAMTOOLS_SORT                             } from '../../modules/nf-core/samtools/sort/main'
+include { PICARD_COLLECTMULTIPLEMETRICS             } from '../../modules/nf-core/umittools/collectmultiplemetrics/main'
+include { BAM_SORT_STATS_SAMTOOLS                   } from '../../modules/nf-core/samtools/sort/main'
+include { IVAR_CONSENSUS                            } from '../../modules/nf-core/ivar/consensus/main'
 
 
 workflow CONSENSUS_READS {

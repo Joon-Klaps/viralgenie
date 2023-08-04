@@ -1,7 +1,7 @@
-include { CHECKV_ENDTOEND } from '../../../modules/nf-core/checkv/endtoend/main'
-include { QUAST           } from '../../../modules/nf-core/quast/main'
+include { CHECKV_ENDTOEND } from '../../modules/nf-core/checkv/endtoend/main'
+include { QUAST           } from '../../modules/nf-core/quast/main'
 
-workflow GENOME_QC  {
+workflow CONSENSUS_QC  {
 
     take:
     ch_genome // channel: [ val(meta), [ genome ] ]

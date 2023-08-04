@@ -88,6 +88,7 @@ include { UNPACK_DB as UNPACK_DB_CHECKV } from '../subworkflows/local/unpack_db'
 include { BLAST_MAKEBLASTDB           } from '../modules/nf-core/blast/makeblastdb/main'
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
+include { CHECKV_DOWNLOADDATABASE     } from '../modules/nf-core/checkv/downloaddatabase/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -132,6 +133,7 @@ workflow VIRALGENIE {
         ch_versions      = ch_versions.mix(FASTQ_KRAKEN_KAIJU.out.versions)
     }
 
+    // Assembly
     if (!params.skip_assembly) {
         FASTQ_SPADES_TRINITY_MEGAHIT(
             PREPROCESSING_ILLUMINA.out.reads,
@@ -154,27 +156,37 @@ workflow VIRALGENIE {
                 params.cluster_method
                 )
 
-            //TODO: branch those with a single or no members
-            ch_members = FASTA_BLAST_CLUST.out.members
-            ch_centroids  = FASTA_BLAST_CLUST.out.centroids
-            ALIGN_COLLAPSE_CONTIGS(
-                ch_members,
-                ch_centroids
-                params.align_method
-                )
+            FASTA_BLAST_CLUST.out.centroids_members
+                .branch{
+                    multiple: it[0].cluster_size > 0
+                    singletons: it[0].cluster_size == 0
+                }
+                .set{ch_centroids_members}
+            ch_versions = ch_versions.mix(FASTA_BLAST_CLUST.out.versions)
 
+            //ch_centroids_members.multiple.view()
+            ch_centroids_members.singletons.view()
+
+            ALIGN_COLLAPSE_CONTIGS(
+                ch_centroids_members.multiple,
+                params.contig_align_method
+                )
+            ch_versions = ch_versions.mix(ALIGN_COLLAPSE_CONTIGS.out.versions)
             ch_consensus = ALIGN_COLLAPSE_CONTIGS.out.consensus
 
             //TODO: subworkflow for iterative refinement, contains another subworkflow if we just give a single reference
 
-            }
-        } else {
-            ch_reference = params.mapping_sequence
-
         }
+    }
+
+    // TODO: add reference sequence to the pool of sequences.
+    // if (params.mapping_sequence){
+    //     ch_reference = params.mapping_sequence
+    //     }
+    // }
 
         if (!params.skip_consensus_qc) {
-            if (!skip_checkv) {
+            if (!params.skip_checkv) {
                 checkv_db = params.checkv_db
                 if (!checkv_db) {
                     ch_checkv_db = CHECKV_DOWNLOADDATABASE().checkv_db
@@ -187,12 +199,9 @@ workflow VIRALGENIE {
                 ch_consensus,
                 ch_checkv_db,
                 params.skip_checkv,
-                params.skip_quast,
+                params.skip_quast
                 )
         }
-
-
-
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
@@ -208,7 +217,7 @@ workflow VIRALGENIE {
     methods_description    = WorkflowViralgenie.methodsDescriptionText(workflow, ch_multiqc_custom_methods_description, params)
     ch_methods_description = Channel.value(methods_description)
 
-    ch_multiqc_files = Channel.empty()
+
     ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml'))
 

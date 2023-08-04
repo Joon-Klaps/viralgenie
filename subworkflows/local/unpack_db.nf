@@ -1,5 +1,5 @@
-include { UNTAR     } from '../../../modules/nf-core/untar/main'
-include { GUNZIP    } from '../../../modules/nf-core/gunzip/main'
+include { UNTAR     } from '../../modules/nf-core/untar/main'
+include { GUNZIP    } from '../../modules/nf-core/gunzip/main'
 
 workflow UNPACK_DB  {
 
@@ -18,7 +18,7 @@ workflow UNPACK_DB  {
     } else if (db){
         ch_db = Channel.value(file(db))
     } else (
-        Nextflow.error("Database: ${db} not recognized as '.tar.gz' or '.gz' file.")
+        Nextflow.error("Database: ${db} not recognized as '.tar.gz' or '.gz' file. \n\n please unpack and try again specifying the directory.")
     )
 
     emit:

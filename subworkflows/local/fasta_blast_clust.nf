@@ -71,12 +71,12 @@ workflow FASTA_BLAST_CLUST {
         cluster_method,
         CAT_CAT.out.file_out
     )
+    ch_centroids_members = CLUST_SEQ_EXTRACT.out.seq_centroids_members
 
     emit:
-    clusters    = ch_clusters                           // channel: [ [ meta ], [ clusters ] ]
-    members     = CLUST_SEQ_EXTRACT.out.seq_members     // channel: [ [ meta ], [ seq_members.fa] ]
-    centroids   = CLUST_SEQ_EXTRACT.out.seq_centroids   // channel: [ [ meta ], [ seq_centroids.fa ] ]
-    versions    = ch_versions                           // channel: [ versions.yml ]
+    clusters              = ch_clusters           // channel: [ [ meta ], [ clusters ] ]
+    centroids_members     = ch_centroids_members  // channel: [ [ meta ], [ seq_centroids.fa], [ seq_members.fa] ]
+    versions              = ch_versions           // channel: [ versions.yml ]
 
 }
 

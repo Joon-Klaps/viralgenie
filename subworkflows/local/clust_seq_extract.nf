@@ -1,7 +1,10 @@
 // modules
-include { CLUSTER_EXTRACT                           } from '../../modules/local/cluster_extract'
-include { SEQKIT_GREP as SEQKIT_GREP_MEMBERS        } from '../../modules/nf-core/seqkit/grep/main'
-include { SEQKIT_GREP as SEQKIT_GREP_CENTROIDS     } from '../../modules/nf-core/seqkit/grep/main'
+include { CLUSTER_EXTRACT                       } from '../../modules/local/cluster_extract'
+include { SEQKIT_GREP as SEQKIT_GREP_MEMBERS    } from '../../modules/nf-core/seqkit/grep/main'
+include { SEQKIT_GREP as SEQKIT_GREP_CENTROIDS  } from '../../modules/nf-core/seqkit/grep/main'
+include { GUNZIP as GUNZIP_MEMBERS              } from '../../modules/nf-core/gunzip/main'
+include { GUNZIP as GUNZIP_CENTROIDS            } from '../../modules/nf-core/gunzip/main'
+
 
 workflow CLUST_SEQ_EXTRACT {
 
@@ -39,17 +42,22 @@ workflow CLUST_SEQ_EXTRACT {
         .set { ch_db_seq_anno }
 
     SEQKIT_GREP_MEMBERS(ch_db_seq_anno,ch_members )
-    ch_seq_members   =  SEQKIT_GREP_MEMBERS.out.filter
+    GUNZIP_MEMBERS(SEQKIT_GREP_MEMBERS.out.filter)
 
     SEQKIT_GREP_CENTROIDS(ch_db_seq_anno,ch_centroids )
-    ch_seq_centroids = SEQKIT_GREP_CENTROIDS.out.filter
+    GUNZIP_CENTROIDS(SEQKIT_GREP_CENTROIDS.out.filter)
+
 
     ch_versions =  ch_versions.mix(SEQKIT_GREP_CENTROIDS.out.versions.first())
+    ch_versions =  ch_versions.mix(GUNZIP_CENTROIDS.out.versions.first())
+
+    GUNZIP_CENTROIDS.out.gunzip
+        .join(GUNZIP_MEMBERS.out.gunzip, remainder: true)
+        .set { seq_centroids_members }
 
     emit:
-    seq_members     = SEQKIT_GREP_MEMBERS.out.filter        // channel: [ [ meta ], [ seq_members.fa] ]
-    seq_centroids   = SEQKIT_GREP_CENTROIDS.out.filter      // channel: [ [ meta ], [ seq_centroids.fa ] ]
-    versions        = ch_versions
+    seq_centroids_members     = seq_centroids_members        // channel: [ [ meta ], [ seq_centroids.fa], [ seq_members.fa] ]
+    versions                  = ch_versions
 }
 
 // Function to get list of [ meta, [ fastq_1, fastq_2 ] ]
@@ -58,13 +66,13 @@ def create_member_ref_channel(ArrayList row) {
     centroids = row[2]
     sequence = row[3]
 
-    sample     = String.valueOf(row[0].id) // just to make sure we don't pass by reference
-    regex       = (members =~ /.*\/.*_([0-9]+)_n([0-9]+)_members.txt/) // try and extract the correct cluster ID and size associated to the sample
-    cluster    = regex[0][1]
-    size       = regex[0][2]
-    id = "${sample}_${cluster}"
+    sample             = String.valueOf(row[0].id) // just to make sure we don't pass by reference
+    regex              = (members =~ /.*\/.*_([0-9]+)_n([0-9]+)_members.txt/) // try and extract the correct cluster ID and size associated to the sample
+    cluster            = regex[0][1]
+    cluster_size       = regex[0][2]
+    id                 = "${sample}_${cluster}"
 
-    new_meta = row[0] + [ id: id, cluster: cluster, size: size, sample: sample]
+    new_meta = row[0] + [ id: id, cluster: cluster, cluster_size: cluster_size, sample: sample]
 
     def result = [ new_meta, members, centroids, sequence]
     return result
