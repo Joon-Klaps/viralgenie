@@ -585,6 +585,12 @@
                     "description": "Skip the consensus construction of  multiple contigs, instead use only the representative",
                     "fa_icon": "fas fa-forward"
                 },
+                "contig_align_method": {
+                    "type": "string",
+                    "default": "mafft",
+                    "description": "Method for alignment of cluster of contigs",
+                    "enum": ["mafft", "muscle"]
+                },
                 "skip_consensus_calling_reads": {
                     "type": "boolean",
                     "description": "Skip further polishing of consensus by mapping reads",
