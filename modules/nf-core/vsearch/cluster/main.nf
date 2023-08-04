@@ -1,6 +1,6 @@
 process VSEARCH_CLUSTER {
     tag "$meta.id"
-    label 'process_high'
+    label 'process_low'
 
     conda "bioconda::vsearch=2.21.1 bioconda::samtools=1.16.1"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
