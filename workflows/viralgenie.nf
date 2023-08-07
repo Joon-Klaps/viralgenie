@@ -33,13 +33,13 @@ def checkPathParamList = [
 for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
 
 // Check mandatory parameters
-if (params.input         ) { ch_input = file(params.input)                                      } else { exit 1, 'Input samplesheet not specified!' }
-if (params.adapter_fasta ) { ch_adapter_fasta = file(params.adapter_fasta)                      } else { ch_adapter_fasta  = []                     }
-if (params.host_genome   ) { ch_host_genome = file(params.host_genome)                          } else { ch_host_genome = []                        }
-if (params.host_index    ) { ch_host_index = Channel.fromPath(params.host_index).map{[[], it]}  } else { ch_host_index = []                         }
-if (params.contaminants  ) { ch_contaminants = file(params.contaminants)                        } else { ch_contaminants = []                       }
-if (params.spades_yml    ) { ch_spades_yml = file(params.spades_yml)                            } else { ch_spades_yml = []                         }
-if (params.spades_hmm    ) { ch_spades_hmm = file(params.spades_hmm)                            } else { ch_spades_hmm = []                         }
+if (params.input            ) { ch_input = file(params.input)                                      } else { exit 1, 'Input samplesheet not specified!' }
+if (params.adapter_fasta    ) { ch_adapter_fasta = file(params.adapter_fasta)                      } else { ch_adapter_fasta  = []                     }
+if (params.host_genome      ) { ch_host_genome = file(params.host_genome)                          } else { ch_host_genome = []                        }
+if (params.host_index       ) { ch_host_index = Channel.fromPath(params.host_index).map{[[], it]}  } else { ch_host_index = []                         }
+if (params.contaminants     ) { ch_contaminants = file(params.contaminants)                        } else { ch_contaminants = []                       }
+if (params.spades_yml       ) { ch_spades_yml = file(params.spades_yml)                            } else { ch_spades_yml = []                         }
+if (params.spades_hmm       ) { ch_spades_hmm = file(params.spades_hmm)                            } else { ch_spades_hmm = []                         }
 
 def assemblers = params.assemblers ? params.assemblers.split(',').collect{ it.trim().toLowerCase() } : []
 
@@ -119,13 +119,14 @@ workflow VIRALGENIE {
         ch_host_index,
         ch_adapter_fasta,
         ch_contaminants)
-    ch_multiqc_files = ch_multiqc_files.mix(PREPROCESSING_ILLUMINA.out.mqc.collect{it[1]}.ifEmpty([]))
-    ch_versions      = ch_versions.mix(PREPROCESSING_ILLUMINA.out.versions)
+    ch_host_trim_reads = PREPROCESSING_ILLUMINA.out.reads
+    ch_multiqc_files   = ch_multiqc_files.mix(PREPROCESSING_ILLUMINA.out.mqc.collect{it[1]}.ifEmpty([]))
+    ch_versions        = ch_versions.mix(PREPROCESSING_ILLUMINA.out.versions)
 
     // Determining metagenomic diversity
     if (!params.skip_metagenomic_diversity) {
         FASTQ_KRAKEN_KAIJU(
-            PREPROCESSING_ILLUMINA.out.reads,
+            ch_host_trim_reads,
             params.kraken2_db,
             params.bracken_db,
             params.kaiju_db )
@@ -137,7 +138,7 @@ workflow VIRALGENIE {
     ch_consensus = Channel.empty()
     if (!params.skip_assembly) {
         FASTQ_SPADES_TRINITY_MEGAHIT(
-            PREPROCESSING_ILLUMINA.out.reads,
+            ch_host_trim_reads,
             assemblers,
             ch_spades_yml,
             ch_spades_hmm)
@@ -174,17 +175,41 @@ workflow VIRALGENIE {
             ch_consensus = ALIGN_COLLAPSE_CONTIGS.out.consensus
 
             //TODO: subworkflow for iterative refinement, contains another subworkflow if we just give a single reference
-
         }
     }
 
-    // TODO: add reference sequence to the pool of sequences.
-    // if (params.mapping_sequence){
-    //     ch_reference = params.mapping_sequence
-    //     }
-    // }
+    if (params.mapping_sequence ) {
+        ch_mapping_sequence = Channel.fromPath(params.mapping_sequence)
+
+        //get header names of sequences
+        ch_mapping_sequence
+            .splitFasta(record: [id: true])
+            .set {seq_names}
+
+        //split up multifasta
+        ch_mapping_sequence
+            .splitFasta(file : true, by:1)
+            .merge(seq_names)
+            .set{ch_map_seq_anno}
+
+        // TODO: give the option to update the constrain sequences that we map against
+
+        //combine with all input samples & rename the meta.id
+        ch_samplesheet
+            .combine(ch_map_seq_anno)
+            .map {meta, reads, seq, name ->
+                sample = meta.id
+                id = "${sample}_${name.id}"
+                new_meta = meta + [id: id, sample: sample]
+                return [new_meta, seq]
+            }.set{ch_map_seq_anno_combined}
+
+        //Add to the consensus channel, the mapping sequences will now always be mapped against
+        ch_consensus = ch_consensus.mix(ch_map_seq_anno_combined)
+        }
 
         if (!params.skip_consensus_qc) {
+            ch_checkv_db = Channel.empty()
             if (!params.skip_checkv) {
                 checkv_db = params.checkv_db
                 if (!checkv_db) {
