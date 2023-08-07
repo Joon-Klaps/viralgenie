@@ -134,6 +134,7 @@ workflow VIRALGENIE {
     }
 
     // Assembly
+    ch_consensus = Channel.empty()
     if (!params.skip_assembly) {
         FASTQ_SPADES_TRINITY_MEGAHIT(
             PREPROCESSING_ILLUMINA.out.reads,
@@ -163,15 +164,12 @@ workflow VIRALGENIE {
                 }
                 .set{ch_centroids_members}
             ch_versions = ch_versions.mix(FASTA_BLAST_CLUST.out.versions)
-            
-            //TODO: ch_centroids_members.multiple still not working properly
-            ch_centroids_members.multiple.view()
-            //ch_centroids_members.singletons.view()
 
             ALIGN_COLLAPSE_CONTIGS(
-                FASTA_BLAST_CLUST.out.centroids_members,
+                ch_centroids_members.multiple,
                 params.contig_align_method
                 )
+
             ch_versions = ch_versions.mix(ALIGN_COLLAPSE_CONTIGS.out.versions)
             ch_consensus = ALIGN_COLLAPSE_CONTIGS.out.consensus
 

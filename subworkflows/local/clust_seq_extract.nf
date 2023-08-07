@@ -69,7 +69,7 @@ def create_member_ref_channel(ArrayList row) {
     sample             = String.valueOf(row[0].id) // just to make sure we don't pass by reference
     regex              = (members =~ /.*\/.*_([0-9]+)_n([0-9]+)_members.txt/) // try and extract the correct cluster ID and size associated to the sample
     cluster            = regex[0][1]
-    cluster_size       = regex[0][2]
+    cluster_size       = regex[0][2] as int
     id                 = "${sample}_${cluster}"
 
     new_meta = row[0] + [ id: id, cluster: cluster, cluster_size: cluster_size, sample: sample]
