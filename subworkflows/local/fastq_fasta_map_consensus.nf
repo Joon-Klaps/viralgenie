@@ -1,8 +1,8 @@
-include { MAP_READS                                 } from './map_reads'
-include { BAM_DEDUPLICATE                           } from './bam_deduplicate'
-include { PICARD_COLLECTMULTIPLEMETRICS             } from '../../modules/nf-core/umittools/collectmultiplemetrics/main'
-include { BAM_SORT_STATS_SAMTOOLS                   } from '../../modules/nf-core/samtools/sort/main'
-include { IVAR_CONSENSUS                            } from '../../modules/nf-core/ivar/consensus/main'
+include { MAP_READS         } from './map_reads'
+include { BAM_DEDUPLICATE   } from './bam_deduplicate'
+include { SAMTOOLS_SORT     } from '../../modules/nf-core/samtools/sort/main'
+include { BAM_STATS_METRICS } from './bam_stats_metrics'
+include { IVAR_CONSENSUS    } from '../../modules/nf-core/ivar/consensus/main'
 
 
 workflow FASTQ_FASTA_MAP_CONSENSUS {
@@ -51,55 +51,46 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
         }
         .set{ch_reference_mod}
 
-    //TODO: Check if all mqc files are in the correct place & modules are called correctly
-
+    // mapping of reads using bowtie2 or BWA-MEM2
     MAP_READS ( ch_read_mod, ch_reference_mod, mapper )
 
     ch_bam       = MAP_READS.out.bam
     ch_versions  =  ch_versions.mix(MAP_READS.out.versions)
-    ch_multiqc   =  ch_multiqc.mix(MAP_READS.out.multiqc)
+    ch_multiqc   =  ch_multiqc.mix(MAP_READS.out.mqc)
     ch_faidx     = SAMTOOLS_FAIDX ( reference, [[],[]]).faidx
 
 
+    // deduplicate bam using umitools (if UMI) or picard
     if (deduplicate) {
         BAM_DEDUPLICATE ( ch_bam, ch_reference_mod, ch_faidx, umi, get_stats)
 
         ch_dedup_bam = BAM_DEDUPLICATE.out.bam
-        ch_multiqc   = ch_multiqc.mix(BAM_DEDUPLICATE.out.multiqc)
+        ch_multiqc   = ch_multiqc.mix(BAM_DEDUPLICATE.out.mqc)
         ch_versions  = ch_versions.mix(BAM_DEDUPLICATE.out.versions)
 
     } else {
         ch_dedup_bam = ch_bam
     }
 
-    ch_dedup_sort_bam = SAMTOOLS_SORT( ch_dedup_bam ).sort
+    // sort bam
+    SAMTOOLS_SORT ( ch_dedup_bam )
+    ch_versions = ch_versions.mix(SAMTOOLS_SORT.out.versions.first())
+    ch_dedup_bam_sort = SAMTOOLS_SORT.out.bam
 
+    // report summary statistics of alignment
     if (get_stats) {
-        SAMTOOLS_INDEX_DEDUP ( ch_dedup_sort_bam )
-        ch_dedup_sorted_bam_bai  = SAMTOOLS_INDEX_DEDUP.out.bai.join(ch_dedup_sort_bam, remainder: true)
-        ch_versions              = ch_versions.mix(SAMTOOLS_INDEX_DEDUP.out.versions)
-
-        PICARD_COLLECTMULTIPLEMETRICS ( ch_dedup_sorted_bam_bai, reference, ch_faidx )
-        ch_versions  = ch_versions.mix(PICARD_COLLECTMULTIPLEMETRICS.out.versions)
-        ch_multiqc   = ch_multiqc.mix(PICARD_COLLECTMULTIPLEMETRICS.out.multiqc)
-
-        BAM_STATS_SAMTOOLS ( ch_dedup_sorted_bam_bai, reference )
-        ch_versions  = ch_versions.mix(BAM_STATS_SAMTOOLS.out.versions)
-        ch_multiqc   = ch_multiqc.mix(BAM_STATS_SAMTOOLS.out.stats)
-        ch_multiqc   = ch_multiqc.mix(BAM_STATS_SAMTOOLS.out.flagstat)
-        ch_multiqc   = ch_multiqc.mix(BAM_STATS_SAMTOOLS.out.idxstats)
-
-        //TODO: Check if this is the correct file for multiqc
-        ch_multiqc    = ch_multiqc.mix(UMITOOLS_DEDUP.out.log)
+        BAM_STATS_METRICS ( ch_dedup_bam_sort, reference, ch_faidx )
+        ch_multiqc   = ch_multiqc.mix(BAM_STATS_METRICS.out.mqc)
+        ch_versions  = ch_versions.mix(BAM_STATS_METRICS.out.versions)
     }
 
-    IVAR_CONSENSUS ( ch_dedup_bam, reference.map{it[1]}, get_stats )
+    IVAR_CONSENSUS ( ch_dedup_bam_sort, reference.map{it[1]}, get_stats )
 
 
     emit:
     //TODO: add if necessary more outputs?
     bam      = ch_dedup_sorted_bam             // channel: [ val(meta), [ bam ] ]
-    consensus = IVAR_CONSENSUS.out.consensus  // channel: [ val(meta), [ fasta ] ]
+    consensus = IVAR_CONSENSUS.out.consensus   // channel: [ val(meta), [ fasta ] ]
 
     mqc      = ch_multiqc          // channel: [ val(meta), [ csi ] ]
     versions = ch_versions                     // channel: [ versions.yml ]

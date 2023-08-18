@@ -33,7 +33,7 @@ workflow MAP_READS  {
         ch_versions = ch_versions.mix(BOWTIE2_ALIGN.out.versions.first())
 
         ch_bam      = BOWTIE2_ALIGN.out.bam
-        ch_multiqc  = ch_multiqc.mix(BOWTIE2_ALIGN.out.log.map{it[1]})
+        ch_multiqc  = ch_multiqc.mix(BOWTIE2_ALIGN.out.log.map{it[1]}.ifEmpty{[]})
 
     } else {
         Nextflow.error ("Unknown mapper: ${mapper}")
@@ -41,7 +41,7 @@ workflow MAP_READS  {
 
     emit:
     bam      = ch_bam                          // channel: [ val(meta), [ bam ] ]
-    mqc      = ch_multiqc                      // channel: [ val(meta), [ multiqc ] ]
+    mqc      = ch_multiqc                      // channel: [ multiqc ]
 
     versions = ch_versions                     // channel: [ versions.yml ]
 }
