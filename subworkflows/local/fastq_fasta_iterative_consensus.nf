@@ -76,6 +76,7 @@ workflow  {
 
 
     emit:
+    reads     = ITERATION_FINAL.out.reads      // channel: [ val(meta), [ fastq ] ]
     bam       = ITERATION_FINAL.out.bam        // channel: [ val(meta), [ bam ] ]
     consensus = ITERATION_FINAL.out.consensus  // channel: [ val(meta), [ fasta ] ]
     mqc       = ch_multiqc                     // channel: [ val(meta), [ mqc ] ]
