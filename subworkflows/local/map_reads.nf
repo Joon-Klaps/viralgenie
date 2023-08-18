@@ -21,6 +21,7 @@ workflow MAP_READS  {
 
         BWAMEM2_MEM ( reads, BWAMEM2_INDEX.out.bwt, true )
         ch_versions = ch_versions.mix(BWAMEM2_MEM.out.versions.first())
+        //no mqc for bwamem2
 
         ch_bam      = BWAMEM2_MEM.out.bam
     }
