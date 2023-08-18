@@ -21,9 +21,7 @@ workflow CONSENSUS_QC  {
         QUAST (
             ch_genome,
             [],
-            [],
-            false,
-            false
+            []
         )
         ch_versions = ch_versions.mix(QUAST.out.versions)
         ch_multiqc_files = ch_multiqc_files.mix(QUAST.out.tsv)
