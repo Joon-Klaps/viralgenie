@@ -1,36 +1,41 @@
-// TODO nf-core: If in doubt look at other nf-core/subworkflows to see how we are doing things! :)
-//               https://github.com/nf-core/modules/tree/master/subworkflows
-//               You can also ask for help via your pull request or on the #subworkflows channel on the nf-core Slack workspace:
-//               https://nf-co.re/join
-// TODO nf-core: A subworkflow SHOULD import at least two modules
-
-include { SAMTOOLS_SORT      } from '../../../modules/nf-core/samtools/sort/main'
-include { SAMTOOLS_INDEX     } from '../../../modules/nf-core/samtools/index/main'
+include { SAMTOOLS_FAIDX     } from '../../modules/nf-core/samtools/faidx/main'
+include { SAMTOOLS_INDEX     } from '../../modules/nf-core/samtools/index/main'
+include { UMITOOLS_DEDUP     } from '../../modules/nf-core/umittools/dedup/main'
+include { PICARD_DEDUPLICATE } from '../../modules/nf-core/picard/markduplicates/main'
 
 workflow  {
 
     take:
-    // TODO nf-core: edit input (take) channels
-    ch_bam // channel: [ val(meta), [ bam ] ]
+    bam         // channel: [ val(meta), [ bam ] ]
+    reference   // channel: [ val(meta), path(fasta) ]
+    faidx       // channel: [ val(meta), path(fasta) ]
+    umi         // val: [ true | false ]
+    get_stats   // val: [ true | false ]
 
     main:
 
     ch_versions = Channel.empty()
 
-    // TODO nf-core: substitute modules here for the modules of your subworkflow
+    if ( umi ) {
+            SAMTOOLS_INDEX( bam )
+            ch_bam_bai  = SAMTOOLS_INDEX.out.bai.join(bam, by: [0])
+            ch_versions = ch_versions.mix(SAMTOOLS_INDEX_RAW.out.versions)
 
-    SAMTOOLS_SORT ( ch_bam )
-    ch_versions = ch_versions.mix(SAMTOOLS_SORT.out.versions.first())
+            UMITOOLS_DEDUP ( ch_bam_bai , get_stats)
+            ch_dedup_bam  = UMITOOLS_DEDUP.out.bam
+            ch_versions   = ch_versions.mix(UMITOOLS_DEDUP.out.versions)
+            ch_multiqc    = ch_multiqc.mix(UMITOOLS_DEDUP.out.log)
 
-    SAMTOOLS_INDEX ( SAMTOOLS_SORT.out.bam )
-    ch_versions = ch_versions.mix(SAMTOOLS_INDEX.out.versions.first())
+    } else  {
+            PICARD_DEDUPLICATE ( bam, reference, ch_faidx )
+            ch_dedup_bam      = PICARD_DEDUPLICATE.out.bam
+            ch_versions       = ch_versions.mix(PICARD_DEDUPLICATE.out.versions)
+            // no mqc for picard dedup
+    }
 
     emit:
-    // TODO nf-core: edit emitted channels
-    bam      = SAMTOOLS_SORT.out.bam           // channel: [ val(meta), [ bam ] ]
-    bai      = SAMTOOLS_INDEX.out.bai          // channel: [ val(meta), [ bai ] ]
-    csi      = SAMTOOLS_INDEX.out.csi          // channel: [ val(meta), [ csi ] ]
-
-    versions = ch_versions                     // channel: [ versions.yml ]
+    bam      = ch_dedup_bam           // channel: [ val(meta), [ bam ] ]
+    mqc      = ch_multiqc             // channel: [ val(meta), [ multiqc ] ]
+    versions = ch_versions            // channel: [ versions.yml ]
 }
 

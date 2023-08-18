@@ -1,10 +1,5 @@
 include { MAP_READS                                 } from './map_reads'
-include { SAMTOOLS_FAIDX                            } from '../../modules/nf-core/samtools/faidx/main'
-include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_RAW      } from '../../modules/nf-core/samtools/index/main'
-include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_DEDUP    } from '../../modules/nf-core/samtools/index/main'
-include { UMITOOLS_DEDUP                            } from '../../modules/nf-core/umittools/dedup/main'
-include { PICARD_DEDUPLICATE                        } from '../../modules/nf-core/umittools/dedup/main'
-include { SAMTOOLS_SORT                             } from '../../modules/nf-core/samtools/sort/main'
+include { BAM_DEDUPLICATE                           } from './bam_deduplicate'
 include { PICARD_COLLECTMULTIPLEMETRICS             } from '../../modules/nf-core/umittools/collectmultiplemetrics/main'
 include { BAM_SORT_STATS_SAMTOOLS                   } from '../../modules/nf-core/samtools/sort/main'
 include { IVAR_CONSENSUS                            } from '../../modules/nf-core/ivar/consensus/main'
@@ -63,25 +58,16 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
     ch_bam       = MAP_READS.out.bam
     ch_versions  =  ch_versions.mix(MAP_READS.out.versions)
     ch_multiqc   =  ch_multiqc.mix(MAP_READS.out.multiqc)
-
     ch_faidx     = SAMTOOLS_FAIDX ( reference, [[],[]]).faidx
 
+
     if (deduplicate) {
-        if ( umi ) {
-            SAMTOOLS_INDEX_RAW ( MAP_READS.out.bam )
-            ch_bam_bai  = SAMTOOLS_INDEX_RAW.out.bai.join(ch_bam, remainder: true)
-            ch_versions = ch_versions.mix(SAMTOOLS_INDEX_RAW.out.versions)
+        BAM_DEDUPLICATE ( ch_bam, ch_reference_mod, ch_faidx, umi, get_stats)
 
-            UMITOOLS_DEDUP ( ch_bam_bai , get_stats)
-            ch_dedup_bam  = UMITOOLS_DEDUP.out.bam
-            ch_versions   = ch_versions.mix(UMITOOLS_DEDUP.out.versions)
+        ch_dedup_bam = BAM_DEDUPLICATE.out.bam
+        ch_multiqc   = ch_multiqc.mix(BAM_DEDUPLICATE.out.multiqc)
+        ch_versions  = ch_versions.mix(BAM_DEDUPLICATE.out.versions)
 
-
-        } else  {
-            PICARD_DEDUPLICATE ( MAP_READS.out.bam, reference, ch_faidx )
-            ch_dedup_bam      = PICARD_DEDUPLICATE.out.bam
-            ch_versions       = ch_versions.mix(PICARD_DEDUPLICATE.out.versions)
-        }
     } else {
         ch_dedup_bam = ch_bam
     }
