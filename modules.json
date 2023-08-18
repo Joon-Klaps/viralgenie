@@ -107,7 +107,7 @@
                     },
                     "mafft": {
                         "branch": "master",
-                        "git_sha": "911696ea0b62df80e900ef244d7867d177971f73",
+                        "git_sha": "feb29be775d9e41750180539e9a3bdce801d0609",
                         "installed_by": ["modules"]
                     },
                     "megahit": {
@@ -117,7 +117,7 @@
                     },
                     "multiqc": {
                         "branch": "master",
-                        "git_sha": "911696ea0b62df80e900ef244d7867d177971f73",
+                        "git_sha": "a6e11ac655e744f7ebc724be669dd568ffdc0e80",
                         "installed_by": ["modules"]
                     },
                     "muscle": {
@@ -207,7 +207,7 @@
                     },
                     "vsearch/cluster": {
                         "branch": "master",
-                        "git_sha": "603ecbd9f45300c9788f197d2a15a005685b4220",
+                        "git_sha": "89945ea085b94d3413013b6c82e2633b5184f24d",
                         "installed_by": ["modules"]
                     }
                 }
