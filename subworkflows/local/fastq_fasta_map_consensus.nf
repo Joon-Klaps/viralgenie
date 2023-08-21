@@ -1,8 +1,9 @@
-include { MAP_READS         } from './map_reads'
-include { BAM_DEDUPLICATE   } from './bam_deduplicate'
-include { SAMTOOLS_SORT     } from '../../modules/nf-core/samtools/sort/main'
-include { BAM_STATS_METRICS } from './bam_stats_metrics'
-include { IVAR_CONSENSUS    } from '../../modules/nf-core/ivar/consensus/main'
+include { MAP_READS          } from './map_reads'
+include { BAM_DEDUPLICATE    } from './bam_deduplicate'
+include { SAMTOOLS_SORT      } from '../../modules/nf-core/samtools/sort/main'
+include { BAM_STATS_METRICS  } from './bam_stats_metrics'
+include { BAM_CALL_VARIANTS  } from './bam_call_variants'
+include { BAM_CALL_CONSENSUS } from './bam_call_consensus'
 
 
 workflow FASTQ_FASTA_MAP_CONSENSUS {
@@ -83,6 +84,13 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
         ch_multiqc   = ch_multiqc.mix(BAM_STATS_METRICS.out.mqc)
         ch_versions  = ch_versions.mix(BAM_STATS_METRICS.out.versions)
     }
+
+    // call variants
+    BAM_CALL_VARIANTS( ch_dedup_bam_sort, reference.map{it[1]}, get_stats )
+
+
+    // consensus calling
+    BAM_CALL_CONSENSUS
 
     IVAR_CONSENSUS ( ch_dedup_bam_sort, reference.map{it[1]}, get_stats )
 
