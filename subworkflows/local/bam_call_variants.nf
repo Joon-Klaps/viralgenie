@@ -1,17 +1,13 @@
-// TODO nf-core: If in doubt look at other nf-core/subworkflows to see how we are doing things! :)
-//               https://github.com/nf-core/modules/tree/master/subworkflows
-//               You can also ask for help via your pull request or on the #subworkflows channel on the nf-core Slack workspace:
-//               https://nf-co.re/join
-// TODO nf-core: A subworkflow SHOULD import at least two modules
-
-include { SAMTOOLS_SORT      } from '../../../modules/nf-core/samtools/sort/main'
-include { SAMTOOLS_INDEX     } from '../../../modules/nf-core/samtools/index/main'
+include { TABIX_TABIX    } from '../../modules/nf-core/tabix/tabix/main'
+include { BCFTOOLS_STATS } from '../../modules/nf-core/bcftools/stats/main'
 
 workflow  {
 
     take:
-    // TODO nf-core: edit input (take) channels
-    ch_bam // channel: [ val(meta), [ bam ] ]
+    bam             // channel: [ val(meta), [ bam ] ]
+    fasta           // channel: [val (meta), [ fasta] ]
+    variant_caller  // value: [ bcftools | ivar ]
+
 
     main:
 

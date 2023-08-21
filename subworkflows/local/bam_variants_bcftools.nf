@@ -1,11 +1,5 @@
-// TODO nf-core: If in doubt look at other nf-core/subworkflows to see how we are doing things! :)
-//               https://github.com/nf-core/modules/tree/master/subworkflows
-//               You can also ask for help via your pull request or on the #subworkflows channel on the nf-core Slack workspace:
-//               https://nf-co.re/join
-// TODO nf-core: A subworkflow SHOULD import at least two modules
-
-include { SAMTOOLS_SORT      } from '../../../modules/nf-core/samtools/sort/main'
-include { SAMTOOLS_INDEX     } from '../../../modules/nf-core/samtools/index/main'
+include { BCFTOOLS_MPILEUP } from '../../modules/nf-core/bcftools/mpileup/main'
+include { BCFTOOLS_NORM    } from '../../modules/nf-core/bcftools/norm/main'
 
 workflow  {
 
@@ -14,8 +8,49 @@ workflow  {
     ch_bam // channel: [ val(meta), [ bam ] ]
 
     main:
-
+ 
     ch_versions = Channel.empty()
+
+    //
+    // Call variants
+    //
+    BCFTOOLS_MPILEUP (
+        bam.map{ meta, bam_file -> [ meta, bam_file, [] ] },
+        fasta,
+        params.save_mpileup
+    )
+    ch_versions = ch_versions.mix(BCFTOOLS_MPILEUP.out.versions.first())
+
+    // Filter out samples with 0 variants
+    BCFTOOLS_MPILEUP
+        .out
+        .vcf
+        .join(BCFTOOLS_MPILEUP.out.tbi)
+        .join(BCFTOOLS_MPILEUP.out.stats)
+        .filter { meta, vcf, tbi, stats -> WorkflowCommons.getNumVariantsFromBCFToolsStats(stats) > 0 }
+        .set { ch_vcf_tbi_stats }
+
+    ch_vcf_tbi_stats
+        .map { meta, vcf, tbi, stats -> [ meta, vcf ] }
+        .set { ch_vcf }
+
+    ch_vcf_tbi_stats
+        .map { meta, vcf, tbi, stats -> [ meta, tbi ] }
+        .set { ch_tbi }
+
+    ch_vcf_tbi_stats
+        .map { meta, vcf, tbi, stats -> [ meta, stats ] }
+        .set { ch_stats }
+
+    //
+    // Split multi-allelic positions
+    //
+    BCFTOOLS_NORM (
+        ch_vcf.join(ch_tbi, by: [0]),
+        fasta
+    )
+    ch_versions = ch_versions.mix(BCFTOOLS_NORM.out.versions.first())
+
 
     // TODO nf-core: substitute modules here for the modules of your subworkflow
 
