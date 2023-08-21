@@ -3,6 +3,7 @@
 include { IVAR_VARIANTS         } from '../../modules/nf-core/ivar/variants/main'
 include { IVAR_VARIANTS_TO_VCF  } from '../../modules/local/ivar_variants_to_vcf'
 include { BCFTOOLS_SORT         } from '../../modules/nf-core/bcftools/sort/main'
+include { BCFTOOLS_FILTER       } from '../../modules/nf-core/bcftools/filter/main'
 
 workflow  {
 
@@ -49,16 +50,26 @@ workflow  {
     )
     ch_versions = ch_versions.mix(BCFTOOLS_SORT.out.versions.first())
 
+
+    //
+    // TODO: SET modules.config with threshold for variant filtering
+    //
+    BCFTOOLS_FILTER (
+        BCFTOOLS_SORT.out.vcf
+    )
+    ch_versions = ch_versions.mix(BCFTOOLS_FILTER.out.versions.first())
+
     emit:
-    tsv       = ch_ivar_tsv                     // channel: [ val(meta), [ tsv ] ]
+    tsv          = ch_ivar_tsv                     // channel: [ val(meta), [ tsv ] ]
 
-    vcf_orig  = IVAR_VARIANTS_TO_VCF.out.vcf    // channel: [ val(meta), [ vcf ] ]
-    log_out   = IVAR_VARIANTS_TO_VCF.out.log    // channel: [ val(meta), [ log ] ]
-    multiqc   = IVAR_VARIANTS_TO_VCF.out.tsv    // channel: [ val(meta), [ tsv ] ]
+    vcf_orig     = IVAR_VARIANTS_TO_VCF.out.vcf    // channel: [ val(meta), [ vcf ] ]
+    log_out      = IVAR_VARIANTS_TO_VCF.out.log    // channel: [ val(meta), [ log ] ]
+    multiqc      = IVAR_VARIANTS_TO_VCF.out.tsv    // channel: [ val(meta), [ tsv ] ]
 
-    vcf       = BCFTOOLS_SORT.out.vcf           // channel: [ val(meta), [ vcf ] ]
+    vcf          = BCFTOOLS_SORT.out.vcf           // channel: [ val(meta), [ vcf ] ]
+    vcf_filter   = BCFTOOLS_FILTER.out.vcf         // channel: [ val(meta), [ vcf ] ]
 
-    versions  = ch_versions                     // channel: [ versions.yml ]
+    versions     = ch_versions                     // channel: [ versions.yml ]
 }
 
 // //

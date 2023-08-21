@@ -1,6 +1,7 @@
 // Based on https://github.com/nf-core/viralrecon/blob/master/subworkflows/local/variants_bcftools.nf
 include { BCFTOOLS_MPILEUP } from '../../modules/nf-core/bcftools/mpileup/main'
 include { BCFTOOLS_NORM    } from '../../modules/nf-core/bcftools/norm/main'
+include { BCFTOOLS_NORM    } from '../../modules/nf-core/bcftools/filter/main'
 
 workflow  {
 
@@ -53,11 +54,20 @@ workflow  {
     )
     ch_versions = ch_versions.mix(BCFTOOLS_NORM.out.versions.first())
 
+    //
+    //
+    //
+    BCFTOOLS_FILTER (
+        BCFTOOLS_NORM.out.vcf
+    )
+    ch_versions = ch_versions.mix(BCFTOOLS_FILTER.out.versions.first())
+
 
     emit:
-    vcf         = BCFTOOLS_NORM.out.vcf  // channel: [ val(meta), [ vcf ] ]
+    vcf         = BCFTOOLS_NORM.out.vcf    // channel: [ val(meta), [ vcf ] ]
+    vcf_filter  = BCFTOOLS_FILTER.out.vcf  // channel: [ val(meta), [ vcf ] ]
 
-    versions    = ch_versions            // channel: [ versions.yml ]
+    versions    = ch_versions              // channel: [ versions.yml ]
 }
 
 // //

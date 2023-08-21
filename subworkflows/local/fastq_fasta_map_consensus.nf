@@ -88,12 +88,17 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
     }
 
     // call variants
+    ch_vcf = Channel.empty()
+    ch_tbi = Channel.empty()
+
     if (get_stats || conensus_caller == "bcftools") {
         BAM_CALL_VARIANTS( ch_dedup_bam_sort, reference.map{it[1]}, get_stats )
+        ch_vcf = BAM_CALL_VARIANTS.out.vcf_filter
+        ch_tbi = BAM_CALL_VARIANTS.out.tbi_filter
     }
 
     // consensus calling
-    BAM_CALL_CONSENSUS ()
+    BAM_CALL_CONSENSUS (ch_dedup_bam_sort, )
 
     IVAR_CONSENSUS ( ch_dedup_bam_sort, reference.map{it[1]}, get_stats )
 
