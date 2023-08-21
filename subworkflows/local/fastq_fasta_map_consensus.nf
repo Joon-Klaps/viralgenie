@@ -14,6 +14,8 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
     mapper          // val: [ bwamem2 | bowtie2 ]
     umi             // val: [ true | false ]
     deduplicate     // val: [ true | false ]
+    variant_caller  // val: [ bcftools | ivar ]
+    conensus_caller // val: [ bcftools | ivar ]
     get_stats       // val: [ true | false ]
 
     main:
@@ -86,11 +88,12 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
     }
 
     // call variants
-    BAM_CALL_VARIANTS( ch_dedup_bam_sort, reference.map{it[1]}, get_stats )
-
+    if (get_stats || conensus_caller == "bcftools") {
+        BAM_CALL_VARIANTS( ch_dedup_bam_sort, reference.map{it[1]}, get_stats )
+    }
 
     // consensus calling
-    BAM_CALL_CONSENSUS
+    BAM_CALL_CONSENSUS ()
 
     IVAR_CONSENSUS ( ch_dedup_bam_sort, reference.map{it[1]}, get_stats )
 

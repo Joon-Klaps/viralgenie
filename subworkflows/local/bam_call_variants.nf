@@ -1,5 +1,6 @@
-include { TABIX_TABIX    } from '../../modules/nf-core/tabix/tabix/main'
-include { BCFTOOLS_STATS } from '../../modules/nf-core/bcftools/stats/main'
+include { BAM_VARIANTS_BCFTOOLS } from './bam_variants_bcftools.nf'
+include { BAM_VARIANTS_IVAR     } from './bam_variants_ivar.nf'
+include { VCF_TABIX_STATS       } from './vcf_tabix_stats.nf'
 
 workflow  {
 
@@ -7,26 +8,58 @@ workflow  {
     bam             // channel: [ val(meta), [ bam ] ]
     fasta           // channel: [val (meta), [ fasta] ]
     variant_caller  // value: [ bcftools | ivar ]
+    save_stats      // value: [ true | false ]
 
 
     main:
 
+    ch_tbi      = Channel.empty()
+    ch_csi      = Channel.empty()
+    ch_stats    = Channel.empty()
     ch_versions = Channel.empty()
+    ch_multiqc  = Channel.empty()
 
-    // TODO nf-core: substitute modules here for the modules of your subworkflow
+    if (variant_caller == "bcftools"){
+        BAM_VARIANTS_BCFTOOLS (
+            bam,
+            fasta,
+            save_stats
+        )
+        ch_vcf      = BAM_VARIANTS_BCFTOOLS.out.vcf
+        ch_versions = ch_versions.mix(BAM_VARIANTS_BCFTOOLS.out.versions.first())
+    }
+    else if (variant_caller == "ivar"){
+        BAM_VARIANTS_IVAR (
+            bam,
+            fasta,
+            save_stats
+        )
+        ch_vcf      = BAM_VARIANTS_IVAR.out.vcf
+        ch_versions = ch_versions.mix(BAM_VARIANTS_IVAR.out.versions.first())
+        ch_multiqc  = ch_multiqc.mix(BAM_VARIANTS_IVAR.out.multiqc.map{it[1]}.ifEmpty{[]})
+    }
 
-    SAMTOOLS_SORT ( ch_bam )
-    ch_versions = ch_versions.mix(SAMTOOLS_SORT.out.versions.first())
+    if (save_stats){
+        VCF_TABIX_STATS (
+            ch_vcf,
+            [], // regions
+            [], // targets
+            []  // samples
+        )
+        ch_tbi      = VCF_TABIX_STATS.out.tbi
+        ch_csi      = VCF_TABIX_STATS.out.csi
+        ch_stats    = VCF_TABIX_STATS.out.stats
 
-    SAMTOOLS_INDEX ( SAMTOOLS_SORT.out.bam )
-    ch_versions = ch_versions.mix(SAMTOOLS_INDEX.out.versions.first())
+        ch_versions = ch_versions.mix(VCF_TABIX_STATS.out.versions)
+    }
 
     emit:
-    // TODO nf-core: edit emitted channels
-    bam      = SAMTOOLS_SORT.out.bam           // channel: [ val(meta), [ bam ] ]
-    bai      = SAMTOOLS_INDEX.out.bai          // channel: [ val(meta), [ bai ] ]
-    csi      = SAMTOOLS_INDEX.out.csi          // channel: [ val(meta), [ csi ] ]
+    vcf         = ch_vcf         // channel: [ val(meta), [ vcf ] ]
+    tbi         = ch_tbi         // channel: [ val(meta), [ tbi ] ]
+    csi         = ch_csi         // channel: [ val(meta), [ csi ] ]
+    stats       = ch_stats       // channel: [ val(meta), [ stats ] ]
 
-    versions = ch_versions                     // channel: [ versions.yml ]
+    mqc         = ch_multiqc     // channel: [ val(meta), [ mqc ] ]
+    versions    = ch_versions    // channel: [ versions.yml ]
 }
 

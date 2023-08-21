@@ -1,14 +1,16 @@
+// Based on https://github.com/nf-core/viralrecon/blob/master/subworkflows/local/variants_bcftools.nf
 include { BCFTOOLS_MPILEUP } from '../../modules/nf-core/bcftools/mpileup/main'
 include { BCFTOOLS_NORM    } from '../../modules/nf-core/bcftools/norm/main'
 
 workflow  {
 
     take:
-    // TODO nf-core: edit input (take) channels
-    ch_bam // channel: [ val(meta), [ bam ] ]
+    bam         // channel: [ val(meta), [ bam ] ]
+    fasta       // channel: [val (meta), [ fasta] ]
+    save_stats  // value: [ true | false ]
 
     main:
- 
+
     ch_versions = Channel.empty()
 
     //
@@ -17,17 +19,17 @@ workflow  {
     BCFTOOLS_MPILEUP (
         bam.map{ meta, bam_file -> [ meta, bam_file, [] ] },
         fasta,
-        params.save_mpileup
+        save_stats
     )
     ch_versions = ch_versions.mix(BCFTOOLS_MPILEUP.out.versions.first())
 
-    // Filter out samples with 0 variants
+    // Filter out samples with 0 variants, don't think I wan this?
     BCFTOOLS_MPILEUP
         .out
         .vcf
         .join(BCFTOOLS_MPILEUP.out.tbi)
         .join(BCFTOOLS_MPILEUP.out.stats)
-        .filter { meta, vcf, tbi, stats -> WorkflowCommons.getNumVariantsFromBCFToolsStats(stats) > 0 }
+        // .filter { meta, vcf, tbi, stats -> getNumVariantsFromBCFToolsStats(stats) > 0 }
         .set { ch_vcf_tbi_stats }
 
     ch_vcf_tbi_stats
@@ -52,20 +54,20 @@ workflow  {
     ch_versions = ch_versions.mix(BCFTOOLS_NORM.out.versions.first())
 
 
-    // TODO nf-core: substitute modules here for the modules of your subworkflow
-
-    SAMTOOLS_SORT ( ch_bam )
-    ch_versions = ch_versions.mix(SAMTOOLS_SORT.out.versions.first())
-
-    SAMTOOLS_INDEX ( SAMTOOLS_SORT.out.bam )
-    ch_versions = ch_versions.mix(SAMTOOLS_INDEX.out.versions.first())
-
     emit:
-    // TODO nf-core: edit emitted channels
-    bam      = SAMTOOLS_SORT.out.bam           // channel: [ val(meta), [ bam ] ]
-    bai      = SAMTOOLS_INDEX.out.bai          // channel: [ val(meta), [ bai ] ]
-    csi      = SAMTOOLS_INDEX.out.csi          // channel: [ val(meta), [ csi ] ]
+    vcf         = BCFTOOLS_NORM.out.vcf  // channel: [ val(meta), [ vcf ] ]
 
-    versions = ch_versions                     // channel: [ versions.yml ]
+    versions    = ch_versions            // channel: [ versions.yml ]
 }
 
+// //
+// // Function to get number of variants reported in BCFTools stats file
+// //
+// public static Integer getNumVariantsFromBCFToolsStats(bcftools_stats) {
+//     def num_vars = 0
+//     bcftools_stats.eachLine { line ->
+//         def matcher = line =~ /SN\s*0\s*number\sof\srecords:\s*([\d]+)/
+//         if (matcher) num_vars = matcher[0][1].toInteger()
+//     }
+//     return num_vars
+// }
