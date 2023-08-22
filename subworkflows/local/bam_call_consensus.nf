@@ -5,10 +5,11 @@ include { BAM_VCF_CONSENSUS_BCFTOOLS } from './bam_vcf_consensus_bcftools.nf'
 workflow  {
 
     take:
-    bam // channel: [ val(meta), [ bam ] ]
-    vcf // channel: [ val(meta), [ vcf ] ]
-    fasta // channel: [val (meta), [ fasta] ]
+    bam              // channel: [ val(meta), [ bam ] ]
+    vcf              // channel: [ val(meta), [ vcf ] ]
+    fasta            // channel: [val (meta), [ fasta] ]
     consensus_caller // value: [ bcftools | ivar ]
+    get_stats        // value: [ true | false ]
 
     main:
 
@@ -27,8 +28,8 @@ workflow  {
     else if (consensus_caller == "ivar"){
         IVAR_CONSENSUS (
             bam,
-            vcf,
-            fasta
+            fasta,
+            get_stats // save mpileup
         )
         ch_consensus = IVAR_CONSENSUS.out.consensus
         ch_versions = ch_versions.mix(IVAR_CONSENSUS.out.versions.first())

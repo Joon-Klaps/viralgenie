@@ -125,10 +125,13 @@ workflow  {
 
 
     emit:
-    reads     = ITERATION_FINAL.out.reads      // channel: [ val(meta), [ fastq ] ]
-    bam       = ITERATION_FINAL.out.bam        // channel: [ val(meta), [ bam ] ]
-    consensus = ITERATION_FINAL.out.consensus  // channel: [ val(meta), [ fasta ] ]
-    mqc       = ch_multiqc                     // channel: [ val(meta), [ mqc ] ]
-    versions  = ch_versions                    // channel: [ versions.yml ]
+    reads      = ITERATION_FINAL.out.reads      // channel: [ val(meta), [ fastq ] ]
+    bam        = ITERATION_FINAL.out.bam        // channel: [ val(meta), [ bam ] ]
+    vcf        = ITERATION_FINAL.out.vcf        // channel: [ val(meta), [ vcf ] ]
+    vcf_filter = ITERATION_FINAL.out.vcf_filter // channel: [ val(meta), [ vcf ] ]
+    consensus  = ITERATION_FINAL.out.consensus  // channel: [ val(meta), [ fasta ] ]
+
+    mqc        = ch_multiqc                     // channel: [ val(meta), [ mqc ] ]
+    versions   = ch_versions                    // channel: [ versions.yml ]
 }
 

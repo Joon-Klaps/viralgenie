@@ -25,8 +25,9 @@ workflow  {
             fasta,
             save_stats
         )
-        ch_vcf      = BAM_VARIANTS_BCFTOOLS.out.vcf
-        ch_versions = ch_versions.mix(BAM_VARIANTS_BCFTOOLS.out.versions.first())
+        ch_vcf        = BAM_VARIANTS_BCFTOOLS.out.vcf
+        ch_vcf_filter = BAM_VARIANTS_BCFTOOLS.out.vcf_filter
+        ch_versions   = ch_versions.mix(BAM_VARIANTS_BCFTOOLS.out.versions.first())
     }
     else if (variant_caller == "ivar"){
         BAM_VARIANTS_IVAR (
@@ -34,9 +35,10 @@ workflow  {
             fasta,
             save_stats
         )
-        ch_vcf      = BAM_VARIANTS_IVAR.out.vcf
-        ch_versions = ch_versions.mix(BAM_VARIANTS_IVAR.out.versions.first())
-        ch_multiqc  = ch_multiqc.mix(BAM_VARIANTS_IVAR.out.multiqc.map{it[1]}.ifEmpty{[]})
+        ch_vcf        = BAM_VARIANTS_IVAR.out.vcf
+        ch_vcf_filter = BAM_VARIANTS_IVAR.out.vcf_filter
+        ch_versions   = ch_versions.mix(BAM_VARIANTS_IVAR.out.versions.first())
+        ch_multiqc    = ch_multiqc.mix(BAM_VARIANTS_IVAR.out.multiqc.map{it[1]}.ifEmpty{[]})
     }
 
     if (save_stats){
@@ -55,6 +57,7 @@ workflow  {
 
     emit:
     vcf         = ch_vcf         // channel: [ val(meta), [ vcf ] ]
+    vcf_filter  = ch_vcf_filter  // channel: [ val(meta), [ vcf ] ]
     tbi         = ch_tbi         // channel: [ val(meta), [ tbi ] ]
     csi         = ch_csi         // channel: [ val(meta), [ csi ] ]
     stats       = ch_stats       // channel: [ val(meta), [ stats ] ]

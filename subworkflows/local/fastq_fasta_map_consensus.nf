@@ -5,18 +5,17 @@ include { BAM_STATS_METRICS  } from './bam_stats_metrics'
 include { BAM_CALL_VARIANTS  } from './bam_call_variants'
 include { BAM_CALL_CONSENSUS } from './bam_call_consensus'
 
-
 workflow FASTQ_FASTA_MAP_CONSENSUS {
 
     take:
-    reads           // channel: [ val(meta), [ fastq ] ]
-    reference       // channel: [ val(meta), [ fasta ] ]
-    mapper          // val: [ bwamem2 | bowtie2 ]
-    umi             // val: [ true | false ]
-    deduplicate     // val: [ true | false ]
-    variant_caller  // val: [ bcftools | ivar ]
-    conensus_caller // val: [ bcftools | ivar ]
-    get_stats       // val: [ true | false ]
+    reads            // channel: [ val(meta), [ fastq ] ]
+    reference        // channel: [ val(meta), [ fasta ] ]
+    mapper           // val: [ bwamem2 | bowtie2 ]
+    umi              // val: [ true | false ]
+    deduplicate      // val: [ true | false ]
+    variant_caller   // val: [ bcftools | ivar ]
+    consensus_caller // val: [ bcftools | ivar ]
+    get_stats        // val: [ true | false ]
 
     main:
 
@@ -91,24 +90,31 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
     ch_vcf = Channel.empty()
     ch_tbi = Channel.empty()
 
-    if (get_stats || conensus_caller == "bcftools") {
+    if (get_stats || consensus_caller == "bcftools") {
         BAM_CALL_VARIANTS( ch_dedup_bam_sort, reference.map{it[1]}, get_stats )
-        ch_vcf = BAM_CALL_VARIANTS.out.vcf_filter
-        ch_tbi = BAM_CALL_VARIANTS.out.tbi_filter
+        ch_vcf_filter = BAM_CALL_VARIANTS.out.vcf_filter
+        ch_vcf        = BAM_CALL_VARIANTS.out.vcf
+        ch_tbi        = BAM_CALL_VARIANTS.out.tbi
     }
 
     // consensus calling
-    BAM_CALL_CONSENSUS (ch_dedup_bam_sort, )
-
-    IVAR_CONSENSUS ( ch_dedup_bam_sort, reference.map{it[1]}, get_stats )
+    BAM_CALL_CONSENSUS (
+        ch_dedup_bam_sort,
+        ch_vcf_filter,
+        ch_reference_mod,
+        consensus_caller,
+        get_stats
+    )
 
 
     emit:
-    //TODO: add if necessary more outputs?
-    bam      = ch_dedup_sorted_bam             // channel: [ val(meta), [ bam ] ]
-    consensus = IVAR_CONSENSUS.out.consensus   // channel: [ val(meta), [ fasta ] ]
+    reads      = ch_reference_reads             // channel: [ val(meta), [ fastq ] ]
+    bam        = ch_dedup_sorted_bam            // channel: [ val(meta), [ bam ] ]
+    vcf_fitler = ch_vcf_filter                  // channel: [ val(meta), [ vcf ] ]
+    vcf        = ch_vcf                         // channel: [ val(meta), [ vcf ] ]
+    consensus  = BAM_CALL_CONSENSUS.out.consensus   // channel: [ val(meta), [ fasta ] ]
 
-    mqc      = ch_multiqc          // channel: [ val(meta), [ csi ] ]
-    versions = ch_versions                     // channel: [ versions.yml ]
+    mqc      = ch_multiqc                       // channel: [ val(meta), [ csi ] ]
+    versions = ch_versions                      // channel: [ versions.yml ]
 }
 
