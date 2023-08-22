@@ -321,7 +321,6 @@
                 },
                 "adapter_fasta": {
                     "type": "string",
-                    "default": "None",
                     "description": "Fasta file of adapters",
                     "fa_icon": "fas fa-file-alt"
                 },
@@ -350,7 +349,6 @@
                 },
                 "contaminants": {
                     "type": "string",
-                    "default": "None",
                     "description": "Reference files containing adapter and/or contaminant sequences for sequence kmer matching (used by bbduk)",
                     "fa_icon": "fas fa-filter"
                 },
@@ -361,13 +359,11 @@
                 },
                 "host_genome": {
                     "type": "string",
-                    "default": "None",
                     "description": "Fasta file containing the genome(s) of the host(s)",
                     "fa_icon": "far fa-file-alt"
                 },
                 "host_index": {
                     "type": "string",
-                    "default": "None",
                     "description": "Bowtie2 index file of host(s) genome(s)",
                     "fa_icon": "far fa-file-alt"
                 },
@@ -441,7 +437,6 @@
                 },
                 "bracken_db": {
                     "type": "string",
-                    "default": "None",
                     "fa_icon": "fas fa-database",
                     "format": "path",
                     "description": "Location of bracken database"
@@ -516,13 +511,11 @@
                 },
                 "spades_hmm": {
                     "type": "string",
-                    "default": "None",
                     "fa_icon": "fas fa-file",
                     "description": "File or directory with amino acid HMMs for Spades HMM-guided mode."
                 },
                 "spades_yml": {
                     "type": "string",
-                    "default": "None",
                     "hidden": true,
                     "fa_icon": "fas fa-file",
                     "description": "Path to yml file containing read information.",
@@ -619,7 +612,6 @@
                 },
                 "mapping_sequence": {
                     "type": "string",
-                    "default": "None",
                     "description": "Sequence to use as a mapping reference instead of the de novo contigs or scaffolds",
                     "fa_icon": "far fa-file-alt"
                 }
@@ -644,9 +636,9 @@
                 },
                 "checkv_db": {
                     "type": "string",
-                    "default": "None",
                     "format": "path",
-                    "fa_icon": "fas fa-database"
+                    "fa_icon": "fas fa-database",
+                    "description": "Reference database used by checkv for consensus quality control"
                 },
                 "skip_quast": {
                     "type": "boolean",

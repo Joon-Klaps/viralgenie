@@ -8,14 +8,15 @@ include { BAM_CALL_CONSENSUS } from './bam_call_consensus'
 workflow FASTQ_FASTA_MAP_CONSENSUS {
 
     take:
-    reads            // channel: [ val(meta), [ fastq ] ]
-    reference        // channel: [ val(meta), [ fasta ] ]
-    mapper           // val: [ bwamem2 | bowtie2 ]
-    umi              // val: [ true | false ]
-    deduplicate      // val: [ true | false ]
-    variant_caller   // val: [ bcftools | ivar ]
-    consensus_caller // val: [ bcftools | ivar ]
-    get_stats        // val: [ true | false ]
+    reads                // channel: [ val(meta), [ fastq ] ]
+    reference            // channel: [ val(meta), [ fasta ] ]
+    mapper               // val: [ bwamem2 | bowtie2 ]
+    umi                  // val: [ true | false ]
+    deduplicate          // val: [ true | false ]
+    skip_variant_calling // val: [ true | false ]
+    variant_caller       // val: [ bcftools | ivar ]
+    consensus_caller     // val: [ bcftools | ivar ]
+    get_stats            // val: [ true | false ]
 
     main:
 
@@ -90,7 +91,7 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
     ch_vcf = Channel.empty()
     ch_tbi = Channel.empty()
 
-    if (get_stats || consensus_caller == "bcftools") {
+    if (consensus_caller == "bcftools") {
         BAM_CALL_VARIANTS( ch_dedup_bam_sort, reference.map{it[1]}, get_stats )
         ch_vcf_filter = BAM_CALL_VARIANTS.out.vcf_filter
         ch_vcf        = BAM_CALL_VARIANTS.out.vcf

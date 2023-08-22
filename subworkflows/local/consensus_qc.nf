@@ -20,8 +20,8 @@ workflow CONSENSUS_QC  {
     if ( !skip_quast ) {
         QUAST (
             ch_genome,
-            [],
-            []
+            [[:],[]],
+            [[:],[]]
         )
         ch_versions = ch_versions.mix(QUAST.out.versions)
         ch_multiqc_files = ch_multiqc_files.mix(QUAST.out.tsv)

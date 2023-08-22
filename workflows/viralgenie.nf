@@ -63,9 +63,10 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
-include { PREPROCESSING_ILLUMINA       } from '../subworkflows/local/preprocessing_illumina'
-include { FASTQ_KRAKEN_KAIJU           } from '../subworkflows/local/fastq_kraken_kaiju'
-include { FASTQ_SPADES_TRINITY_MEGAHIT } from '../subworkflows/local/fastq_spades_trinity_megahit'
+include { PREPROCESSING_ILLUMINA          } from '../subworkflows/local/preprocessing_illumina'
+include { FASTQ_KRAKEN_KAIJU              } from '../subworkflows/local/fastq_kraken_kaiju'
+include { FASTQ_SPADES_TRINITY_MEGAHIT    } from '../subworkflows/local/fastq_spades_trinity_megahit'
+include { FASTQ_FASTA_ITERATIVE_CONSENSUS } from '../subworkflows/local/fastq_fasta_iterative_consensus'
 
 //  Add consensus reconstruction of genome
 include { FASTA_BLAST_CLUST             } from '../subworkflows/local/fasta_blast_clust'
@@ -89,6 +90,7 @@ include { BLAST_MAKEBLASTDB           } from '../modules/nf-core/blast/makeblast
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 include { CHECKV_DOWNLOADDATABASE     } from '../modules/nf-core/checkv/downloaddatabase/main'
+
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -119,9 +121,10 @@ workflow VIRALGENIE {
         ch_host_index,
         ch_adapter_fasta,
         ch_contaminants)
-    ch_host_trim_reads = PREPROCESSING_ILLUMINA.out.reads
-    ch_multiqc_files   = ch_multiqc_files.mix(PREPROCESSING_ILLUMINA.out.mqc.collect{it[1]}.ifEmpty([]))
-    ch_versions        = ch_versions.mix(PREPROCESSING_ILLUMINA.out.versions)
+    ch_host_trim_reads      = PREPROCESSING_ILLUMINA.out.reads
+    ch_decomplex_trim_reads = PREPROCESSING_ILLUMINA.out.reads_decomplexified
+    ch_multiqc_files        = ch_multiqc_files.mix(PREPROCESSING_ILLUMINA.out.mqc.collect{it[1]}.ifEmpty([]))
+    ch_versions             = ch_versions.mix(PREPROCESSING_ILLUMINA.out.versions)
 
     // Determining metagenomic diversity
     if (!params.skip_metagenomic_diversity) {
@@ -175,8 +178,29 @@ workflow VIRALGENIE {
             ch_consensus = ALIGN_COLLAPSE_CONTIGS.out.consensus
 
             //TODO: subworkflow for iterative refinement, contains another subworkflow if we just give a single reference
+            //TODO: setup config for all of the called modules in there
+            //TODO: schema build
+            if (!params.skip_iterative_refinement) {
+                FASTQ_FASTA_ITERATIVE_CONSENSUS (
+                    ch_decomplex_trim_reads, // Add option to use host removed reads as well
+                    ch_consensus,
+                    params.iterative_repeats,
+                    params.intermediate_mapper,
+                    params.mapper,
+                    params.with_umi,
+                    params.deduplicate,
+                    params.intermediate_variant_caller,
+                    params.variant_caller,
+                    params.intermediate_consensus_caller,
+                    params.consensus_caller,
+                    params.get_intermediate_stats,
+                    params.get_stats,
+                )
+            }
         }
     }
+
+    // TODO: After consensus sequences have been made, we still have to map against it and call variants
 
     if (params.mapping_sequence ) {
         ch_mapping_sequence = Channel.fromPath(params.mapping_sequence)
