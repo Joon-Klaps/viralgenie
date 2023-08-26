@@ -592,6 +592,64 @@
             },
             "fa_icon": "fas fa-hand-sparkles"
         },
+        "iterative_consensus_refinement": {
+            "title": "Iterative consensus refinement",
+            "type": "object",
+            "description": "Define parameters for iterations to update denovo consensus using  reference based improvements",
+            "default": "",
+            "fa_icon": "fas fa-circle-notch",
+            "properties": {
+                "skip_iterative_refinement": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward",
+                    "description": "Don't realign reads to consensus sequences and redefine the consensus through (multiple) iterations"
+                },
+                "iterative_repeats": {
+                    "type": "integer",
+                    "default": 2,
+                    "fa_icon": "fas fa-list-ol",
+                    "description": "number of iterations"
+                },
+                "intermediate_mapper": {
+                    "type": "string",
+                    "default": "bwamem2",
+                    "fa_icon": "fas fa-align-center",
+                    "enum": ["bwamem2", "bowtie2"],
+                    "description": "mapping tool used during iterations"
+                },
+                "intermediate_variant_caller": {
+                    "type": "string",
+                    "default": "ivar",
+                    "fa_icon": "fas fa-layer-group",
+                    "enum": ["ivar", "bcftools"],
+                    "description": "variant caller used during iterations"
+                },
+                "consensus_caller": {
+                    "type": "string",
+                    "default": "ivar",
+                    "fa_icon": "fas fa-compress-alt",
+                    "enum": ["ivar", "bcftools"],
+                    "description": "consensus tool used for calling new consensus in final iteration"
+                },
+                "intermediate_consensus_caller": {
+                    "type": "string",
+                    "default": "bcftools",
+                    "fa_icon": "fas fa-compress-alt",
+                    "description": "consensus tool used for calling new consensus during iterations"
+                },
+                "get_intermediate_stats": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-info",
+                    "description": "calculate summary statistics during iterations"
+                },
+                "get_stats": {
+                    "type": "boolean",
+                    "default": true,
+                    "fa_icon": "fas fa-info",
+                    "description": "calculate summary statistics in final iteration"
+                }
+            }
+        },
         "variant_analysis": {
             "title": "Variant analysis",
             "type": "object",
@@ -614,6 +672,19 @@
                     "type": "string",
                     "description": "Sequence to use as a mapping reference instead of the de novo contigs or scaffolds",
                     "fa_icon": "far fa-file-alt"
+                },
+                "deduplicate": {
+                    "type": "boolean",
+                    "default": true,
+                    "fa_icon": "fas fa-compress-alt",
+                    "description": "deduplicate the reads",
+                    "help_text": "If used with umi's, `umi tools` will be used to group and call consensus of each indiual read group. If not used with umi's use `PicardsMarkDuplicates`. "
+                },
+                "variant_caller": {
+                    "type": "string",
+                    "fa_icon": "fas fa-layer-group",
+                    "default": "ivar",
+                    "enum": ["ivar", "bcftools"]
                 }
             },
             "fa_icon": "fas fa-layer-group"
@@ -676,6 +747,9 @@
         },
         {
             "$ref": "#/definitions/polishing"
+        },
+        {
+            "$ref": "#/definitions/iterative_consensus_refinement"
         },
         {
             "$ref": "#/definitions/variant_analysis"
