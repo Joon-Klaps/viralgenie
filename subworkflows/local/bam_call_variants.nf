@@ -6,7 +6,7 @@ workflow BAM_CALL_VARIANTS {
 
     take:
     bam             // channel: [ val(meta), [ bam ] ]
-    fasta           // channel: [val (meta), [ fasta] ]
+    fasta           // channel: [ fasta ]
     variant_caller  // value: [ bcftools | ivar ]
     save_stats      // value: [ true | false ]
 

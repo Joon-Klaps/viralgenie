@@ -9,7 +9,7 @@ workflow BAM_VARIANTS_IVAR {
 
     take:
     bam         // channel: [ val(meta), [ bam ] ]
-    fasta       // channel: [val (meta), [ fasta] ]
+    fasta       // channel: [ fasta ]
     save_stats // value: [ true | false ]
 
     main:
@@ -40,8 +40,7 @@ workflow BAM_VARIANTS_IVAR {
     //
     IVAR_VARIANTS_TO_VCF (
         ch_ivar_tsv,
-        fasta,
-        ivar_multiqc_header
+        fasta
     )
     ch_versions = ch_versions.mix(IVAR_VARIANTS_TO_VCF.out.versions.first())
 

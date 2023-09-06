@@ -30,7 +30,7 @@ workflow BAM_DEDUPLICATE {
             }
 
     } else  {
-            PICARD_MARKDUPLICATES ( bam, reference, ch_faidx )
+            PICARD_MARKDUPLICATES ( bam, reference, faidx )
             ch_dedup_bam      = PICARD_MARKDUPLICATES.out.bam
             ch_versions       = ch_versions.mix(PICARD_MARKDUPLICATES.out.versions)
             if ( get_stats ) {

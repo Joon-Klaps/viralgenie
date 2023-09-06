@@ -20,7 +20,8 @@ workflow BAM_CALL_CONSENSUS {
         BAM_VCF_CONSENSUS_BCFTOOLS (
             bam,
             vcf,
-            fasta
+            fasta,
+            get_stats
         )
         ch_consensus = BAM_VCF_CONSENSUS_BCFTOOLS.out.consensus
         ch_versions = ch_versions.mix(BAM_VCF_CONSENSUS_BCFTOOLS.out.versions.first())
@@ -31,13 +32,13 @@ workflow BAM_CALL_CONSENSUS {
             fasta,
             get_stats // save mpileup
         )
-        ch_consensus = IVAR_CONSENSUS.out.consensus
+        ch_consensus = IVAR_CONSENSUS.out.fasta
         ch_versions = ch_versions.mix(IVAR_CONSENSUS.out.versions.first())
     }
 
     emit:
+    consensus = ch_consensus        // channel: [ val(meta), [ fasta ] ]
 
-
-    versions = ch_versions                     // channel: [ versions.yml ]
+    versions  = ch_versions          // channel: [ versions.yml ]
 }
 

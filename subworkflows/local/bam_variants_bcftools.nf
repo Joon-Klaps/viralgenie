@@ -7,7 +7,7 @@ workflow BAM_VARIANTS_BCFTOOLS {
 
     take:
     bam         // channel: [ val(meta), [ bam ] ]
-    fasta       // channel: [val (meta), [ fasta] ]
+    fasta       // channel: [ fasta ]
     save_stats  // value: [ true | false ]
 
     main:

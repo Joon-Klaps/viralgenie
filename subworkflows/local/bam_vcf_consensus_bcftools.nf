@@ -1,5 +1,5 @@
 //
-// Consensus calling with BCFTools and downstream processing QC
+// Consensus calling with BCFTools
 //
 
 include { TABIX_TABIX         } from '../../modules/nf-core/tabix/tabix/main'
@@ -8,14 +8,13 @@ include { BEDTOOLS_MASKFASTA  } from '../../modules/nf-core/bedtools/maskfasta/m
 include { BCFTOOLS_CONSENSUS  } from '../../modules/nf-core/bcftools/consensus/main'
 include { MAKE_BED_MASK       } from '../../modules/local/make_bed_mask'
 include { RENAME_FASTA_HEADER } from '../../modules/local/rename_fasta_header'
-include { CONSENSUS_QC        } from './consensus_qc'
 
-workflow CONSENSUS_BCFTOOLS {
+workflow BAM_VCF_CONSENSUS_BCFTOOLS {
     take:
     bam          // channel: [ val(meta), [ bam ] ]
     vcf          // channel: [ val(meta), [ vcf ] ]
-    tbi          // channel: [ val(meta), [ tbi ] ]
     fasta        // channel: [ val(meta), [ fasta ] ]
+    get_stats    // value: [ true | false ]
 
     main:
 

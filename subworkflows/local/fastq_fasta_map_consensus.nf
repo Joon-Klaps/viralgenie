@@ -1,6 +1,7 @@
 include { MAP_READS          } from './map_reads'
 include { BAM_DEDUPLICATE    } from './bam_deduplicate'
 include { SAMTOOLS_SORT      } from '../../modules/nf-core/samtools/sort/main'
+include { SAMTOOLS_FAIDX     } from '../../modules/nf-core/samtools/faidx/main'
 include { BAM_STATS_METRICS  } from './bam_stats_metrics'
 include { BAM_CALL_VARIANTS  } from './bam_call_variants'
 include { BAM_CALL_CONSENSUS } from './bam_call_consensus'
@@ -13,7 +14,6 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
     mapper               // val: [ bwamem2 | bowtie2 ]
     umi                  // val: [ true | false ]
     deduplicate          // val: [ true | false ]
-    skip_variant_calling // val: [ true | false ]
     variant_caller       // val: [ bcftools | ivar ]
     consensus_caller     // val: [ bcftools | ivar ]
     get_stats            // val: [ true | false ]
@@ -58,10 +58,10 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
     MAP_READS ( ch_read_mod, ch_reference_mod, mapper )
 
     ch_bam       = MAP_READS.out.bam
-    ch_versions  =  ch_versions.mix(MAP_READS.out.versions)
-    ch_multiqc   =  ch_multiqc.mix(MAP_READS.out.mqc)
-    ch_faidx     = SAMTOOLS_FAIDX ( reference, [[],[]]).faidx
+    ch_versions  = ch_versions.mix(MAP_READS.out.versions)
+    ch_multiqc   = ch_multiqc.mix(MAP_READS.out.mqc)
 
+    ch_faidx     = SAMTOOLS_FAIDX ( reference, [[],[]]).fai
 
     // deduplicate bam using umitools (if UMI) or picard
     if (deduplicate) {
@@ -88,11 +88,17 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
     }
 
     // call variants
-    ch_vcf = Channel.empty()
-    ch_tbi = Channel.empty()
+    ch_vcf        = Channel.empty()
+    ch_vcf_filter = Channel.empty()
+    ch_tbi        = Channel.empty()
 
     if (consensus_caller == "bcftools") {
-        BAM_CALL_VARIANTS( ch_dedup_bam_sort, reference.map{it[1]}, get_stats )
+        BAM_CALL_VARIANTS (
+            ch_dedup_bam_sort,
+            reference.map{it[1]},
+            variant_caller,
+            get_stats
+        )
         ch_vcf_filter = BAM_CALL_VARIANTS.out.vcf_filter
         ch_vcf        = BAM_CALL_VARIANTS.out.vcf
         ch_tbi        = BAM_CALL_VARIANTS.out.tbi
@@ -110,7 +116,7 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
 
     emit:
     reads      = ch_reference_reads             // channel: [ val(meta), [ fastq ] ]
-    bam        = ch_dedup_sorted_bam            // channel: [ val(meta), [ bam ] ]
+    bam        = ch_dedup_bam_sort              // channel: [ val(meta), [ bam ] ]
     vcf_fitler = ch_vcf_filter                  // channel: [ val(meta), [ vcf ] ]
     vcf        = ch_vcf                         // channel: [ val(meta), [ vcf ] ]
     consensus  = BAM_CALL_CONSENSUS.out.consensus   // channel: [ val(meta), [ fasta ] ]
