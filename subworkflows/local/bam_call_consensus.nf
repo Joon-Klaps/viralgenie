@@ -2,7 +2,7 @@
 include { IVAR_CONSENSUS             } from '../../modules/nf-core/ivar/consensus/main'
 include { BAM_VCF_CONSENSUS_BCFTOOLS } from './bam_vcf_consensus_bcftools.nf'
 
-workflow  {
+workflow BAM_CALL_CONSENSUS {
 
     take:
     bam              // channel: [ val(meta), [ bam ] ]

@@ -1,8 +1,8 @@
 include { SAMTOOLS_INDEX                } from '../../modules/nf-core/samtools/index/main'
-include { PICARD_COLLECTMULTIPLEMETRICS } from '../../modules/nf-core/samtools/index/main'
+include { PICARD_COLLECTMULTIPLEMETRICS } from '../../modules/nf-core/picard/collectmultiplemetrics/main'
 include { BAM_STATS_SAMTOOLS            } from '../nf-core/bam_stats_samtools/main'
 
-workflow  {
+workflow BAM_STATS_METRICS {
 
     take:
     bam_sort    // channel: [ val(meta), [ bam ] ]

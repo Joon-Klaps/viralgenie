@@ -1,9 +1,9 @@
-include { SAMTOOLS_FAIDX     } from '../../modules/nf-core/samtools/faidx/main'
-include { SAMTOOLS_INDEX     } from '../../modules/nf-core/samtools/index/main'
-include { UMITOOLS_DEDUP     } from '../../modules/nf-core/umitools/dedup/main'
-include { PICARD_DEDUPLICATE } from '../../modules/nf-core/picard/markduplicates/main'
+include { SAMTOOLS_FAIDX        } from '../../modules/nf-core/samtools/faidx/main'
+include { SAMTOOLS_INDEX        } from '../../modules/nf-core/samtools/index/main'
+include { UMITOOLS_DEDUP        } from '../../modules/nf-core/umitools/dedup/main'
+include { PICARD_MARKDUPLICATES } from '../../modules/nf-core/picard/markduplicates/main'
 
-workflow  {
+workflow BAM_DEDUPLICATE {
 
     take:
     bam         // channel: [ val(meta), [ bam ] ]
@@ -30,11 +30,11 @@ workflow  {
             }
 
     } else  {
-            PICARD_DEDUPLICATE ( bam, reference, ch_faidx )
-            ch_dedup_bam      = PICARD_DEDUPLICATE.out.bam
-            ch_versions       = ch_versions.mix(PICARD_DEDUPLICATE.out.versions)
+            PICARD_MARKDUPLICATES ( bam, reference, ch_faidx )
+            ch_dedup_bam      = PICARD_MARKDUPLICATES.out.bam
+            ch_versions       = ch_versions.mix(PICARD_MARKDUPLICATES.out.versions)
             if ( get_stats ) {
-                ch_multiqc    = ch_multiqc.mix(PICARD_DEDUPLICATE.out.metrics.map{it[1]}.ifEmpty{[]})
+                ch_multiqc    = ch_multiqc.mix(PICARD_MARKDUPLICATES.out.metrics.map{it[1]}.ifEmpty{[]})
             }
     }
 

@@ -4,7 +4,7 @@ include { FASTQ_FASTA_MAP_CONSENSUS as ITERATION_3      } from './fastq_fasta_ma
 include { FASTQ_FASTA_MAP_CONSENSUS as ITERATION_4      } from './fastq_fasta_map_consensus.nf'
 include { FASTQ_FASTA_MAP_CONSENSUS as ITERATION_FINAL  } from './fastq_fasta_map_consensus.nf'
 
-workflow  {
+workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
 
     take:
     reads                          // channel: [ val(meta), [ fastq ] ]

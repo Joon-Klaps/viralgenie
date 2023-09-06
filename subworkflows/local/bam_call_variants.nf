@@ -2,7 +2,7 @@ include { BAM_VARIANTS_BCFTOOLS } from './bam_variants_bcftools.nf'
 include { BAM_VARIANTS_IVAR     } from './bam_variants_ivar.nf'
 include { VCF_TABIX_STATS       } from './vcf_tabix_stats.nf'
 
-workflow  {
+workflow BAM_CALL_VARIANTS {
 
     take:
     bam             // channel: [ val(meta), [ bam ] ]

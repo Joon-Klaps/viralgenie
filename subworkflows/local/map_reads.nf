@@ -1,13 +1,13 @@
-include { BWAMEM2_MEM    } from '../../../modules/nf-core/bwamem2/mem/main'
-include { BWAMEM2_INDEX  } from '../../../modules/nf-core/bwamem2/index/main'
-include { BOWTIE2_ALIGN  } from '../../../modules/nf-core/bowtie2/align/main'
-include { BOWTIE2_INDEX  } from '../../../modules/nf-core/bowtie2/index/main'
+include { BWAMEM2_MEM    } from '../../modules/nf-core/bwamem2/mem/main'
+include { BWAMEM2_INDEX  } from '../../modules/nf-core/bwamem2/index/main'
+include { BOWTIE2_ALIGN  } from '../../modules/nf-core/bowtie2/align/main'
+include { BOWTIE2_BUILD  } from '../../modules/nf-core/bowtie2/build/main'
 
 workflow MAP_READS  {
 
     take:
-    reads     // channel: [ val(meta), [ reads ] ]
-    reference // channel: [ val(meta), [ reads ] ]
+    reads        // channel: [ val(meta), [ reads ] ]
+    reference    // channel: [ val(meta), [ reads ] ]
     mapper       // val: 'bwamem2' or 'bowtie2'
 
     main:
@@ -26,10 +26,10 @@ workflow MAP_READS  {
         ch_bam      = BWAMEM2_MEM.out.bam
     }
     else if ( mapper == 'bowtie2' ) {
-        BOWTIE2_INDEX ( reference )
-        ch_versions = ch_versions.mix(BOWTIE2_INDEX.out.versions.first())
+        BOWTIE2_BUILD ( reference )
+        ch_versions = ch_versions.mix(BOWTIE2_BUILD.out.versions.first())
 
-        BOWTIE2_ALIGN ( reads, BOWTIE2_INDEX.out.bt2, true)
+        BOWTIE2_ALIGN ( reads, BOWTIE2_BUILD.out.bt2, true)
         ch_versions = ch_versions.mix(BOWTIE2_ALIGN.out.versions.first())
 
         ch_bam      = BOWTIE2_ALIGN.out.bam

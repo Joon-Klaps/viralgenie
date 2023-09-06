@@ -5,7 +5,7 @@ include { IVAR_VARIANTS_TO_VCF  } from '../../modules/local/ivar_variants_to_vcf
 include { BCFTOOLS_SORT         } from '../../modules/nf-core/bcftools/sort/main'
 include { BCFTOOLS_FILTER       } from '../../modules/nf-core/bcftools/filter/main'
 
-workflow  {
+workflow BAM_VARIANTS_IVAR {
 
     take:
     bam         // channel: [ val(meta), [ bam ] ]

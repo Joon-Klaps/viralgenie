@@ -3,7 +3,7 @@ include { BCFTOOLS_MPILEUP } from '../../modules/nf-core/bcftools/mpileup/main'
 include { BCFTOOLS_NORM    } from '../../modules/nf-core/bcftools/norm/main'
 include { BCFTOOLS_NORM    } from '../../modules/nf-core/bcftools/filter/main'
 
-workflow  {
+workflow BAM_VARIANTS_BCFTOOLS {
 
     take:
     bam         // channel: [ val(meta), [ bam ] ]
