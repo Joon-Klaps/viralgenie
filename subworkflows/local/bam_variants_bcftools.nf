@@ -1,7 +1,7 @@
 // Based on https://github.com/nf-core/viralrecon/blob/master/subworkflows/local/variants_bcftools.nf
 include { BCFTOOLS_MPILEUP } from '../../modules/nf-core/bcftools/mpileup/main'
 include { BCFTOOLS_NORM    } from '../../modules/nf-core/bcftools/norm/main'
-include { BCFTOOLS_NORM    } from '../../modules/nf-core/bcftools/filter/main'
+include { BCFTOOLS_FILTER  } from '../../modules/nf-core/bcftools/filter/main'
 
 workflow BAM_VARIANTS_BCFTOOLS {
 
@@ -55,7 +55,7 @@ workflow BAM_VARIANTS_BCFTOOLS {
     ch_versions = ch_versions.mix(BCFTOOLS_NORM.out.versions.first())
 
     //
-    //
+    // TODO: check if you need to configure the trehsshold in args
     //
     BCFTOOLS_FILTER (
         BCFTOOLS_NORM.out.vcf
