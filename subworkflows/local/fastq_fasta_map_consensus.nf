@@ -117,7 +117,7 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
     emit:
     reads      = ch_reference_reads             // channel: [ val(meta), [ fastq ] ]
     bam        = ch_dedup_bam_sort              // channel: [ val(meta), [ bam ] ]
-    vcf_fitler = ch_vcf_filter                  // channel: [ val(meta), [ vcf ] ]
+    vcf_filter = ch_vcf_filter                  // channel: [ val(meta), [ vcf ] ]
     vcf        = ch_vcf                         // channel: [ val(meta), [ vcf ] ]
     consensus  = BAM_CALL_CONSENSUS.out.consensus   // channel: [ val(meta), [ fasta ] ]
 

@@ -27,7 +27,7 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
     ch_multiqc                = Channel.empty()
     ch_versions               = Channel.empty()
 
-    if (repeats >= 1){
+    if (repeats > 1){
         ch_reference_intermediate
             .map{meta, fasta -> [meta + [iteration:'1'], fasta]}
             .set{ch_reference_intermediate}
@@ -47,7 +47,7 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
         ch_multiqc                = ch_multiqc.mix(ITERATION_1.out.mqc)
         ch_versions               = ch_versions.mix(ITERATION_1.out.versions)
     }
-    if (repeats >= 2){
+    if (repeats > 2){
         ch_reference_intermediate
             .map{meta, fasta -> [meta + [iteration:'2'], fasta]}
             .set{ch_reference_intermediate}
@@ -66,7 +66,7 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
         ch_reference_intermediate = ITERATION_2.out.consensus
         ch_multiqc                = ch_multiqc.mix(ITERATION_2.out.mqc)
     }
-    if (repeats >= 3){
+    if (repeats > 3){
         ch_reference_intermediate
             .map{meta, fasta -> [meta + [iteration:'3'], fasta]}
             .set{ch_reference_intermediate}
@@ -85,7 +85,7 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
         ch_reference_intermediate = ITERATION_3.out.consensus
         ch_multiqc                = ch_multiqc.mix(ITERATION_3.out.mqc)
     }
-    if (repeats >= 4){
+    if (repeats > 4){
         ch_reference_intermediate
             .map{meta, fasta -> [meta + [iteration:'4'], fasta]}
             .set{ch_reference_intermediate}
