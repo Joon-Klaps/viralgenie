@@ -53,6 +53,7 @@ ch_multiqc_config          = Channel.fromPath("$projectDir/assets/multiqc_config
 ch_multiqc_custom_config   = params.multiqc_config ? Channel.fromPath( params.multiqc_config, checkIfExists: true ) : Channel.empty()
 ch_multiqc_logo            = params.multiqc_logo   ? Channel.fromPath( params.multiqc_logo, checkIfExists: true ) : Channel.empty()
 ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
+ch_ivar_vcf_header         = params.ivar_vcf_header ? Channel.fromPath( params.ivar_vcf_header, checkIfExists: true ) : file("$projectDir/assets/headers/ivar_variants_header_mqc.txt", checkIfExists: true)
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -179,7 +180,10 @@ workflow VIRALGENIE {
 
             //TODO: subworkflow for iterative refinement, contains another subworkflow if we just give a single reference
             //TODO: setup config for all of the called modules in there
-            //TODO: schema build
+
+            ch_consensus.view()
+            ch_decomplex_trim_reads.view()
+
             if (!params.skip_iterative_refinement) {
                 FASTQ_FASTA_ITERATIVE_CONSENSUS (
                     ch_decomplex_trim_reads, // Add option to use host removed reads as well
@@ -195,6 +199,7 @@ workflow VIRALGENIE {
                     params.consensus_caller,
                     params.get_intermediate_stats,
                     params.get_stats,
+                    ch_ivar_vcf_header
                 )
             }
         }

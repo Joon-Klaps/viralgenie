@@ -9,6 +9,7 @@ workflow BAM_CALL_VARIANTS {
     fasta           // channel: [ fasta ]
     variant_caller  // value: [ bcftools | ivar ]
     save_stats      // value: [ true | false ]
+    ivar_header     // path: [ header ]
 
 
     main:
@@ -33,7 +34,8 @@ workflow BAM_CALL_VARIANTS {
         BAM_VARIANTS_IVAR (
             bam,
             fasta,
-            save_stats
+            save_stats,
+            ivar_header
         )
         ch_vcf        = BAM_VARIANTS_IVAR.out.vcf
         ch_vcf_filter = BAM_VARIANTS_IVAR.out.vcf_filter

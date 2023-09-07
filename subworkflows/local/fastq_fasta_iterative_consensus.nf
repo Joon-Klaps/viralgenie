@@ -20,6 +20,7 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
     final_consensus_caller         // val: [ bcftools | ivar ]
     get_intermediate_stats         // val: [ true | false ]
     get_final_stats                // val: [ true | false ]
+    ivar_header                    // path: [ header ]
 
     main:
 
@@ -32,6 +33,7 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
             .map{meta, fasta -> [meta + [iteration:'1'], fasta]}
             .set{ch_reference_intermediate}
 
+        ch_reference_intermediate.view()
         ITERATION_1(
             reads,
             ch_reference_intermediate,
@@ -40,7 +42,8 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
             deduplicate,
             intermediate_variant_caller,
             intermediate_consensus_caller,
-            get_intermediate_stats
+            get_intermediate_stats,
+            ivar_header
         )
 
         ch_reference_intermediate = ITERATION_1.out.consensus
@@ -60,7 +63,8 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
             deduplicate,
             intermediate_variant_caller,
             intermediate_consensus_caller,
-            get_intermediate_stats
+            get_intermediate_stats,
+            ivar_header
         )
 
         ch_reference_intermediate = ITERATION_2.out.consensus
@@ -79,7 +83,8 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
             deduplicate,
             intermediate_variant_caller,
             intermediate_consensus_caller,
-            get_intermediate_stats
+            get_intermediate_stats,
+            ivar_header
         )
 
         ch_reference_intermediate = ITERATION_3.out.consensus
@@ -98,7 +103,8 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
             deduplicate,
             intermediate_variant_caller,
             intermediate_consensus_caller,
-            get_intermediate_stats
+            get_intermediate_stats,
+            ivar_header
         )
 
         ch_reference_intermediate = ITERATION_4.out.consensus
@@ -117,7 +123,8 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
         deduplicate,
         final_variant_caller,
         final_consensus_caller,
-        get_final_stats
+        get_final_stats,
+        ivar_header
     )
 
     ch_multiqc = ch_multiqc.mix(ITERATION_FINAL.out.mqc)

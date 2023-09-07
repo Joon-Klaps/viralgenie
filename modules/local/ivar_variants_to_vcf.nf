@@ -11,6 +11,7 @@ process IVAR_VARIANTS_TO_VCF {
     input:
     tuple val(meta), path(tsv)
     path fasta
+    path header
 
     output:
     tuple val(meta), path("*.vcf"), emit: vcf
@@ -24,7 +25,8 @@ process IVAR_VARIANTS_TO_VCF {
     script:  // This script is bundled with the pipeline, in viralgenie/bin/
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
-    def header = task.ext.header ?: "$projectDir/assets/headers/ivar_variants_header_mqc.txt"
+    def header = header ?: "$projectDir/assets/headers/ivar_variants_header_mqc.txt"
+
     """
     ivar_variants_to_vcf.py \\
         $tsv \\

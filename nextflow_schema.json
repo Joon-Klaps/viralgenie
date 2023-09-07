@@ -685,6 +685,11 @@
                     "fa_icon": "fas fa-layer-group",
                     "default": "ivar",
                     "enum": ["ivar", "bcftools"]
+                },
+                "ivar_vcf_header": {
+                    "type": "string",
+                    "hidden": true,
+                    "pattern": "^\\S+\\.txt$"
                 }
             },
             "fa_icon": "fas fa-layer-group"

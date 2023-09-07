@@ -17,6 +17,7 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
     variant_caller       // val: [ bcftools | ivar ]
     consensus_caller     // val: [ bcftools | ivar ]
     get_stats            // val: [ true | false ]
+    ivar_header          // path: [ header ]
 
     main:
 
@@ -61,7 +62,7 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
     ch_versions  = ch_versions.mix(MAP_READS.out.versions)
     ch_multiqc   = ch_multiqc.mix(MAP_READS.out.mqc)
 
-    ch_faidx     = SAMTOOLS_FAIDX ( reference, [[],[]]).fai
+    ch_faidx     = SAMTOOLS_FAIDX ( ch_reference_mod, [[],[]]).fai
 
     // deduplicate bam using umitools (if UMI) or picard
     if (deduplicate) {
@@ -82,7 +83,7 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
 
     // report summary statistics of alignment
     if (get_stats) {
-        BAM_STATS_METRICS ( ch_dedup_bam_sort, reference, ch_faidx )
+        BAM_STATS_METRICS ( ch_dedup_bam_sort, ch_reference_mod, ch_faidx )
         ch_multiqc   = ch_multiqc.mix(BAM_STATS_METRICS.out.mqc)
         ch_versions  = ch_versions.mix(BAM_STATS_METRICS.out.versions)
     }
@@ -95,9 +96,10 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
     if (consensus_caller == "bcftools") {
         BAM_CALL_VARIANTS (
             ch_dedup_bam_sort,
-            reference.map{it[1]},
+            ch_reference_mod.map{it[1]},
             variant_caller,
-            get_stats
+            get_stats,
+            ivar_header
         )
         ch_vcf_filter = BAM_CALL_VARIANTS.out.vcf_filter
         ch_vcf        = BAM_CALL_VARIANTS.out.vcf
