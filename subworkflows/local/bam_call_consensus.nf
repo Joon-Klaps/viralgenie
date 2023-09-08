@@ -29,7 +29,7 @@ workflow BAM_CALL_CONSENSUS {
     else if (consensus_caller == "ivar"){
         IVAR_CONSENSUS (
             bam,
-            fasta,
+            fasta.map{it[1]},
             get_stats // save mpileup
         )
         ch_consensus = IVAR_CONSENSUS.out.fasta
