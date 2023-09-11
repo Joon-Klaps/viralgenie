@@ -5,17 +5,17 @@ include { BAM_VCF_CONSENSUS_BCFTOOLS } from './bam_vcf_consensus_bcftools.nf'
 workflow BAM_CALL_CONSENSUS {
 
     take:
-    bam              // channel: [ val(meta), [ bam ] ]
+    bam_ref          // channel: [ val(meta), [ bam ], [ fasta ] ]
     vcf              // channel: [ val(meta), [ vcf ] ]
-    fasta            // channel: [val (meta), [ fasta] ]
     consensus_caller // value: [ bcftools | ivar ]
     get_stats        // value: [ true | false ]
 
     main:
 
     ch_versions = Channel.empty()
+    bam         = bam_ref.map{ meta, bam, fasta -> [ meta, bam ] }
+    fasta       = bam_ref.map{ meta, bam, fasta -> [ meta, fasta ] }
 
-    //TODO: Fix auto completion with correct syntax
     if (consensus_caller == "bcftools"){
         BAM_VCF_CONSENSUS_BCFTOOLS (
             bam,

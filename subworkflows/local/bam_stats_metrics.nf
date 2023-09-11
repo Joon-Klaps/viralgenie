@@ -5,26 +5,27 @@ include { BAM_STATS_SAMTOOLS            } from '../nf-core/bam_stats_samtools/ma
 workflow BAM_STATS_METRICS {
 
     take:
-    bam_sort    // channel: [ val(meta), [ bam ] ]
-    reference   // channel: [ val(meta), path(fasta) ]
-    faidx       // channel: [ val(meta), path(fasta) ]
+    sort_bam_ref    // channel: [ val(meta), [ bam ], [ ref ] ]
 
     main:
 
     ch_versions = Channel.empty()
     ch_multiqc  = Channel.empty()
 
-    SAMTOOLS_INDEX ( bam_sort )
+    sort_bam    = sort_bam_ref.map{meta, bam, ref -> [ meta, bam ]}
+    reference   = sort_bam_ref.map{meta, bam, ref -> [ meta, ref ]}
+
+    SAMTOOLS_INDEX ( sort_bam )
     ch_versions = ch_versions.mix(SAMTOOLS_INDEX.out.versions.first())
 
-    SAMTOOLS_INDEX.out.bai
-        .join(bam_sort)
-        .set{ch_bam_sort_bai}
+    sort_bam
+        .join(SAMTOOLS_INDEX.out.bai, by: [0], remainder: true)
+        .set{ch_sort_bam_bai}
 
-    PICARD_COLLECTMULTIPLEMETRICS ( ch_bam_sort_bai, reference, faidx )
+    PICARD_COLLECTMULTIPLEMETRICS ( ch_sort_bam_bai, reference, [[:], []] )
     ch_versions  = ch_versions.mix(PICARD_COLLECTMULTIPLEMETRICS.out.versions)
 
-    BAM_STATS_SAMTOOLS ( ch_bam_sort_bai, reference )
+    BAM_STATS_SAMTOOLS ( ch_sort_bam_bai, reference )
     ch_versions  = ch_versions.mix(BAM_STATS_SAMTOOLS.out.versions)
     ch_multiqc   = ch_multiqc.mix(BAM_STATS_SAMTOOLS.out.stats.map{it[1]}.ifEmpty{[]})
     ch_multiqc   = ch_multiqc.mix(BAM_STATS_SAMTOOLS.out.flagstat.map{it[1]}.ifEmpty{[]})

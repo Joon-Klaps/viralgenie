@@ -5,11 +5,9 @@ include { VCF_TABIX_STATS       } from './vcf_tabix_stats.nf'
 workflow BAM_CALL_VARIANTS {
 
     take:
-    bam             // channel: [ val(meta), [ bam ] ]
-    fasta           // channel: [ fasta ]
+    bam_ref         // channel: [ val(meta), [ bam ], [ fasta ] ]
     variant_caller  // value: [ bcftools | ivar ]
     save_stats      // value: [ true | false ]
-    ivar_header     // path: [ header ]
 
 
     main:
@@ -19,6 +17,10 @@ workflow BAM_CALL_VARIANTS {
     ch_stats    = Channel.empty()
     ch_versions = Channel.empty()
     ch_multiqc  = Channel.empty()
+
+    bam         = bam_ref.map{ meta, bam, fasta -> [ meta, bam ] }
+    fasta       = bam_ref.map{ meta, bam, fasta -> fasta }
+    meta_fasta  = bam_ref.map{ meta, bam, fasta -> [ meta, fasta ] }
 
     if (variant_caller == "bcftools"){
         BAM_VARIANTS_BCFTOOLS (
@@ -34,8 +36,7 @@ workflow BAM_CALL_VARIANTS {
         BAM_VARIANTS_IVAR (
             bam,
             fasta,
-            save_stats,
-            ivar_header
+            save_stats
         )
         ch_vcf        = BAM_VARIANTS_IVAR.out.vcf
         ch_vcf_filter = BAM_VARIANTS_IVAR.out.vcf_filter
@@ -45,10 +46,12 @@ workflow BAM_CALL_VARIANTS {
 
     if (save_stats){
         VCF_TABIX_STATS (
-            ch_vcf,
-            [], // regions
-            [], // targets
-            []  // samples
+            ch_vcf_filter,
+            [[:],[]], // targets
+            [[:],[]], // regions
+            [[:],[]], // samples
+            [[:],[]], // exons
+            meta_fasta
         )
         ch_tbi      = VCF_TABIX_STATS.out.tbi
         ch_csi      = VCF_TABIX_STATS.out.csi

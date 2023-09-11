@@ -17,7 +17,6 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
     variant_caller       // val: [ bcftools | ivar ]
     consensus_caller     // val: [ bcftools | ivar ]
     get_stats            // val: [ true | false ]
-    ivar_header          // path: [ header ]
 
     main:
 
@@ -40,33 +39,33 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
     // Combine the channels based on sample
     ch_reference_tmp
         .combine(ch_reads_tmp, by: [0])
+        .map{
+            sample, meta_ref, fasta, meta_reads, fastq -> [meta_ref, fasta, fastq]
+        }
         .set{ch_reference_reads}
 
-    // split up in ref & reads
-    ch_reference_reads
-        .map{
-            sample, meta_ref, fasta, meta_reads, fastq -> [meta_ref, fastq]
-        }
-        .set{ch_read_mod}
-
-    ch_reference_reads
-        .map{
-            sample, meta_ref, fasta, meta_reads, fastq -> [meta_ref, fasta]
-        }
-        .set{ch_reference_mod}
-
     // mapping of reads using bowtie2 or BWA-MEM2
-    MAP_READS ( ch_read_mod, ch_reference_mod, mapper )
+    MAP_READS ( ch_reference_reads, mapper )
+
+    ch_reference_reads.view()
 
     ch_bam       = MAP_READS.out.bam
+    ch_reference = MAP_READS.out.ref
     ch_versions  = ch_versions.mix(MAP_READS.out.versions)
     ch_multiqc   = ch_multiqc.mix(MAP_READS.out.mqc)
 
-    ch_faidx     = SAMTOOLS_FAIDX ( ch_reference_mod, [[],[]]).fai
+    SAMTOOLS_FAIDX ( ch_reference, [[],[]])
+    ch_versions  = ch_versions.mix(SAMTOOLS_FAIDX.out.versions)
+
+    ch_bam_fa_fai = ch_bam
+        .join(ch_reference, by: [0])
+        .join(SAMTOOLS_FAIDX.out.fai, by: [0])
+
+    ch_bam_fa_fai.view()
 
     // deduplicate bam using umitools (if UMI) or picard
     if (deduplicate) {
-        BAM_DEDUPLICATE ( ch_bam, ch_reference_mod, ch_faidx, umi, get_stats)
+        BAM_DEDUPLICATE ( ch_bam_fa_fai, umi, get_stats)
 
         ch_dedup_bam = BAM_DEDUPLICATE.out.bam
         ch_multiqc   = ch_multiqc.mix(BAM_DEDUPLICATE.out.mqc)
@@ -81,9 +80,14 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
     ch_versions = ch_versions.mix(SAMTOOLS_SORT.out.versions.first())
     ch_dedup_bam_sort = SAMTOOLS_SORT.out.bam
 
+    ch_dedup_bam_ref = ch_dedup_bam_sort.
+        join(ch_reference, by: [0])
+
+    ch_dedup_bam_ref.view()
+
     // report summary statistics of alignment
     if (get_stats) {
-        BAM_STATS_METRICS ( ch_dedup_bam_sort, ch_reference_mod, ch_faidx )
+        BAM_STATS_METRICS ( ch_dedup_bam_ref )
         ch_multiqc   = ch_multiqc.mix(BAM_STATS_METRICS.out.mqc)
         ch_versions  = ch_versions.mix(BAM_STATS_METRICS.out.versions)
     }
@@ -95,35 +99,38 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
 
     if (consensus_caller == "bcftools") {
         BAM_CALL_VARIANTS (
-            ch_dedup_bam_sort,
-            ch_reference_mod.map{it[1]},
+            ch_dedup_bam_ref,
             variant_caller,
-            get_stats,
-            ivar_header
+            get_stats
         )
         ch_vcf_filter = BAM_CALL_VARIANTS.out.vcf_filter
         ch_vcf        = BAM_CALL_VARIANTS.out.vcf
         ch_tbi        = BAM_CALL_VARIANTS.out.tbi
     }
 
+    // cannot merge ch_vcf_filter as it will not have a meta
+
     // consensus calling
     BAM_CALL_CONSENSUS (
-        ch_dedup_bam_sort,
+        ch_dedup_bam_ref,
         ch_vcf_filter,
-        ch_reference_mod,
         consensus_caller,
         get_stats
     )
 
+    reads_out = ch_reference_reads.map{meta,ref,reads -> [meta,reads] }
+    bam_out   = ch_dedup_bam_ref.map{meta,bam,ref -> [meta,bam] }
+
+
 
     emit:
-    reads      = ch_reference_reads             // channel: [ val(meta), [ fastq ] ]
-    bam        = ch_dedup_bam_sort              // channel: [ val(meta), [ bam ] ]
-    vcf_filter = ch_vcf_filter                  // channel: [ val(meta), [ vcf ] ]
-    vcf        = ch_vcf                         // channel: [ val(meta), [ vcf ] ]
+    reads      = reads_out                          // channel: [ val(meta), [ fastq ] ]
+    bam        = bam_out                            // channel: [ val(meta), [ bam ] ]
+    vcf_filter = ch_vcf_filter                      // channel: [ val(meta), [ vcf ] ]
+    vcf        = ch_vcf                             // channel: [ val(meta), [ vcf ] ]
     consensus  = BAM_CALL_CONSENSUS.out.consensus   // channel: [ val(meta), [ fasta ] ]
 
-    mqc      = ch_multiqc                       // channel: [ val(meta), [ csi ] ]
-    versions = ch_versions                      // channel: [ versions.yml ]
+    mqc      = ch_multiqc                           // channel: [ val(meta), [ csi ] ]
+    versions = ch_versions                          // channel: [ versions.yml ]
 }
 

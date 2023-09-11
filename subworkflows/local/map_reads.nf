@@ -6,14 +6,16 @@ include { BOWTIE2_BUILD  } from '../../modules/nf-core/bowtie2/build/main'
 workflow MAP_READS  {
 
     take:
-    reads        // channel: [ val(meta), [ reads ] ]
-    reference    // channel: [ val(meta), [ reads ] ]
-    mapper       // val: 'bwamem2' or 'bowtie2'
+    reference_reads     // channel: [ val(meta), [ fasta ], [ reads ] ]
+    mapper              // val: 'bwamem2' or 'bowtie2'
 
     main:
 
     ch_versions = Channel.empty()
     ch_multiqc  = Channel.empty()
+
+    reads       = reference_reads.map{meta, fasta,fastq -> [ meta, fastq ]}
+    reference   = reference_reads.map{meta, fasta,fastq -> [ meta, fasta ]}
 
     if ( mapper == 'bwamem2' ) {
         BWAMEM2_INDEX ( reference )
@@ -41,6 +43,7 @@ workflow MAP_READS  {
 
     emit:
     bam      = ch_bam                          // channel: [ val(meta), [ bam ] ]
+    ref      = reference                       // channel: [ val(meta), [ fasta ] ]
     mqc      = ch_multiqc                      // channel: [ multiqc ]
 
     versions = ch_versions                     // channel: [ versions.yml ]

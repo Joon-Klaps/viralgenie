@@ -198,8 +198,7 @@ workflow VIRALGENIE {
                     params.intermediate_consensus_caller,
                     params.consensus_caller,
                     params.get_intermediate_stats,
-                    params.get_stats,
-                    ch_ivar_vcf_header
+                    params.get_stats
                 )
             }
         }

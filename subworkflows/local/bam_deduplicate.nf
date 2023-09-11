@@ -6,16 +6,18 @@ include { PICARD_MARKDUPLICATES } from '../../modules/nf-core/picard/markduplica
 workflow BAM_DEDUPLICATE {
 
     take:
-    bam         // channel: [ val(meta), [ bam ] ]
-    reference   // channel: [ val(meta), path(fasta) ]
-    faidx       // channel: [ val(meta), path(fasta) ]
-    umi         // val: [ true | false ]
-    get_stats   // val: [ true | false ]
+    bam_ref_fai     // channel: [ val(meta), [ bam ], [ fasta ], [ fai ] ]
+    umi             // val: [ true | false ]
+    get_stats       // val: [ true | false ]
 
     main:
 
     ch_versions = Channel.empty()
     ch_multiqc  = Channel.empty()
+
+    bam         = bam_ref_fai.map{meta, bam, fasta, fai -> [ meta, bam ] }
+    reference   = bam_ref_fai.map{meta, bam, fasta, fai -> [ meta, fasta ] }
+    faidx       = bam_ref_fai.map{meta, bam, fasta, fai -> [ meta, fai ] }
 
     if ( umi ) {
             SAMTOOLS_INDEX( bam )
