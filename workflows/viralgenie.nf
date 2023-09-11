@@ -178,11 +178,7 @@ workflow VIRALGENIE {
             ch_versions = ch_versions.mix(ALIGN_COLLAPSE_CONTIGS.out.versions)
             ch_consensus = ALIGN_COLLAPSE_CONTIGS.out.consensus
 
-            //TODO: subworkflow for iterative refinement, contains another subworkflow if we just give a single reference
             //TODO: setup config for all of the called modules in there
-
-            ch_consensus.view()
-            ch_decomplex_trim_reads.view()
 
             if (!params.skip_iterative_refinement) {
                 FASTQ_FASTA_ITERATIVE_CONSENSUS (

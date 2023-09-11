@@ -32,7 +32,6 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
             .map{meta, fasta -> [meta + [iteration:'1'], fasta]}
             .set{ch_reference_intermediate}
 
-        ch_reference_intermediate.view()
         ITERATION_1(
             reads,
             ch_reference_intermediate,

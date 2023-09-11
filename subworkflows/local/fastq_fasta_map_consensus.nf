@@ -47,8 +47,6 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
     // mapping of reads using bowtie2 or BWA-MEM2
     MAP_READS ( ch_reference_reads, mapper )
 
-    ch_reference_reads.view()
-
     ch_bam       = MAP_READS.out.bam
     ch_reference = MAP_READS.out.ref
     ch_versions  = ch_versions.mix(MAP_READS.out.versions)
@@ -60,8 +58,6 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
     ch_bam_fa_fai = ch_bam
         .join(ch_reference, by: [0])
         .join(SAMTOOLS_FAIDX.out.fai, by: [0])
-
-    ch_bam_fa_fai.view()
 
     // deduplicate bam using umitools (if UMI) or picard
     if (deduplicate) {
@@ -82,8 +78,6 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
 
     ch_dedup_bam_ref = ch_dedup_bam_sort.
         join(ch_reference, by: [0])
-
-    ch_dedup_bam_ref.view()
 
     // report summary statistics of alignment
     if (get_stats) {
