@@ -53,7 +53,6 @@ ch_multiqc_config          = Channel.fromPath("$projectDir/assets/multiqc_config
 ch_multiqc_custom_config   = params.multiqc_config ? Channel.fromPath( params.multiqc_config, checkIfExists: true ) : Channel.empty()
 ch_multiqc_logo            = params.multiqc_logo   ? Channel.fromPath( params.multiqc_logo, checkIfExists: true ) : Channel.empty()
 ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
-ch_ivar_vcf_header         = params.ivar_vcf_header ? Channel.fromPath( params.ivar_vcf_header, checkIfExists: true ) : file("$projectDir/assets/headers/ivar_variants_header_mqc.txt", checkIfExists: true)
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -62,21 +61,23 @@ ch_ivar_vcf_header         = params.ivar_vcf_header ? Channel.fromPath( params.i
 */
 
 //
-// SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
-//
 include { PREPROCESSING_ILLUMINA          } from '../subworkflows/local/preprocessing_illumina'
 include { FASTQ_KRAKEN_KAIJU              } from '../subworkflows/local/fastq_kraken_kaiju'
 include { FASTQ_SPADES_TRINITY_MEGAHIT    } from '../subworkflows/local/fastq_spades_trinity_megahit'
-include { FASTQ_FASTA_ITERATIVE_CONSENSUS } from '../subworkflows/local/fastq_fasta_iterative_consensus'
 
 //  Add consensus reconstruction of genome
-include { FASTA_BLAST_CLUST             } from '../subworkflows/local/fasta_blast_clust'
-include { ALIGN_COLLAPSE_CONTIGS        } from '../subworkflows/local/align_collapse_contigs'
-include { CONSENSUS_QC                  } from '../subworkflows/local/consensus_qc'
-include { UNPACK_DB as UNPACK_DB_BLAST  } from '../subworkflows/local/unpack_db'
-include { UNPACK_DB as UNPACK_DB_CHECKV } from '../subworkflows/local/unpack_db'
+include { FASTA_BLAST_CLUST               } from '../subworkflows/local/fasta_blast_clust'
+include { ALIGN_COLLAPSE_CONTIGS          } from '../subworkflows/local/align_collapse_contigs'
+include { CONSENSUS_QC                    } from '../subworkflows/local/consensus_qc'
+include { UNPACK_DB as UNPACK_DB_BLAST    } from '../subworkflows/local/unpack_db'
+include { UNPACK_DB as UNPACK_DB_CHECKV   } from '../subworkflows/local/unpack_db'
 
-// TODO: Add identification intrahost variability
+// variant analysis
+include { FASTQ_FASTA_ITERATIVE_CONSENSUS } from '../subworkflows/local/fastq_fasta_iterative_consensus'
+
+// QC consensus
+
+include { RENAME_FASTA_HEADER             } from '../modules/local/rename_fasta_header'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -216,9 +217,12 @@ workflow VIRALGENIE {
             .merge(seq_names)
             .set{ch_map_seq_anno}
 
-        // TODO: give the option to update the constrain sequences that we map against
+        // TODO: map against constrain sequences
+
+        // TODO: update consensus against constrain sequences
 
         //combine with all input samples & rename the meta.id
+        // TODO: consider adding another column to the samplesheet with the mapping sequence
         ch_samplesheet
             .combine(ch_map_seq_anno)
             .map {meta, reads, seq, name ->
@@ -228,8 +232,12 @@ workflow VIRALGENIE {
                 return [new_meta, seq]
             }.set{ch_map_seq_anno_combined}
 
+        //rename fasta headers
+        RENAME_FASTA_HEADER (ch_map_seq_anno_combined)
+        ch_versions = ch_versions.mix(RENAME_FASTA_HEADER.out.versions)
+
         //Add to the consensus channel, the mapping sequences will now always be mapped against
-        ch_consensus = ch_consensus.mix(ch_map_seq_anno_combined)
+        ch_consensus = ch_consensus.mix(RENAME_FASTA_HEADER.out.fasta)
         }
 
         if (!params.skip_consensus_qc) {

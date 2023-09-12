@@ -686,10 +686,11 @@
                     "default": "ivar",
                     "enum": ["ivar", "bcftools"]
                 },
-                "ivar_vcf_header": {
+                "ivar_header": {
                     "type": "string",
+                    "default": "https://raw.githubusercontent.com/Joon-Klaps/viralgenie/dev/assets/headers/ivar_variants_header_mqc.txt",
                     "hidden": true,
-                    "pattern": "^\\S+\\.txt$"
+                    "fa_icon": "fas fa-heading"
                 }
             },
             "fa_icon": "fas fa-layer-group"

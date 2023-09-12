@@ -38,10 +38,15 @@ workflow BAM_VARIANTS_IVAR {
     //
     // Convert original iVar output to VCF, zip and index
     //
+
+    ch_ivar_vcf_header = params.ivar_header ?
+        Channel.fromPath( params.ivar_header, checkIfExists: true ) :
+        file("https://raw.githubusercontent.com/Joon-Klaps/viralgenie/dev/assets/headers/ivar_variants_header_mqc.txt", checkIfExists: true)
+
     IVAR_VARIANTS_TO_VCF (
         ch_ivar_tsv,
         fasta,
-        []
+        ch_ivar_vcf_header
     )
     ch_versions = ch_versions.mix(IVAR_VARIANTS_TO_VCF.out.versions.first())
 
