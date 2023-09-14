@@ -2,7 +2,7 @@ include { FASTQ_FASTA_MAP_CONSENSUS as ITERATION_1      } from './fastq_fasta_ma
 include { FASTQ_FASTA_MAP_CONSENSUS as ITERATION_2      } from './fastq_fasta_map_consensus.nf'
 include { FASTQ_FASTA_MAP_CONSENSUS as ITERATION_3      } from './fastq_fasta_map_consensus.nf'
 include { FASTQ_FASTA_MAP_CONSENSUS as ITERATION_4      } from './fastq_fasta_map_consensus.nf'
-include { FASTQ_FASTA_MAP_CONSENSUS as ITERATION_FINAL  } from './fastq_fasta_map_consensus.nf'
+include { FASTQ_FASTA_MAP_CONSENSUS as FINAL_ITERATION  } from './fastq_fasta_map_consensus.nf'
 
 workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
 
@@ -109,7 +109,7 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
             .map{meta, fasta -> [meta + [iteration:'final'], fasta]}
             .set{ch_reference_intermediate}
 
-    ITERATION_FINAL(
+    FINAL_ITERATION(
         reads,
         ch_reference_intermediate,
         final_mapper,
@@ -120,16 +120,16 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
         get_final_stats
     )
 
-    ch_multiqc = ch_multiqc.mix(ITERATION_FINAL.out.mqc)
-    ch_versions = ch_versions.mix(ITERATION_FINAL.out.versions)
+    ch_multiqc = ch_multiqc.mix(FINAL_ITERATION.out.mqc)
+    ch_versions = ch_versions.mix(FINAL_ITERATION.out.versions)
 
 
     emit:
-    reads      = ITERATION_FINAL.out.reads      // channel: [ val(meta), [ fastq ] ]
-    bam        = ITERATION_FINAL.out.bam        // channel: [ val(meta), [ bam ] ]
-    vcf        = ITERATION_FINAL.out.vcf        // channel: [ val(meta), [ vcf ] ]
-    vcf_filter = ITERATION_FINAL.out.vcf_filter // channel: [ val(meta), [ vcf ] ]
-    consensus  = ITERATION_FINAL.out.consensus  // channel: [ val(meta), [ fasta ] ]
+    reads      = FINAL_ITERATION.out.reads      // channel: [ val(meta), [ fastq ] ]
+    bam        = FINAL_ITERATION.out.bam        // channel: [ val(meta), [ bam ] ]
+    vcf        = FINAL_ITERATION.out.vcf        // channel: [ val(meta), [ vcf ] ]
+    vcf_filter = FINAL_ITERATION.out.vcf_filter // channel: [ val(meta), [ vcf ] ]
+    consensus  = FINAL_ITERATION.out.consensus  // channel: [ val(meta), [ fasta ] ]
 
     mqc        = ch_multiqc                     // channel: [ val(meta), [ mqc ] ]
     versions   = ch_versions                    // channel: [ versions.yml ]

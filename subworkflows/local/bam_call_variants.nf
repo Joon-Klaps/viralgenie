@@ -18,7 +18,7 @@ workflow BAM_CALL_VARIANTS {
     ch_versions = Channel.empty()
     ch_multiqc  = Channel.empty()
 
-    bam         = bam_ref.map{ meta, bam, fasta -> [ meta, bam ] }
+    bam         = bam_ref.map{ meta, bam, fasta -> [meta, bam ] }
     fasta       = bam_ref.map{ meta, bam, fasta -> fasta }
     meta_fasta  = bam_ref.map{ meta, bam, fasta -> [ meta, fasta ] }
 

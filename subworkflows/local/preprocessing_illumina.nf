@@ -1,7 +1,7 @@
 // modules
-include { BBMAP_BBDUK   } from '../../modules/nf-core/bbmap/bbduk/main'
-include { BOWTIE2_BUILD } from '../../modules/nf-core/bowtie2/build/main'
-include { BOWTIE2_ALIGN } from '../../modules/nf-core/bowtie2/align/main'
+include { BBMAP_BBDUK                          } from '../../modules/nf-core/bbmap/bbduk/main'
+include { BOWTIE2_BUILD                        } from '../../modules/nf-core/bowtie2/build/main'
+include { BOWTIE2_ALIGN as BOWTIE2_HOST_REMOVE } from '../../modules/nf-core/bowtie2/align/main'
 
 // Subworkflows
 // > local
@@ -92,12 +92,12 @@ workflow PREPROCESSING_ILLUMINA {
             ch_bowtie2_index = ch_index.first()
         }
 
-        BOWTIE2_ALIGN ( ch_reads_decomplexified, ch_bowtie2_index, true, false )
+        BOWTIE2_HOST_REMOVE ( ch_reads_decomplexified, ch_bowtie2_index, true, false )
 
-        ch_reads_hostremoved   = BOWTIE2_ALIGN.out.fastq
+        ch_reads_hostremoved   = BOWTIE2_HOST_REMOVE.out.fastq
 
-        ch_multiqc_files       = ch_multiqc_files.mix( BOWTIE2_ALIGN.out.log)
-        ch_versions            = ch_versions.mix(BOWTIE2_ALIGN.out.versions)
+        ch_multiqc_files       = ch_multiqc_files.mix( BOWTIE2_HOST_REMOVE.out.log)
+        ch_versions            = ch_versions.mix(BOWTIE2_HOST_REMOVE.out.versions)
 
     } else {
         ch_reads_hostremoved = ch_reads_decomplexified
