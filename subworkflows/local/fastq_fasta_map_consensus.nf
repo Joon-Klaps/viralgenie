@@ -44,8 +44,6 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
         }
         .set{ch_reference_reads}
 
-    ch_reference_reads.view()
-
     // mapping of reads using bowtie2 or BWA-MEM2
     MAP_READS ( ch_reference_reads, mapper )
 

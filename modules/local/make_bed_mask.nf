@@ -10,7 +10,7 @@ process MAKE_BED_MASK {
 
     input:
     tuple val(meta), path(bam), path(vcf)
-    path fasta
+    tuple val(meta2), path(fasta)
     val save_mpileup
 
     output:

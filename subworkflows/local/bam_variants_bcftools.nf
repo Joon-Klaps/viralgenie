@@ -6,13 +6,15 @@ include { BCFTOOLS_FILTER  } from '../../modules/nf-core/bcftools/filter/main'
 workflow BAM_VARIANTS_BCFTOOLS {
 
     take:
-    bam         // channel: [ val(meta), [ bam ] ]
-    fasta       // channel: [ fasta ]
+    bam_fasta         // channel: [ val(meta), [ bam ], [ fasta ] ]
     save_stats  // value: [ true | false ]
 
     main:
 
     ch_versions = Channel.empty()
+
+    bam   = bam_fasta.map{ meta, bam, fasta -> [ meta, bam ] }
+    fasta = bam_fasta.map{ meta, bam, fasta -> [ meta, fasta ] }
 
     //
     // Call variants

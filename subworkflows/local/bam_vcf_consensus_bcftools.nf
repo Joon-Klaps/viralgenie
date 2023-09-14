@@ -30,7 +30,7 @@ workflow BAM_VCF_CONSENSUS_BCFTOOLS {
     //
     MAKE_BED_MASK (
         bam.join(vcf, by: [0]),
-        fasta.map{it[1]},
+        fasta,
         get_stats
     )
     ch_versions = ch_versions.mix(MAKE_BED_MASK.out.versions.first())
@@ -48,7 +48,7 @@ workflow BAM_VCF_CONSENSUS_BCFTOOLS {
     //
     BEDTOOLS_MASKFASTA (
         BEDTOOLS_MERGE.out.bed,
-        fasta
+        fasta.map{it[1]}
     )
     ch_versions = ch_versions.mix(BEDTOOLS_MASKFASTA.out.versions.first())
 

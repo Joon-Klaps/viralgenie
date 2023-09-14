@@ -8,13 +8,15 @@ include { BCFTOOLS_FILTER       } from '../../modules/nf-core/bcftools/filter/ma
 workflow BAM_VARIANTS_IVAR {
 
     take:
-    bam         // channel: [ val(meta), [ bam ] ]
-    fasta       // channel: [ fasta ]
+    bam_fasta         // channel: [ val(meta), [ bam ] , [ fasta ]]
     save_stats  // value: [ true | false ]
 
     main:
 
     ch_versions = Channel.empty()
+
+    bam   = bam_fasta.map{ meta, bam, fasta -> [ meta, bam ] }
+    fasta = bam_fasta.map{ meta, bam, fasta -> [ fasta ] }
 
     //
     // Call variants
@@ -38,10 +40,9 @@ workflow BAM_VARIANTS_IVAR {
     //
     // Convert original iVar output to VCF, zip and index
     //
-
     ch_ivar_vcf_header = params.ivar_header ?
         Channel.fromPath( params.ivar_header, checkIfExists: true ) :
-        file("https://raw.githubusercontent.com/Joon-Klaps/viralgenie/dev/assets/headers/ivar_variants_header_mqc.txt", checkIfExists: true)
+        file("$projectDir/assets/headers/ivar_variants_header_mqc.txt", checkIfExists: true)
 
     IVAR_VARIANTS_TO_VCF (
         ch_ivar_tsv,
