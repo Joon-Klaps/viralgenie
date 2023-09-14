@@ -1,7 +1,8 @@
 include { GUNZIP            } from '../../modules/nf-core/gunzip/main'
 include { BLAST_BLASTN      } from '../../modules/local/blast_blastn'
+include { BLAST_FILTER      } from '../../modules/local/blast_filter'
 include { SEQKIT_GREP       } from '../../modules/nf-core/seqkit/grep/main'
-include { CDHIT_CDHITEST      } from '../../modules/nf-core/cdhit/cdhitest/main'
+include { CDHIT_CDHITEST    } from '../../modules/nf-core/cdhit/cdhitest/main'
 include { VSEARCH_CLUSTER   } from '../../modules/nf-core/vsearch/cluster/main'
 include { CAT_CAT           } from '../../modules/nf-core/cat/cat/main'
 include { CLUST_SEQ_EXTRACT } from '../../subworkflows/local/clust_seq_extract'
@@ -28,9 +29,14 @@ workflow FASTA_BLAST_CLUST {
     )
     ch_versions = ch_versions.mix(BLAST_BLASTN.out.versions.first())
 
+    BLAST_FILTER (
+        BLAST_BLASTN.out.summary
+    )
+    ch_versions = ch_versions.mix(BLAST_FILTER.out.versions.first())
+
     // give the references a meta again so it can be used in seqkit
     blast_db_fasta
-        .combine(BLAST_BLASTN.out.txt)
+        .combine(BLAST_FILTER.out.hits)
         .map{
             it -> [it[1],it[0]]
         }
