@@ -32,27 +32,32 @@ workflow BAM_VARIANTS_BCFTOOLS {
         .vcf
         .join(BCFTOOLS_MPILEUP.out.tbi)
         .join(BCFTOOLS_MPILEUP.out.stats)
+        .join(fasta)
         // .filter { meta, vcf, tbi, stats -> getNumVariantsFromBCFToolsStats(stats) > 0 }
-        .set { ch_vcf_tbi_stats }
+        .set { ch_vcf_tbi_stats_fasta }
 
-    ch_vcf_tbi_stats
-        .map { meta, vcf, tbi, stats -> [ meta, vcf ] }
-        .set { ch_vcf }
+    ch_vcf_tbi_stats_fasta
+        .map { meta, vcf, tbi, stats, fasta -> [ meta, vcf, tbi] }
+        .set { ch_vcf_tbi }
 
-    ch_vcf_tbi_stats
-        .map { meta, vcf, tbi, stats -> [ meta, tbi ] }
-        .set { ch_tbi }
+    // ch_vcf_tbi_stats_fasta
+    //     .map { meta, vcf, tbi, stats, fasta -> [ meta, tbi ] }
+    //     .set { ch_tbi }
 
-    ch_vcf_tbi_stats
-        .map { meta, vcf, tbi, stats -> [ meta, stats ] }
-        .set { ch_stats }
+    // ch_vcf_tbi_stats_fasta
+    //     .map { meta, vcf, tbi, stats, fasta -> [ meta, stats ] }
+    //     .set { ch_stats }
+
+    ch_vcf_tbi_stats_fasta
+        .map { meta, vcf, tbi, stats, fasta -> [ meta, fasta ] }
+        .set { ch_fasta }
 
     //
     // Split multi-allelic positions
     //
     BCFTOOLS_NORM (
-        ch_vcf.join(ch_tbi, by: [0]),
-        fasta
+        ch_vcf_tbi,
+        ch_fasta
     )
     ch_versions = ch_versions.mix(BCFTOOLS_NORM.out.versions.first())
 
