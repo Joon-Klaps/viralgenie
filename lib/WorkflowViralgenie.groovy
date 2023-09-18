@@ -12,7 +12,9 @@ class WorkflowViralgenie {
     //
     public static void initialise(params, log) {
 
-        genomeExistsError(params, log)
+        if (!params.igenomes_ignore){
+            genomeExistsError(params, log)
+        }
 
     }
 
@@ -106,9 +108,9 @@ class WorkflowViralgenie {
     // Exit pipeline if incorrect --genome key provided
     //
     private static void genomeExistsError(params, log) {
-        if ( !params.skip_hostremoval && !params.host_genome && !params.genomes.containsKey(params.host_genome)) {
+        if ( !params.skip_hostremoval && !params.genomes.containsKey(params.genome)) {
             def error_string = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-                "  Genome '${params.host_genome}' not found in any config files provided to the pipeline.\n" +
+                "  Genome '${params.genome}' not found in any config files provided to the pipeline.\n" +
                 "  Currently, the available genome keys are:\n" +
                 "  ${params.genomes.keySet().join(", ")}\n" +
                 "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"

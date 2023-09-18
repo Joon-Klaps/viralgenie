@@ -22,7 +22,7 @@ workflow BAM_DEDUPLICATE {
     if ( umi ) {
             SAMTOOLS_INDEX( bam )
             ch_bam_bai  = SAMTOOLS_INDEX.out.bai.join(bam, by: [0])
-            ch_versions = ch_versions.mix(SAMTOOLS_INDEX_RAW.out.versions)
+            ch_versions = ch_versions.mix(SAMTOOLS_INDEX.out.versions)
 
             UMITOOLS_DEDUP ( ch_bam_bai , get_stats)
             ch_dedup_bam  = UMITOOLS_DEDUP.out.bam
