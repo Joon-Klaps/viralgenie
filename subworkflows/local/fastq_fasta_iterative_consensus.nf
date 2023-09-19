@@ -7,8 +7,7 @@ include { FASTQ_FASTA_MAP_CONSENSUS as FINAL_ITERATION  } from './fastq_fasta_ma
 workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
 
     take:
-    reads                          // channel: [ val(meta), [ fastq ] ]
-    reference                      // channel: [ val(meta), [ fasta ] ]
+    reference_reads                // channel: [ val(meta), [ reference ], [ fastq ] ]
     repeats                        // val: [ 0 | 1 | 2 | 3 | 4 ]
     intermediate_mapper            // val: [ bwamem2 | bowtie2 ]
     final_mapper                   // val: [ bwamem2 | bowtie2 ]
@@ -22,19 +21,17 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
     get_final_stats                // val: [ true | false ]
 
     main:
-
-    ch_reference_intermediate = reference
-    ch_multiqc                = Channel.empty()
-    ch_versions               = Channel.empty()
+    ch_reference_reads_intermediate = reference_reads
+    ch_multiqc                      = Channel.empty()
+    ch_versions                     = Channel.empty()
 
     if (repeats > 1){
-        ch_reference_intermediate
-            .map{meta, fasta -> [meta + [iteration:'1'], fasta]}
-            .set{ch_reference_intermediate}
+        ch_reference_reads_intermediate
+            .map{meta, fasta, reads -> [meta + [iteration:'1'], fasta, reads]}
+            .set{ch_reference_reads_intermediate}
 
         ITERATION_1(
-            reads,
-            ch_reference_intermediate,
+            ch_reference_reads_intermediate,
             intermediate_mapper,
             umi,
             deduplicate,
@@ -43,18 +40,18 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
             get_intermediate_stats
         )
 
-        ch_reference_intermediate = ITERATION_1.out.consensus
-        ch_multiqc                = ch_multiqc.mix(ITERATION_1.out.mqc)
-        ch_versions               = ch_versions.mix(ITERATION_1.out.versions)
+        ch_reference_reads_intermediate = ITERATION_1.out.consensus_reads
+        // TODO: Include a check, if coverage is too low, then don't include it in next round
+        ch_multiqc                      = ch_multiqc.mix(ITERATION_1.out.mqc)
+        ch_versions                     = ch_versions.mix(ITERATION_1.out.versions)
     }
     if (repeats > 2){
-        ch_reference_intermediate
-            .map{meta, fasta -> [meta + [iteration:'2'], fasta]}
-            .set{ch_reference_intermediate}
+        ch_reference_reads_intermediate
+            .map{meta, fasta, reads -> [meta + [iteration:'2'], fasta, reads]}
+            .set{ch_reference_reads_intermediate}
 
         ITERATION_2(
-            reads,
-            ch_reference_intermediate,
+            ch_reference_reads_intermediate,
             intermediate_mapper,
             umi,
             deduplicate,
@@ -63,17 +60,16 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
             get_intermediate_stats
         )
 
-        ch_reference_intermediate = ITERATION_2.out.consensus
-        ch_multiqc                = ch_multiqc.mix(ITERATION_2.out.mqc)
+        ch_reference_reads_intermediate = ITERATION_2.out.consensus_reads
+        ch_multiqc                      = ch_multiqc.mix(ITERATION_2.out.mqc)
     }
     if (repeats > 3){
-        ch_reference_intermediate
-            .map{meta, fasta -> [meta + [iteration:'3'], fasta]}
-            .set{ch_reference_intermediate}
+        ch_reference_reads_intermediate
+            .map{meta, fasta, reads -> [meta + [iteration:'3'], fasta, reads]}
+            .set{ch_reference_reads_intermediate}
 
         IITERATION_3(
-            reads,
-            ch_reference_intermediate,
+            ch_reference_reads_intermediate,
             intermediate_mapper,
             umi,
             deduplicate,
@@ -82,17 +78,16 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
             get_intermediate_stats
         )
 
-        ch_reference_intermediate = ITERATION_3.out.consensus
+        ch_reference_reads_intermediate = ITERATION_3.out.consensus_reads
         ch_multiqc                = ch_multiqc.mix(ITERATION_3.out.mqc)
     }
     if (repeats > 4){
-        ch_reference_intermediate
-            .map{meta, fasta -> [meta + [iteration:'4'], fasta]}
-            .set{ch_reference_intermediate}
+        ch_reference_reads_intermediate
+            .map{meta, fasta, reads -> [meta + [iteration:'4'], fasta, reads]}
+            .set{ch_reference_reads_intermediate}
 
         ITERATION_4(
-            reads,
-            ch_reference_intermediate,
+            ch_reference_reads_intermediate,
             intermediate_mapper,
             umi,
             deduplicate,
@@ -101,17 +96,16 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
             get_intermediate_stats
         )
 
-        ch_reference_intermediate = ITERATION_4.out.consensus
-        ch_multiqc                = ch_multiqc.mix(ITERATION_4.out.mqc)
+        ch_reference_reads_intermediate = ITERATION_4.out.consensus_reads
+        ch_multiqc                      = ch_multiqc.mix(ITERATION_4.out.mqc)
     }
 
-    ch_reference_intermediate
-            .map{meta, fasta -> [meta + [iteration:'final'], fasta]}
-            .set{ch_reference_intermediate}
+    ch_reference_reads_intermediate
+            .map{meta, fasta, reads -> [meta + [iteration:'final'], fasta, reads]}
+            .set{ch_reference_reads_intermediate}
 
     FINAL_ITERATION(
-        reads,
-        ch_reference_intermediate,
+        ch_reference_reads_intermediate,
         final_mapper,
         umi,
         deduplicate,
@@ -123,15 +117,14 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
     ch_multiqc = ch_multiqc.mix(FINAL_ITERATION.out.mqc)
     ch_versions = ch_versions.mix(FINAL_ITERATION.out.versions)
 
-
     emit:
-    reads      = FINAL_ITERATION.out.reads      // channel: [ val(meta), [ fastq ] ]
-    bam        = FINAL_ITERATION.out.bam        // channel: [ val(meta), [ bam ] ]
-    vcf        = FINAL_ITERATION.out.vcf        // channel: [ val(meta), [ vcf ] ]
-    vcf_filter = FINAL_ITERATION.out.vcf_filter // channel: [ val(meta), [ vcf ] ]
-    consensus  = FINAL_ITERATION.out.consensus  // channel: [ val(meta), [ fasta ] ]
+    consensus_reads      = FINAL_ITERATION.out.consensus_reads      // channel: [ val(meta), [ fastq ] ]
+    bam                  = FINAL_ITERATION.out.bam                  // channel: [ val(meta), [ bam ] ]
+    vcf                  = FINAL_ITERATION.out.vcf                  // channel: [ val(meta), [ vcf ] ]
+    vcf_filter           = FINAL_ITERATION.out.vcf_filter           // channel: [ val(meta), [ vcf ] ]
+    consensus            = FINAL_ITERATION.out.consensus            // channel: [ val(meta), [ fasta ] ]
 
-    mqc        = ch_multiqc                     // channel: [ val(meta), [ mqc ] ]
-    versions   = ch_versions                    // channel: [ versions.yml ]
+    mqc                  = ch_multiqc                               // channel: [ val(meta), [ mqc ] ]
+    versions             = ch_versions                              // channel: [ versions.yml ]
 }
 

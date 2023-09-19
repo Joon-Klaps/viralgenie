@@ -44,6 +44,7 @@ workflow BAM_CALL_VARIANTS {
         vcf_fasta = ch_vcf_filter.join(meta_fasta, by: [0])
         vcf       = vcf_fasta.map{ meta, vcf, fasta -> [ meta, vcf ] }
         fasta     = vcf_fasta.map{ meta, vcf, fasta -> [ meta, fasta ] }
+
         VCF_TABIX_STATS (
             vcf,
             [[:],[]], // targets

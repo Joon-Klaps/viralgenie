@@ -77,7 +77,8 @@ include { FASTQ_FASTA_ITERATIVE_CONSENSUS } from '../subworkflows/local/fastq_fa
 
 // QC consensus
 
-include { RENAME_FASTA_HEADER             } from '../modules/local/rename_fasta_header'
+include { RENAME_FASTA_HEADER as RENAME_FASTA_HEADER_CONSTRAIN } from '../modules/local/rename_fasta_header'
+include { RENAME_FASTA_HEADER as RENAME_FASTA_HEADER_SINGLETON } from '../modules/local/rename_fasta_header'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -175,16 +176,54 @@ workflow VIRALGENIE {
                 ch_centroids_members.multiple,
                 params.contig_align_method
                 )
-
             ch_versions = ch_versions.mix(ALIGN_COLLAPSE_CONTIGS.out.versions)
-            ch_consensus = ALIGN_COLLAPSE_CONTIGS.out.consensus
+
+            //TODO: check some contig stats of singletons for filtering
+            ch_single_centroids = ch_centroids_members.singletons.map{meta, centroids, members -> [meta, centroids]}
+
+            RENAME_FASTA_HEADER_SINGLETON(
+                ch_single_centroids
+                )
+            ch_versions = ch_versions.mix(RENAME_FASTA_HEADER_SINGLETON.out.versions)
+
+            // TODO: Define parameter to decide what to include:
+            // 1. grouped contigs
+            // 2. grouped contigs + all singletons
+            // 3. grouped contigs + singeltons with size > X
+            single_centroids_selection = RENAME_FASTA_HEADER_SINGLETON.out.fasta
+
+            consensus_collapsed = ALIGN_COLLAPSE_CONTIGS.out.consensus
+
+            ch_consensus = consensus_collapsed
+                .mix(single_centroids_selection)
+
+            // ch_consensus = ALIGN_COLLAPSE_CONTIGS.out.consensus
+
+
+            // We want the meta from the reference channel to be used downstream as this is our varying factor
+            // To do this we combine the channels based on sample
+            // Extract the reference meta's and reads
+            // Make cartesian product of identified references & reads so all references will be mapped against again.
+                ch_decomplex_trim_reads
+                    .map{meta, fastq -> [meta.sample,meta, fastq]}
+                    .set{ch_reads_tmp}
+
+                ch_consensus
+                    .map{meta, fasta -> [meta.sample,meta, fasta]}
+                    .set{ch_consensus_tmp}
+
+                ch_consensus_tmp
+                    .combine(ch_reads_tmp, by: [0])
+                    .map{
+                        sample, meta_ref, fasta, meta_reads, fastq -> [meta_ref, fasta, fastq]
+                    }
+                    .set{ch_reference_reads}
+
 
             //TODO: setup config for all of the called modules in there
-
             if (!params.skip_iterative_refinement) {
                 FASTQ_FASTA_ITERATIVE_CONSENSUS (
-                    ch_decomplex_trim_reads, // Add option to use host removed reads as well
-                    ch_consensus,
+                    ch_reference_reads,
                     params.iterative_repeats,
                     params.intermediate_mapper,
                     params.mapper,
@@ -233,11 +272,11 @@ workflow VIRALGENIE {
             }.set{ch_map_seq_anno_combined}
 
         //rename fasta headers
-        RENAME_FASTA_HEADER (ch_map_seq_anno_combined)
-        ch_versions = ch_versions.mix(RENAME_FASTA_HEADER.out.versions)
+        RENAME_FASTA_HEADER_CONSTRAIN (ch_map_seq_anno_combined)
+        ch_versions = ch_versions.mix(RENAME_FASTA_HEADER_CONSTRAIN.out.versions)
 
         //Add to the consensus channel, the mapping sequences will now always be mapped against
-        ch_consensus = ch_consensus.mix(RENAME_FASTA_HEADER.out.fasta)
+        ch_consensus = ch_consensus.mix(RENAME_FASTA_HEADER_CONSTRAIN.out.fasta)
         }
 
         if (!params.skip_consensus_qc) {

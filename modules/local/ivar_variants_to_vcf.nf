@@ -10,7 +10,7 @@ process IVAR_VARIANTS_TO_VCF {
 
     input:
     tuple val(meta), path(tsv)
-    path fasta
+    tuple val(meta2), path(fasta)
     path header
 
     output:

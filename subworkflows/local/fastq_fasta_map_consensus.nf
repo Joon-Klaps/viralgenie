@@ -9,8 +9,7 @@ include { BAM_CALL_CONSENSUS } from './bam_call_consensus'
 workflow FASTQ_FASTA_MAP_CONSENSUS {
 
     take:
-    reads                // channel: [ val(meta), [ fastq ] ]
-    reference            // channel: [ val(meta), [ fasta ] ]
+    reference_reads      // channel: [ val(meta), [ fasta ], [ fastq ] ]
     mapper               // val: [ bwamem2 | bowtie2 ]
     umi                  // val: [ true | false ]
     deduplicate          // val: [ true | false ]
@@ -24,28 +23,10 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
     ch_multiqc      = Channel.empty()
     ch_dedup_bam    = Channel.empty()
 
-    // We want the meta from the reference channel to be used downstream as this is our varying factor
-    // To do this we combine the channels based on sample
-    // Extract the reference meta's and reads
-
-    reference
-        .map{meta, fasta -> [meta.sample,meta, fasta]}
-        .set{ch_reference_tmp}
-
-    reads
-        .map{meta, fastq -> [meta.sample,meta, fastq]}
-        .set{ch_reads_tmp}
-
-    // Combine the channels based on sample
-    ch_reference_tmp
-        .combine(ch_reads_tmp, by: [0])
-        .map{
-            sample, meta_ref, fasta, meta_reads, fastq -> [meta_ref, fasta, fastq]
-        }
-        .set{ch_reference_reads}
+    reads_in = reference_reads.map{meta, ref, reads -> [meta,reads] }
 
     // mapping of reads using bowtie2 or BWA-MEM2
-    MAP_READS ( ch_reference_reads, mapper )
+    MAP_READS ( reference_reads, mapper )
 
     ch_bam       = MAP_READS.out.bam
     ch_reference = MAP_READS.out.ref
@@ -97,6 +78,7 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
             variant_caller,
             get_stats
         )
+        ch_versions   = ch_versions.mix(BAM_CALL_VARIANTS.out.versions.first())
         ch_vcf_filter = BAM_CALL_VARIANTS.out.vcf_filter
         ch_vcf        = BAM_CALL_VARIANTS.out.vcf
         ch_tbi        = BAM_CALL_VARIANTS.out.tbi
@@ -111,20 +93,20 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
         consensus_caller,
         get_stats
     )
+    ch_versions = ch_versions.mix(BAM_CALL_CONSENSUS.out.versions.first())
+    consensus   = BAM_CALL_CONSENSUS.out.consensus
 
-    reads_out = ch_reference_reads.map{meta,ref,reads -> [meta,reads] }
-    bam_out   = ch_dedup_bam_ref.map{meta,bam,ref -> [meta,bam] }
-
-
+    consensus_reads = consensus.join(reads_in, by: [0])
+    bam_out         = ch_dedup_bam_ref.map{meta,bam,ref -> [meta,bam] }
 
     emit:
-    reads      = reads_out                          // channel: [ val(meta), [ fastq ] ]
-    bam        = bam_out                            // channel: [ val(meta), [ bam ] ]
-    vcf_filter = ch_vcf_filter                      // channel: [ val(meta), [ vcf ] ]
-    vcf        = ch_vcf                             // channel: [ val(meta), [ vcf ] ]
-    consensus  = BAM_CALL_CONSENSUS.out.consensus   // channel: [ val(meta), [ fasta ] ]
+    consensus_reads = consensus_reads                    // channel: [ val(meta), [ fastq ] ]
+    bam             = bam_out                            // channel: [ val(meta), [ bam ] ]
+    vcf_filter      = ch_vcf_filter                      // channel: [ val(meta), [ vcf ] ]
+    vcf             = ch_vcf                             // channel: [ val(meta), [ vcf ] ]
+    consensus       = consensus                          // channel: [ val(meta), [ fasta ] ]
 
-    mqc      = ch_multiqc                           // channel: [ val(meta), [ csi ] ]
-    versions = ch_versions                          // channel: [ versions.yml ]
+    mqc             = ch_multiqc                           // channel: [ val(meta), [ csi ] ]
+    versions        = ch_versions                          // channel: [ versions.yml ]
 }
 

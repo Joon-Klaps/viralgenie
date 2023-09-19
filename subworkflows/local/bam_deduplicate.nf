@@ -1,4 +1,3 @@
-include { SAMTOOLS_FAIDX        } from '../../modules/nf-core/samtools/faidx/main'
 include { SAMTOOLS_INDEX        } from '../../modules/nf-core/samtools/index/main'
 include { UMITOOLS_DEDUP        } from '../../modules/nf-core/umitools/dedup/main'
 include { PICARD_MARKDUPLICATES } from '../../modules/nf-core/picard/markduplicates/main'
@@ -21,7 +20,7 @@ workflow BAM_DEDUPLICATE {
 
     if ( umi ) {
             SAMTOOLS_INDEX( bam )
-            ch_bam_bai  = SAMTOOLS_INDEX.out.bai.join(bam, by: [0])
+            ch_bam_bai  = bam.join(SAMTOOLS_INDEX.out.bai, by: [0])
             ch_versions = ch_versions.mix(SAMTOOLS_INDEX.out.versions)
 
             UMITOOLS_DEDUP ( ch_bam_bai , get_stats)
