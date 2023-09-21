@@ -37,7 +37,7 @@ workflow BAM_CALL_VARIANTS {
         ch_vcf        = BAM_VARIANTS_IVAR.out.vcf
         ch_vcf_filter = BAM_VARIANTS_IVAR.out.vcf_filter
         ch_versions   = ch_versions.mix(BAM_VARIANTS_IVAR.out.versions.first())
-        ch_multiqc    = ch_multiqc.mix(BAM_VARIANTS_IVAR.out.multiqc.map{it[1]}.ifEmpty{[]})
+        ch_multiqc    = ch_multiqc.mix(BAM_VARIANTS_IVAR.out.multiqc)
     }
 
     if (save_stats){

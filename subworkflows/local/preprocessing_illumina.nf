@@ -62,7 +62,7 @@ workflow PREPROCESSING_ILLUMINA {
         ch_versions = ch_versions.mix(FASTQ_FASTQC_UMITOOLS_FASTP.out.versions.first())
 
         ch_multiqc_files = ch_multiqc_files.mix(FASTQ_FASTQC_UMITOOLS_FASTP.out.fastqc_raw_zip)
-        ch_multiqc_files = ch_multiqc_files.mix(FASTQ_FASTQC_UMITOOLS_FASTP.out.fastqc_trim_html)
+        ch_multiqc_files = ch_multiqc_files.mix(FASTQ_FASTQC_UMITOOLS_FASTP.out.fastqc_trim_zip)
         ch_multiqc_files = ch_multiqc_files.mix(FASTQ_FASTQC_UMITOOLS_FASTP.out.trim_json)
         ch_multiqc_files = ch_multiqc_files.mix(FASTQ_FASTQC_UMITOOLS_FASTP.out.umi_log)
 
@@ -76,7 +76,7 @@ workflow PREPROCESSING_ILLUMINA {
     if (!params.skip_complexity_filtering) {
         BBMAP_BBDUK ( ch_reads_trim, ch_contaminants )
         ch_reads_decomplexified = BBMAP_BBDUK.out.reads
-        ch_multiqc_files = BBMAP_BBDUK.out.log
+        ch_multiqc_files = ch_multiqc_files.mix(BBMAP_BBDUK.out.log)
     } else {
         ch_reads_decomplexified = ch_reads_trim
     }
@@ -107,7 +107,7 @@ workflow PREPROCESSING_ILLUMINA {
     reads                   = ch_reads_hostremoved            // channel: [ [ meta ], [ reads ] ]
     reads_decomplexified    = ch_reads_decomplexified         // channel: [ [ meta ], [ reads ] ]
     reads_trimmed           = ch_reads_trim                   // channel: [ [ meta ], [ reads ] ]
-    mqc                     = ch_multiqc_files
+    mqc                     = ch_multiqc_files                // channel: [ [ meta ], [ mqc ] ]
     versions                = ch_versions                     // channel: [ versions.yml ]
 }
 

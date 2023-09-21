@@ -21,7 +21,7 @@ process MAKE_BED_MASK {
     when:
     task.ext.when == null || task.ext.when
 
-    script:  // This script is bundled with the pipeline, in nf-core/viralgenie/bin/
+    script:  // This script is bundled with the pipeline, in Joon-Klaps/viralgenie/bin/
     def args = task.ext.args ?: ''
     def args2 = task.ext.args2 ?: 10
     def prefix = task.ext.prefix ?: "${meta.id}"

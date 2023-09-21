@@ -41,7 +41,7 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
         )
 
         ch_reference_reads_intermediate = ITERATION_1.out.consensus_reads
-        // TODO: Include a check, if coverage is too low, then don't include it in next round
+        // TODO: Include a check, if coverage is too low, then don't include it in next round, Idea: check if number of ambigous bases is higher than input, if so, fail
         ch_multiqc                      = ch_multiqc.mix(ITERATION_1.out.mqc)
         ch_versions                     = ch_versions.mix(ITERATION_1.out.versions)
     }
@@ -62,6 +62,7 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
 
         ch_reference_reads_intermediate = ITERATION_2.out.consensus_reads
         ch_multiqc                      = ch_multiqc.mix(ITERATION_2.out.mqc)
+        ch_versions                     = ch_versions.mix(ITERATION_2.out.versions)
     }
     if (repeats > 3){
         ch_reference_reads_intermediate
@@ -79,7 +80,8 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
         )
 
         ch_reference_reads_intermediate = ITERATION_3.out.consensus_reads
-        ch_multiqc                = ch_multiqc.mix(ITERATION_3.out.mqc)
+        ch_multiqc                      = ch_multiqc.mix(ITERATION_3.out.mqc)
+        ch_versions                     = ch_versions.mix(ITERATION_3.out.versions)
     }
     if (repeats > 4){
         ch_reference_reads_intermediate
@@ -98,6 +100,7 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
 
         ch_reference_reads_intermediate = ITERATION_4.out.consensus_reads
         ch_multiqc                      = ch_multiqc.mix(ITERATION_4.out.mqc)
+        ch_versions                     = ch_versions.mix(ITERATION_4.out.versions)
     }
 
     ch_reference_reads_intermediate
@@ -113,12 +116,11 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
         final_consensus_caller,
         get_final_stats
     )
-
-    ch_multiqc = ch_multiqc.mix(FINAL_ITERATION.out.mqc)
+    ch_multiqc  = ch_multiqc.mix(FINAL_ITERATION.out.mqc)
     ch_versions = ch_versions.mix(FINAL_ITERATION.out.versions)
 
     emit:
-    consensus_reads      = FINAL_ITERATION.out.consensus_reads      // channel: [ val(meta), [ fastq ] ]
+    consensus_reads      = FINAL_ITERATION.out.consensus_reads      // channel: [ val(meta), [ fasta ], [ fastq ] ]
     bam                  = FINAL_ITERATION.out.bam                  // channel: [ val(meta), [ bam ] ]
     vcf                  = FINAL_ITERATION.out.vcf                  // channel: [ val(meta), [ vcf ] ]
     vcf_filter           = FINAL_ITERATION.out.vcf_filter           // channel: [ val(meta), [ vcf ] ]

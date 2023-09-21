@@ -1,13 +1,13 @@
 //
 // Determine metagenomic diversity using Kraken2 and Kaiju
 //
-include { KRAKEN2_KRAKEN2           } from '../../modules/nf-core/kraken2/kraken2/main'
-include { BRACKEN_BRACKEN           } from '../../modules/nf-core/bracken/bracken/main'
-include { KAIJU_KAIJU               } from '../../modules/nf-core/kaiju/kaiju/main'
-include { KAIJU_KAIJU2TABLE         } from '../../modules/nf-core/kaiju/kaiju2table/main'
-include { UNTAR as UNTAR_KRAKEN2_DB } from '../../modules/nf-core/untar/main'
-include { UNTAR as UNTAR_BRACKEN_DB } from '../../modules/nf-core/untar/main'
-include { UNTAR as UNTAR_KAIJU_DB   } from '../../modules/nf-core/untar/main'
+include { KRAKEN2_KRAKEN2                } from '../../modules/nf-core/kraken2/kraken2/main'
+include { BRACKEN_BRACKEN                } from '../../modules/nf-core/bracken/bracken/main'
+include { KAIJU_KAIJU                    } from '../../modules/nf-core/kaiju/kaiju/main'
+include { KAIJU_KAIJU2TABLE              } from '../../modules/nf-core/kaiju/kaiju2table/main'
+include { UNPACK_DB as UNPACK_DB_KRAKEN2 } from './unpack_db'
+include { UNPACK_DB as UNPACK_DB_BRACKEN } from './unpack_db'
+include { UNPACK_DB as UNPACK_DB_KAIJU   } from './unpack_db'
 
 workflow FASTQ_KRAKEN_KAIJU {
 
@@ -26,11 +26,11 @@ workflow FASTQ_KRAKEN_KAIJU {
     if (!params.skip_kraken2){
             // decompress kraken2_db if needed
             if (kraken2_db.endsWith('.tar.gz') || kraken2_db.endsWith('.tgz')) {
-                UNTAR_KRAKEN2_DB (
+                UNPACK_DB_KRAKEN2 (
                     [ [:], kraken2_db ]
                 )
-                ch_kraken2_db = UNTAR_KRAKEN2_DB.out.untar.map { it[1] }
-                ch_versions   = ch_versions.mix(UNTAR_KRAKEN2_DB.out.versions)
+                ch_kraken2_db = UNPACK_DB_KRAKEN2.out.untar.map { it[1] }
+                ch_versions   = ch_versions.mix(UNPACK_DB_KRAKEN2.out.versions)
             } else {
                         ch_kraken2_db = Channel.value(file(kraken2_db))
             }
@@ -45,11 +45,11 @@ workflow FASTQ_KRAKEN_KAIJU {
         if (!params.skip_bracken){
             // decompress bracken_db if needed
             if (bracken_db.endsWith('.tar.gz') || bracken_db.endsWith('.tgz')) {
-                UNTAR_BRACKEN_DB (
+                UNPACK_DB_BRACKEN (
                     [ [:], bracken_db ]
                 )
-                ch_bracken_db = UNTAR_BRACKEN_DB.out.untar.map { it[1] }
-                ch_versions   = ch_versions.mix(UNTAR_BRACKEN_DB.out.versions)
+                ch_bracken_db = UNPACK_DB_BRACKEN.out.untar.map { it[1] }
+                ch_versions   = ch_versions.mix(UNPACK_DB_BRACKEN.out.versions)
             } else {
                         ch_bracken_db = Channel.value(file(bracken_db))
             }
@@ -62,11 +62,11 @@ workflow FASTQ_KRAKEN_KAIJU {
     if (!params.skip_kaiju){
         // decompress kaiju_db if needed
         if (kaiju_db.endsWith('.tar.gz') || kaiju_db.endsWith('.tgz')) {
-                UNTAR_KAIJU_DB (
+                UNPACK_DB_KAIJU (
                     [ [:], kaiju_db ]
                 )
-                ch_kaiju_db = UNTAR_KAIJU_DB.out.untar.map { it[1] }
-                ch_versions   = ch_versions.mix(UNTAR_KAIJU_DB.out.versions)
+                ch_kaiju_db = UNPACK_DB_KAIJU.out.untar.map { it[1] }
+                ch_versions   = ch_versions.mix(UNPACK_DB_KAIJU.out.versions)
             } else {
                         ch_kaiju_db = Channel.value(file(kaiju_db))
             }

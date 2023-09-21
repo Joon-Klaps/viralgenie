@@ -148,22 +148,28 @@ workflow VIRALGENIE {
             assemblers,
             ch_spades_yml,
             ch_spades_hmm)
+
         ch_versions      = ch_versions.mix(FASTQ_SPADES_TRINITY_MEGAHIT.out.versions)
+        ch_contigs       = FASTQ_SPADES_TRINITY_MEGAHIT.out.scaffolds
 
         if (!params.skip_polishing){
-            ch_db_blast = UNPACK_DB_BLAST (params.reference_fasta).db
-            ch_versions = ch_versions.mix(UNPACK_DB_BLAST.out.versions)
-            BLAST_MAKEBLASTDB ( ch_db_blast )
-            ch_versions = ch_versions.mix(BLAST_MAKEBLASTDB.out.versions)
+            unpacked_references = UNPACK_DB_BLAST (params.reference_fasta).db
+            ch_versions         = ch_versions.mix(UNPACK_DB_BLAST.out.versions)
 
-            // blast contigs against reference & identify clustering contigs & references
+            BLAST_MAKEBLASTDB ( unpacked_references )
+            blast_clust_db      = BLAST_MAKEBLASTDB.out.db
+            ch_versions         = ch_versions.mix(BLAST_MAKEBLASTDB.out.versions)
+
+
+            // blast contigs against reference & identify clusters of (contigs & references)
             FASTA_BLAST_CLUST (
-                FASTQ_SPADES_TRINITY_MEGAHIT.out.scaffolds,
-                BLAST_MAKEBLASTDB.out.db,
-                ch_db_blast,
+                ch_contigs,
+                blast_clust_db,
+                unpacked_references,
                 params.cluster_method
                 )
 
+            // Split up clusters into singletons and clusters of multiple contigs
             FASTA_BLAST_CLUST.out.centroids_members
                 .branch{ meta, centroids, members ->
                     singletons: meta.cluster_size == 0
@@ -172,6 +178,7 @@ workflow VIRALGENIE {
                 .set{ch_centroids_members}
             ch_versions = ch_versions.mix(FASTA_BLAST_CLUST.out.versions)
 
+            // Align clustered contigs & collapse into a single consensus per cluster
             ALIGN_COLLAPSE_CONTIGS(
                 ch_centroids_members.multiple,
                 params.contig_align_method
@@ -237,7 +244,9 @@ workflow VIRALGENIE {
                     params.get_intermediate_stats,
                     params.get_stats
                 )
-            ch_consensus= ch_consensus.mix(FASTQ_FASTA_ITERATIVE_CONSENSUS.out.consensus)
+            ch_consensus     = ch_consensus.mix(FASTQ_FASTA_ITERATIVE_CONSENSUS.out.consensus)
+            ch_versions      = ch_versions.mix(FASTQ_FASTA_ITERATIVE_CONSENSUS.out.versions)
+            ch_multiqc_files = ch_multiqc_files.mix(FASTQ_FASTA_ITERATIVE_CONSENSUS.out.mqc.collect{it[1]}.ifEmpty([]))
             }
         }
     }
@@ -298,6 +307,8 @@ workflow VIRALGENIE {
                 params.skip_checkv,
                 params.skip_quast
                 )
+            ch_versions      = ch_versions.mix(CONSENSUS_QC.out.versions)
+            ch_multiqc_files = ch_multiqc_files.mix(CONSENSUS_QC.out.mqc.collect{it[1]}.ifEmpty([]))
         }
 
     CUSTOM_DUMPSOFTWAREVERSIONS (

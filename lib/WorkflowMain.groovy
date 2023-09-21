@@ -1,5 +1,5 @@
 //
-// This file holds several functions specific to the main.nf workflow in the nf-core/viralgenie pipeline
+// This file holds several functions specific to the main.nf workflow in the Joon-Klaps/viralgenie pipeline
 //
 
 import nextflow.Nextflow

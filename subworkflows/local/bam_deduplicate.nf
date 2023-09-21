@@ -27,7 +27,7 @@ workflow BAM_DEDUPLICATE {
             ch_dedup_bam  = UMITOOLS_DEDUP.out.bam
             ch_versions   = ch_versions.mix(UMITOOLS_DEDUP.out.versions)
             if ( get_stats ) {
-                ch_multiqc    = ch_multiqc.mix(UMITOOLS_DEDUP.out.log.map{it[1]}.ifEmpty{[]})
+                ch_multiqc    = ch_multiqc.mix(UMITOOLS_DEDUP.out.log)
             }
 
     } else  {
@@ -35,7 +35,7 @@ workflow BAM_DEDUPLICATE {
             ch_dedup_bam      = PICARD_MARKDUPLICATES.out.bam
             ch_versions       = ch_versions.mix(PICARD_MARKDUPLICATES.out.versions)
             if ( get_stats ) {
-                ch_multiqc    = ch_multiqc.mix(PICARD_MARKDUPLICATES.out.metrics.map{it[1]}.ifEmpty{[]})
+                ch_multiqc    = ch_multiqc.mix(PICARD_MARKDUPLICATES.out.metrics)
             }
     }
 

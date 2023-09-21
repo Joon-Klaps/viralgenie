@@ -27,9 +27,9 @@ workflow BAM_STATS_METRICS {
 
     BAM_STATS_SAMTOOLS ( ch_sort_bam_bai, reference )
     ch_versions  = ch_versions.mix(BAM_STATS_SAMTOOLS.out.versions)
-    ch_multiqc   = ch_multiqc.mix(BAM_STATS_SAMTOOLS.out.stats.map{it[1]}.ifEmpty{[]})
-    ch_multiqc   = ch_multiqc.mix(BAM_STATS_SAMTOOLS.out.flagstat.map{it[1]}.ifEmpty{[]})
-    ch_multiqc   = ch_multiqc.mix(BAM_STATS_SAMTOOLS.out.idxstats.map{it[1]}.ifEmpty{[]})
+    ch_multiqc   = ch_multiqc.mix(BAM_STATS_SAMTOOLS.out.stats)
+    ch_multiqc   = ch_multiqc.mix(BAM_STATS_SAMTOOLS.out.flagstat)
+    ch_multiqc   = ch_multiqc.mix(BAM_STATS_SAMTOOLS.out.idxstats)
 
 
     emit:
