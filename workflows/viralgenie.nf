@@ -181,6 +181,7 @@ workflow VIRALGENIE {
             //TODO: check some contig stats of singletons for filtering
             ch_single_centroids = ch_centroids_members.singletons.map{meta, centroids, members -> [meta, centroids]}
 
+            // Rename to avoid errors downstream
             RENAME_FASTA_HEADER_SINGLETON(
                 ch_single_centroids
                 )
@@ -236,6 +237,7 @@ workflow VIRALGENIE {
                     params.get_intermediate_stats,
                     params.get_stats
                 )
+            ch_consensus= ch_consensus.mix(FASTQ_FASTA_ITERATIVE_CONSENSUS.out.consensus)
             }
         }
     }

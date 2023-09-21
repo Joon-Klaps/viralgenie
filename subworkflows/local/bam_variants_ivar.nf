@@ -8,7 +8,7 @@ include { BCFTOOLS_FILTER       } from '../../modules/nf-core/bcftools/filter/ma
 workflow BAM_VARIANTS_IVAR {
 
     take:
-    bam_fasta         // channel: [ val(meta), [ bam ] , [ fasta ]]
+    bam_fasta   // channel: [ val(meta), [ bam ] , [ fasta ]]
     save_stats  // value: [ true | false ]
 
     main:
@@ -65,10 +65,6 @@ workflow BAM_VARIANTS_IVAR {
     )
     ch_versions = ch_versions.mix(BCFTOOLS_SORT.out.versions.first())
 
-
-    //
-    // TODO: SET modules.config with threshold for variant filtering
-    //
     BCFTOOLS_FILTER (
         BCFTOOLS_SORT.out.vcf
     )

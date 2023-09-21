@@ -1,10 +1,10 @@
-include { MAP_READS          } from './map_reads'
-include { BAM_DEDUPLICATE    } from './bam_deduplicate'
-include { SAMTOOLS_SORT      } from '../../modules/nf-core/samtools/sort/main'
-include { SAMTOOLS_FAIDX     } from '../../modules/nf-core/samtools/faidx/main'
-include { BAM_STATS_METRICS  } from './bam_stats_metrics'
-include { BAM_CALL_VARIANTS  } from './bam_call_variants'
-include { BAM_CALL_CONSENSUS } from './bam_call_consensus'
+include { MAP_READS                               } from './map_reads'
+include { BAM_DEDUPLICATE                         } from './bam_deduplicate'
+include { SAMTOOLS_SORT as SAMTOOLS_SORT_DEDUPPED } from '../../modules/nf-core/samtools/sort/main'
+include { SAMTOOLS_FAIDX                          } from '../../modules/nf-core/samtools/faidx/main'
+include { BAM_STATS_METRICS                       } from './bam_stats_metrics'
+include { BAM_CALL_VARIANTS                       } from './bam_call_variants'
+include { BAM_CALL_CONSENSUS                      } from './bam_call_consensus'
 
 workflow FASTQ_FASTA_MAP_CONSENSUS {
 
@@ -53,9 +53,9 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
     }
 
     // sort bam
-    SAMTOOLS_SORT ( ch_dedup_bam )
-    ch_versions = ch_versions.mix(SAMTOOLS_SORT.out.versions.first())
-    ch_dedup_bam_sort = SAMTOOLS_SORT.out.bam
+    SAMTOOLS_SORT_DEDUPPED ( ch_dedup_bam )
+    ch_versions = ch_versions.mix(SAMTOOLS_SORT_DEDUPPED.out.versions.first())
+    ch_dedup_bam_sort = SAMTOOLS_SORT_DEDUPPED.out.bam
 
     ch_dedup_bam_ref = ch_dedup_bam_sort.
         join(ch_reference, by: [0])
