@@ -1,7 +1,7 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema",
-    "$id": "https://raw.githubusercontent.com/nf-core/viralgenie/master/assets/schema_input.json",
-    "title": "nf-core/viralgenie pipeline - params.input schema",
+    "$id": "https://raw.githubusercontent.com/Joon-Klaps/viralgenie/master/assets/schema_input.json",
+    "title": "Joon-Klaps/viralgenie pipeline - params.input schema",
     "description": "Schema for the file provided with params.input",
     "type": "array",
     "items": {

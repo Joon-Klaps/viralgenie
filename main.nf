@@ -1,9 +1,9 @@
 #!/usr/bin/env nextflow
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    nf-core/viralgenie
+    Joon-Klaps/viralgenie
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    Github : https://github.com/nf-core/viralgenie
+    Github : https://github.com/Joon-Klaps/viralgenie
     Website: https://nf-co.re/viralgenie
     Slack  : https://nfcore.slack.com/channels/viralgenie
 ----------------------------------------------------------------------------------------
@@ -52,7 +52,7 @@ WorkflowMain.initialise(workflow, params, log)
 include { VIRALGENIE } from './workflows/viralgenie'
 
 //
-// WORKFLOW: Run main nf-core/viralgenie analysis pipeline
+// WORKFLOW: Run main Joon-Klaps/viralgenie analysis pipeline
 //
 workflow NFCORE_VIRALGENIE {
     VIRALGENIE ()

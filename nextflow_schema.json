@@ -1,7 +1,7 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema",
-    "$id": "https://raw.githubusercontent.com/nf-core/viralgenie/master/nextflow_schema.json",
-    "title": "nf-core/viralgenie pipeline parameters",
+    "$id": "https://raw.githubusercontent.com/Joon-Klaps/viralgenie/master/nextflow_schema.json",
+    "title": "Joon-Klaps/viralgenie pipeline parameters",
     "description": "A pipeline to reconstruct consensus genomes and identify intrahost variants from metagenomic sequencing data or enriched based sequencing data like hybrid capture.  ",
     "type": "object",
     "definitions": {
