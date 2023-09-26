@@ -68,9 +68,7 @@ include { FASTQ_SPADES_TRINITY_MEGAHIT    } from '../subworkflows/local/fastq_sp
 //  Add consensus reconstruction of genome
 include { FASTA_BLAST_CLUST               } from '../subworkflows/local/fasta_blast_clust'
 include { ALIGN_COLLAPSE_CONTIGS          } from '../subworkflows/local/align_collapse_contigs'
-include { CONSENSUS_QC                    } from '../subworkflows/local/consensus_qc'
 include { UNPACK_DB as UNPACK_DB_BLAST    } from '../subworkflows/local/unpack_db'
-include { UNPACK_DB as UNPACK_DB_CHECKV   } from '../subworkflows/local/unpack_db'
 
 // variant analysis
 include { FASTQ_FASTA_ITERATIVE_CONSENSUS } from '../subworkflows/local/fastq_fasta_iterative_consensus'
@@ -78,7 +76,8 @@ include { FASTQ_FASTA_ITERATIVE_CONSENSUS } from '../subworkflows/local/fastq_fa
 // QC consensus
 
 include { RENAME_FASTA_HEADER as RENAME_FASTA_HEADER_CONSTRAIN } from '../modules/local/rename_fasta_header'
-include { RENAME_FASTA_HEADER as RENAME_FASTA_HEADER_SINGLETON } from '../modules/local/rename_fasta_header'
+include { UNPACK_DB as UNPACK_DB_CHECKV   } from '../subworkflows/local/unpack_db'
+include { CONSENSUS_QC                    } from '../subworkflows/local/consensus_qc'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -168,45 +167,49 @@ workflow VIRALGENIE {
                 unpacked_references,
                 params.cluster_method
                 )
+            ch_versions = ch_versions.mix(FASTA_BLAST_CLUST.out.versions)
 
             // Split up clusters into singletons and clusters of multiple contigs
-            FASTA_BLAST_CLUST.out.centroids_members
+            FASTA_BLAST_CLUST
+                .out
+                .centroids_members
                 .branch{ meta, centroids, members ->
                     singletons: meta.cluster_size == 0
                     multiple: meta.cluster_size > 0
                 }
                 .set{ch_centroids_members}
-            ch_versions = ch_versions.mix(FASTA_BLAST_CLUST.out.versions)
+
+            ch_centroids_members
+                .singletons
+                .map{ meta, centroids, members -> [ meta, centroids ] }
+                .set{ ch_single_centroids }
 
             // Align clustered contigs & collapse into a single consensus per cluster
-            ALIGN_COLLAPSE_CONTIGS(
+            ALIGN_COLLAPSE_CONTIGS (
                 ch_centroids_members.multiple,
                 params.contig_align_method
                 )
             ch_versions = ch_versions.mix(ALIGN_COLLAPSE_CONTIGS.out.versions)
 
-            //TODO: check some contig stats of singletons for filtering
-            ch_single_centroids = ch_centroids_members.singletons.map{meta, centroids, members -> [meta, centroids]}
 
-            // Rename to avoid errors downstream
-            RENAME_FASTA_HEADER_SINGLETON(
-                ch_single_centroids
+            SINGLETON_FILTERING (
+                ch_single_centroids,
+                params.min_contig_size,
+                params.max_n_1OOkbp
                 )
-            ch_versions = ch_versions.mix(RENAME_FASTA_HEADER_SINGLETON.out.versions)
+            ch_versions = ch_versions.mix(SINGLETON_FILTERING.out.versions)
 
-            // TODO: Define parameter to decide what to include:
-            // 1. grouped contigs
-            // 2. grouped contigs + all singletons
-            // 3. grouped contigs + singeltons with size > X
-            single_centroids_selection = RENAME_FASTA_HEADER_SINGLETON.out.fasta
+            if ( !params.skip_singleton_filtering ) {
+                ch_singletons = SINGLETON_FILTERING.out.filtered
+            } else {
+                ch_singletons = SINGLETON_FILTERING.out.renamed
+            }
 
-            consensus_collapsed = ALIGN_COLLAPSE_CONTIGS.out.consensus
-
-            ch_consensus = consensus_collapsed
-                .mix(single_centroids_selection)
-
-            // ch_consensus = ALIGN_COLLAPSE_CONTIGS.out.consensus
-
+            ALIGN_COLLAPSE_CONTIGS
+                .out
+                .consensus
+                .mix( ch_singletons )
+                .set{ ch_consensus }
 
             // We want the meta from the reference channel to be used downstream as this is our varying factor
             // To do this we combine the channels based on sample
@@ -227,8 +230,6 @@ workflow VIRALGENIE {
                     }
                     .set{ch_reference_reads}
 
-
-            //TODO: setup config for all of the called modules in there
             if (!params.skip_iterative_refinement) {
                 FASTQ_FASTA_ITERATIVE_CONSENSUS (
                     ch_reference_reads,
@@ -242,7 +243,9 @@ workflow VIRALGENIE {
                     params.intermediate_consensus_caller,
                     params.consensus_caller,
                     params.get_intermediate_stats,
-                    params.get_stats
+                    params.get_stats,
+                    params.min_contig_size,
+                    params.max_n_1OOkbp
                 )
             ch_consensus     = ch_consensus.mix(FASTQ_FASTA_ITERATIVE_CONSENSUS.out.consensus)
             ch_versions      = ch_versions.mix(FASTQ_FASTA_ITERATIVE_CONSENSUS.out.versions)

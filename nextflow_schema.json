@@ -573,6 +573,11 @@
                     "description": "Maximum allowed contig size",
                     "fa_icon": "fas fa-expand-alt"
                 },
+                "max_n_1OOkbp": {
+                    "type": "integer",
+                    "default": 50000,
+                    "fa_icon": "fas fa-expand-alt"
+                },
                 "skip_consensus_calling_contigs": {
                     "type": "boolean",
                     "description": "Skip the consensus construction of  multiple contigs, instead use only the representative",
@@ -582,11 +587,18 @@
                     "type": "string",
                     "default": "mafft",
                     "description": "Method for alignment of cluster of contigs",
-                    "enum": ["mafft", "muscle"]
+                    "enum": ["mafft", "muscle"],
+                    "fa_icon": "fas fa-align-center"
                 },
                 "skip_consensus_calling_reads": {
                     "type": "boolean",
                     "description": "Skip further polishing of consensus by mapping reads",
+                    "fa_icon": "fas fa-forward"
+                },
+                "skip_singleton_filtering": {
+                    "type": "boolean",
+                    "description": "Skip the filtering of contigs that did not cluster together with other contigs",
+                    "help_text": "Setting this to true will cause the pipeline not to remove contigs that don't have similar contigs. Filtering settings can be further specified with `min_contig_size` and `max_n_100kbp`.",
                     "fa_icon": "fas fa-forward"
                 }
             },

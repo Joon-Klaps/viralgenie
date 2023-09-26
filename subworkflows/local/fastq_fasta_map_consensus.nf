@@ -5,6 +5,7 @@ include { SAMTOOLS_FAIDX                          } from '../../modules/nf-core/
 include { BAM_STATS_METRICS                       } from './bam_stats_metrics'
 include { BAM_CALL_VARIANTS                       } from './bam_call_variants'
 include { BAM_CALL_CONSENSUS                      } from './bam_call_consensus'
+include { FASTA_CONTIG_FILTERING                  } from './fasta_contig_filtering'
 
 workflow FASTQ_FASTA_MAP_CONSENSUS {
 
@@ -16,6 +17,8 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
     variant_caller       // val: [ bcftools | ivar ]
     consensus_caller     // val: [ bcftools | ivar ]
     get_stats            // val: [ true | false ]
+    min_len              // integer: min_length
+    n_100                // integer: n_100
 
     main:
 
@@ -94,17 +97,26 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
         get_stats
     )
     ch_versions = ch_versions.mix(BAM_CALL_CONSENSUS.out.versions.first())
-    consensus   = BAM_CALL_CONSENSUS.out.consensus
+    consensus_all   = BAM_CALL_CONSENSUS.out.consensus
 
-    consensus_reads = consensus.join(reads_in, by: [0])
+    FASTA_CONTIG_FILTERING (
+        consensus_all,
+        min_len,
+        n_100
+    )
+
+    consensus_filtered = FASTA_CONTIG_FILTERING.out.contigs
+
+    consensus_reads = consensus_filtered.join(reads_in, by: [0])
     bam_out         = ch_dedup_bam_ref.map{meta,bam,ref -> [meta,bam] }
 
     emit:
-    consensus_reads = consensus_reads                    // channel: [ val(meta), [ fastq ] ]
+    consensus_reads = consensus_reads                    // channel: [ val(meta), [ fasta ], [ fastq ] ]
+    consensus_all   = consensus_all                      // channel: [ val(meta), [ fasta ] ]
     bam             = bam_out                            // channel: [ val(meta), [ bam ] ]
     vcf_filter      = ch_vcf_filter                      // channel: [ val(meta), [ vcf ] ]
     vcf             = ch_vcf                             // channel: [ val(meta), [ vcf ] ]
-    consensus       = consensus                          // channel: [ val(meta), [ fasta ] ]
+    consensus       =consensus_filtered                  // channel: [ val(meta), [ fasta ] ]
 
     mqc             = ch_multiqc                           // channel: [ val(meta), [ csi ] ]
     versions        = ch_versions                          // channel: [ versions.yml ]

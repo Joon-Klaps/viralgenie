@@ -19,6 +19,8 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
     final_consensus_caller         // val: [ bcftools | ivar ]
     get_intermediate_stats         // val: [ true | false ]
     get_final_stats                // val: [ true | false ]
+    min_len                        // integer: min_length
+    n_100                          // integer: n_100
 
     main:
     ch_reference_reads_intermediate = reference_reads
@@ -37,7 +39,9 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
             deduplicate,
             intermediate_variant_caller,
             intermediate_consensus_caller,
-            get_intermediate_stats
+            get_intermediate_stats,
+            min_len,
+            n_100
         )
 
         ch_reference_reads_intermediate = ITERATION_1.out.consensus_reads
@@ -57,7 +61,9 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
             deduplicate,
             intermediate_variant_caller,
             intermediate_consensus_caller,
-            get_intermediate_stats
+            get_intermediate_stats,
+            min_len,
+            n_100
         )
 
         ch_reference_reads_intermediate = ITERATION_2.out.consensus_reads
@@ -76,7 +82,9 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
             deduplicate,
             intermediate_variant_caller,
             intermediate_consensus_caller,
-            get_intermediate_stats
+            get_intermediate_stats,
+            min_len,
+            n_100
         )
 
         ch_reference_reads_intermediate = ITERATION_3.out.consensus_reads
@@ -95,7 +103,9 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
             deduplicate,
             intermediate_variant_caller,
             intermediate_consensus_caller,
-            get_intermediate_stats
+            get_intermediate_stats,
+            min_len,
+            n_100
         )
 
         ch_reference_reads_intermediate = ITERATION_4.out.consensus_reads
@@ -114,7 +124,9 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
         deduplicate,
         final_variant_caller,
         final_consensus_caller,
-        get_final_stats
+        get_final_stats,
+        min_len,
+        n_100
     )
     ch_multiqc  = ch_multiqc.mix(FINAL_ITERATION.out.mqc)
     ch_versions = ch_versions.mix(FINAL_ITERATION.out.versions)
