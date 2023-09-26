@@ -24,16 +24,13 @@ workflow FASTQ_KRAKEN_KAIJU {
 
     // Kraken
     if (!params.skip_kraken2){
-            // decompress kraken2_db if needed
-            if (kraken2_db.endsWith('.tar.gz') || kraken2_db.endsWith('.tgz')) {
-                UNPACK_DB_KRAKEN2 (
-                    [ [:], kraken2_db ]
-                )
-                ch_kraken2_db = UNPACK_DB_KRAKEN2.out.untar.map { it[1] }
-                ch_versions   = ch_versions.mix(UNPACK_DB_KRAKEN2.out.versions)
-            } else {
-                        ch_kraken2_db = Channel.value(file(kraken2_db))
-            }
+        // decompress kraken2_db if needed
+
+        UNPACK_DB_KRAKEN2 (
+            kraken2_db
+        )
+        ch_kraken2_db = UNPACK_DB_KRAKEN2.out.db
+        ch_versions   = ch_versions.mix(UNPACK_DB_KRAKEN2.out.versions)
 
         KRAKEN2_KRAKEN2 ( reads, ch_kraken2_db, params.kraken2_save_reads, params.kraken2_save_readclassification )
         ch_raw_classifications = ch_raw_classifications.mix(KRAKEN2_KRAKEN2.out.classified_reads_assignment)
@@ -44,34 +41,30 @@ workflow FASTQ_KRAKEN_KAIJU {
         // TODO TEST
         if (!params.skip_bracken){
             // decompress bracken_db if needed
-            if (bracken_db.endsWith('.tar.gz') || bracken_db.endsWith('.tgz')) {
-                UNPACK_DB_BRACKEN (
-                    [ [:], bracken_db ]
-                )
-                ch_bracken_db = UNPACK_DB_BRACKEN.out.untar.map { it[1] }
-                ch_versions   = ch_versions.mix(UNPACK_DB_BRACKEN.out.versions)
-            } else {
-                        ch_bracken_db = Channel.value(file(bracken_db))
-            }
+
+            UNPACK_DB_BRACKEN (
+                bracken_db
+            )
+            ch_bracken_db = UNPACK_DB_BRACKEN.out.db
+            ch_versions   = ch_versions.mix(UNPACK_DB_BRACKEN.out.versions)
+
             BRACKEN_BRACKEN (KRAKEN2_KRAKEN2.out.report, ch_bracken_db )
-            ch_versions      = ch_versions.mix( BRACKEN_BRACKEN.out.versions.first() )
+            ch_versions   = ch_versions.mix( BRACKEN_BRACKEN.out.versions.first() )
         }
     }
 
     // Kaiju
     if (!params.skip_kaiju){
         // decompress kaiju_db if needed
-        if (kaiju_db.endsWith('.tar.gz') || kaiju_db.endsWith('.tgz')) {
-                UNPACK_DB_KAIJU (
-                    [ [:], kaiju_db ]
-                )
-                ch_kaiju_db = UNPACK_DB_KAIJU.out.untar.map { it[1] }
-                ch_versions   = ch_versions.mix(UNPACK_DB_KAIJU.out.versions)
-            } else {
-                        ch_kaiju_db = Channel.value(file(kaiju_db))
-            }
+
+        UNPACK_DB_KAIJU (
+            kaiju_db
+        )
+        ch_kaiju_db = UNPACK_DB_KAIJU.out.db
+        ch_versions = ch_versions.mix(UNPACK_DB_KAIJU.out.versions)
+
         KAIJU_KAIJU(reads, ch_kaiju_db)
-        ch_versions            = ch_versions.mix( KAIJU_KAIJU.out.versions.first() )
+        ch_versions = ch_versions.mix( KAIJU_KAIJU.out.versions.first() )
 
         KAIJU_KAIJU2TABLE ( KAIJU_KAIJU.out.results, ch_kaiju_db, params.kaiju_taxon_rank)
         ch_versions = ch_versions.mix( KAIJU_KAIJU2TABLE.out.versions )
