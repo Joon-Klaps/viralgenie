@@ -616,7 +616,7 @@
                     "fa_icon": "fas fa-forward",
                     "description": "Don't realign reads to consensus sequences and redefine the consensus through (multiple) iterations"
                 },
-                "iterative_repeats": {
+                "iterative_refinement_cycles": {
                     "type": "integer",
                     "default": 2,
                     "fa_icon": "fas fa-list-ol",
@@ -643,6 +643,10 @@
                     "enum": ["ivar", "bcftools"],
                     "description": "consensus tool used for calling new consensus in final iteration"
                 },
+                "call_intermediate_variants": {
+                    "type": "string",
+                    "fa_icon": "fas fa-align-center"
+                },
                 "intermediate_consensus_caller": {
                     "type": "string",
                     "default": "bcftools",
@@ -653,12 +657,6 @@
                     "type": "boolean",
                     "fa_icon": "fas fa-info",
                     "description": "calculate summary statistics during iterations"
-                },
-                "get_stats": {
-                    "type": "boolean",
-                    "default": true,
-                    "fa_icon": "fas fa-info",
-                    "description": "calculate summary statistics in final iteration"
                 }
             }
         },
@@ -697,6 +695,12 @@
                     "fa_icon": "fas fa-layer-group",
                     "default": "ivar",
                     "enum": ["ivar", "bcftools"]
+                },
+                "get_stats": {
+                    "type": "boolean",
+                    "default": true,
+                    "fa_icon": "fas fa-info",
+                    "description": "calculate summary statistics in final iteration"
                 },
                 "ivar_header": {
                     "type": "string",

@@ -14,7 +14,9 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
     mapper               // val: [ bwamem2 | bowtie2 ]
     umi                  // val: [ true | false ]
     deduplicate          // val: [ true | false ]
+    call_variants        // val: [ true | false ]
     variant_caller       // val: [ bcftools | ivar ]
+    call_consensus       // val: [ true | false ]
     consensus_caller     // val: [ bcftools | ivar ]
     get_stats            // val: [ true | false ]
     min_len              // integer: min_length
@@ -29,6 +31,7 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
     reads_in = reference_reads.map{meta, ref, reads -> [meta,reads] }
 
     // mapping of reads using bowtie2 or BWA-MEM2
+    // TODO: Throw warning & remove bam if bam has 0 aligned reads
     MAP_READS ( reference_reads, mapper )
 
     ch_bam       = MAP_READS.out.bam
@@ -75,7 +78,7 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
     ch_vcf_filter = Channel.empty()
     ch_tbi        = Channel.empty()
 
-    if (consensus_caller == "bcftools") {
+    if (consensus_caller == "bcftools" || call_variants ) {
         BAM_CALL_VARIANTS (
             ch_dedup_bam_ref,
             variant_caller,
@@ -112,11 +115,11 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
 
     emit:
     consensus_reads = consensus_reads                    // channel: [ val(meta), [ fasta ], [ fastq ] ]
+    consensus       = consensus_filtered                 // channel: [ val(meta), [ fasta ] ]
     consensus_all   = consensus_all                      // channel: [ val(meta), [ fasta ] ]
     bam             = bam_out                            // channel: [ val(meta), [ bam ] ]
-    vcf_filter      = ch_vcf_filter                      // channel: [ val(meta), [ vcf ] ]
     vcf             = ch_vcf                             // channel: [ val(meta), [ vcf ] ]
-    consensus       =consensus_filtered                  // channel: [ val(meta), [ fasta ] ]
+    vcf_filter      = ch_vcf_filter                      // channel: [ val(meta), [ vcf ] ]
 
     mqc             = ch_multiqc                           // channel: [ val(meta), [ csi ] ]
     versions        = ch_versions                          // channel: [ versions.yml ]

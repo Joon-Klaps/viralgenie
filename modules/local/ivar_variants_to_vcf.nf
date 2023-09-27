@@ -9,8 +9,7 @@ process IVAR_VARIANTS_TO_VCF {
         'biocontainers/mulled-v2-ff46c3f421ca930fcc54e67ab61c8e1bcbddfe22:1ad3da14f705eb0cdff6b5a44fea4909307524b4-0' }"
 
     input:
-    tuple val(meta), path(tsv)
-    tuple val(meta2), path(fasta)
+    tuple val(meta), path(tsv), path(fasta)
     path header
 
     output:

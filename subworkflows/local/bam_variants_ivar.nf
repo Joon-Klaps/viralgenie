@@ -49,12 +49,8 @@ workflow BAM_VARIANTS_IVAR {
         .join( meta_fasta, by : [0] )
         .set { ch_ivar_tsv_fasta }
 
-    ch_tsv      = ch_ivar_tsv_fasta.map{ meta, tsv, fasta -> [ meta, tsv ] }
-    meta_fasta  = ch_ivar_tsv_fasta.map{ meta, tsv, fasta -> [ meta, fasta ] }
-
     IVAR_VARIANTS_TO_VCF (
-        ch_ivar_tsv,
-        meta_fasta,
+        ch_ivar_tsv_fasta,
         ch_ivar_vcf_header
     )
     ch_versions = ch_versions.mix(IVAR_VARIANTS_TO_VCF.out.versions.first())

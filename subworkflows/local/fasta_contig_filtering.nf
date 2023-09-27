@@ -10,7 +10,7 @@ def getQuastStats(report_file) {
     def n_100 = 0
     report_file.eachLine { line ->
         def contig_size_match = line =~ /Largest contig\s([\d]+)/
-        def n_100_match       = line =~ /Dropped Reads:\s([\d\.]+)/
+        def n_100_match       = line =~ /N's per 100 kbp\s([\d\.]+)/
         if (contig_size_match) contig_size = contig_size_match[0][1].toFloat()
         if (n_100) n_100 = n_100_match[0][1].toFloat()
     }
@@ -35,13 +35,12 @@ workflow FASTA_CONTIG_FILTERING {
     ch_contigs
         .join(QUAST.out.tsv, by:[0])
         .map { meta, fasta, report -> [ meta, fasta, getQuastStats( report ) ] }
-        .filter { meta, fasta, stats -> stats.contig_size >= min_len && stats.n_100 <= n_100 }
+        .filter { meta, fasta, stats -> stats.contig_size >= min_len.toInteger() && stats.n_100 <= n_100.toInteger() }
         .set { ch_contigs_filtered_stats }
 
     ch_contigs_filtered_stats
         .map { meta, fasta, stats -> [ meta, fasta ] }
         .set { ch_contigs_filtered }
-
 
     emit:
     contigs       = ch_contigs_filtered           // channel: [ val(meta), [ fasta ] ]

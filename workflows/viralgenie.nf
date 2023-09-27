@@ -65,17 +65,18 @@ include { PREPROCESSING_ILLUMINA          } from '../subworkflows/local/preproce
 include { FASTQ_KRAKEN_KAIJU              } from '../subworkflows/local/fastq_kraken_kaiju'
 include { FASTQ_SPADES_TRINITY_MEGAHIT    } from '../subworkflows/local/fastq_spades_trinity_megahit'
 
-//  Add consensus reconstruction of genome
+// Consensus reconstruction of genome
 include { FASTA_BLAST_CLUST               } from '../subworkflows/local/fasta_blast_clust'
 include { ALIGN_COLLAPSE_CONTIGS          } from '../subworkflows/local/align_collapse_contigs'
 include { UNPACK_DB as UNPACK_DB_BLAST    } from '../subworkflows/local/unpack_db'
-
-// variant analysis
 include { FASTQ_FASTA_ITERATIVE_CONSENSUS } from '../subworkflows/local/fastq_fasta_iterative_consensus'
+include { SINGLETON_FILTERING             } from '../subworkflows/local/singleton_filtering'
+
+// Variant calling
+include { RENAME_FASTA_HEADER as RENAME_FASTA_HEADER_CONSTRAIN } from '../modules/local/rename_fasta_header'
+include { FASTQ_FASTA_MAP_CONSENSUS                            } from '../subworkflows/local/fastq_fasta_map_consensus'
 
 // QC consensus
-
-include { RENAME_FASTA_HEADER as RENAME_FASTA_HEADER_CONSTRAIN } from '../modules/local/rename_fasta_header'
 include { UNPACK_DB as UNPACK_DB_CHECKV   } from '../subworkflows/local/unpack_db'
 include { CONSENSUS_QC                    } from '../subworkflows/local/consensus_qc'
 
@@ -228,33 +229,31 @@ workflow VIRALGENIE {
                     .map{
                         sample, meta_ref, fasta, meta_reads, fastq -> [meta_ref, fasta, fastq]
                     }
-                    .set{ch_reference_reads}
+                    .set{ch_consensus_reads_intermediate}
 
             if (!params.skip_iterative_refinement) {
                 FASTQ_FASTA_ITERATIVE_CONSENSUS (
-                    ch_reference_reads,
-                    params.iterative_repeats,
+                    ch_consensus_reads_intermediate,
+                    params.iterative_refinement_cycles,
                     params.intermediate_mapper,
-                    params.mapper,
                     params.with_umi,
                     params.deduplicate,
+                    params.call_intermediate_variants,
                     params.intermediate_variant_caller,
-                    params.variant_caller,
                     params.intermediate_consensus_caller,
-                    params.consensus_caller,
                     params.get_intermediate_stats,
-                    params.get_stats,
                     params.min_contig_size,
                     params.max_n_1OOkbp
                 )
-            ch_consensus     = ch_consensus.mix(FASTQ_FASTA_ITERATIVE_CONSENSUS.out.consensus)
-            ch_versions      = ch_versions.mix(FASTQ_FASTA_ITERATIVE_CONSENSUS.out.versions)
-            ch_multiqc_files = ch_multiqc_files.mix(FASTQ_FASTA_ITERATIVE_CONSENSUS.out.mqc.collect{it[1]}.ifEmpty([]))
+                ch_consensus       = ch_consensus.mix(FASTQ_FASTA_ITERATIVE_CONSENSUS.out.consensus)
+                ch_consensus_reads = FASTQ_FASTA_ITERATIVE_CONSENSUS.out.consensus_reads
+                ch_versions        = ch_versions.mix(FASTQ_FASTA_ITERATIVE_CONSENSUS.out.versions)
+                ch_multiqc_files   = ch_multiqc_files.mix(FASTQ_FASTA_ITERATIVE_CONSENSUS.out.mqc.collect{it[1]}.ifEmpty([]))
+            } else {
+                ch_consensus_reads = ch_consensus_reads_intermediate
             }
         }
     }
-
-    // TODO: After consensus sequences have been made, we still have to map against it and call variants
 
     if (params.mapping_sequence ) {
         ch_mapping_sequence = Channel.fromPath(params.mapping_sequence)
@@ -270,49 +269,78 @@ workflow VIRALGENIE {
             .merge(seq_names)
             .set{ch_map_seq_anno}
 
-        // TODO: map against constrain sequences
-
-        // TODO: update consensus against constrain sequences
-
         //combine with all input samples & rename the meta.id
         // TODO: consider adding another column to the samplesheet with the mapping sequence
-        ch_samplesheet
-            .combine(ch_map_seq_anno)
-            .map {meta, reads, seq, name ->
-                sample = meta.id
-                id = "${sample}_${name.id}"
-                new_meta = meta + [id: id, sample: sample]
-                return [new_meta, seq]
-            }.set{ch_map_seq_anno_combined}
+        ch_host_trim_reads
+            .combine( ch_map_seq_anno )
+            .map
+                {
+                    meta, reads, seq, name ->
+                    sample = meta.id
+                    id = "${sample}_${name.id}"
+                    new_meta = meta + [id: id, sample: sample, constrain: true, reads: reads]
+                    return [new_meta, seq]
+                }
+            .set{ch_map_seq_anno_combined}
 
         //rename fasta headers
         RENAME_FASTA_HEADER_CONSTRAIN (ch_map_seq_anno_combined)
         ch_versions = ch_versions.mix(RENAME_FASTA_HEADER_CONSTRAIN.out.versions)
 
+        RENAME_FASTA_HEADER_CONSTRAIN
+            .out
+            .fasta
+            .map{ meta, fasta -> [meta, fasta, meta.reads] }
+            .set{constrain_consensus_reads}
+
         //Add to the consensus channel, the mapping sequences will now always be mapped against
-        ch_consensus = ch_consensus.mix(RENAME_FASTA_HEADER_CONSTRAIN.out.fasta)
-        }
+        ch_consensus_reads = ch_consensus_reads.mix(constrain_consensus_reads)
+    }
 
-        if (!params.skip_consensus_qc) {
-            ch_checkv_db = Channel.empty()
-            if (!params.skip_checkv) {
-                checkv_db = params.checkv_db
-                if (!checkv_db) {
-                    ch_checkv_db = CHECKV_DOWNLOADDATABASE().checkv_db
-                } else {
-                    ch_checkv_db = UNPACK_DB_CHECKV(checkv_db).db
-                }
+    // After consensus sequences have been made, we still have to map against it and call variants
+    if ( !params.skip_variant_calling ) {
+
+        ch_consensus_reads
+            .map{meta, fasta, reads -> [meta + [iteration:'final'], fasta, reads]}
+            .set{ch_consensus_reads}
+
+        FASTQ_FASTA_MAP_CONSENSUS(
+            ch_consensus_reads,
+            params.mapper,
+            params.with_umi,
+            params.deduplicate,
+            true,
+            params.variant_caller,
+            true,
+            params.consensus_caller,
+            params.get_stats,
+            params.min_contig_size,
+            params.max_n_1OOkbp
+        )
+        ch_consensus = ch_consensus.mix(FASTQ_FASTA_MAP_CONSENSUS.out.consensus_all)
+
+    }
+
+    if ( !params.skip_consensus_qc ) {
+        ch_checkv_db = Channel.empty()
+        if (!params.skip_checkv) {
+            checkv_db = params.checkv_db
+            if (!checkv_db) {
+                ch_checkv_db = CHECKV_DOWNLOADDATABASE().checkv_db
+            } else {
+                ch_checkv_db = UNPACK_DB_CHECKV(checkv_db).db
             }
-
-            CONSENSUS_QC(
-                ch_consensus,
-                ch_checkv_db,
-                params.skip_checkv,
-                params.skip_quast
-                )
-            ch_versions      = ch_versions.mix(CONSENSUS_QC.out.versions)
-            ch_multiqc_files = ch_multiqc_files.mix(CONSENSUS_QC.out.mqc.collect{it[1]}.ifEmpty([]))
         }
+
+        CONSENSUS_QC(
+            ch_consensus,
+            ch_checkv_db,
+            params.skip_checkv,
+            params.skip_quast
+            )
+        ch_versions      = ch_versions.mix(CONSENSUS_QC.out.versions)
+        ch_multiqc_files = ch_multiqc_files.mix(CONSENSUS_QC.out.mqc.collect{it[1]}.ifEmpty([]))
+    }
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')

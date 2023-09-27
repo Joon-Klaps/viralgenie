@@ -10,15 +10,15 @@ workflow UNPACK_DB  {
     ch_versions = Channel.empty()
 
     if (db.endsWith('.tar.gz')){
-        ch_db = UNTAR([ [:], db ]).untar
+        ch_db = UNTAR([ [:], db ]).untar.map{ it[1] }
         ch_versions   = ch_versions.mix(UNTAR.out.versions)
     } else if(db.endsWith('.gz')){
-        ch_db = GUNZIP([ [:], db ]).gunzip
+        ch_db = GUNZIP([ [:], db ]).gunzip.map{ it[1] }
         ch_versions   = ch_versions.mix(GUNZIP.out.versions)
     } else if (db){
         ch_db = Channel.value(file(db))
     } else (
-        Nextflow.error("Database: ${db} not recognized as '.tar.gz' or '.gz' file. \n\n please unpack and try again specifying the directory.")
+        Nextflow.error("Database: ${db} not recognized as '.tar.gz' or '.gz' file. \n\n please download and unpack manually and try again specifying the directory.")
     )
 
     emit:

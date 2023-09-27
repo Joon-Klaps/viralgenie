@@ -1,4 +1,5 @@
 include { CHECKV_ENDTOEND              } from '../../modules/nf-core/checkv/endtoend/main'
+include { CAT_CAT as CAT_CAT_QC        } from '../../modules/nf-core/cat/cat/main'
 include { QUAST                        } from '../../modules/nf-core/quast/main'
 
 workflow CONSENSUS_QC  {
@@ -13,9 +14,15 @@ workflow CONSENSUS_QC  {
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
 
-
     if ( !skip_checkv ) {
-        CHECKV_ENDTOEND ( ch_genome, checkv_db )
+        ch_genome
+            .collect{it[1]}
+            .map{it -> [ [id: "coverage_combined"], it ] }
+            .set{ch_genome_collapsed}
+        CAT_CAT_QC(ch_genome_collapsed)
+        ch_versions = ch_versions.mix(CAT_CAT_QC.out.versions)
+
+        CHECKV_ENDTOEND ( CAT_CAT_QC.out.file_out, checkv_db )
         ch_versions = ch_versions.mix(CHECKV_ENDTOEND.out.versions)
     }
 
