@@ -478,24 +478,8 @@
                     "type": "string",
                     "default": "spades,trinity,megahit",
                     "fa_icon": "fas fa-bezier-curve",
-                    "enum": [
-                        "spades,trinity,megahit",
-                        "megahit,trinity,spades",
-                        "spades",
-                        "trinity",
-                        "megahit",
-                        "trinity,megahit",
-                        "megahit,trinity",
-                        "megahit,spades",
-                        "spades,megahit",
-                        "trinity,spades",
-                        "spades,trinity",
-                        "spades,megahit,trinity",
-                        "megahit,spades,trinity",
-                        "trinity,spades,megahit",
-                        "trinity,megahit,spades"
-                    ],
-                    "description": "The specified tools for denovo assembly, multiple options are possible"
+                    "description": "The specified tools for denovo assembly, multiple options are possible",
+                    "pattern": "^\\S+[(trinity)(spades)(megahit),]+$"
                 },
                 "spades_mode": {
                     "type": "string",
@@ -649,8 +633,10 @@
                     "description": "consensus tool used for calling new consensus in final iteration"
                 },
                 "call_intermediate_variants": {
-                    "type": "string",
-                    "fa_icon": "fas fa-align-center"
+                    "type": "boolean",
+                    "fa_icon": "fas fa-align-center",
+                    "description": "call variants during the iterations",
+                    "help_text": "Will always be done when iterative consensus caller is bcftools"
                 },
                 "intermediate_consensus_caller": {
                     "type": "string",
