@@ -480,6 +480,7 @@
                     "fa_icon": "fas fa-bezier-curve",
                     "enum": [
                         "spades,trinity,megahit",
+                        "megahit,trinity,spades",
                         "spades",
                         "trinity",
                         "megahit",
@@ -488,7 +489,11 @@
                         "megahit,spades",
                         "spades,megahit",
                         "trinity,spades",
-                        "spades,trinity"
+                        "spades,trinity",
+                        "spades,megahit,trinity",
+                        "megahit,spades,trinity",
+                        "trinity,spades,megahit",
+                        "trinity,megahit,spades"
                     ],
                     "description": "The specified tools for denovo assembly, multiple options are possible"
                 },

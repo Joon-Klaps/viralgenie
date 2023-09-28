@@ -154,14 +154,11 @@ workflow VIRALGENIE {
         FASTQ_SPADES_TRINITY_MEGAHIT
             .out
             .scaffolds
-            .branch{ meta, scaffolds,count ->
+            .branch{ meta, scaffolds ->
                 no_contigs: scaffolds.countFasta() == 0
                 any_contigs: scaffolds.countFasta() > 0
             }
             .set{ch_contigs}
-
-        ch_contigs.no_contigs.view()
-        ch_contigs.any_contigs.view()
 
         if (!params.skip_polishing){
             unpacked_references = UNPACK_DB_BLAST (params.reference_fasta).db
