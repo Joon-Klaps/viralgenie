@@ -57,8 +57,6 @@ workflow FASTQ_SPADES_TRINITY_MEGAHIT  {
         .groupTuple()
         .set{ch_scaffolds_combined}
 
-    ch_scaffolds_combined.view()
-
     CAT_CAT(ch_scaffolds_combined)
     ch_versions = CAT_CAT.out.versions.first()
 
