@@ -1,4 +1,3 @@
-include { GUNZIP            } from '../../modules/nf-core/gunzip/main'
 include { BLAST_BLASTN      } from '../../modules/local/blast_blastn'
 include { BLAST_FILTER      } from '../../modules/local/blast_filter'
 include { SEQKIT_GREP       } from '../../modules/nf-core/seqkit/grep/main'
@@ -18,19 +17,26 @@ workflow FASTA_BLAST_CLUST {
     main:
     ch_versions = Channel.empty()
 
-    GUNZIP(fasta)
-    ch_versions = ch_versions.mix(GUNZIP.out.versions.first())
-    ch_fasta_gunzip = GUNZIP.out.gunzip
-
     // Blast results, to a reference database, to find a complete genome that's already assembled
     BLAST_BLASTN (
-        ch_fasta_gunzip,
+        fasta,
         blast_db
     )
     ch_versions = ch_versions.mix(BLAST_BLASTN.out.versions.first())
 
+    BLAST_BLASTN
+        .out
+        .summary
+        .branch { meta, summary ->
+            no_hits : summary.countLines() == 0
+            hits    : summary.countLines() > 0
+        }
+        .set { ch_blast_summary }
+
+    //TODO throw an error if no hits are found
+
     BLAST_FILTER (
-        BLAST_BLASTN.out.summary
+        ch_blast_summary.hits
     )
     ch_versions = ch_versions.mix(BLAST_FILTER.out.versions.first())
 
@@ -48,16 +54,11 @@ workflow FASTA_BLAST_CLUST {
     ch_versions = ch_versions.mix(SEQKIT_GREP.out.versions.first())
 
     // put reference hits and contigs together
-    fasta.join(
-            SEQKIT_GREP.out.filter,
-            by: [0],
-            remainder: true
-            )
-    .map {
-            it ->
-                [it[0],it[1..-1]]
-            }
+    fasta
+        .mix(SEQKIT_GREP.out.filter)
+        .groupTuple()
         .set {ch_reference_contigs_comb}
+
     CAT_CAT(ch_reference_contigs_comb)
 
     // cluster our reference hits and contigs

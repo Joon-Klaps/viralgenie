@@ -150,7 +150,18 @@ workflow VIRALGENIE {
             ch_spades_hmm)
 
         ch_versions      = ch_versions.mix(FASTQ_SPADES_TRINITY_MEGAHIT.out.versions)
-        ch_contigs       = FASTQ_SPADES_TRINITY_MEGAHIT.out.scaffolds
+
+        FASTQ_SPADES_TRINITY_MEGAHIT
+            .out
+            .scaffolds
+            .branch{ meta, scaffolds,count ->
+                no_contigs: scaffolds.countFasta() == 0
+                any_contigs: scaffolds.countFasta() > 0
+            }
+            .set{ch_contigs}
+
+        ch_contigs.no_contigs.view()
+        ch_contigs.any_contigs.view()
 
         if (!params.skip_polishing){
             unpacked_references = UNPACK_DB_BLAST (params.reference_fasta).db
@@ -163,7 +174,7 @@ workflow VIRALGENIE {
 
             // blast contigs against reference & identify clusters of (contigs & references)
             FASTA_BLAST_CLUST (
-                ch_contigs,
+                ch_contigs.any_contigs,
                 blast_clust_db,
                 unpacked_references,
                 params.cluster_method

@@ -52,12 +52,10 @@ workflow FASTQ_SPADES_TRINITY_MEGAHIT  {
         ch_scaffolds         = ch_scaffolds.mix(MEGAHIT.out.contigs)
     }
 
-    // ch_scaffolds, go from [meta,scaffold1,scaffold2] to [meta,[scaffolds]]
+    // ch_scaffolds, go from [meta,scaffold1,scaffold2, ...] to [meta,[scaffolds]]
     ch_scaffolds
         .groupTuple()
         .set{ch_scaffolds_combined}
-
-    ch_scaffolds_combined.view()
 
     CAT_CAT(ch_scaffolds_combined)
     ch_versions = CAT_CAT.out.versions.first()
