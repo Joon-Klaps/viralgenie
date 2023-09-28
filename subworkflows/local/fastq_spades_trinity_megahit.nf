@@ -16,10 +16,7 @@ workflow FASTQ_SPADES_TRINITY_MEGAHIT  {
 
     main:
     ch_versions          = Channel.empty()
-    ch_scaffolds         = reads.map{meta,reads -> [meta]}
-    ch_scaffolds_spades  = Channel.empty()
-    ch_scaffolds_trinity = Channel.empty()
-    ch_scaffolds_megahit = Channel.empty()
+    ch_scaffolds         = Channel.empty()
 
     // SPADES
     if ('spades' in assemblers) {
@@ -31,35 +28,36 @@ workflow FASTQ_SPADES_TRINITY_MEGAHIT  {
             )
 
         ch_versions         = ch_versions.mix(SPADES.out.versions.first())
-        ch_scaffolds_spades = SPADES.out.scaffolds
-        ch_scaffolds        = ch_scaffolds.join(ch_scaffolds_spades,remainder: true)
+        ch_scaffolds        = ch_scaffolds.mix( SPADES.out.scaffolds)
     }
 
     // TRINITY
     if ('trinity' in assemblers) {
         TRINITY(reads)
 
+        TRINITY
+            .out
+            .transcript_fasta
+            .filter{ meta, contigs -> contigs != null } // filter out empty contigs check issue #21
+            .set{ch_scaffolds_trinity}
+
         ch_versions          = ch_versions.mix(TRINITY.out.versions.first())
-        ch_scaffolds_trinity = TRINITY.out.transcript_fasta
-        ch_scaffolds         = ch_scaffolds.join(ch_scaffolds_trinity,remainder: true)
+        ch_scaffolds         = ch_scaffolds.mix(ch_scaffolds_trinity)
     }
 
     // MEGAHIT
     if ('megahit' in assemblers) {
         MEGAHIT(reads)
-
         ch_versions          = ch_versions.mix(MEGAHIT.out.versions.first())
-        ch_scaffolds_megahit = MEGAHIT.out.contigs
-        ch_scaffolds         = ch_scaffolds.join(ch_scaffolds_megahit,remainder: true)
+        ch_scaffolds         = ch_scaffolds.mix(MEGAHIT.out.contigs)
     }
 
     // ch_scaffolds, go from [meta,scaffold1,scaffold2] to [meta,[scaffolds]]
     ch_scaffolds
-        .map{
-            it ->
-            [it[0],it[1..-1]]
-        }
+        .groupTuple()
         .set{ch_scaffolds_combined}
+
+    ch_scaffolds_combined.view()
 
     CAT_CAT(ch_scaffolds_combined)
     ch_versions = CAT_CAT.out.versions.first()
@@ -68,9 +66,6 @@ workflow FASTQ_SPADES_TRINITY_MEGAHIT  {
 
     emit:
     scaffolds            = CAT_CAT.out.file_out      // channel: [ val(meta), [ scaffolds] ]
-    scaffolds_spades     = ch_scaffolds_spades       // channel: [ val(meta), [ scaffolds] ]
-    ch_scaffolds_trinity = ch_scaffolds_trinity      // channel: [ val(meta), [ scaffolds] ]
-    ch_scaffolds_megahit = ch_scaffolds_megahit      // channel: [ val(meta), [ scaffolds] ]
 
     versions             = ch_versions               // channel: [ versions.yml ]
     // there are not any MQC files available for spades, trinity and megahit
