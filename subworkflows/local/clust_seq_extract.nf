@@ -1,10 +1,7 @@
 // modules
 include { CLUSTER_EXTRACT                       } from '../../modules/local/cluster_extract'
-include { SEQKIT_GREP as SEQKIT_GREP_MEMBERS    } from '../../modules/nf-core/seqkit/grep/main'
-include { SEQKIT_GREP as SEQKIT_GREP_CENTROIDS  } from '../../modules/nf-core/seqkit/grep/main'
-include { GUNZIP as GUNZIP_MEMBERS              } from '../../modules/nf-core/gunzip/main'
-include { GUNZIP as GUNZIP_CENTROIDS            } from '../../modules/nf-core/gunzip/main'
-
+include { SEQKIT_GREP_MULTI as SEQKIT_GREP_MEMBERS    } from '../../modules/local/seqkit_grep_multi'
+include { SEQKIT_GREP_MULTI as SEQKIT_GREP_CENTROIDS  } from '../../modules/local/seqkit_grep_multi'
 
 workflow CLUST_SEQ_EXTRACT {
 
@@ -21,38 +18,24 @@ workflow CLUST_SEQ_EXTRACT {
     CLUSTER_EXTRACT(ch_clusters, cluster_method)
     ch_versions =  ch_versions.mix(CLUSTER_EXTRACT.out.versions.first())
 
-    // join with sequence data based on meta - transpose to a long format so we can split up the channels
-    CLUSTER_EXTRACT.out.members_centroids
-        .join(db_seq)
-        .transpose() //wide to long
-        .set { members_centroids_transposed }
+    members_centroids = CLUSTER_EXTRACT.out.members_centroids
+    // [sample_meta, [members], [centroids] ]
 
-    // Update the meta data to include the cluster ID
-    ch_members_centroids = members_centroids_transposed.map { create_member_ref_channel(it) }
+    ch_centroids  = members_centroids.map {meta, members, centroids -> [meta, centroids] }
+    ch_members    = members_centroids.map {meta, members, centroids -> [meta, members] }
 
-    // split up members, centroids and db for downstream processing
-    ch_members_centroids
-        .map { [ it[1] ] }
-        .set { ch_members }
-    ch_members_centroids
-        .map { [ it[2] ] }
-        .set { ch_centroids }
-    ch_members_centroids
-        .map { [ it[0], it[3] ] }
-        .set { ch_db_seq_anno }
+    // extract members and centroids from db
 
-    SEQKIT_GREP_MEMBERS(ch_db_seq_anno,ch_members )
-    GUNZIP_MEMBERS(SEQKIT_GREP_MEMBERS.out.filter)
+    SEQKIT_GREP_MEMBERS (ch_members, db_seq.map { it[1] } )
+    ch_versions =  ch_versions.mix(SEQKIT_GREP_MEMBERS.out.versions.first())
 
-    SEQKIT_GREP_CENTROIDS(ch_db_seq_anno,ch_centroids )
-    GUNZIP_CENTROIDS(SEQKIT_GREP_CENTROIDS.out.filter)
-
-
+    SEQKIT_GREP_CENTROIDS( ch_centroids, db_seq.map { it[1] })
     ch_versions =  ch_versions.mix(SEQKIT_GREP_CENTROIDS.out.versions.first())
-    ch_versions =  ch_versions.mix(GUNZIP_CENTROIDS.out.versions.first())
 
-    GUNZIP_CENTROIDS.out.gunzip
-        .join(GUNZIP_MEMBERS.out.gunzip, remainder: true)
+    SEQKIT_GREP_CENTROIDS.out.filter
+        .join(SEQKIT_GREP_MEMBERS.out.filter, remainder: true)
+        .transpose() //wide to long
+        .map { create_member_ref_channel(it) }
         .set { seq_centroids_members }
 
     emit:
@@ -62,19 +45,19 @@ workflow CLUST_SEQ_EXTRACT {
 
 // Function to get list of [ meta, [ fastq_1, fastq_2 ] ]
 def create_member_ref_channel(ArrayList row) {
-    members = row[1]
-    centroids = row[2]
-    sequence = row[3]
+    meta         = row[0]
+    centroids    = row[1]
+    members      = row[2]
 
-    sample             = String.valueOf(row[0].id) // just to make sure we don't pass by reference
-    regex              = (members =~ /.*\/.*_([0-9]+)_n([0-9]+)_members.txt/) // try and extract the correct cluster ID and size associated to the sample
-    cluster            = regex[0][1]
-    cluster_size       = regex[0][2] as int
-    id                 = "${sample}_${cluster}"
+    sample       = String.valueOf(meta.id) // just to make sure we don't pass by reference
+    regex        = (members =~ /.*\/.*_([0-9]+)_n([0-9]+)_members/) // try and extract the correct cluster ID and size associated to the sample
+    cluster      = regex[0][1]
+    cluster_size = regex[0][2] as int
+    id           = "${sample}_${cluster}"
 
-    new_meta = row[0] + [ id: id, cluster: cluster, cluster_size: cluster_size, sample: sample]
+    new_meta = meta + [ id: id, cluster: cluster, cluster_size: cluster_size, sample: sample]
 
-    def result = [ new_meta, members, centroids, sequence]
+    def result = [ new_meta, centroids, members]
     return result
 }
 
