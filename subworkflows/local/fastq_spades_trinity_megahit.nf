@@ -35,8 +35,14 @@ workflow FASTQ_SPADES_TRINITY_MEGAHIT  {
     if ('trinity' in assemblers) {
         TRINITY(reads)
 
+        TRINITY
+            .out
+            .transcript_fasta
+            .filter{ meta, contigs -> contigs != null } // filter out empty contigs check issue #21
+            .set{ch_scaffolds_trinity}
+
         ch_versions          = ch_versions.mix(TRINITY.out.versions.first())
-        ch_scaffolds         = ch_scaffolds.mix(TRINITY.out.transcript_fasta)
+        ch_scaffolds         = ch_scaffolds.mix(ch_scaffolds_trinity)
     }
 
     // MEGAHIT
