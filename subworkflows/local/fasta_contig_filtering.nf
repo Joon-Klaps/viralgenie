@@ -7,12 +7,12 @@ include { QUAST  } from '../../modules/nf-core/quast/main'
 // Function to extract the contig size & N' per 100 kbp from the QUAST report
 def getQuastStats(report_file) {
     def contig_size = 0
-    def n_100 = 0
+    def n_100 = 100000 // assume the worst
     report_file.eachLine { line ->
         def contig_size_match = line =~ /Largest contig\s([\d]+)/
         def n_100_match       = line =~ /N's per 100 kbp\s([\d\.]+)/
         if (contig_size_match) contig_size = contig_size_match[0][1].toFloat()
-        if (n_100) n_100 = n_100_match[0][1].toFloat()
+        if (n_100_match) n_100 = n_100_match[0][1].toFloat()
     }
     return [contig_size : contig_size, n_100 : n_100]
 }
