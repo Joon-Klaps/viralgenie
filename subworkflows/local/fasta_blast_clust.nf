@@ -1,5 +1,6 @@
 include { BLAST_BLASTN      } from '../../modules/local/blast_blastn'
 include { BLAST_FILTER      } from '../../modules/local/blast_filter'
+include { GUNZIP            } from '../../modules/nf-core/gunzip/main'
 include { SEQKIT_GREP       } from '../../modules/nf-core/seqkit/grep/main'
 include { CDHIT_CDHITEST    } from '../../modules/nf-core/cdhit/cdhitest/main'
 include { VSEARCH_CLUSTER   } from '../../modules/nf-core/vsearch/cluster/main'
@@ -53,9 +54,12 @@ workflow FASTA_BLAST_CLUST {
     SEQKIT_GREP (ch_blast_db_fasta, ch_hits)
     ch_versions = ch_versions.mix(SEQKIT_GREP.out.versions.first())
 
+    GUNZIP(SEQKIT_GREP.out.filter)
+    ch_versions = ch_versions.mix(GUNZIP.out.versions.first())
+
     // put reference hits and contigs together
     fasta
-        .mix(SEQKIT_GREP.out.filter)
+        .mix(GUNZIP.out.gunzip)
         .groupTuple()
         .set {ch_reference_contigs_comb}
 
