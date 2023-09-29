@@ -12,7 +12,7 @@ workflow FASTA_BLAST_CLUST {
     take:
     fasta          // channel: [ val(meta), [ fasta.gz ] ]
     blast_db       // channel: [ path(db) ]
-    blast_db_fasta // channel: [path(db) ]
+    blast_db_fasta // channel: [ path(db) ]
     cluster_method // string
 
     main:
@@ -34,7 +34,7 @@ workflow FASTA_BLAST_CLUST {
         }
         .set { ch_blast_summary }
 
-    //TODO throw an error if no hits are found
+    //TODO throw an warning if no hits are found
 
     BLAST_FILTER (
         ch_blast_summary.hits
@@ -60,19 +60,21 @@ workflow FASTA_BLAST_CLUST {
     // put reference hits and contigs together
     fasta
         .mix(GUNZIP.out.gunzip)
-        .groupTuple()
+        .groupTuple(size :2, remainder: false) // group and throw away those that don't fit
         .set {ch_reference_contigs_comb}
 
     CAT_CAT(ch_reference_contigs_comb)
 
     // cluster our reference hits and contigs
-    if (cluster_method == "vsearch"){
+    if ( cluster_method == "vsearch" ){
         VSEARCH_CLUSTER (CAT_CAT.out.file_out)
+
         ch_clusters = VSEARCH_CLUSTER.out.uc
         ch_versions = ch_versions.mix(VSEARCH_CLUSTER.out.versions.first())
     }
     else if (cluster_method == "cdhitest") {
         CDHIT_CDHITEST(CAT_CAT.out.file_out)
+
         ch_clusters = CDHIT_CDHITEST.out.clusters
         ch_versions = ch_versions.mix(CDHIT_CDHITEST.out.versions.first())
     }
