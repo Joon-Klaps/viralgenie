@@ -1,8 +1,8 @@
-include { BWAMEM2_MEM    } from '../../modules/nf-core/bwamem2/mem/main'
-include { BWAMEM2_INDEX  } from '../../modules/nf-core/bwamem2/index/main'
-include { BOWTIE2_ALIGN  } from '../../modules/nf-core/bowtie2/align/main'
-include { BOWTIE2_BUILD  } from '../../modules/nf-core/bowtie2/build/main'
-include { SAMTOOLS_SORT  } from '../../modules/nf-core/samtools/sort/main'
+include { BWAMEM2_MEM       } from '../../modules/nf-core/bwamem2/mem/main'
+include { BWAMEM2_INDEX     } from '../../modules/nf-core/bwamem2/index/main'
+include { BOWTIE2_ALIGN     } from '../../modules/nf-core/bowtie2/align/main'
+include { BOWTIE2_BUILD     } from '../../modules/nf-core/bowtie2/build/main'
+include { SAMTOOLS_SORT     } from '../../modules/nf-core/samtools/sort/main'
 
 workflow MAP_READS  {
 
@@ -52,6 +52,9 @@ workflow MAP_READS  {
 
     SAMTOOLS_SORT ( ch_bam )
     ch_bam      = SAMTOOLS_SORT.out.bam
+
+
+
     ch_versions = ch_versions.mix(SAMTOOLS_SORT.out.versions.first())
 
     emit:

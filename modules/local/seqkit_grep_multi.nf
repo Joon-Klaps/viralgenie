@@ -9,8 +9,7 @@ process SEQKIT_GREP_MULTI {
 
     // Modified from original nf-core file
     input:
-    tuple val(meta), path(txt_pattern_files)
-    path sequence
+    tuple val(meta), path(txt_pattern_files), path (sequence)
 
     output:
     tuple val(meta), path("*.{fa,fq}")  , emit: filter
@@ -37,7 +36,7 @@ process SEQKIT_GREP_MULTI {
             -f \${file} \\
             ${sequence} \\
             -o \$prefix.${suffix} \\
-            && echo "Done" || echo "Failed"
+            && echo "Done" || { echo "Failed"; exit 1; }
     done
 
     cat <<-END_VERSIONS > versions.yml

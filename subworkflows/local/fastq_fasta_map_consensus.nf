@@ -6,6 +6,7 @@ include { BAM_STATS_METRICS                       } from './bam_stats_metrics'
 include { BAM_CALL_VARIANTS                       } from './bam_call_variants'
 include { BAM_CALL_CONSENSUS                      } from './bam_call_consensus'
 include { FASTA_CONTIG_FILTERING                  } from './fasta_contig_filtering'
+include { BAM_FLAGSTAT_FILTER                     } from './bam_flagstat_filter'
 
 workflow FASTQ_FASTA_MAP_CONSENSUS {
 
@@ -19,6 +20,7 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
     call_consensus       // val: [ true | false ]
     consensus_caller     // val: [ bcftools | ivar ]
     get_stats            // val: [ true | false ]
+    min_mapped_reads     // integer: min_mapped_reads
     min_len              // integer: min_length
     n_100                // integer: n_100
 
@@ -31,7 +33,6 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
     reads_in = reference_reads.map{meta, ref, reads -> [meta,reads] }
 
     // mapping of reads using bowtie2 or BWA-MEM2
-    // TODO: Throw warning & remove bam if bam has 0 aligned reads
     MAP_READS ( reference_reads, mapper )
 
     ch_bam       = MAP_READS.out.bam
@@ -42,9 +43,16 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
     SAMTOOLS_FAIDX ( ch_reference, [[],[]])
     ch_versions  = ch_versions.mix(SAMTOOLS_FAIDX.out.versions)
 
-    ch_bam_fa_fai = ch_bam
+    // remove
+    BAM_FLAGSTAT_FILTER ( ch_bam, min_mapped_reads )
+    ch_versions  = ch_versions.mix(BAM_FLAGSTAT_FILTER.out.versions)
+
+    BAM_FLAGSTAT_FILTER
+        .out
+        .bam_pass
         .join(ch_reference, by: [0])
         .join(SAMTOOLS_FAIDX.out.fai, by: [0])
+        .set { ch_bam_fa_fai}
 
     // deduplicate bam using umitools (if UMI) or picard
     if (deduplicate) {

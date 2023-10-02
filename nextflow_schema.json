@@ -687,6 +687,11 @@
                     "default": "ivar",
                     "enum": ["ivar", "bcftools"]
                 },
+                "min_mapped_reads": {
+                    "type": "integer",
+                    "default": 200,
+                    "fa_icon": "fas fa-align-center"
+                },
                 "get_stats": {
                     "type": "boolean",
                     "default": true,

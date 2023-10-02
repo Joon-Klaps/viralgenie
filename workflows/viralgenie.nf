@@ -155,8 +155,8 @@ workflow VIRALGENIE {
             .out
             .scaffolds
             .branch{ meta, scaffolds ->
-                no_contigs: scaffolds.countFasta() == 0
-                any_contigs: scaffolds.countFasta() > 0
+                pass: scaffolds.countFasta() > 0
+                fail: scaffolds.countFasta() == 0
             }
             .set{ch_contigs}
 
@@ -171,7 +171,7 @@ workflow VIRALGENIE {
 
             // blast contigs against reference & identify clusters of (contigs & references)
             FASTA_BLAST_CLUST (
-                ch_contigs.any_contigs,
+                ch_contigs.pass,
                 blast_clust_db,
                 unpacked_references,
                 params.cluster_method
@@ -250,6 +250,7 @@ workflow VIRALGENIE {
                     params.intermediate_variant_caller,
                     params.intermediate_consensus_caller,
                     params.get_intermediate_stats,
+                    params.min_mapped_reads,
                     params.min_contig_size,
                     params.max_n_1OOkbp
                 )
@@ -286,7 +287,7 @@ workflow VIRALGENIE {
                     meta, reads, seq, name ->
                     sample = meta.id
                     id = "${sample}_${name.id}"
-                    new_meta = meta + [id: id, sample: sample, constrain: true, reads: reads]
+                    new_meta = meta + [id: id, sample: sample, constrain: true, reads: reads, iteration: 'final']
                     return [new_meta, seq]
                 }
             .set{ch_map_seq_anno_combined}
@@ -322,6 +323,7 @@ workflow VIRALGENIE {
             true,
             params.consensus_caller,
             params.get_stats,
+            params.min_mapped_reads,
             params.min_contig_size,
             params.max_n_1OOkbp
         )
