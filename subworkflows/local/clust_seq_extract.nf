@@ -18,18 +18,22 @@ workflow CLUST_SEQ_EXTRACT {
     CLUSTER_EXTRACT(ch_clusters, cluster_method)
     ch_versions =  ch_versions.mix(CLUSTER_EXTRACT.out.versions.first())
 
-    members_centroids = CLUSTER_EXTRACT.out.members_centroids
+    CLUSTER_EXTRACT
+        .out
+        .members_centroids
+        .join(db_seq, by: [0])
+        .set{members_centroids_seq}
     // [sample_meta, [members], [centroids] ]
 
-    ch_centroids  = members_centroids.map {meta, members, centroids -> [meta, centroids] }
-    ch_members    = members_centroids.map {meta, members, centroids -> [meta, members] }
+    ch_centroids  = members_centroids_seq.map {meta, members, centroids,seq -> [meta, centroids,seq] }
+    ch_members    = members_centroids_seq.map {meta, members, centroids,seq -> [meta, members,seq] }
 
     // extract members and centroids from db
 
-    SEQKIT_GREP_MEMBERS (ch_members, db_seq.map { it[1] } )
+    SEQKIT_GREP_MEMBERS (ch_members )
     ch_versions =  ch_versions.mix(SEQKIT_GREP_MEMBERS.out.versions.first())
 
-    SEQKIT_GREP_CENTROIDS( ch_centroids, db_seq.map { it[1] })
+    SEQKIT_GREP_CENTROIDS( ch_centroids)
     ch_versions =  ch_versions.mix(SEQKIT_GREP_CENTROIDS.out.versions.first())
 
     SEQKIT_GREP_CENTROIDS.out.filter
