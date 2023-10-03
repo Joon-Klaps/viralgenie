@@ -190,7 +190,9 @@ workflow VIRALGENIE {
 
             ch_centroids_members
                 .singletons
-                .map{ meta, centroids, members -> [ meta, centroids ] }
+                .map{ meta, centroids, members ->
+                    new_id = meta.id + '_singleton'
+                    [ meta + [id: new_id], centroids ] }
                 .set{ ch_single_centroids }
 
             // Align clustered contigs & collapse into a single consensus per cluster

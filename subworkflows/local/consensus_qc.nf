@@ -17,7 +17,7 @@ workflow CONSENSUS_QC  {
     if ( !skip_checkv ) {
         ch_genome
             .collect{it[1]}
-            .map{it -> [ [id: "coverage_combined"], it ] }
+            .map{it -> [ [id: "final_seq_combined"], it ] }
             .set{ch_genome_collapsed}
         CAT_CAT_QC(ch_genome_collapsed)
         ch_versions = ch_versions.mix(CAT_CAT_QC.out.versions)

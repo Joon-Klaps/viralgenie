@@ -20,7 +20,7 @@
 
 <!-- TODO nf-core: Write a 1-2 sentence summary of what data the pipeline is for and what it does -->
 
-**Joon-Klaps/viralgenie** is a bioinformatics best-practice analysis pipeline for A pipeline to reconstruct consensus genomes and identify intrahost variants from metagenomic sequencing data or enriched based sequencing data like hybrid capture. .
+**Joon-Klaps/viralgenie** is a bioinformatics best-practice analysis pipeline for reconstructing consensus genomes and to identify intra-host variants from metagenomic sequencing data or enriched based sequencing data like hybrid capture.
 
 ## Pipeline summary
 

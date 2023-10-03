@@ -51,13 +51,6 @@ WorkflowMain.initialise(workflow, params, log)
 
 include { VIRALGENIE } from './workflows/viralgenie'
 
-//
-// WORKFLOW: Run main Joon-Klaps/viralgenie analysis pipeline
-//
-workflow NFCORE_VIRALGENIE {
-    VIRALGENIE ()
-}
-
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     RUN ALL WORKFLOWS
@@ -69,7 +62,7 @@ workflow NFCORE_VIRALGENIE {
 // See: https://github.com/nf-core/rnaseq/issues/619
 //
 workflow {
-    NFCORE_VIRALGENIE ()
+    VIRALGENIE ()
 }
 
 /*
