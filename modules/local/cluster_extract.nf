@@ -13,6 +13,7 @@ process CLUSTER_EXTRACT {
 
     output:
     tuple val(meta), path('*_members.txt'), path('*_centroid.txt')   , emit: members_centroids
+    tuple val(meta), path("*.yaml")                                  ,
     path "versions.yml"                                              , emit: versions
 
     when:

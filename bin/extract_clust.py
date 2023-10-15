@@ -3,11 +3,13 @@
 """Provide a command line tool to extract sequence names from cdhit's cluster files."""
 
 import argparse
-import re
-import logging
 import gzip
+import logging
+import re
 import sys
 from pathlib import Path
+
+import yaml
 
 logger = logging.getLogger()
 
@@ -45,7 +47,7 @@ class Cluster:
         """
         Save the cluster to a file.
         """
-        with open(f"{prefix}_{self.id}_n{self.size}_members.txt", "w") as file:
+        with open(f"{prefix}_{self.id}_members.txt", "w") as file:
             if self.members:
                 for member in self.members:
                     file.write(f"{member}\n")
@@ -56,8 +58,11 @@ class Cluster:
         """
         Save the cluster to a file.
         """
-        with open(f"{prefix}_{self.id}_n{self.size}_centroid.txt", "w") as file:
+        with open(f"{prefix}_{self.id}_centroid.txt", "w") as file:
             file.write(f"{self.centroid}\n")
+
+    def _to_yaml_dict_(self):
+        return dict(self)
 
 
 def parse_clusters_chdit(file_in):
@@ -135,6 +140,17 @@ def parse_clusters_vsearch(file_in):
 
     # Convert the dictionary values to a list of clusters and return
     return list(clusters.values())
+
+
+def write_clusters_to_yaml(clusters, file_out):
+    """
+    Write clusters to a yaml file.
+    """
+    # Convert the clusters to a dictionary format suitable for YAML
+    data = [{"id": cluster.id, "reference": cluster.reference, "members": cluster.members} for cluster in clusters]
+
+    with open(output_file, "w") as yaml_file:
+        yaml.dump(data, yaml_file)
 
 
 def filter_clusters(clusters, pattern):
@@ -217,6 +233,11 @@ def main(argv=None):
     for cluster in filtered_clusters:
         cluster._save_cluster_members(args.file_out_prefix)
         cluster._save_cluster_centroid(args.file_out_prefix)
+
+    # Save all clusters to a single yaml file:
+    write_clusters_to_yaml(filtered_clusters, f"{args.file_out_prefix}_clusters.yaml")
+
+    return 0
 
 
 if __name__ == "__main__":

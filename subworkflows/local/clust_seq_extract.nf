@@ -29,7 +29,6 @@ workflow CLUST_SEQ_EXTRACT {
     ch_members    = members_centroids_seq.map {meta, members, centroids,seq -> [meta, members,seq] }
 
     // extract members and centroids from db
-
     SEQKIT_GREP_MEMBERS (ch_members )
     ch_versions =  ch_versions.mix(SEQKIT_GREP_MEMBERS.out.versions.first())
 
@@ -39,6 +38,8 @@ workflow CLUST_SEQ_EXTRACT {
     SEQKIT_GREP_CENTROIDS.out.filter
         .join(SEQKIT_GREP_MEMBERS.out.filter, remainder: true)
         .transpose() //wide to long
+
+    //TODO INSERT THE CLUSTER ID AND SIZE INTO THE META using the YAML output from CLUSTER_EXTRACT
         .map { create_member_ref_channel(it) }
         .set { seq_centroids_members }
 
