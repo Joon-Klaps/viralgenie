@@ -38,14 +38,25 @@ workflow CLUST_SEQ_EXTRACT {
     SEQKIT_GREP_CENTROIDS.out.filter
         .join(SEQKIT_GREP_MEMBERS.out.filter, remainder: true)
         .transpose() //wide to long
-
-    //TODO INSERT THE CLUSTER ID AND SIZE INTO THE META using the YAML output from CLUSTER_EXTRACT
+        .join(CLUSTER_EXTRACT.out.json)
         .map { create_member_ref_channel(it) }
         .set { seq_centroids_members }
+
+    seq_centroids_members.view()
 
     emit:
     seq_centroids_members     = seq_centroids_members        // channel: [ [ meta ], [ seq_centroids.fa], [ seq_members.fa] ]
     versions                  = ch_versions
+}
+
+//
+// Function that parses fastp json output file to get total number of reads after trimming
+//
+import groovy.json.JsonSlurper
+
+def getClustersFromJson(json_file) {
+    def Map json = (Map) new JsonSlurper().parseText(json_file.text)
+    return json
 }
 
 // Function to get list of [ meta, [ fastq_1, fastq_2 ] ]
@@ -53,14 +64,13 @@ def create_member_ref_channel(ArrayList row) {
     meta         = row[0]
     centroids    = row[1]
     members      = row[2]
+    json         = getClustersFromJson(row[3])
 
     sample       = String.valueOf(meta.id) // just to make sure we don't pass by reference
-    regex        = (members =~ /.*\/.*_([0-9]+)_n([0-9]+)_members/) // try and extract the correct cluster ID and size associated to the sample
-    cluster      = regex[0][1]
-    cluster_size = regex[0][2] as int
+    cluster      = json['id']
     id           = "${sample}_${cluster}"
 
-    new_meta = meta + [ id: id, cluster: cluster, cluster_size: cluster_size, sample: sample]
+    new_meta = meta + [ id: id, cluster: cluster, cluster_size: json['size'], sample: sample, centroid: json['centroid'], members: json['members'] ]
 
     def result = [ new_meta, centroids, members]
     return result

@@ -12,9 +12,9 @@ process CLUSTER_EXTRACT {
     val(module)
 
     output:
-    tuple val(meta), path('*_members.txt'), path('*_centroid.txt')   , emit: members_centroids
-    tuple val(meta), path("*.yaml")                                  ,
-    path "versions.yml"                                              , emit: versions
+    tuple val(meta), path('*_members.txt'), path('*_centroid.txt'), emit: members_centroids
+    tuple val(meta), path("*.json")                               , emit: json
+    path "versions.yml"                                           , emit: versions
 
     when:
     task.ext.when == null || task.ext.when

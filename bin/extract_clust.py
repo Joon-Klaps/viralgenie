@@ -4,12 +4,11 @@
 
 import argparse
 import gzip
+import json
 import logging
 import re
 import sys
 from pathlib import Path
-
-import yaml
 
 logger = logging.getLogger()
 
@@ -61,8 +60,8 @@ class Cluster:
         with open(f"{prefix}_{self.id}_centroid.txt", "w") as file:
             file.write(f"{self.centroid}\n")
 
-    def _to_yaml_dict_(self):
-        return dict(self)
+    def _toJSON(self):
+        return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
 
 
 def parse_clusters_chdit(file_in):
@@ -142,15 +141,14 @@ def parse_clusters_vsearch(file_in):
     return list(clusters.values())
 
 
-def write_clusters_to_yaml(clusters, file_out):
+def write_clusters_to_json(clusters, file_out):
     """
-    Write clusters to a yaml file.
+    Write the clusters to a json file.
     """
-    # Convert the clusters to a dictionary format suitable for YAML
-    data = [{"id": cluster.id, "reference": cluster.reference, "members": cluster.members} for cluster in clusters]
-
-    with open(output_file, "w") as yaml_file:
-        yaml.dump(data, yaml_file)
+    with open(file_out, "w") as file:
+        for cluster in clusters:
+            file.write(cluster._toJSON())
+            file.write("\n")
 
 
 def filter_clusters(clusters, pattern):
@@ -167,7 +165,6 @@ def filter_clusters(clusters, pattern):
                 filtered_clusters.append(Cluster(cluster.id, cluster.centroid, matching_members))
         elif regex.search(cluster.centroid):
             filtered_clusters.append(cluster)
-
     return filtered_clusters
 
 
@@ -235,7 +232,7 @@ def main(argv=None):
         cluster._save_cluster_centroid(args.file_out_prefix)
 
     # Save all clusters to a single yaml file:
-    write_clusters_to_yaml(filtered_clusters, f"{args.file_out_prefix}_clusters.yaml")
+    write_clusters_to_json(filtered_clusters, f"{args.file_out_prefix}_clusters.json")
 
     return 0
 
