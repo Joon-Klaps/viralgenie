@@ -11,6 +11,7 @@ from pathlib import Path
 
 logger = logging.getLogger()
 
+
 def parse_args(argv=None):
     """Define and immediately parse command line arguments."""
     parser = argparse.ArgumentParser(
@@ -68,13 +69,14 @@ def parse_args(argv=None):
     )
     return parser.parse_args(argv)
 
+
 def filter(df, escore, bitscore, percent_alignment):
     """Filter blast results."""
-    if (escore!= 0):
+    if escore != 0:
         df = df[df["evalue"] <= escore]
-    if (bitscore != 0):
+    if bitscore != 0:
         df = df[df["bitscore"] >= bitscore]
-    if (percent_alignment != 0):
+    if percent_alignment != 0:
         df["percent_alignment"] = df["length"] / df["qlen"]
         df = df[df["percent_alignment"] >= percent_alignment]
     return df
@@ -89,12 +91,27 @@ def main(argv=None):
         sys.exit(2)
 
     df = pd.read_csv(args.file_in, sep="\t", header=None)
-    df.columns = ["query", "subject", "pident", "qlen", "length", "mismatch", "gapopen", "qstart", "qend", "sstart", "send", "evalue", "bitscore"]
+    df.columns = [
+        "query",
+        "subject",
+        "pident",
+        "qlen",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+    ]
 
     df_filter = filter(df, args.escore, args.bitscore, args.percent_alignment)
 
     df_filter.to_csv(args.file_out_prefix + ".filter.tsv", sep="\t", index=False)
     df_filter["subject"].to_csv(args.file_out_prefix + ".filter.hits.txt", sep="\t", index=False, header=False)
+
 
 if __name__ == "__main__":
     sys.exit(main())

@@ -5,3 +5,16 @@ lint:
     - docs/images/nf-core-viralgenie_logo_dark.png
     - .github/ISSUE_TEMPLATE/bug_report.yml
     - .github/ISSUE_TEMPLATE/config.yml
+    - .github/CONTRIBUTING.md
+    - .github/ISSUE_TEMPLATE/feature_request.yml
+    - .github/PULL_REQUEST_TEMPLATE.md
+    - .github/workflows/branch.yml
+    - .github/workflows/linting.yml
+    - assets/email_template.html
+    - assets/email_template.txt
+    - assets/sendmail_template.txt
+  nextflow_config:
+    - manifest.name
+    - manifest.homePage
+  multiqc_config:
+    - assets/multiqc_config.yml
