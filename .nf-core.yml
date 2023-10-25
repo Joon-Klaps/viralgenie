@@ -17,4 +17,5 @@ lint:
     - manifest.name
     - manifest.homePage
   multiqc_config:
-    - assets/multiqc_config.yml
+    - report_section_order
+    - report_comment
