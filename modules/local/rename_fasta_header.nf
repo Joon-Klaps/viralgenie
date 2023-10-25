@@ -1,5 +1,6 @@
 process RENAME_FASTA_HEADER {
     tag "$meta.id"
+    label "process_low"
 
     conda "conda-forge::sed=4.7"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?

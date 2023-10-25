@@ -2,10 +2,10 @@ process BLAST_BLASTN {
     tag "$meta.id"
     label 'process_medium'
 
-    conda "bioconda::blast=2.13.0"
+    conda "bioconda::blast=2.14.1"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/blast:2.13.0--hf3cf87c_0' :
-        'biocontainers/blast:2.13.0--hf3cf87c_0' }"
+        'https://depot.galaxyproject.org/singularity/blast:2.14.1--hf3cf87c_0' :
+        'biocontainers/blast:2.14.1--hf3cf87c_0' }"
 
     input:
     tuple val(meta), path(fasta)
