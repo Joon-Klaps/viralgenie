@@ -3,9 +3,10 @@
 """Provide a command line tool to extract sequence names from cdhit's cluster files."""
 
 import argparse
-import re
-import logging
 import gzip
+import json
+import logging
+import re
 import sys
 from pathlib import Path
 
@@ -45,7 +46,7 @@ class Cluster:
         """
         Save the cluster to a file.
         """
-        with open(f"{prefix}_{self.id}_n{self.size}_members.txt", "w") as file:
+        with open(f"{prefix}_{self.id}_members.txt", "w") as file:
             if self.members:
                 for member in self.members:
                     file.write(f"{member}\n")
@@ -56,8 +57,11 @@ class Cluster:
         """
         Save the cluster to a file.
         """
-        with open(f"{prefix}_{self.id}_n{self.size}_centroid.txt", "w") as file:
+        with open(f"{prefix}_{self.id}_centroid.txt", "w") as file:
             file.write(f"{self.centroid}\n")
+
+    def _toJSON(self):
+        return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
 
 
 def parse_clusters_chdit(file_in):
@@ -137,6 +141,16 @@ def parse_clusters_vsearch(file_in):
     return list(clusters.values())
 
 
+def write_clusters_to_json(clusters, file_out):
+    """
+    Write the clusters to a json file.
+    """
+    with open(file_out, "w") as file:
+        for cluster in clusters:
+            file.write(cluster._toJSON())
+            file.write("\n")
+
+
 def filter_clusters(clusters, pattern):
     """
     Filter clusters on members given regex pattern.
@@ -151,7 +165,6 @@ def filter_clusters(clusters, pattern):
                 filtered_clusters.append(Cluster(cluster.id, cluster.centroid, matching_members))
         elif regex.search(cluster.centroid):
             filtered_clusters.append(cluster)
-
     return filtered_clusters
 
 
@@ -217,6 +230,11 @@ def main(argv=None):
     for cluster in filtered_clusters:
         cluster._save_cluster_members(args.file_out_prefix)
         cluster._save_cluster_centroid(args.file_out_prefix)
+
+    # Save all clusters to a single yaml file:
+    write_clusters_to_json(filtered_clusters, f"{args.file_out_prefix}_clusters.json")
+
+    return 0
 
 
 if __name__ == "__main__":
