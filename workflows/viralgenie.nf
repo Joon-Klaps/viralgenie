@@ -129,6 +129,9 @@ workflow VIRALGENIE {
     ch_multiqc_files        = ch_multiqc_files.mix(PREPROCESSING_ILLUMINA.out.mqc.collect{it[1]}.ifEmpty([]))
     ch_versions             = ch_versions.mix(PREPROCESSING_ILLUMINA.out.versions)
 
+    unpacked_references = UNPACK_DB_BLAST (params.reference_fasta).db
+    ch_versions         = ch_versions.mix(UNPACK_DB_BLAST.out.versions)
+
     // Determining metagenomic diversity
     if (!params.skip_metagenomic_diversity) {
         FASTQ_KRAKEN_KAIJU(
@@ -141,7 +144,9 @@ workflow VIRALGENIE {
     }
 
     // Assembly
-    ch_consensus = Channel.empty()
+    ch_consensus       = Channel.empty()
+    ch_consensus_reads = Channel.empty()
+
     if (!params.skip_assembly) {
         FASTQ_SPADES_TRINITY_MEGAHIT(
             ch_host_trim_reads,
@@ -150,6 +155,7 @@ workflow VIRALGENIE {
             ch_spades_hmm)
 
         ch_versions      = ch_versions.mix(FASTQ_SPADES_TRINITY_MEGAHIT.out.versions)
+        ch_multiqc_files = ch_multiqc_files.mix(FASTQ_SPADES_TRINITY_MEGAHIT.out.mqc.collect{it[1]}.ifEmpty([]))
 
         FASTQ_SPADES_TRINITY_MEGAHIT
             .out
@@ -161,9 +167,6 @@ workflow VIRALGENIE {
             .set{ch_contigs}
 
         if (!params.skip_polishing){
-            unpacked_references = UNPACK_DB_BLAST (params.reference_fasta).db
-            ch_versions         = ch_versions.mix(UNPACK_DB_BLAST.out.versions)
-
             BLAST_MAKEBLASTDB ( unpacked_references )
             blast_clust_db      = BLAST_MAKEBLASTDB.out.db
             ch_versions         = ch_versions.mix(BLAST_MAKEBLASTDB.out.versions)
