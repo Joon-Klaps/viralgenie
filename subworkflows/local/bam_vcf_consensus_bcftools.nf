@@ -7,7 +7,6 @@ include { BEDTOOLS_MERGE      } from '../../modules/nf-core/bedtools/merge/main'
 include { BEDTOOLS_MASKFASTA  } from '../../modules/nf-core/bedtools/maskfasta/main'
 include { BCFTOOLS_CONSENSUS  } from '../../modules/nf-core/bcftools/consensus/main'
 include { MAKE_BED_MASK       } from '../../modules/local/make_bed_mask'
-include { RENAME_FASTA_HEADER } from '../../modules/local/rename_fasta_header'
 
 workflow BAM_VCF_CONSENSUS_BCFTOOLS {
     take:
@@ -60,16 +59,8 @@ workflow BAM_VCF_CONSENSUS_BCFTOOLS {
     )
     ch_versions = ch_versions.mix(BCFTOOLS_CONSENSUS.out.versions.first())
 
-    //
-    // Rename consensus header adding sample name
-    //
-    RENAME_FASTA_HEADER (
-        BCFTOOLS_CONSENSUS.out.fasta
-    )
-    ch_versions = ch_versions.mix(RENAME_FASTA_HEADER.out.versions.first())
-
     emit:
-    consensus        = RENAME_FASTA_HEADER.out.fasta     // channel: [ val(meta), [ fasta ] ]
+    consensus        = BCFTOOLS_CONSENSUS.out.fasta     // channel: [ val(meta), [ fasta ] ]
 
     versions         = ch_versions                       // channel: [ versions.yml ]
 }

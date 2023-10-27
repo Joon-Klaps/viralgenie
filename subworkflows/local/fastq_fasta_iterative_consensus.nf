@@ -22,12 +22,13 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
 
     main:
     ch_reference_reads_intermediate = reference_reads
+    ch_consensus_allsteps           = Channel.empty()
     ch_multiqc                      = Channel.empty()
     ch_versions                     = Channel.empty()
 
     if (repeats >= 1){
         ch_reference_reads_intermediate
-            .map{meta, fasta, reads -> [meta + [iteration:'1'], fasta, reads]}
+            .map{meta, fasta, reads -> [meta + [iteration:'1', step:"it1"], fasta, reads]}
             .set{ch_reference_reads_intermediate}
 
         ITERATION_1(
@@ -46,6 +47,7 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
         )
 
         ch_reference_reads_intermediate = ITERATION_1.out.consensus_reads
+        ch_consensus_allsteps           = ch_consensus_allsteps.mix(ITERATION_1.out.consensus)
         ch_multiqc                      = ch_multiqc.mix(ITERATION_1.out.mqc)
         ch_versions                     = ch_versions.mix(ITERATION_1.out.versions)
         bam                             = ITERATION_1.out.bam
@@ -55,7 +57,7 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
     }
     if (repeats >= 2){
         ch_reference_reads_intermediate
-            .map{meta, fasta, reads -> [meta + [iteration:'2'], fasta, reads]}
+            .map{meta, fasta, reads -> [meta + [iteration:'2', step:"it2"], fasta, reads]}
             .set{ch_reference_reads_intermediate}
 
         ITERATION_2(
@@ -74,6 +76,7 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
         )
 
         ch_reference_reads_intermediate = ITERATION_2.out.consensus_reads
+        ch_consensus_allsteps           = ch_consensus_allsteps.mix(ITERATION_2.out.consensus)
         ch_multiqc                      = ch_multiqc.mix(ITERATION_2.out.mqc)
         ch_versions                     = ch_versions.mix(ITERATION_2.out.versions)
         bam                             = ITERATION_2.out.bam
@@ -83,7 +86,7 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
     }
     if (repeats >= 3){
         ch_reference_reads_intermediate
-            .map{meta, fasta, reads -> [meta + [iteration:'3'], fasta, reads]}
+            .map{meta, fasta, reads -> [meta + [iteration:'3', step:"it3"], fasta, reads]}
             .set{ch_reference_reads_intermediate}
 
         IITERATION_3(
@@ -102,6 +105,7 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
         )
 
         ch_reference_reads_intermediate = ITERATION_3.out.consensus_reads
+        ch_consensus_allsteps           = ch_consensus_allsteps.mix(ITERATION_3.out.consensus)
         ch_multiqc                      = ch_multiqc.mix(ITERATION_3.out.mqc)
         ch_versions                     = ch_versions.mix(ITERATION_3.out.versions)
         bam                             = ITERATION_3.out.bam
@@ -111,7 +115,7 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
     }
     if (repeats >= 4){
         ch_reference_reads_intermediate
-            .map{meta, fasta, reads -> [meta + [iteration:'4'], fasta, reads]}
+            .map{meta, fasta, reads -> [meta + [iteration:'4', step:"it4"], fasta, reads]}
             .set{ch_reference_reads_intermediate}
 
         ITERATION_4(
@@ -130,6 +134,7 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
         )
 
         ch_reference_reads_intermediate = ITERATION_4.out.consensus_reads
+        ch_consensus_allsteps           = ch_consensus_allsteps.mix(ITERATION_4.out.consensus)
         ch_multiqc                      = ch_multiqc.mix(ITERATION_4.out.mqc)
         ch_versions                     = ch_versions.mix(ITERATION_4.out.versions)
         bam                             = ITERATION_4.out.bam
@@ -140,6 +145,7 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
 
     emit:
     consensus_reads      = ch_reference_reads_intermediate      // channel: [ val(meta), [ fasta ], [ fastq ] ]
+    consensus_allsteps   = ch_consensus_allsteps                // channel: [ val(meta), [ fasta ] ]
     bam                  = bam                                  // channel: [ val(meta), [ bam ] ]
     vcf                  = vcf                                  // channel: [ val(meta), [ vcf ] ]
     vcf_filter           = vcf_filter                           // channel: [ val(meta), [ vcf ] ]

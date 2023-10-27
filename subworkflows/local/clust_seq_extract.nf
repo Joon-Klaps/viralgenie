@@ -42,8 +42,6 @@ workflow CLUST_SEQ_EXTRACT {
         .map { create_member_ref_channel(it) }
         .set { seq_centroids_members }
 
-    seq_centroids_members.view()
-
     emit:
     seq_centroids_members     = seq_centroids_members        // channel: [ [ meta ], [ seq_centroids.fa], [ seq_members.fa] ]
     versions                  = ch_versions

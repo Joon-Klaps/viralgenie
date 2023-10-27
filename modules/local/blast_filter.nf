@@ -26,6 +26,8 @@ process BLAST_FILTER {
         $blast \\
         $prefix
 
+    sort -u ${prefix}.filter.hits.txt > ${prefix}.filter.hits.txt.tmp && mv ${prefix}.filter.hits.txt.tmp ${prefix}.filter.hits.txt
+
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         python: \$(python --version | sed 's/Python //g')
@@ -37,8 +39,8 @@ process BLAST_FILTER {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    touch ${prefix}.filter.txt
-    touch ${prefix}.hits.txt
+    touch ${prefix}.filter.tsv
+    touch ${prefix}.filter.hits.txt
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

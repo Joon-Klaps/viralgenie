@@ -50,6 +50,11 @@
                         "git_sha": "516189e968feb4ebdd9921806988b4c12b4ac2dc",
                         "installed_by": ["modules"]
                     },
+                    "blast/blastn": {
+                        "branch": "master",
+                        "git_sha": "516189e968feb4ebdd9921806988b4c12b4ac2dc",
+                        "installed_by": ["modules"]
+                    },
                     "blast/makeblastdb": {
                         "branch": "master",
                         "git_sha": "516189e968feb4ebdd9921806988b4c12b4ac2dc",
