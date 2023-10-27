@@ -89,7 +89,7 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
             .map{meta, fasta, reads -> [meta + [iteration:'3', step:"it3"], fasta, reads]}
             .set{ch_reference_reads_intermediate}
 
-        IITERATION_3(
+        ITERATION_3(
             ch_reference_reads_intermediate,
             intermediate_mapper,
             umi,

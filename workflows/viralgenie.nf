@@ -177,6 +177,8 @@ workflow VIRALGENIE {
             }
             .set{ch_contigs}
 
+        // TODO: add the samples of failed scaffolds
+
         if (!params.skip_polishing){
             // blast contigs against reference & identify clusters of (contigs & references)
             FASTA_BLAST_CLUST (
@@ -199,6 +201,8 @@ workflow VIRALGENIE {
                     multiple: meta.cluster_size > 0
                 }
                 .set{ch_centroids_members}
+
+            // TODO: add table of number of singleton clusters and members
 
             ch_centroids_members
                 .singletons
@@ -364,7 +368,8 @@ workflow VIRALGENIE {
             ch_blast_db,
             params.skip_checkv,
             params.skip_quast,
-            params.skip_blast_qc
+            params.skip_blast_qc,
+            params.skip_alignment_qc
             )
         ch_versions      = ch_versions.mix(CONSENSUS_QC.out.versions)
         ch_multiqc_files = ch_multiqc_files.mix(CONSENSUS_QC.out.mqc.collect{it[1]}.ifEmpty([]))
