@@ -1,6 +1,7 @@
 
-include { IVAR_CONSENSUS             } from '../../modules/nf-core/ivar/consensus/main'
-include { BAM_VCF_CONSENSUS_BCFTOOLS } from './bam_vcf_consensus_bcftools.nf'
+include { IVAR_CONSENSUS                                                } from '../../modules/nf-core/ivar/consensus/main'
+include { BAM_VCF_CONSENSUS_BCFTOOLS                                    } from './bam_vcf_consensus_bcftools.nf'
+include { RENAME_FASTA_HEADER as RENAME_FASTA_HEADER_CALLED_CONSENSUS   } from '../../modules/local/rename_fasta_header'
 
 workflow BAM_CALL_CONSENSUS {
 
@@ -36,9 +37,13 @@ workflow BAM_CALL_CONSENSUS {
         ch_versions = ch_versions.mix(IVAR_CONSENSUS.out.versions.first())
     }
 
-    emit:
-    consensus = ch_consensus        // channel: [ val(meta), [ fasta ] ]
+    RENAME_FASTA_HEADER_CALLED_CONSENSUS (
+        ch_consensus,
+        consensus_caller
+    )
 
-    versions  = ch_versions          // channel: [ versions.yml ]
+    emit:
+    consensus = RENAME_FASTA_HEADER_CALLED_CONSENSUS.out.fasta   // channel: [ val(meta), [ fasta ] ]
+    versions  = ch_versions                                      // channel: [ versions.yml ]
 }
 

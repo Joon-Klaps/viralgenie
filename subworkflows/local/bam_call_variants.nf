@@ -9,9 +9,7 @@ workflow BAM_CALL_VARIANTS {
     variant_caller  // value: [ bcftools | ivar ]
     save_stats      // value: [ true | false ]
 
-
     main:
-
     ch_tbi      = Channel.empty()
     ch_csi      = Channel.empty()
     ch_stats    = Channel.empty()

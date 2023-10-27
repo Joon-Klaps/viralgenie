@@ -27,7 +27,7 @@ workflow VCF_TABIX_STATS {
         .join(TABIX_TABIX.out.tbi, by: [0])
         .join(fasta, by: [0])
 
-    vcf_tbi = vcf_tbi_fasta.map{ meta, vcf, tbi, fasta -> [ meta, vcf, tbi ] }
+    vcf_tbi    = vcf_tbi_fasta.map{ meta, vcf, tbi, fasta -> [ meta, vcf, tbi ] }
     meta_fasta = vcf_tbi_fasta.map{ meta, vcf, tbi, fasta -> [ meta, fasta ] }
     BCFTOOLS_STATS (
         vcf_tbi,

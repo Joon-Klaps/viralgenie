@@ -2,7 +2,7 @@
 // Run quast and remove contigs based on the results
 //
 
-include { QUAST  } from '../../modules/nf-core/quast/main'
+include { QUAST as QUAST_FILTER  } from '../../modules/nf-core/quast/main'
 
 // Function to extract the contig size & N' per 100 kbp from the QUAST report
 def getQuastStats(report_file) {
@@ -29,11 +29,11 @@ workflow FASTA_CONTIG_FILTERING {
     ch_versions = Channel.empty()
 
 
-    QUAST ( ch_contigs, [[:],[]], [[:],[]] )
-    ch_versions = ch_versions.mix(QUAST.out.versions.first())
+    QUAST_FILTER ( ch_contigs, [[:],[]], [[:],[]] )
+    ch_versions = ch_versions.mix(QUAST_FILTER.out.versions.first())
 
     ch_contigs
-        .join(QUAST.out.tsv, by:[0])
+        .join(QUAST_FILTER.out.tsv, by:[0])
         .map { meta, fasta, report -> [ meta, fasta, getQuastStats( report ) ] }
         .filter { meta, fasta, stats -> stats.contig_size >= min_len.toInteger() && stats.n_100 <= n_100.toInteger() }
         .set { ch_contigs_filtered_stats }

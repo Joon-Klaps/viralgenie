@@ -66,9 +66,27 @@ top_modules:
   - "umitools":
       name: "UMI-tools deduplication"
   - "quast":
-      name: "Quast"
+      name: "Quast (Spades)"
+      anchor: "quast"
+      path_filters:
+        - "*_spades.tsv"
+  - "quast":
+      name: "Quast (Megahit)"
+      anchor: "quast"
+      path_filters:
+        - "*_megahit.tsv"
+  - "quast":
+      name: "Quast (Trinity)"
+      anchor: "quast"
+      path_filters:
+        - "*_trinity.tsv"
   - "custom_content":
-      name: "viralgenie-summary"
+      name: "Joon-Klaps-viralgenie-summary"
+
+# TODO: Include the custom assembly table to compare assemblies tools
+custom_plot_config:
+  general_stats_table:
+    hidden: false
 
 table_columns_name:
   FastQC (pre-Trimming):
@@ -87,6 +105,54 @@ table_columns_name:
     raw_total_sequences: "Nr. Reads Into Mapping"
     reads_mapped: "Nr. Mapped Reads"
     reads_mapped_percent: "% Mapped Reads"
+  Quast (Spades):
+    N50: "N50 (Spades)"
+    L50: "L50 (Spades)"
+    Largest contig: "Largest contig (Spades)"
+    Total length: "Total length (Spades)"
+  Quast (Megahit):
+    N50: "N50 (Megahit)"
+    L50: "L50 (Megahit)"
+    Largest contig: "Largest contig (Megahit)"
+    Total length: "Total length (Megahit)"
+  Quast (Trinity):
+    N50: "N50 (Trinity)"
+    L50: "L50 (Trinity)"
+    Largest contig: "Largest contig (Trinity)"
+    Total length: "Total length (Trinity)"
+
+table_columns_visible:
+  FastQC (pre-Trimming):
+    total_sequences: True
+    avg_sequence_length: True
+    percent_gc: False
+    percent_duplicates: False
+    percent_fails: False
+  FastQC (post-Trimming):
+    total_sequences: True
+    avg_sequence_length: True
+    percent_gc: True
+    percent_duplicates: True
+    percent_fails: True
+  # Samtools Stats:
+  #   raw_total_sequences: 1
+  #   reads_mapped: 2
+  #   reads_mapped_percent: 3
+  Quast (Spades):
+    N50: True
+    L50: False
+    Largest contig: True
+    Total length: False
+  Quast (Megahit):
+    N50: True
+    L50: False
+    Largest contig: True
+    Total length: False
+  Quast (Trinity):
+    N50: True
+    L50: False
+    Largest contig: True
+    Total length: False
 
 section_comments:
   general_stats: "By default, all read count columns are displayed as millions (M) of reads."
@@ -97,3 +163,15 @@ sp:
   quast:
     fn: "*.tsv"
     contains: "# contigs (>= 1000 bp)"
+
+extra_fn_clean_exts:
+  - "_raw_1"
+  - "_raw_2"
+  - "_trim_1"
+  - "_trim_2"
+  - "_1"
+  - "_2"
+  - "_host"
+  - "_spades"
+  - "_megahit"
+  - "_trinity"

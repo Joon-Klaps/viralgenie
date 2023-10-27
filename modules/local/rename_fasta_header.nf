@@ -9,6 +9,7 @@ process RENAME_FASTA_HEADER {
 
     input:
     tuple val(meta), path(fasta)
+    val(string)
 
     output:
     tuple val(meta), path("*.fa"), emit: fasta
@@ -19,8 +20,9 @@ process RENAME_FASTA_HEADER {
 
     script:
     def prefix = task.ext.prefix ?: "${meta.id}"
+    string_val = string ? "_$string": ""
     """
-    sed "s/>.*\$/>${meta.id} /g" $fasta > ${prefix}.fa
+    sed "s/>.*\$/>${prefix}${string_val} /g" $fasta > ${prefix}.fa
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
