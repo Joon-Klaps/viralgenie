@@ -1,4 +1,4 @@
-include { BLAST_BLASTN      } from '../../modules/local/blast_blastn'
+include { BLAST_BLASTN      } from '../../modules/nf-core/blast/blastn/main'
 include { BLAST_FILTER      } from '../../modules/local/blast_filter'
 include { GUNZIP            } from '../../modules/nf-core/gunzip/main'
 include { SEQKIT_GREP       } from '../../modules/nf-core/seqkit/grep/main'
@@ -27,17 +27,17 @@ workflow FASTA_BLAST_CLUST {
 
     BLAST_BLASTN
         .out
-        .summary
-        .branch { meta, summary ->
-            no_hits : summary.countLines() == 0
-            hits    : summary.countLines() > 0
+        .txt
+        .branch { meta, txt ->
+            no_hits : txt.countLines() == 0
+            hits    : txt.countLines() > 0
         }
-        .set { ch_blast_summary }
+        .set { ch_blast_txt }
 
     //TODO throw an warning if no hits are found
 
     BLAST_FILTER (
-        ch_blast_summary.hits
+        ch_blast_txt.hits
     )
     ch_versions = ch_versions.mix(BLAST_FILTER.out.versions.first())
 
@@ -49,7 +49,8 @@ workflow FASTA_BLAST_CLUST {
         }
         .set{ch_blast_db_fasta}
 
-    ch_hits = BLAST_BLASTN.out.txt.map{it -> it[1]}
+    ch_hits = BLAST_FILTER.out.hits.map{it -> it[1]}
+
     // isolate the hits from the database to a fasta file
     SEQKIT_GREP (ch_blast_db_fasta, ch_hits)
     ch_versions = ch_versions.mix(SEQKIT_GREP.out.versions.first())

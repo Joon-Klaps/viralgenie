@@ -129,8 +129,15 @@ workflow VIRALGENIE {
     ch_multiqc_files        = ch_multiqc_files.mix(PREPROCESSING_ILLUMINA.out.mqc.collect{it[1]}.ifEmpty([]))
     ch_versions             = ch_versions.mix(PREPROCESSING_ILLUMINA.out.versions)
 
-    unpacked_references = UNPACK_DB_BLAST (params.reference_fasta).db
-    ch_versions         = ch_versions.mix(UNPACK_DB_BLAST.out.versions)
+    // Prepare blast DB
+    if (!params.skip_polishing || !params.skip_consensus_qc){
+        unpacked_references = UNPACK_DB_BLAST (params.reference_fasta).db
+        ch_versions         = ch_versions.mix(UNPACK_DB_BLAST.out.versions)
+
+        BLAST_MAKEBLASTDB ( unpacked_references )
+        ch_blast_db  = BLAST_MAKEBLASTDB.out.db
+        ch_versions  = ch_versions.mix(BLAST_MAKEBLASTDB.out.versions)
+    }
 
     // Determining metagenomic diversity
     if (!params.skip_metagenomic_diversity) {
@@ -148,6 +155,7 @@ workflow VIRALGENIE {
     ch_consensus_reads = Channel.empty()
 
     if (!params.skip_assembly) {
+        // run different assemblers and combine contigs
         FASTQ_SPADES_TRINITY_MEGAHIT(
             ch_host_trim_reads,
             assemblers,
@@ -157,6 +165,7 @@ workflow VIRALGENIE {
         ch_versions      = ch_versions.mix(FASTQ_SPADES_TRINITY_MEGAHIT.out.versions)
         ch_multiqc_files = ch_multiqc_files.mix(FASTQ_SPADES_TRINITY_MEGAHIT.out.mqc.collect{it[1]}.ifEmpty([]))
 
+        // Filter out empty scaffolds
         FASTQ_SPADES_TRINITY_MEGAHIT
             .out
             .scaffolds
@@ -167,15 +176,10 @@ workflow VIRALGENIE {
             .set{ch_contigs}
 
         if (!params.skip_polishing){
-            BLAST_MAKEBLASTDB ( unpacked_references )
-            blast_clust_db      = BLAST_MAKEBLASTDB.out.db
-            ch_versions         = ch_versions.mix(BLAST_MAKEBLASTDB.out.versions)
-
-
             // blast contigs against reference & identify clusters of (contigs & references)
             FASTA_BLAST_CLUST (
                 ch_contigs.pass,
-                blast_clust_db,
+                ch_blast_db,
                 unpacked_references,
                 params.cluster_method
                 )
@@ -350,8 +354,10 @@ workflow VIRALGENIE {
         CONSENSUS_QC(
             ch_consensus,
             ch_checkv_db,
+            ch_blast_db,
             params.skip_checkv,
-            params.skip_quast
+            params.skip_quast,
+            params.skip_blast_qc
             )
         ch_versions      = ch_versions.mix(CONSENSUS_QC.out.versions)
         ch_multiqc_files = ch_multiqc_files.mix(CONSENSUS_QC.out.mqc.collect{it[1]}.ifEmpty([]))
