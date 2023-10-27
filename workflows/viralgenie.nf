@@ -151,8 +151,10 @@ workflow VIRALGENIE {
     }
 
     // Assembly
-    ch_consensus       = Channel.empty()
-    ch_consensus_reads = Channel.empty()
+    // Channel for consensus sequences that have been generated across different iteration
+    ch_consensus               = Channel.empty()
+    // Channel for consensus sequences that have been generated at the LAST iteration
+    ch_consensus_results_reads = Channel.empty()
 
     if (!params.skip_assembly) {
         // run different assemblers and combine contigs
@@ -189,6 +191,9 @@ workflow VIRALGENIE {
             FASTA_BLAST_CLUST
                 .out
                 .centroids_members
+                .map { meta, centroids, members ->
+                    [ meta + [step: "clusterd"], centroids, members ]
+                }
                 .branch{ meta, centroids, members ->
                     singletons: meta.cluster_size == 0
                     multiple: meta.cluster_size > 0
@@ -198,8 +203,7 @@ workflow VIRALGENIE {
             ch_centroids_members
                 .singletons
                 .map{ meta, centroids, members ->
-                    new_id = meta.id + '_singleton'
-                    [ meta + [id: new_id], centroids ] }
+                    [ meta, centroids] }
                 .set{ ch_single_centroids }
 
             // Align clustered contigs & collapse into a single consensus per cluster
@@ -246,11 +250,11 @@ workflow VIRALGENIE {
                     .map{
                         sample, meta_ref, fasta, meta_reads, fastq -> [meta_ref, fasta, fastq]
                     }
-                    .set{ch_consensus_reads_intermediate}
+                    .set{ch_consensus_results_reads_intermediate}
 
             if (!params.skip_iterative_refinement) {
                 FASTQ_FASTA_ITERATIVE_CONSENSUS (
-                    ch_consensus_reads_intermediate,
+                    ch_consensus_results_reads_intermediate,
                     params.iterative_refinement_cycles,
                     params.intermediate_mapper,
                     params.with_umi,
@@ -263,15 +267,22 @@ workflow VIRALGENIE {
                     params.min_contig_size,
                     params.max_n_1OOkbp
                 )
-                ch_consensus       = ch_consensus.mix(FASTQ_FASTA_ITERATIVE_CONSENSUS.out.consensus)
-                ch_consensus_reads = FASTQ_FASTA_ITERATIVE_CONSENSUS.out.consensus_reads
-                ch_versions        = ch_versions.mix(FASTQ_FASTA_ITERATIVE_CONSENSUS.out.versions)
-                ch_multiqc_files   = ch_multiqc_files.mix(FASTQ_FASTA_ITERATIVE_CONSENSUS.out.mqc.collect{it[1]}.ifEmpty([]))
+                ch_consensus               = ch_consensus.mix(FASTQ_FASTA_ITERATIVE_CONSENSUS.out.consensus_allsteps)
+                ch_consensus_results_reads = FASTQ_FASTA_ITERATIVE_CONSENSUS.out.consensus_reads
+                ch_versions                = ch_versions.mix(FASTQ_FASTA_ITERATIVE_CONSENSUS.out.versions)
+                ch_multiqc_files           = ch_multiqc_files.mix(FASTQ_FASTA_ITERATIVE_CONSENSUS.out.mqc.collect{it[1]}.ifEmpty([]))
             } else {
-                ch_consensus_reads = ch_consensus_reads_intermediate
+                ch_consensus_results_reads = ch_consensus_results_reads_intermediate
             }
         }
     }
+
+    // add last step to it
+    ch_consensus_results_reads
+        .map{ meta, fasta, fastq ->
+            [meta + [step: "it_final", iteration:'final'], fasta, fastq]
+            }
+        .set{ch_consensus_results_reads}
 
     if (params.mapping_sequence ) {
         ch_mapping_sequence = Channel.fromPath(params.mapping_sequence)
@@ -296,13 +307,13 @@ workflow VIRALGENIE {
                     meta, reads, seq, name ->
                     sample = meta.id
                     id = "${sample}_${name.id}"
-                    new_meta = meta + [id: id, sample: sample, constrain: true, reads: reads, iteration: 'final']
+                    new_meta = meta + [id: id, sample: sample, step: "constrain", constrain: true, reads: reads, iteration: 'final']
                     return [new_meta, seq]
                 }
             .set{ch_map_seq_anno_combined}
 
         //rename fasta headers
-        RENAME_FASTA_HEADER_CONSTRAIN (ch_map_seq_anno_combined)
+        RENAME_FASTA_HEADER_CONSTRAIN (ch_map_seq_anno_combined,[])
         ch_versions = ch_versions.mix(RENAME_FASTA_HEADER_CONSTRAIN.out.versions)
 
         RENAME_FASTA_HEADER_CONSTRAIN
@@ -312,18 +323,14 @@ workflow VIRALGENIE {
             .set{constrain_consensus_reads}
 
         //Add to the consensus channel, the mapping sequences will now always be mapped against
-        ch_consensus_reads = ch_consensus_reads.mix(constrain_consensus_reads)
+        ch_consensus_results_reads = ch_consensus_results_reads.mix(constrain_consensus_reads)
     }
 
     // After consensus sequences have been made, we still have to map against it and call variants
     if ( !params.skip_variant_calling ) {
 
-        ch_consensus_reads
-            .map{meta, fasta, reads -> [meta + [iteration:'final'], fasta, reads]}
-            .set{ch_consensus_reads}
-
         FASTQ_FASTA_MAP_CONSENSUS(
-            ch_consensus_reads,
+            ch_consensus_results_reads,
             params.mapper,
             params.with_umi,
             params.deduplicate,
