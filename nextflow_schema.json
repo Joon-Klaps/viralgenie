@@ -739,6 +739,11 @@
                     "type": "boolean",
                     "fa_icon": "fas fa-forward",
                     "description": "Skip the blast search of contigs to the provided reference DB"
+                },
+                "skip_alignment_qc": {
+                    "type": "boolean",
+                    "description": "Skip creating an alignment of each the collapsed clusters and each iterative step",
+                    "fa_icon": "fas fa-forward"
                 }
             },
             "fa_icon": "fas fa-balance-scale"
