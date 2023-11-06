@@ -204,6 +204,14 @@ workflow VIRALGENIE {
 
             // TODO: add table of number of singleton clusters and members
 
+            // FASTA_BLAST_CLUST
+            //     .out
+            //     .centroids_members
+            //     .view{"OUTPUT: '$it'"}
+
+            // ch_centroids_members.singletons.view{ "Singleton: '$it' "}
+            // ch_centroids_members.multiple.view{ "Multiple: '$it' "}
+
             ch_centroids_members
                 .singletons
                 .map{ meta, centroids, members ->

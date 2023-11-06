@@ -35,12 +35,32 @@ workflow CLUST_SEQ_EXTRACT {
     SEQKIT_GREP_CENTROIDS( ch_centroids)
     ch_versions =  ch_versions.mix(SEQKIT_GREP_CENTROIDS.out.versions.first())
 
+    CLUSTER_EXTRACT
+            .out
+            .json
+            .map{meta, json_file ->
+                json         = getClustersFromJson(json_file)
+                cluster      = json['id']
+                sample       = String.valueOf(meta.id) // just to make sure we don't pass by reference
+                new_meta     = meta + [id: "${sample}_${cluster}"]
+                return [new_meta, json]
+                }
+            .set{seq_clusters_json}
+
+    seq_clusters_json.view { "JSON: '$it'" } // debug
+
+    //
+    // Function to get list of [ meta, [ centroids, members ] ]
+    // Here the meta contains metadata on the sample and cluster, so instead of $it represinting samples, $it represents a single cluster
+    //
     SEQKIT_GREP_CENTROIDS.out.filter
         .join(SEQKIT_GREP_MEMBERS.out.filter, remainder: true)
         .transpose() //wide to long
-        .join(CLUSTER_EXTRACT.out.json)
         .map { create_member_ref_channel(it) }
+        .join(seq_clusters_json, by: [0])
         .set { seq_centroids_members }
+
+    seq_centroids_members.view { "CHANNEL WITH JSON: '$it'" } // debug
 
     emit:
     seq_centroids_members     = seq_centroids_members        // channel: [ [ meta ], [ seq_centroids.fa], [ seq_members.fa] ]
@@ -57,18 +77,19 @@ def getClustersFromJson(json_file) {
     return json
 }
 
-// Function to get list of [ meta, [ fastq_1, fastq_2 ] ]
-def create_member_ref_channel(ArrayList row) {
+//
+// Function to get list of [ meta, [ centroids, members ] ]
+// Here the meta contains metadata on the sample and cluster, so instead of $it represinting samples, $it represents a single cluster
+//
+def create_member_ref_channel(row) {
     meta         = row[0]
     centroids    = row[1]
     members      = row[2]
-    json         = getClustersFromJson(row[3])
 
     sample       = String.valueOf(meta.id) // just to make sure we don't pass by reference
-    cluster      = json['id']
-    id           = "${sample}_${cluster}"
+    id           = centroids.baseName.replaceAll("_centroids.fa", "")
 
-    new_meta = meta + [ id: id, cluster: cluster, cluster_size: json['size'], sample: sample, centroid: json['centroid'], members: json['members'] ]
+    new_meta = meta + [ id: id]
 
     def result = [ new_meta, centroids, members]
     return result

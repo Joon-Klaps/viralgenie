@@ -63,6 +63,14 @@ class Cluster:
     def _toJSON(self):
         return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
 
+    def _save_cluster_json(self, prefix):
+        """
+        Save the cluster to a file.
+        """
+        with open(f"{prefix}_{self.id}_cluster.json", "w") as file:
+            file.write(self._toJSON())
+            file.write("\n")
+
 
 def parse_clusters_chdit(file_in):
     """
@@ -145,8 +153,8 @@ def write_clusters_to_json(clusters, file_out):
     """
     Write the clusters to a json file.
     """
-    with open(file_out, "w") as file:
-        for cluster in clusters:
+    for cluster in clusters:
+        with open(file_out, "w") as file:
             file.write(cluster._toJSON())
             file.write("\n")
 
@@ -230,9 +238,7 @@ def main(argv=None):
     for cluster in filtered_clusters:
         cluster._save_cluster_members(args.file_out_prefix)
         cluster._save_cluster_centroid(args.file_out_prefix)
-
-    # Save all clusters to a single yaml file:
-    write_clusters_to_json(filtered_clusters, f"{args.file_out_prefix}_clusters.json")
+        cluster._save_cluster_json(args.file_out_prefix)
 
     return 0
 
