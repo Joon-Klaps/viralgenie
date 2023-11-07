@@ -39,6 +39,7 @@ workflow CLUST_SEQ_EXTRACT {
     // NEXT STEPS are to make [ meta, [ centroids, members ] ]
     // Here the meta contains metadata on the sample and cluster, so instead of $it represinting samples, $it represents a single cluster
     // We will use the json file from CLUSTER_EXTRACT to get the cluster id and the necessary metadata
+    // > [ cluster_id, centroid, members, cluster_size]
     SEQKIT_GREP_CENTROIDS.out.filter
         .join(SEQKIT_GREP_MEMBERS.out.filter, remainder: true)
         .join(CLUSTER_EXTRACT.out.json, remainder: true)

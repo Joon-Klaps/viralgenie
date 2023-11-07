@@ -15,7 +15,7 @@ logger = logging.getLogger()
 
 class Cluster:
     """
-    A cluster contains the centroid sequence, members of the cluster, size of centroid.
+    A cluster contains the centroid sequence, members of the cluster, cluster_size of centroid.
     """
 
     def __init__(self, cluster_id, centroid, members):
@@ -23,9 +23,9 @@ class Cluster:
         self.centroid = centroid
         self.members = members
         if members is not None:
-            self.size = len(members)
+            self.cluster_size = len(members)
         else:
-            self.size = 0
+            self.cluster_size = 0
 
     def set_centroid(self, centroid):
         """
@@ -37,10 +37,10 @@ class Cluster:
         yield "cluster_id", self.row
         yield "centroid", self.centroid
         yield "members", self.members
-        yield "size", self.size
+        yield "cluster_size", self.cluster_size
 
     def __str__(self):
-        return f"Cluster {self.cluster_id} with centroid {self.centroid} and {self.size} members {self.members}"
+        return f"Cluster {self.cluster_id} with centroid {self.centroid} and {self.cluster_size} members {self.members}"
 
     def _save_cluster_members(self, prefix):
         """
