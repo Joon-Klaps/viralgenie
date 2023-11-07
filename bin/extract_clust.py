@@ -18,8 +18,8 @@ class Cluster:
     A cluster contains the centroid sequence, members of the cluster, size of centroid.
     """
 
-    def __init__(self, id, centroid, members):
-        self.id = id
+    def __init__(self, cluster_id, centroid, members):
+        self.cluster_id = cluster_id
         self.centroid = centroid
         self.members = members
         if members is not None:
@@ -34,19 +34,19 @@ class Cluster:
         self.centroid = centroid
 
     def __iter__(self):
-        yield "id", self.row
+        yield "cluster_id", self.row
         yield "centroid", self.centroid
         yield "members", self.members
         yield "size", self.size
 
     def __str__(self):
-        return f"Cluster {self.id} with centroid {self.centroid} and {self.size} members {self.members}"
+        return f"Cluster {self.cluster_id} with centroid {self.centroid} and {self.size} members {self.members}"
 
     def _save_cluster_members(self, prefix):
         """
         Save the cluster to a file.
         """
-        with open(f"{prefix}_{self.id}_members.txt", "w") as file:
+        with open(f"{prefix}_{self.cluster_id}_members.txt", "w") as file:
             if self.members:
                 for member in self.members:
                     file.write(f"{member}\n")
@@ -57,12 +57,12 @@ class Cluster:
         """
         Save the cluster to a file.
         """
-        with open(f"{prefix}_{self.id}_centroid.txt", "w") as file:
+        with open(f"{prefix}_{self.cluster_id}_centroid.txt", "w") as file:
             file.write(f"{self.centroid}\n")
 
     def _save_cluster_json(self, prefix):
-        with open(f"{prefix}_{self.id}_cluster.json", "w") as file:
-            json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4, file=file)
+        with open(f"{prefix}_{self.cluster_id}_cluster.json", "w") as file:
+            json.dump(self, file, default=lambda o: o.__dict__, sort_keys=True, indent=4)
 
 
 def parse_clusters_chdit(file_in):
@@ -84,7 +84,7 @@ def parse_clusters_chdit(file_in):
                 cluster = Cluster(current_cluster_id, current_centroid, current_members)
                 clusters.append(cluster)
 
-            # Extract the cluster ID from the line and reset the members and centroid
+            # Extract the cluster cluster_id from the line and reset the members and centroid
             current_cluster_id = line.strip().split()[1]
             current_members = []
             current_centroid = None
@@ -126,7 +126,7 @@ def parse_clusters_vsearch(file_in):
             cluster_id = parts[1]
             member_name = parts[-2]
 
-            # Create a new cluster object if the cluster ID is not present in the dictionary
+            # Create a new cluster object if the cluster cluster_id is not present in the dictionary
             if cluster_id not in clusters.keys():
                 clusters[cluster_id] = Cluster(cluster_id, None, [])
 
@@ -163,7 +163,7 @@ def filter_clusters(clusters, pattern):
         if cluster.members:
             matching_members = [member for member in cluster.members if regex.search(member)]
             if matching_members or regex.search(cluster.centroid):
-                filtered_clusters.append(Cluster(cluster.id, cluster.centroid, matching_members))
+                filtered_clusters.append(Cluster(cluster.cluster_id, cluster.centroid, matching_members))
         elif regex.search(cluster.centroid):
             filtered_clusters.append(cluster)
     return filtered_clusters
