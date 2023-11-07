@@ -60,16 +60,9 @@ class Cluster:
         with open(f"{prefix}_{self.id}_centroid.txt", "w") as file:
             file.write(f"{self.centroid}\n")
 
-    def _toJSON(self):
-        return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
-
     def _save_cluster_json(self, prefix):
-        """
-        Save the cluster to a file.
-        """
         with open(f"{prefix}_{self.id}_cluster.json", "w") as file:
-            file.write(self._toJSON())
-            file.write("\n")
+            json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4, file=file)
 
 
 def parse_clusters_chdit(file_in):
@@ -149,14 +142,14 @@ def parse_clusters_vsearch(file_in):
     return list(clusters.values())
 
 
-def write_clusters_to_json(clusters, file_out):
-    """
-    Write the clusters to a json file.
-    """
-    for cluster in clusters:
-        with open(file_out, "w") as file:
-            file.write(cluster._toJSON())
-            file.write("\n")
+# def write_clusters_to_json(clusters, file_out):
+#     """
+#     Write the clusters to a json file.
+#     """
+#     for cluster in clusters:
+#         with open(file_out, "w") as file:
+#             file.write(cluster._toJSON())
+#             file.write("\n")
 
 
 def filter_clusters(clusters, pattern):
