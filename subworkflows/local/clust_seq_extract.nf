@@ -35,15 +35,24 @@ workflow CLUST_SEQ_EXTRACT {
     SEQKIT_GREP_CENTROIDS( ch_centroids)
     ch_versions =  ch_versions.mix(SEQKIT_GREP_CENTROIDS.out.versions.first())
 
+    //
+    // NEXT STEPS are to make [ meta, [ centroids, members ] ]
+    // Here the meta contains metadata on the sample and cluster, so instead of $it represinting samples, $it represents a single cluster
+    // We will use the json file from CLUSTER_EXTRACT to get the cluster id and the necessary metadata
+    // > [ cluster_id, centroid, members, cluster_size]
     SEQKIT_GREP_CENTROIDS.out.filter
         .join(SEQKIT_GREP_MEMBERS.out.filter, remainder: true)
+        .join(CLUSTER_EXTRACT.out.json, remainder: true)
         .transpose() //wide to long
-        .join(CLUSTER_EXTRACT.out.json)
-        .map { create_member_ref_channel(it) }
-        .set { seq_centroids_members }
+        .map { meta, seq_centroids, seq_members, json_file ->
+            id            = seq_centroids.baseName.replace('_centroid','')
+            json          = getClustersFromJson(json_file)
+            new_meta      = meta + [ id: String.valueOf(id)] + json
+            return [new_meta, seq_centroids, seq_members]
+        }.set{seq_centroids_members}
 
     emit:
-    seq_centroids_members     = seq_centroids_members        // channel: [ [ meta ], [ seq_centroids.fa], [ seq_members.fa] ]
+    seq_centroids_members     = seq_centroids_members       // channel: [ [ meta ], [ seq_centroids.fa], [ seq_members.fa] ]
     versions                  = ch_versions
 }
 
@@ -53,22 +62,23 @@ workflow CLUST_SEQ_EXTRACT {
 import groovy.json.JsonSlurper
 
 def getClustersFromJson(json_file) {
-    def Map json = (Map) new JsonSlurper().parseText(json_file.text)
+    def Map json = (Map) new JsonSlurper().parse(json_file)
     return json
 }
 
-// Function to get list of [ meta, [ fastq_1, fastq_2 ] ]
-def create_member_ref_channel(ArrayList row) {
+//
+// Function to get list of [ meta, [ centroids, members ] ]
+// Here the meta contains metadata on the sample and cluster, so instead of $it represinting samples, $it represents a single cluster
+//
+def create_member_ref_channel(row) {
     meta         = row[0]
     centroids    = row[1]
     members      = row[2]
-    json         = getClustersFromJson(row[3])
 
     sample       = String.valueOf(meta.id) // just to make sure we don't pass by reference
-    cluster      = json['id']
-    id           = "${sample}_${cluster}"
+    id           = centroids.baseName.replaceAll("_centroids.fa", "")
 
-    new_meta = meta + [ id: id, cluster: cluster, cluster_size: json['size'], sample: sample, centroid: json['centroid'], members: json['members'] ]
+    new_meta = meta + [ id: id]
 
     def result = [ new_meta, centroids, members]
     return result
