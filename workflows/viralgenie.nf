@@ -131,7 +131,12 @@ workflow VIRALGENIE {
 
     // Prepare blast DB
     if (!params.skip_polishing || !params.skip_consensus_qc){
-        unpacked_references = UNPACK_DB_BLAST (params.reference_fasta).db
+        UNPACK_DB_BLAST (params.reference_fasta)
+        UNPACK_DB_BLAST
+            .out
+            .db
+            .map{db -> [[id:"blast_db"], db]}
+            .set{unpacked_references}
         ch_versions         = ch_versions.mix(UNPACK_DB_BLAST.out.versions)
 
         BLAST_MAKEBLASTDB ( unpacked_references )

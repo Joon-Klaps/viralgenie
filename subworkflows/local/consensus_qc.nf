@@ -9,7 +9,7 @@ workflow CONSENSUS_QC  {
     take:
     ch_genome         // channel: [ val(meta), [ genome ] ]
     checkv_db         // channel: [ checkv_db ]
-    blast_db          // channel: [ blast_db ]
+    blast_db          // channel: [ val(meta), [blast_db] ]
     skip_checkv       // boolean
     skip_quast        // boolean
     skip_blast_qc     // boolean
