@@ -63,6 +63,9 @@ class Cluster:
     def _toJSON(self):
         return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
 
+    def _toLine(self, prefix):
+        return "\t".join([str(prefix), str(self.id), str(self.centroid), str(self.size), ",".join(self.members)])
+
 
 def parse_clusters_chdit(file_in):
     """
@@ -141,14 +144,29 @@ def parse_clusters_vsearch(file_in):
     return list(clusters.values())
 
 
-def write_clusters_to_json(clusters, file_out):
+def write_clusters_to_tsv(clusters, prefix):
     """
     Write the clusters to a json file.
     """
-    with open(file_out, "w") as file:
+    with open(f"{prefix}_clusters.tsv", "w") as file:
+        file.write("\t".join(["sample", "cluster_id", "centroid", "size", "members"]))
         for cluster in clusters:
-            file.write(cluster._toJSON())
+            file.write(cluster._toline())
             file.write("\n")
+
+
+def write_clusters_summary(clusters, prefix):
+    """
+    Write the clusters to a json file.
+    """
+    avg_size = sum([cluster.size for cluster in clusters]) / len(clusters)
+    n_clusters = len(clusters)
+
+    with open(f"{prefix}_summary.tsv", "w") as file:
+        file.write("\t".join(["sample", "n_clusters", "avg_size"]))
+        file.write("\n")
+        file.write("\t".join([str(prefix), str(n_clusters), str(avg_size)]))
+        file.write("\n")
 
 
 def filter_clusters(clusters, pattern):
