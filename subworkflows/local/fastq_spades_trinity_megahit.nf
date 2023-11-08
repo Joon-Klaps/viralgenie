@@ -81,8 +81,9 @@ workflow FASTQ_SPADES_TRINITY_MEGAHIT  {
         ch_multiqc           = ch_multiqc.mix(QUAST_MEGAHIT.out.tsv)
     }
 
-    // ch_scaffolds, go from [meta,scaffold1,scaffold2, ...] to [meta,[scaffolds]]
+    // ch_scaffolds, go from [[meta,scaffold1],[meta,scaffold2], ...] to [meta,[scaffolds]]
     ch_scaffolds
+        .map { meta, scaffold  -> tuple( groupKey(meta, assemblers.size()), scaffold ) }
         .groupTuple()
         .set{ch_scaffolds_combined}
 
