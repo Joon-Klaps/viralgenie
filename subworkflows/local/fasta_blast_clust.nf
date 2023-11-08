@@ -48,8 +48,7 @@ workflow FASTA_BLAST_CLUST {
 
     blast_db_fasta
         .combine(BLAST_FILTER.out.hits)
-        .map{
-            meta_blast,db_fasta,meta_filter,filter -> [meta_filter, db_fasta]
+        .map{ meta_blast, db_fasta, meta_filter, filter -> [meta_filter, db_fasta]
         }
         .set{ch_blast_db_fasta}
 
