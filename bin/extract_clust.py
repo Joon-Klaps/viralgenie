@@ -144,6 +144,17 @@ def parse_clusters_vsearch(file_in):
     # Convert the dictionary values to a list of clusters and return
     return list(clusters.values())
 
+
+def print_clusters(clusters, prefix):
+    for cluster in clusters:
+        cluster._save_cluster_members(prefix)
+        cluster._save_cluster_centroid(prefix)
+        cluster._save_cluster_json(prefix)
+
+    write_clusters_to_tsv(clusters, prefix)
+    write_clusters_summary(clusters, prefix)
+
+
 def write_clusters_to_tsv(clusters, prefix):
     """
     Write the clusters to a json file.
@@ -153,7 +164,6 @@ def write_clusters_to_tsv(clusters, prefix):
         for cluster in clusters:
             file.write(cluster._toline())
             file.write("\n")
-
 
 
 def write_clusters_summary(clusters, prefix):
@@ -246,10 +256,7 @@ def main(argv=None):
         sys.exit(2)
     filtered_clusters = filter_clusters(cluster_list, args.pattern)
 
-    for cluster in filtered_clusters:
-        cluster._save_cluster_members(args.file_out_prefix)
-        cluster._save_cluster_centroid(args.file_out_prefix)
-        cluster._save_cluster_json(args.file_out_prefix)
+    print_clusters(filtered_clusters, args.file_out_prefix)
 
     return 0
 
