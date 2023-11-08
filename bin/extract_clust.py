@@ -161,7 +161,7 @@ def write_clusters_to_tsv(clusters, prefix):
     """
     Write the clusters to a json file.
     """
-    with open(f"{prefix}_clusters.tsv", "w") as file:
+    with open(f"{prefix}.clusters.tsv", "w") as file:
         file.write("\t".join(["sample", "cluster_id", "centroid", "size", "members"]))
         file.write("\n")
         for cluster in clusters:
@@ -175,11 +175,27 @@ def write_clusters_summary(clusters, prefix):
     """
     avg_size = sum([cluster.cluster_size for cluster in clusters]) / len(clusters)
     n_clusters = len(clusters)
+    n_singletons = len([cluster for cluster in clusters if cluster.cluster_size == 0])
 
-    with open(f"{prefix}_summary.tsv", "w") as file:
-        file.write("\t".join(["sample", "n_clusters", "avg_size"]))
+    with open(f"{prefix}.summary_mqc.tsv", "w") as file:
+        file.write(
+            "\n".join(
+                [
+                    "# id: 'clusters_summary'",
+                    "# section_name: 'Clusters summary'",
+                    "# description: 'Summary of clusters, displaying the number of clusters, average cluster size and number of singletons (clusters with no members, only a centroid).'",
+                    "# format: 'tsv'",
+                    "# plot_type: 'table'",
+                    "# pconfig:",
+                    "#    id: 'clusters_summary'",
+                    "#    table_title: 'Clusters summary'",
+                ]
+            )
+        )
         file.write("\n")
-        file.write("\t".join([str(prefix), str(n_clusters), str(avg_size)]))
+        file.write("\t".join(["sample", "n_clusters", "avg_size", "n_singletons"]))
+        file.write("\n")
+        file.write("\t".join([str(prefix), str(n_clusters), str(avg_size), str(n_singletons)]))
         file.write("\n")
 
 

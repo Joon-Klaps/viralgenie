@@ -53,6 +53,8 @@ workflow CLUST_SEQ_EXTRACT {
 
     emit:
     seq_centroids_members     = seq_centroids_members       // channel: [ [ meta ], [ seq_centroids.fa], [ seq_members.fa] ]
+    clusters_tsv              = CLUSTER_EXTRACT.out.tsv     // channel: [ [ meta ], [ tsv ] ]
+    mqc                       = CLUSTER_EXTRACT.out.summary // channel: [ [ meta ], [ tsv ] ]
     versions                  = ch_versions
 }
 
