@@ -197,6 +197,8 @@ sp:
   quast:
     fn: "*.tsv"
     contains: "# contigs (>= 1000 bp)"
+  summary_clusters:
+    fn: "summary_clusters_mqc.tsv"
 
 extra_fn_clean_exts:
   - "_raw_1"
