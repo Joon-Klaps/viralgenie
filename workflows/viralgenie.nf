@@ -384,7 +384,7 @@ workflow VIRALGENIE {
             ch_clusters_summary
             // ch_clusters_tsv
             )
-        ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.clusters_summary_mqc.ifEmpty([]))
+        ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.summary_clusters_mqc.ifEmpty([]))
 
         ch_versions      = ch_versions.mix(CREATE_MULTIQC_TABLES.out.versions)
 

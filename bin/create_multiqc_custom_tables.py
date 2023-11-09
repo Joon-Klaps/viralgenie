@@ -70,7 +70,7 @@ def main(argv=None):
         # Concatenate all the cluster summary files into a single dataframe
         clusters_summary_df = concat_clusters_summary_files(args.clusters_summary)
         # Write the dataframe to a file
-        clusters_summary_df.to_csv(f"clusters_summary_mqc.tsv", sep="\t", index=False)
+        clusters_summary_df.to_csv(f"summary_clusters_mqc.tsv", sep="\t", index=False)
 
     # Clusters more in depth
 

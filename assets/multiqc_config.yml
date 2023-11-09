@@ -10,9 +10,14 @@ report_section_order:
   "Joon-Klaps-viralgenie-summary":
     order: -1002
 
+custom_logo_url: "https://raw.githubusercontent.com/Joon-Klaps/viralgenie/dev/docs/images/ViralGenie-nf-core-theme.svg"
+
 export_plots: true
 
+max_table_rows: 100000
+
 run_modules:
+  - custom_content
   - fastqc
   - fastp
   - trimmomatic
@@ -25,7 +30,6 @@ run_modules:
   - samtools
   - bcftools
   - picard
-  - custom_content
 
 top_modules:
   - "fastqc":
@@ -142,10 +146,8 @@ table_columns_visible:
     percent_gc: True
     percent_duplicates: True
     percent_fails: True
-  # Samtools Stats:
-  #   raw_total_sequences: 1
-  #   reads_mapped: 2
-  #   reads_mapped_percent: 3
+  Samtools Stats: False
+  Picard MarkDuplicates: False
   Quast (Spades):
     N50: True
     L50: False
@@ -166,7 +168,7 @@ section_comments:
   general_stats: "By default, all read count columns are displayed as millions (M) of reads."
 
 custom_data:
-  clusters_summary:
+  summary_clusters:
     section_name: "Clusters summary"
     description: "Summary of clusters, displaying the number of clusters, average cluster size and number of singletons (clusters with only no members, only a centroid)."
     plot_type: "table"
@@ -184,7 +186,7 @@ custom_data:
         description: "Total number of singleton clusters (clusters with only one member, only a centroid) based on all contigs of sample"
         format: "{:,.0f}"
     pconfig:
-      id: "clusters_summary"
+      id: "summary_clusters"
       table_title: "Clusters summary"
       only_defined_headers: False
       format: "{:.0f}"
