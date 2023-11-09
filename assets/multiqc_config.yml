@@ -81,15 +81,16 @@ top_modules:
       path_filters:
         - "*_trinity.tsv"
   - "custom_content":
-      name: "Joon-Klaps-viralgenie-summary"
-  - "custom_content":
       name: "Clusters Summary"
+  - "custom_content":
+      name: "Joon-Klaps-viralgenie-summary"
 
 # TODO: Include the custom assembly table to compare assemblies tools
 custom_plot_config:
   general_stats_table:
     hidden: false
 
+# Summary table names
 table_columns_name:
   FastQC (pre-Trimming):
     total_sequences: "Nr. Input Reads"
@@ -127,6 +128,7 @@ table_columns_name:
     avg_cluster_size: "Avg. Cluster Size"
     nr_singletons: "Nr. Singletons"
 
+# Summary table visible columns
 table_columns_visible:
   FastQC (pre-Trimming):
     total_sequences: True
