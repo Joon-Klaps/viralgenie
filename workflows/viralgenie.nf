@@ -357,6 +357,15 @@ workflow VIRALGENIE {
         )
         ch_consensus = ch_consensus.mix(FASTQ_FASTA_MAP_CONSENSUS.out.consensus_all)
 
+        ch_bam_filtered
+            .fail
+            .collect()
+            .map {
+                tsv_data ->
+                    def header = ['Sample', 'Mapped reads']
+                    WorkflowCommons.multiqcTsvFromList(tsv_data, header)
+            }
+            .set { ch_fail_mapping_multiqc }
     }
 
     if ( !params.skip_consensus_qc ) {

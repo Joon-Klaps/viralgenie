@@ -41,9 +41,9 @@ workflow BAM_FLAGSTAT_FILTER {
         .map{ meta, flagstat, bam -> [ meta, bam, getFlagstatMappedReads(flagstat) ] }
         .branch{ meta, bam, mapped_reads ->
             pass: mapped_reads > min_mapped_reads
-                return [ meta, bam ]
+                return [ meta + [mapped_reads: mapped_reads], bam ]
             fail: mapped_reads <= min_mapped_reads
-                return [ meta, bam ]
+                return [ meta + [mapped_reads: mapped_reads], bam ]
         }
         .set{ ch_bam_filtered }
 
