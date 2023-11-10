@@ -22,7 +22,7 @@ process CREATE_MULTIQC_TABLES {
     """
     create_multiqc_custom_tables.py\\
         $args \\
-        --clusters_summary ${clusters_summary_files.join(' ')}\\
+        --clusters_summary ${clusters_summary_files.join(' ')}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

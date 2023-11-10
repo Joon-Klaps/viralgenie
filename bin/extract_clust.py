@@ -178,22 +178,7 @@ def write_clusters_summary(clusters, prefix):
     n_singletons = len([cluster for cluster in clusters if cluster.cluster_size == 0])
 
     with open(f"{prefix}.summary_mqc.tsv", "w") as file:
-        # file.write(
-        #     "\n".join(
-        #         [
-        #             "# id: 'clusters_summary'",
-        #             "# section_name: 'Clusters summary'",
-        #             "# description: 'Summary of clusters, displaying the number of clusters, average cluster size and number of singletons (clusters with no members, only a centroid).'",
-        #             "# format: 'tsv'",
-        #             "# plot_type: 'table'",
-        #             "# pconfig:",
-        #             "#    id: 'clusters_summary'",
-        #             "#    table_title: 'Clusters summary'",
-        #         ]
-        #     )
-        # )
-        # file.write("\n")
-        file.write("\t".join(["sample", "n_clusters", "avg_size", "n_singletons"]))
+        file.write("\t".join(["Sample name", "# Clusters", "Average cluster size", "Number of singletons"]))
         file.write("\n")
         file.write("\t".join([str(prefix), str(n_clusters), str(avg_size), str(n_singletons)]))
         file.write("\n")
