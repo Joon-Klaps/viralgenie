@@ -391,7 +391,7 @@ workflow VIRALGENIE {
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
     )
-    ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
+    ch_multiqc_files = ch_multiqc_files.mix(ch_versions.unique().collectFile(name: 'collated_versions.yml'))
 
     //
     // MODULE: MultiQC

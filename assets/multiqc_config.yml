@@ -31,7 +31,7 @@ run_modules:
   - bcftools
   - picard
 
-top_modules:
+module_order:
   - "fastqc":
       name: "FastQC (pre-Trimming)"
       path_filters:
@@ -86,13 +86,14 @@ top_modules:
         - "*_trinity.tsv"
   - "custom_content":
       name: "Clusters Summary"
-  - "custom_content":
-      name: "Joon-Klaps-viralgenie-summary"
+      anchor: "summary_clusters"
+      path_filters:
+        - "summary_clusters_mqc.tsv"
 
 # TODO: Include the custom assembly table to compare assemblies tools
-custom_plot_config:
-  general_stats_table:
-    hidden: false
+# custom_plot_config:
+#   general_stats_table:
+#     hidden: false
 
 # Summary table names
 table_columns_name:
@@ -128,9 +129,11 @@ table_columns_name:
     Largest contig: "Largest contig (Trinity)"
     Total length: "Total length (Trinity)"
   Clusters Summary:
-    nr_clusters: "Nr. Clusters"
-    avg_cluster_size: "Avg. Cluster Size"
-    nr_singletons: "Nr. Singletons"
+    n_clusters: "Nr. Clusters"
+    avg_size: "Avg. Cluster Size"
+    n_singletons: "Nr. Singletons"
+
+## HELLLLOW
 
 # Summary table visible columns
 table_columns_visible:
@@ -168,26 +171,25 @@ section_comments:
   general_stats: "By default, all read count columns are displayed as millions (M) of reads."
 
 custom_data:
-  summary_clusters:
+  clusters_summary-1:
     section_name: "Clusters summary"
     description: "Summary of clusters, displaying the number of clusters, average cluster size and number of singletons (clusters with only no members, only a centroid)."
     plot_type: "table"
     headers:
       "# Clusters":
-        id: "nr_clusters"
+        id: "n_clusters"
         description: "Total number of clusters based on all contigs of sample"
         format: "{:,.0f}"
       "Average cluster size":
-        id: "avg_cluster_size"
+        id: "avg_size"
         description: "Average number members (excl centroid) of the identified clusters"
         format: "{:,.0f}"
       "Number of singletons":
-        id: "nr_singletons"
+        id: "n_singletons"
         description: "Total number of singleton clusters (clusters with only one member, only a centroid) based on all contigs of sample"
         format: "{:,.0f}"
     pconfig:
-      id: "summary_clusters"
-      table_title: "Clusters summary"
+      id: "clusters_summary-1"
       only_defined_headers: False
       format: "{:.0f}"
 
@@ -197,7 +199,7 @@ sp:
   quast:
     fn: "*.tsv"
     contains: "# contigs (>= 1000 bp)"
-  summary_clusters:
+  clusters_summary-1:
     fn: "summary_clusters_mqc.tsv"
 
 extra_fn_clean_exts:

@@ -18,6 +18,26 @@ def concat_clusters_summary_files(clusters_summary_files):
     return clusters_summary_df
 
 
+def write_clusters_summary_file(clusters_summary_df, file, option):
+    clusters_summary_tsv = clusters_summary_df.to_csv(sep="\t", index=False)
+    with open(f"summary_clusters_mqc.tsv", "w") as f:
+        f.write(
+            "\n".join(
+                [
+                    "# id: 'clusters_summary'",
+                    "# section_name: 'Clusters summary'",
+                    "# format: 'tsv'",
+                    "# plot_type: 'table'",
+                    "# pconfig:",
+                    "#    id: 'clusters_summary'",
+                    "#    table_title: 'Clusters summary (" + option + ")'",
+                ]
+            )
+        )
+        f.write("\n")
+        f.write(clusters_summary_tsv)
+
+
 def parse_args(argv=None):
     """Define and immediately parse command line arguments."""
     parser = argparse.ArgumentParser(
@@ -31,6 +51,13 @@ def parse_args(argv=None):
         nargs="+",
         type=Path,
         help=" list of cluster summary files from created by the module extract clust.",
+    )
+
+    parser.add_argument(
+        "--cluster_method",
+        metavar="option",
+        type=str,
+        help=" Algorithm used for clustering of input files",
     )
 
     parser.add_argument(
@@ -70,8 +97,7 @@ def main(argv=None):
         # Concatenate all the cluster summary files into a single dataframe
         clusters_summary_df = concat_clusters_summary_files(args.clusters_summary)
         # Write the dataframe to a file
-        clusters_summary_df.to_csv(f"summary_clusters_mqc.tsv", sep="\t", index=False)
-
+        write_clusters_summary_file(clusters_summary_df, args.prefix, args.option)
     # Clusters more in depth
 
     return 0
