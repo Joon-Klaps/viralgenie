@@ -25,12 +25,13 @@ def write_clusters_summary_file(clusters_summary_df, file, method):
             "\n".join(
                 [
                     "# id: 'clusters_summary'",
-                    "# section_name: 'Custom tables'",
+                    "# section_name: 'Clusters summary'",
                     "# format: 'tsv'",
                     "# description: 'Summary of clusters, displaying the number of clusters, average cluster size and number of singletons (clusters with only no members, only a centroid).'",
                     "# plot_type: 'table'",
                     "# pconfig:",
                     "#    id: 'clusters_summary'",
+                    "#    namespace: 'Clusters summary (" + method + ")'",
                     "#    table_title: 'Clusters summary (" + method + ")'",
                     "# headers:",
                     "#    '# Clusters':",
