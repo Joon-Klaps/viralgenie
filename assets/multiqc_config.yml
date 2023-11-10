@@ -106,7 +106,7 @@ table_columns_name:
     percent_duplicates: "% Dups Processed Reads"
     percent_fails: "% Failed Processed Reads"
   Bowtie2 (Host-removal):
-
+    overall_alignment_rate: "% Host reads"
   Quast (Spades):
     N50: "N50 (Spades)"
     L50: "L50 (Spades)"
