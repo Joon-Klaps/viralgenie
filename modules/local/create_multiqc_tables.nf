@@ -10,7 +10,7 @@ process CREATE_MULTIQC_TABLES {
     path clusters_summary_files
 
     output:
-    path("summary_clusters_mqc.tsv")    , emit: summary_clusters_mqc
+    path("summary_clusters_mqc.tsv")    , emit: summary_clusters_mqc, optional: true
     path "versions.yml"                 , emit: versions
 
     when:
