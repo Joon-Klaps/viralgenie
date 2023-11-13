@@ -127,7 +127,7 @@ workflow VIRALGENIE {
 
     // Prepare blast DB
     if (!params.skip_polishing || !params.skip_consensus_qc){
-        UNPACK_DB_BLAST (params.reference_fasta)
+        UNPACK_DB_BLAST (params.reference_pool)
         UNPACK_DB_BLAST
             .out
             .db
@@ -278,7 +278,7 @@ workflow VIRALGENIE {
                 ch_consensus               = ch_consensus.mix(FASTQ_FASTA_ITERATIVE_CONSENSUS.out.consensus_allsteps)
                 ch_consensus_results_reads = FASTQ_FASTA_ITERATIVE_CONSENSUS.out.consensus_reads
                 ch_versions                = ch_versions.mix(FASTQ_FASTA_ITERATIVE_CONSENSUS.out.versions)
-                ch_multiqc_files           = ch_multiqc_files.mix(FASTQ_FASTA_ITERATIVE_CONSENSUS.out.mqc.collect{it[1]}.ifEmpty([]))
+                ch_multiqc_files           = ch_multiqc_files.mix(FASTQ_FASTA_ITERATIVE_CONSENSUS.out.mqc.ifEmpty([])) //collect already done in subworkflow
             } else {
                 ch_consensus_results_reads = ch_consensus_results_reads_intermediate
             }
@@ -288,7 +288,7 @@ workflow VIRALGENIE {
     // add last step to it
     ch_consensus_results_reads
         .map{ meta, fasta, fastq ->
-            [meta + [step: "it_final", iteration:'final'], fasta, fastq]
+            [meta + [step: "it_variant_calling", iteration:'variant_calling'], fasta, fastq]
             }
         .set{ch_consensus_results_reads}
 
@@ -315,7 +315,7 @@ workflow VIRALGENIE {
                     meta, reads, seq, name ->
                     sample = meta.id
                     id = "${sample}_${name.id}"
-                    new_meta = meta + [id: id, sample: sample, step: "constrain", constrain: true, reads: reads, iteration: 'final']
+                    new_meta = meta + [id: id, sample: sample, step: "constrain", constrain: true, reads: reads, iteration: 'variant_calling']
                     return [new_meta, seq]
                 }
             .set{ch_map_seq_anno_combined}
@@ -351,17 +351,9 @@ workflow VIRALGENIE {
             params.min_contig_size,
             params.max_n_1OOkbp
         )
-        ch_consensus = ch_consensus.mix(FASTQ_FASTA_MAP_CONSENSUS.out.consensus_all)
+        ch_consensus     = ch_consensus.mix(FASTQ_FASTA_MAP_CONSENSUS.out.consensus_all)
+        ch_multiqc_files = ch_multiqc_files.mix(FASTQ_FASTA_MAP_CONSENSUS.out.mqc.ifEmpty([])) // collect already done in subworkflow
 
-        ch_bam_filtered
-            .fail
-            .collect()
-            .map {
-                tsv_data ->
-                    def header = ['Sample', 'Mapped reads']
-                    WorkflowCommons.multiqcTsvFromList(tsv_data, header)
-            }
-            .set { ch_fail_mapping_multiqc }
     }
 
     if ( !params.skip_consensus_qc ) {

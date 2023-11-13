@@ -38,13 +38,14 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
     ch_bam       = MAP_READS.out.bam
     ch_reference = MAP_READS.out.ref
     ch_versions  = ch_versions.mix(MAP_READS.out.versions)
-    ch_multiqc   = ch_multiqc.mix(MAP_READS.out.mqc)
+    ch_multiqc   = ch_multiqc.mix(MAP_READS.out.mqc.collect{it[1]}.ifEmpty([]))
 
     SAMTOOLS_FAIDX ( ch_reference, [[],[]])
     ch_versions  = ch_versions.mix(SAMTOOLS_FAIDX.out.versions)
 
     // remove
     BAM_FLAGSTAT_FILTER ( ch_bam, min_mapped_reads )
+    ch_multiqc   = ch_multiqc.mix(BAM_FLAGSTAT_FILTER.out.bam_fail_mqc.ifEmpty([]))
     ch_versions  = ch_versions.mix(BAM_FLAGSTAT_FILTER.out.versions)
 
     BAM_FLAGSTAT_FILTER
@@ -59,7 +60,7 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
         BAM_DEDUPLICATE ( ch_bam_fa_fai, umi, get_stats)
 
         ch_dedup_bam = BAM_DEDUPLICATE.out.bam
-        ch_multiqc   = ch_multiqc.mix(BAM_DEDUPLICATE.out.mqc)
+        ch_multiqc   = ch_multiqc.mix(BAM_DEDUPLICATE.out.mqc.collect{it[1]}.ifEmpty([]))
         ch_versions  = ch_versions.mix(BAM_DEDUPLICATE.out.versions)
 
     } else {
@@ -77,7 +78,7 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
     // report summary statistics of alignment
     if (get_stats) {
         BAM_STATS_METRICS ( ch_dedup_bam_ref )
-        ch_multiqc   = ch_multiqc.mix(BAM_STATS_METRICS.out.mqc)
+        ch_multiqc   = ch_multiqc.mix(BAM_STATS_METRICS.out.mqc.collect{it[1]}.ifEmpty([]))
         ch_versions  = ch_versions.mix(BAM_STATS_METRICS.out.versions)
     }
 

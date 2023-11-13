@@ -62,7 +62,7 @@ def parse_args(argv=None):
 
     parser.add_argument(
         "--clusters_summary",
-        metavar="clusters_summary",
+        metavar="CLUSTER SUMMARY FILES",
         nargs="+",
         type=Path,
         help=" list of cluster summary files from created by the module extract clust.",
@@ -70,7 +70,7 @@ def parse_args(argv=None):
 
     parser.add_argument(
         "--cluster_method",
-        metavar="method",
+        metavar="METHOD",
         type=str,
         help=" Algorithm used for clustering of input files",
     )

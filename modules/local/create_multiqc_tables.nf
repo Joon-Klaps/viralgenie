@@ -18,11 +18,13 @@ process CREATE_MULTIQC_TABLES {
 
     script:
     def args = task.ext.args ?: ''
+    def clusters_summary_files = clusters_summary_files ? "--clusters_summary ${clusters_summary_files.join(' ')}" : ''
 
     """
     create_multiqc_custom_tables.py\\
         $args \\
-        --clusters_summary ${clusters_summary_files.join(' ')}
+        $clusters_summary_files \\
+
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
