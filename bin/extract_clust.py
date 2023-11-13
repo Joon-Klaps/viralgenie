@@ -64,6 +64,11 @@ class Cluster:
         with open(f"{prefix}_{self.cluster_id}_cluster.json", "w") as file:
             json.dump(self, file, default=lambda o: o.__dict__, sort_keys=True, indent=4)
 
+    def _to_line(self, prefix):
+        return "\t".join(
+            [str(prefix), str(self.cluster_id), str(self.centroid), str(self.cluster_size), ",".join(self.members)]
+        )
+
 
 def parse_clusters_chdit(file_in):
     """
@@ -142,14 +147,41 @@ def parse_clusters_vsearch(file_in):
     return list(clusters.values())
 
 
-# def write_clusters_to_json(clusters, file_out):
-#     """
-#     Write the clusters to a json file.
-#     """
-#     for cluster in clusters:
-#         with open(file_out, "w") as file:
-#             file.write(cluster._toJSON())
-#             file.write("\n")
+def print_clusters(clusters, prefix):
+    for cluster in clusters:
+        cluster._save_cluster_members(prefix)
+        cluster._save_cluster_centroid(prefix)
+        cluster._save_cluster_json(prefix)
+
+    write_clusters_to_tsv(clusters, prefix)
+    write_clusters_summary(clusters, prefix)
+
+
+def write_clusters_to_tsv(clusters, prefix):
+    """
+    Write the clusters to a json file.
+    """
+    with open(f"{prefix}.clusters.tsv", "w") as file:
+        file.write("\t".join(["sample", "cluster_id", "centroid", "size", "members"]))
+        file.write("\n")
+        for cluster in clusters:
+            file.write(cluster._to_line(prefix))
+            file.write("\n")
+
+
+def write_clusters_summary(clusters, prefix):
+    """
+    Write the clusters to a json file.
+    """
+    avg_size = sum([cluster.cluster_size for cluster in clusters]) / len(clusters)
+    n_clusters = len(clusters)
+    n_singletons = len([cluster for cluster in clusters if cluster.cluster_size == 0])
+
+    with open(f"{prefix}.summary_mqc.tsv", "w") as file:
+        file.write("\t".join(["Sample name", "# Clusters", "Average cluster size", "Number of singletons"]))
+        file.write("\n")
+        file.write("\t".join([str(prefix), str(n_clusters), str(avg_size), str(n_singletons)]))
+        file.write("\n")
 
 
 def filter_clusters(clusters, pattern):
@@ -228,10 +260,7 @@ def main(argv=None):
         sys.exit(2)
     filtered_clusters = filter_clusters(cluster_list, args.pattern)
 
-    for cluster in filtered_clusters:
-        cluster._save_cluster_members(args.file_out_prefix)
-        cluster._save_cluster_centroid(args.file_out_prefix)
-        cluster._save_cluster_json(args.file_out_prefix)
+    print_clusters(filtered_clusters, args.file_out_prefix)
 
     return 0
 
