@@ -208,6 +208,8 @@ workflow VIRALGENIE {
             ch_clusters_summary    = FASTA_BLAST_CLUST.out.clusters_summary.collect{it[1]}.ifEmpty([])
             ch_clusters_tsv        = FASTA_BLAST_CLUST.out.clusters_tsv.collect{it[1]}.ifEmpty([])
 
+            ch_multiqc_files       =  ch_multiqc_files.mix(FASTA_BLAST_CLUST.out.no_blast_hits_mqc.ifEmpty([]))
+
             ch_centroids_members
                 .singletons
                 .map{ meta, centroids, members ->
@@ -315,7 +317,15 @@ workflow VIRALGENIE {
                     meta, reads, seq, name ->
                     sample = meta.id
                     id = "${sample}_${name.id}"
-                    new_meta = meta + [id: id, sample: sample, step: "constrain", constrain: true, reads: reads, iteration: 'variant_calling']
+                    new_meta = meta + [
+                        id: id,
+                        sample: sample,
+                        cluster_id: "${name.id}",
+                        step: "constrain",
+                        constrain: true,
+                        reads: reads,
+                        iteration: 'variant_calling'
+                        ]
                     return [new_meta, seq]
                 }
             .set{ch_map_seq_anno_combined}

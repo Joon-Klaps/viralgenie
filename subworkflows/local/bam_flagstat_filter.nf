@@ -52,23 +52,23 @@ workflow BAM_FLAGSTAT_FILTER {
     bam_fail = ch_bam_filtered.fail
 
     bam_fail
-        .map { meta, bam, mapped_reads -> ["$meta.id\t$meta.sample\t$meta.iteration\t$meta.cluster\t$mapped_reads"]}
+        .map { meta, bam, mapped_reads -> ["$meta.id\t$meta.sample\t$meta.iteration\t$meta.cluster_id\t$mapped_reads"]}
         .collect()
         .map {
             tsv_data ->
                 def comments = [
                     "id: 'Failed mapped'",
-                    "section_name: 'Failed mapped'",
+                    "anchor: 'Filtered contigs'",
+                    "section_name: 'Minimum mapped reads'",
                     "format: 'tsv'",
-                    "description: 'Contigs that didn't have more then ${min_mapped_reads} were filtered out'",
+                    "description: 'Contigs that did not have more then ${min_mapped_reads} mapped reads were filtered out'",
                     "plot_type: 'table'"
                 ]
-                def header = ['Id','Sample', 'iteration','Cluster','Mapped reads']
+                def header = ['Id','Sample', 'Iteration','Cluster','Mapped reads']
                 return WorkflowCommons.multiqcTsvFromList(tsv_data, header, comments) // make it compatible with other mqc files
         }
         .collectFile(name:'failed_mapped_reads_mqc.tsv')
         .set { ch_fail_mapping_multiqc }
-
 
     emit:
     bam_pass     = bam_pass                        // channel: [ val(meta), [ bam ] ]

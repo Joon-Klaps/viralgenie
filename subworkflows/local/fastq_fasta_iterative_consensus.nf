@@ -2,7 +2,7 @@ include { FASTQ_FASTA_MAP_CONSENSUS as ITERATION_1      } from './fastq_fasta_ma
 include { FASTQ_FASTA_MAP_CONSENSUS as ITERATION_2      } from './fastq_fasta_map_consensus.nf'
 include { FASTQ_FASTA_MAP_CONSENSUS as ITERATION_3      } from './fastq_fasta_map_consensus.nf'
 include { FASTQ_FASTA_MAP_CONSENSUS as ITERATION_4      } from './fastq_fasta_map_consensus.nf'
-include { FASTQ_FASTA_MAP_CONSENSUS as FINAL_ITERATION  } from './fastq_fasta_map_consensus.nf'
+
 
 workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
 
@@ -150,7 +150,6 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
     vcf                  = vcf                                  // channel: [ val(meta), [ vcf ] ]
     vcf_filter           = vcf_filter                           // channel: [ val(meta), [ vcf ] ]
     consensus            = consensus                            // channel: [ val(meta), [ fasta ] ]
-    // TODO: add a removed fasta's channel
 
     mqc                  = ch_multiqc                           // channel: [ val(meta), [ mqc ] ]
     versions             = ch_versions                          // channel: [ versions.yml ]
