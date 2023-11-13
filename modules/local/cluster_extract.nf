@@ -14,6 +14,8 @@ process CLUSTER_EXTRACT {
     output:
     tuple val(meta), path('*_members.txt'), path('*_centroid.txt'), emit: members_centroids
     tuple val(meta), path("*.json")                               , emit: json
+    tuple val(meta), path("*.clusters.tsv")                       , emit: tsv
+    tuple val(meta), path("*.summary_mqc.tsv")                    , emit: summary
     path "versions.yml"                                           , emit: versions
 
     when:

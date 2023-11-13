@@ -10,9 +10,14 @@ report_section_order:
   "Joon-Klaps-viralgenie-summary":
     order: -1002
 
+custom_logo_url: "https://raw.githubusercontent.com/Joon-Klaps/viralgenie/dev/docs/images/ViralGenie-nf-core-theme.svg"
+
 export_plots: true
 
+max_table_rows: 100000
+
 run_modules:
+  - custom_content
   - fastqc
   - fastp
   - trimmomatic
@@ -25,9 +30,8 @@ run_modules:
   - samtools
   - bcftools
   - picard
-  - custom_content
 
-top_modules:
+module_order:
   - "fastqc":
       name: "FastQC (pre-Trimming)"
       path_filters:
@@ -80,14 +84,14 @@ top_modules:
       anchor: "quast"
       path_filters:
         - "*_trinity.tsv"
-  - "custom_content":
-      name: "Joon-Klaps-viralgenie-summary"
+  - "custom_content"
 
 # TODO: Include the custom assembly table to compare assemblies tools
 custom_plot_config:
   general_stats_table:
     hidden: false
 
+# Summary table names
 table_columns_name:
   FastQC (pre-Trimming):
     total_sequences: "Nr. Input Reads"
@@ -101,10 +105,8 @@ table_columns_name:
     percent_gc: "% GC Processed Reads"
     percent_duplicates: "% Dups Processed Reads"
     percent_fails: "% Failed Processed Reads"
-  Samtools Stats:
-    raw_total_sequences: "Nr. Reads Into Mapping"
-    reads_mapped: "Nr. Mapped Reads"
-    reads_mapped_percent: "% Mapped Reads"
+  Bowtie2 (Host-removal):
+    overall_alignment_rate: "% Host reads"
   Quast (Spades):
     N50: "N50 (Spades)"
     L50: "L50 (Spades)"
@@ -120,7 +122,12 @@ table_columns_name:
     L50: "L50 (Trinity)"
     Largest contig: "Largest contig (Trinity)"
     Total length: "Total length (Trinity)"
+  Clusters Summary:
+    "# Clusters": "Nr. Clusters"
+    "Average cluster size": "Avg. Cluster Size"
+    "Number of singletons": "Nr. Singletons"
 
+# Summary table visible columns
 table_columns_visible:
   FastQC (pre-Trimming):
     total_sequences: True
@@ -134,10 +141,8 @@ table_columns_visible:
     percent_gc: True
     percent_duplicates: True
     percent_fails: True
-  # Samtools Stats:
-  #   raw_total_sequences: 1
-  #   reads_mapped: 2
-  #   reads_mapped_percent: 3
+  Samtools Stats: False
+  Picard MarkDuplicates: False
   Quast (Spades):
     N50: True
     L50: False
@@ -153,6 +158,10 @@ table_columns_visible:
     L50: False
     Largest contig: True
     Total length: False
+  Clusters Summary:
+    "# Clusters": True
+    "Average cluster size": True
+    "Number of singletons": True
 
 section_comments:
   general_stats: "By default, all read count columns are displayed as millions (M) of reads."
@@ -171,6 +180,10 @@ extra_fn_clean_exts:
   - "_trim_2"
   - "_1"
   - "_2"
+  - "_it1"
+  - "_it2"
+  - "_it3"
+  - "_it4"
   - "_host"
   - "_spades"
   - "_megahit"

@@ -56,17 +56,22 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    IMPORT LOCAL MODULES/SUBWORKFLOWS
+    IMPORT LOCAL & NF-CORE MODULES/SUBWORKFLOWS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-//
+// Preprocessing
 include { PREPROCESSING_ILLUMINA          } from '../subworkflows/local/preprocessing_illumina'
+
+// metagenomic diversity
 include { FASTQ_KRAKEN_KAIJU              } from '../subworkflows/local/fastq_kraken_kaiju'
+
+// Assembly
 include { FASTQ_SPADES_TRINITY_MEGAHIT    } from '../subworkflows/local/fastq_spades_trinity_megahit'
 
-// Consensus reconstruction of genome
+// Consensus polishing of genome
 include { FASTA_BLAST_CLUST               } from '../subworkflows/local/fasta_blast_clust'
+include { BLAST_MAKEBLASTDB               } from '../modules/nf-core/blast/makeblastdb/main'
 include { ALIGN_COLLAPSE_CONTIGS          } from '../subworkflows/local/align_collapse_contigs'
 include { UNPACK_DB as UNPACK_DB_BLAST    } from '../subworkflows/local/unpack_db'
 include { FASTQ_FASTA_ITERATIVE_CONSENSUS } from '../subworkflows/local/fastq_fasta_iterative_consensus'
@@ -78,22 +83,13 @@ include { FASTQ_FASTA_MAP_CONSENSUS                            } from '../subwor
 
 // QC consensus
 include { UNPACK_DB as UNPACK_DB_CHECKV   } from '../subworkflows/local/unpack_db'
+include { CHECKV_DOWNLOADDATABASE         } from '../modules/nf-core/checkv/downloaddatabase/main'
 include { CONSENSUS_QC                    } from '../subworkflows/local/consensus_qc'
 
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    IMPORT NF-CORE MODULES/SUBWORKFLOWS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
-
-//
-// MODULE: Installed directly from nf-core/modules
-//
-include { BLAST_MAKEBLASTDB           } from '../modules/nf-core/blast/makeblastdb/main'
-include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
-include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
-include { CHECKV_DOWNLOADDATABASE     } from '../modules/nf-core/checkv/downloaddatabase/main'
-
+// Report generation
+include { CREATE_MULTIQC_TABLES           } from '../modules/local/create_multiqc_tables'
+include { MULTIQC                         } from '../modules/nf-core/multiqc/main'
+include { CUSTOM_DUMPSOFTWAREVERSIONS     } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -131,7 +127,12 @@ workflow VIRALGENIE {
 
     // Prepare blast DB
     if (!params.skip_polishing || !params.skip_consensus_qc){
-        unpacked_references = UNPACK_DB_BLAST (params.reference_fasta).db
+        UNPACK_DB_BLAST (params.reference_fasta)
+        UNPACK_DB_BLAST
+            .out
+            .db
+            .map{db -> [[id:"blast_db"], db]}
+            .set{unpacked_references}
         ch_versions         = ch_versions.mix(UNPACK_DB_BLAST.out.versions)
 
         BLAST_MAKEBLASTDB ( unpacked_references )
@@ -155,6 +156,8 @@ workflow VIRALGENIE {
     ch_consensus               = Channel.empty()
     // Channel for consensus sequences that have been generated at the LAST iteration
     ch_consensus_results_reads = Channel.empty()
+    ch_clusters_summary        = Channel.empty()
+    ch_clusters_tsv            = Channel.empty()
 
     if (!params.skip_assembly) {
         // run different assemblers and combine contigs
@@ -202,15 +205,8 @@ workflow VIRALGENIE {
                 }
                 .set{ch_centroids_members}
 
-            // TODO: add table of number of singleton clusters and members
-
-            // FASTA_BLAST_CLUST
-            //     .out
-            //     .centroids_members
-            //     .view{"OUTPUT: '$it'"}
-
-            // ch_centroids_members.singletons.view{ "Singleton: '$it' "}
-            // ch_centroids_members.multiple.view{ "Multiple: '$it' "}
+            ch_clusters_summary    = FASTA_BLAST_CLUST.out.clusters_summary.collect{it[1]}.ifEmpty([])
+            ch_clusters_tsv        = FASTA_BLAST_CLUST.out.clusters_tsv.collect{it[1]}.ifEmpty([])
 
             ch_centroids_members
                 .singletons
@@ -392,6 +388,15 @@ workflow VIRALGENIE {
         ch_multiqc_files = ch_multiqc_files.mix(CONSENSUS_QC.out.mqc.collect{it[1]}.ifEmpty([]))
     }
 
+    // Prepare MULTIQC custom tables
+    CREATE_MULTIQC_TABLES (
+            ch_clusters_summary
+            // ch_clusters_tsv
+            )
+        ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.summary_clusters_mqc.ifEmpty([]))
+
+        ch_versions      = ch_versions.mix(CREATE_MULTIQC_TABLES.out.versions)
+
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
     )
@@ -409,8 +414,6 @@ workflow VIRALGENIE {
 
     ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml'))
-
-
 
     MULTIQC (
         ch_multiqc_files.collect(),

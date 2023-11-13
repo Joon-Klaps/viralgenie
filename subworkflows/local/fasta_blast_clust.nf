@@ -11,8 +11,8 @@ workflow FASTA_BLAST_CLUST {
 
     take:
     fasta          // channel: [ val(meta), [ fasta.gz ] ]
-    blast_db       // channel: [ path(db) ]
-    blast_db_fasta // channel: [ path(db) ]
+    blast_db       // channel: [ val(meta), path(db) ]
+    blast_db_fasta // channel: [ val(meta), path(fasta) ]
     cluster_method // string
 
     main:
@@ -44,8 +44,7 @@ workflow FASTA_BLAST_CLUST {
     // give the references a meta again so it can be used in seqkit
     blast_db_fasta
         .combine(BLAST_FILTER.out.hits)
-        .map{
-            it -> [it[1],it[0]]
+        .map{ meta_blast, db_fasta, meta_filter, filter -> [meta_filter, db_fasta]
         }
         .set{ch_blast_db_fasta}
 
@@ -88,9 +87,11 @@ workflow FASTA_BLAST_CLUST {
     ch_centroids_members = CLUST_SEQ_EXTRACT.out.seq_centroids_members
 
     emit:
-    clusters              = ch_clusters           // channel: [ [ meta ], [ clusters ] ]
-    centroids_members     = ch_centroids_members  // channel: [ [ meta ], [ seq_centroids.fa], [ seq_members.fa] ]
-    versions              = ch_versions           // channel: [ versions.yml ]
+    clusters              = ch_clusters                              // channel: [ [ meta ], [ clusters ] ]
+    centroids_members     = ch_centroids_members                     // channel: [ [ meta ], [ seq_centroids.fa], [ seq_members.fa] ]
+    clusters_tsv          = CLUST_SEQ_EXTRACT.out.clusters_tsv       // channel: [ [ meta ], [ tsv ] ]
+    clusters_summary      = CLUST_SEQ_EXTRACT.out.clusters_summary   // channel: [ [ meta ], [ tsv ] ]
+    versions              = ch_versions                              // channel: [ versions.yml ]
 
 }
 
