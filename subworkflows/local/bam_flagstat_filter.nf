@@ -40,7 +40,7 @@ workflow BAM_FLAGSTAT_FILTER {
         .flagstat
         .join(ch_bam, by: [0] )
         .map{ meta, flagstat, bam -> [ meta, bam, getFlagstatMappedReads(flagstat) ] }
-        .branch{ meta, bam, mapped_reads ->
+        .branch { meta, bam, mapped_reads ->
             pass: mapped_reads > min_mapped_reads
                 return [ meta, bam ]
             fail: mapped_reads <= min_mapped_reads
@@ -52,7 +52,9 @@ workflow BAM_FLAGSTAT_FILTER {
     bam_fail = ch_bam_filtered.fail
 
     bam_fail
-        .map { meta, bam, mapped_reads -> ["$meta.id\t$meta.sample\t$meta.iteration\t$meta.cluster_id\t$mapped_reads"]}
+        .map { meta, bam, mapped_reads ->
+            ["$meta.id\t$meta.sample\t$meta.iteration\t$meta.cluster_id\t$mapped_reads"]
+            }
         .collect()
         .map {
             tsv_data ->

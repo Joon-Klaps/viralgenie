@@ -118,9 +118,10 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
     )
 
     consensus_filtered = FASTA_CONTIG_FILTERING.out.contigs
+    ch_multiqc         = ch_multiqc.mix(FASTA_CONTIG_FILTERING.out.contig_qc_fail_mqc.collect().ifEmpty([]))
 
-    consensus_reads = consensus_filtered.join(reads_in, by: [0])
-    bam_out         = ch_dedup_bam_ref.map{meta,bam,ref -> [meta,bam] }
+    consensus_reads    = consensus_filtered.join(reads_in, by: [0])
+    bam_out            = ch_dedup_bam_ref.map{meta,bam,ref -> [meta,bam] }
 
     emit:
     consensus_reads = consensus_reads                    // channel: [ val(meta), [ fasta ], [ fastq ] ]

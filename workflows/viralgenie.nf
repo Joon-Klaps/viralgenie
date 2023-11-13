@@ -174,13 +174,36 @@ workflow VIRALGENIE {
         FASTQ_SPADES_TRINITY_MEGAHIT
             .out
             .scaffolds
-            .branch{ meta, scaffolds ->
+            .branch { meta, scaffolds ->
                 pass: scaffolds.countFasta() > 0
                 fail: scaffolds.countFasta() == 0
             }
             .set{ch_contigs}
 
-        // TODO: add the samples of failed scaffolds
+        ch_contigs
+            .fail
+            .map{ meta, scaffolds ->
+                def n_fasta = scaffolds.countFasta()
+                ["$meta.sample\t$n_fasta"]}
+            }
+            .collect()
+            .map {
+                tsv_data ->
+                    def comments = [
+                        "id: 'Samples without contigs'",
+                        "anchor: 'Filtered samples'",
+                        "section_name: 'Samples without contigs'",
+                        "format: 'tsv'",
+                        "description: 'Samples that did not have any contigs (using ${params.assemblers}) were not included in further assembly polishing'",
+                        "plot_type: 'table'"
+                    ]
+                    def header = ['Sample', "Number of contigs"]
+                    return WorkflowCommons.multiqcTsvFromList(tsv_data, header, comments) // make it compatible with the other mqc files
+            }
+            .collectFile(name:'samples_no_contigs_mqc.tsv')
+            .set{no_contigs}
+
+        ch_multiqc_files = ch_multiqc_files.mix(no_contigs.ifEmpty([]))
 
         if (!params.skip_polishing){
             // blast contigs against reference & identify clusters of (contigs & references)
@@ -199,7 +222,7 @@ workflow VIRALGENIE {
                 .map { meta, centroids, members ->
                     [ meta + [step: "clusterd"], centroids, members ]
                 }
-                .branch{ meta, centroids, members ->
+                .branch { meta, centroids, members ->
                     singletons: meta.cluster_size == 0
                     multiple: meta.cluster_size > 0
                 }
