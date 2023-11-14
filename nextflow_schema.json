@@ -706,7 +706,7 @@
                 },
                 "ivar_header": {
                     "type": "string",
-                    "default": "https://raw.githubusercontent.com/Joon-Klaps/viralgenie/dev/assets/headers/ivar_variants_header_mqc.txt",
+                    "default": "https://raw.githubusercontent.com/Joon-Klaps/viralgenie/dev/assets/mqc_headers/ivar_variants_header_mqc.txt",
                     "hidden": true,
                     "fa_icon": "fas fa-heading"
                 }

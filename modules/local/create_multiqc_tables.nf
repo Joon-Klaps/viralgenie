@@ -9,10 +9,14 @@ process CREATE_MULTIQC_TABLES {
     input:
     path clusters_summary_files
     path sample_metadata
+    path checkv_files
+    path blast_files
 
     output:
     path("summary_clusters_mqc.tsv")    , emit: summary_clusters_mqc, optional: true
     path("sample_metadata_mqc.tsv")     , emit: sample_metadata_mqc , optional: true
+    path("summary_checkv_mqc.tsv")      , emit: summary_checkv_mqc  , optional: true
+    path("summary_blast_mqc.tsv")       , emit: summary_blast_mqc   , optional: true
     path "versions.yml"                 , emit: versions
 
     when:
@@ -21,13 +25,17 @@ process CREATE_MULTIQC_TABLES {
     script:
     def args = task.ext.args ?: ''
     def clusters_summary_files = clusters_summary_files ? "--clusters_summary ${clusters_summary_files.join(' ')}" : ''
-    def sample_metadata        = sample_metadata        ? "--sample_metadata ${sample_metadata}" : ''
+    def sample_metadata        = sample_metadata        ? "--sample_metadata ${sample_metadata}"                   : ''
+    def checkv_files           = checkv_files           ? "--checkv_files ${checkv_files.join(' ')}"               : ''
+    def blast_files            = blast_files            ? "--blast_files ${blast_files.join(' ')}"                 : ''
 
     """
     create_multiqc_custom_tables.py\\
         $args \\
         $clusters_summary_files \\
         $sample_metadata \\
+        $checkv_files \\
+        $blast_files
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

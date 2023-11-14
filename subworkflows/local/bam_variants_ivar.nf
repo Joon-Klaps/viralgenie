@@ -43,7 +43,7 @@ workflow BAM_VARIANTS_IVAR {
     //
     ch_ivar_vcf_header = params.ivar_header ?
         file( params.ivar_header, checkIfExists: true ) :
-        file("$projectDir/assets/headers/ivar_variants_header_mqc.txt", checkIfExists: true)
+        file("$projectDir/assets/mqc_headers/ivar_variants_header_mqc.txt", checkIfExists: true)
 
     ch_ivar_tsv
         .join( meta_fasta, by : [0] )
