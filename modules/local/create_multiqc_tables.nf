@@ -8,9 +8,11 @@ process CREATE_MULTIQC_TABLES {
 
     input:
     path clusters_summary_files
+    path sample_metadata
 
     output:
     path("summary_clusters_mqc.tsv")    , emit: summary_clusters_mqc, optional: true
+    path("sample_metadata_mqc.tsv")     , emit: sample_metadata_mqc , optional: true
     path "versions.yml"                 , emit: versions
 
     when:
@@ -19,12 +21,13 @@ process CREATE_MULTIQC_TABLES {
     script:
     def args = task.ext.args ?: ''
     def clusters_summary_files = clusters_summary_files ? "--clusters_summary ${clusters_summary_files.join(' ')}" : ''
+    def sample_metadata        = sample_metadata        ? "--sample_metadata ${sample_metadata}" : ''
 
     """
     create_multiqc_custom_tables.py\\
         $args \\
         $clusters_summary_files \\
-
+        $sample_metadata \\
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -38,6 +41,7 @@ process CREATE_MULTIQC_TABLES {
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
     touch cluster_summary_mqc.tsv
+    touch sample_metadata_mqc.tsv
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

@@ -35,6 +35,7 @@ for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true
 // Check mandatory parameters
 if (params.input            ) { ch_input = file(params.input)                                      } else { exit 1, 'Input samplesheet not specified!'                              }
 if (params.adapter_fasta    ) { ch_adapter_fasta = file(params.adapter_fasta)                      } else { ch_adapter_fasta  = []                                                  }
+if (params.metadata         ) { ch_metadata = file(params.metadata)                                } else { ch_metadata  = []                                                  }
 if (params.host_genome      ) { ch_host_genome = file(params.host_genome)                          } else { ch_host_genome = file(WorkflowMain.getGenomeAttribute(params, 'fasta')) }
 if (params.host_index       ) { ch_host_index = Channel.fromPath(params.host_index).map{[[], it]}  } else { ch_host_index = []                                                      }
 if (params.contaminants     ) { ch_contaminants = file(params.contaminants)                        } else { ch_contaminants = []                                                    }
@@ -190,7 +191,7 @@ workflow VIRALGENIE {
             .map {
                 tsv_data ->
                     def comments = [
-                        "id: 'Samples without contigs'",
+                        "id: 'samples_without_contigs'",
                         "anchor: 'Filtered samples'",
                         "section_name: 'Samples without contigs'",
                         "format: 'tsv'",
@@ -415,12 +416,13 @@ workflow VIRALGENIE {
 
     // Prepare MULTIQC custom tables
     CREATE_MULTIQC_TABLES (
-            ch_clusters_summary
+            ch_clusters_summary,
+            ch_metadata
             // ch_clusters_tsv
             )
-        ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.summary_clusters_mqc.ifEmpty([]))
-
-        ch_versions      = ch_versions.mix(CREATE_MULTIQC_TABLES.out.versions)
+    ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.summary_clusters_mqc.ifEmpty([]))
+    ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.sample_metadata_mqc.ifEmpty([]))
+    ch_versions      = ch_versions.mix(CREATE_MULTIQC_TABLES.out.versions)
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')

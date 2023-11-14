@@ -59,7 +59,7 @@ workflow BAM_FLAGSTAT_FILTER {
         .map {
             tsv_data ->
                 def comments = [
-                    "id: 'Failed mapped'",
+                    "id: 'failed_mapped'",
                     "anchor: 'Filtered contigs'",
                     "section_name: 'Minimum mapped reads'",
                     "format: 'tsv'",
