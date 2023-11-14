@@ -127,7 +127,7 @@ workflow VIRALGENIE {
 
     // Prepare blast DB
     if (!params.skip_polishing || !params.skip_consensus_qc){
-        UNPACK_DB_BLAST (params.reference_fasta)
+        UNPACK_DB_BLAST (params.reference_pool)
         UNPACK_DB_BLAST
             .out
             .db
@@ -174,13 +174,36 @@ workflow VIRALGENIE {
         FASTQ_SPADES_TRINITY_MEGAHIT
             .out
             .scaffolds
-            .branch{ meta, scaffolds ->
+            .branch { meta, scaffolds ->
                 pass: scaffolds.countFasta() > 0
                 fail: scaffolds.countFasta() == 0
             }
             .set{ch_contigs}
 
-        // TODO: add the samples of failed scaffolds
+        ch_contigs
+            .fail
+            .map{ meta, scaffolds ->
+                def n_fasta = scaffolds.countFasta()
+                ["$meta.sample\t$n_fasta"]
+            }
+            .collect()
+            .map {
+                tsv_data ->
+                    def comments = [
+                        "id: 'Samples without contigs'",
+                        "anchor: 'Filtered samples'",
+                        "section_name: 'Samples without contigs'",
+                        "format: 'tsv'",
+                        "description: 'Samples that did not have any contigs (using ${params.assemblers}) were not included in further assembly polishing'",
+                        "plot_type: 'table'"
+                    ]
+                    def header = ['Sample', "Number of contigs"]
+                    return WorkflowCommons.multiqcTsvFromList(tsv_data, header, comments) // make it compatible with the other mqc files
+            }
+            .collectFile(name:'samples_no_contigs_mqc.tsv')
+            .set{no_contigs}
+
+        ch_multiqc_files = ch_multiqc_files.mix(no_contigs.ifEmpty([]))
 
         if (!params.skip_polishing){
             // blast contigs against reference & identify clusters of (contigs & references)
@@ -199,7 +222,7 @@ workflow VIRALGENIE {
                 .map { meta, centroids, members ->
                     [ meta + [step: "clusterd"], centroids, members ]
                 }
-                .branch{ meta, centroids, members ->
+                .branch { meta, centroids, members ->
                     singletons: meta.cluster_size == 0
                     multiple: meta.cluster_size > 0
                 }
@@ -207,6 +230,8 @@ workflow VIRALGENIE {
 
             ch_clusters_summary    = FASTA_BLAST_CLUST.out.clusters_summary.collect{it[1]}.ifEmpty([])
             ch_clusters_tsv        = FASTA_BLAST_CLUST.out.clusters_tsv.collect{it[1]}.ifEmpty([])
+
+            ch_multiqc_files       =  ch_multiqc_files.mix(FASTA_BLAST_CLUST.out.no_blast_hits_mqc.ifEmpty([]))
 
             ch_centroids_members
                 .singletons
@@ -278,7 +303,7 @@ workflow VIRALGENIE {
                 ch_consensus               = ch_consensus.mix(FASTQ_FASTA_ITERATIVE_CONSENSUS.out.consensus_allsteps)
                 ch_consensus_results_reads = FASTQ_FASTA_ITERATIVE_CONSENSUS.out.consensus_reads
                 ch_versions                = ch_versions.mix(FASTQ_FASTA_ITERATIVE_CONSENSUS.out.versions)
-                ch_multiqc_files           = ch_multiqc_files.mix(FASTQ_FASTA_ITERATIVE_CONSENSUS.out.mqc.collect{it[1]}.ifEmpty([]))
+                ch_multiqc_files           = ch_multiqc_files.mix(FASTQ_FASTA_ITERATIVE_CONSENSUS.out.mqc.ifEmpty([])) //collect already done in subworkflow
             } else {
                 ch_consensus_results_reads = ch_consensus_results_reads_intermediate
             }
@@ -288,7 +313,7 @@ workflow VIRALGENIE {
     // add last step to it
     ch_consensus_results_reads
         .map{ meta, fasta, fastq ->
-            [meta + [step: "it_final", iteration:'final'], fasta, fastq]
+            [meta + [step: "it_variant_calling", iteration:'variant_calling'], fasta, fastq]
             }
         .set{ch_consensus_results_reads}
 
@@ -315,7 +340,15 @@ workflow VIRALGENIE {
                     meta, reads, seq, name ->
                     sample = meta.id
                     id = "${sample}_${name.id}"
-                    new_meta = meta + [id: id, sample: sample, step: "constrain", constrain: true, reads: reads, iteration: 'final']
+                    new_meta = meta + [
+                        id: id,
+                        sample: sample,
+                        cluster_id: "${name.id}",
+                        step: "constrain",
+                        constrain: true,
+                        reads: reads,
+                        iteration: 'variant_calling'
+                        ]
                     return [new_meta, seq]
                 }
             .set{ch_map_seq_anno_combined}
@@ -351,7 +384,8 @@ workflow VIRALGENIE {
             params.min_contig_size,
             params.max_n_1OOkbp
         )
-        ch_consensus = ch_consensus.mix(FASTQ_FASTA_MAP_CONSENSUS.out.consensus_all)
+        ch_consensus     = ch_consensus.mix(FASTQ_FASTA_MAP_CONSENSUS.out.consensus_all)
+        ch_multiqc_files = ch_multiqc_files.mix(FASTQ_FASTA_MAP_CONSENSUS.out.mqc.ifEmpty([])) // collect already done in subworkflow
 
     }
 

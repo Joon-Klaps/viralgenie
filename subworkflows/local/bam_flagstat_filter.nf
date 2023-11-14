@@ -24,7 +24,8 @@ workflow BAM_FLAGSTAT_FILTER {
 
     main:
 
-    ch_versions = Channel.empty()
+    ch_versions             = Channel.empty()
+    ch_fail_mapping_multiqc = Channel.empty()
 
     SAMTOOLS_INDEX ( ch_bam )
     ch_versions = ch_versions.mix(SAMTOOLS_INDEX.out.versions.first())
@@ -39,19 +40,42 @@ workflow BAM_FLAGSTAT_FILTER {
         .flagstat
         .join(ch_bam, by: [0] )
         .map{ meta, flagstat, bam -> [ meta, bam, getFlagstatMappedReads(flagstat) ] }
-        .branch{ meta, bam, mapped_reads ->
+        .branch { meta, bam, mapped_reads ->
             pass: mapped_reads > min_mapped_reads
                 return [ meta, bam ]
             fail: mapped_reads <= min_mapped_reads
-                return [ meta, bam ]
+                return [ meta, bam, mapped_reads ]
         }
         .set{ ch_bam_filtered }
 
+    bam_pass = ch_bam_filtered.pass
+    bam_fail = ch_bam_filtered.fail
+
+    bam_fail
+        .map { meta, bam, mapped_reads ->
+            ["$meta.id\t$meta.sample\t$meta.iteration\t$meta.cluster_id\t$mapped_reads"]
+            }
+        .collect()
+        .map {
+            tsv_data ->
+                def comments = [
+                    "id: 'Failed mapped'",
+                    "anchor: 'Filtered contigs'",
+                    "section_name: 'Minimum mapped reads'",
+                    "format: 'tsv'",
+                    "description: 'Contigs that did not have more then ${min_mapped_reads} mapped reads were filtered out'",
+                    "plot_type: 'table'"
+                ]
+                def header = ['Id','Sample', 'Iteration','Cluster','Mapped reads']
+                return WorkflowCommons.multiqcTsvFromList(tsv_data, header, comments) // make it compatible with other mqc files
+        }
+        .collectFile(name:'failed_mapped_reads_mqc.tsv')
+        .set { ch_fail_mapping_multiqc }
 
     emit:
-    bam_pass = ch_bam_filtered.pass            // channel: [ val(meta), [ bam ] ]
-    bam_fail = ch_bam_filtered.fail            // channel: [ val(meta), [ bam ] ]
-    flagstat = SAMTOOLS_FLAGSTAT.out.flagstat  // channel: [ val(meta), [ flagstat ] ]
+    bam_pass     = bam_pass                        // channel: [ val(meta), [ bam ] ]
+    flagstat     = SAMTOOLS_FLAGSTAT.out.flagstat  // channel: [ val(meta), [ flagstat ] ]
+    bam_fail_mqc = ch_fail_mapping_multiqc         // channel: [ val(meta), [ bam ] ]
 
     versions = ch_versions                     // channel: [ versions.yml ]
 }

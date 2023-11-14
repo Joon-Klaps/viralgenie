@@ -62,7 +62,7 @@ workflow BAM_VARIANTS_BCFTOOLS {
     ch_versions = ch_versions.mix(BCFTOOLS_NORM.out.versions.first())
 
     //
-    // TODO: check if you need to configure the trehsshold in args
+    // Filter out low quality variants
     //
     BCFTOOLS_FILTER (
         BCFTOOLS_NORM.out.vcf

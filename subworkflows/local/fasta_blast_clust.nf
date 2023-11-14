@@ -34,7 +34,40 @@ workflow FASTA_BLAST_CLUST {
         }
         .set { ch_blast_txt }
 
-    //TODO throw an warning if no hits are found
+    // Throw an warning if no hits are found
+    //TODO: This isn't clean at all.
+    ch_blast_txt
+        .hits
+        .collect()
+        .ifEmpty{ log.warn "WARN: No blast hits were found in any samples of the given BLAST database. Consider updating the search parameters or the database: \n ${params.reference_pool} "}
+
+    // if (ch_blast_txt.hits.count() ==0 ){
+    //     println(" IWAS HERRREREREZNJKGNDSJKGNJKDS VKSD VKLDS FKLDS L")
+    //     Nextflow.warn("No blast hits were found in any samples of the given BLAST database. Consider updating the search parameters or the database: \n ${params.reference_pool} ")
+    // }
+
+    ch_blast_txt
+        .no_hits
+        .join(fasta)
+        .map { meta, txt, fasta ->
+            def n_fasta = fasta.countFasta()
+            ["$meta.sample\t$n_fasta"]}
+        .collect()
+        .map {
+            tsv_data ->
+                def comments = [
+                    "id: 'Samples without blast hits'",
+                    "anchor: 'Filtered samples'",
+                    "section_name: 'Samples without blast hits'",
+                    "format: 'tsv'",
+                    "description: 'Samples that did not have any blast hits for their contigs (using ${params.assemblers}) were not included in further assembly polishing'",
+                    "plot_type: 'table'"
+                ]
+                def header = ['Sample', "Number of contigs"]
+                return WorkflowCommons.multiqcTsvFromList(tsv_data, header, comments) // make it compatible with the other mqc files
+        }
+        .collectFile(name:'samples_no_blast_hits_mqc.tsv')
+        .set { no_blast_hits }
 
     BLAST_FILTER (
         ch_blast_txt.hits
@@ -91,6 +124,7 @@ workflow FASTA_BLAST_CLUST {
     centroids_members     = ch_centroids_members                     // channel: [ [ meta ], [ seq_centroids.fa], [ seq_members.fa] ]
     clusters_tsv          = CLUST_SEQ_EXTRACT.out.clusters_tsv       // channel: [ [ meta ], [ tsv ] ]
     clusters_summary      = CLUST_SEQ_EXTRACT.out.clusters_summary   // channel: [ [ meta ], [ tsv ] ]
+    no_blast_hits_mqc     = no_blast_hits                            // channel: [ tsv ]
     versions              = ch_versions                              // channel: [ versions.yml ]
 
 }

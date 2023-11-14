@@ -530,7 +530,7 @@
                     "help_text": "There are multiple processes within the polishing subworkflow that might not contain relevant information  ",
                     "fa_icon": "fas fa-file-download"
                 },
-                "reference_fasta": {
+                "reference_pool": {
                     "type": "string",
                     "default": "https://rvdb.dbi.udel.edu/download/C-RVDBv26.0.fasta.gz",
                     "description": "Set of fasta sequences used as potential references for the contigs",

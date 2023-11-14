@@ -35,16 +35,40 @@ workflow FASTA_CONTIG_FILTERING {
     ch_contigs
         .join(QUAST_FILTER.out.tsv, by:[0])
         .map { meta, fasta, report -> [ meta, fasta, getQuastStats( report ) ] }
-        .filter { meta, fasta, stats -> stats.contig_size >= min_len.toInteger() && stats.n_100 <= n_100.toInteger() }
-        .set { ch_contigs_filtered_stats }
-
-    ch_contigs_filtered_stats
-        .map { meta, fasta, stats -> [ meta, fasta ] }
+        .branch { meta, fasta, stats ->
+            pass: stats.contig_size >= min_len.toInteger() && stats.n_100 <= n_100.toInteger()
+                return [ meta, fasta ]
+            fail: stats.contig_size < min_len.toInteger() || stats.n_100 > n_100.toInteger()
+                return [ meta, fasta, stats ]}
         .set { ch_contigs_filtered }
 
+    ch_contigs_filtered
+        .fail
+        .map { meta, fasta, stats ->
+            ["$meta.id\t$meta.sample\t$meta.iteration\t$meta.cluster_id\t$stats.contig_size\t$stats.n_100"]
+        }
+        .collect()
+        .map {
+            tsv_data ->
+                def comments = [
+                    "id: 'Failed contig quality'",
+                    "anchor: 'Filtered contigs'",
+                    "section_name: 'Failed contig quality'",
+                    "format: 'tsv'",
+                    "description: 'Contigs that are not of minimum size ${min_len} or have more then ${n_100} ambigous bases per 100 kbp were filtered out'",
+                    "plot_type: 'table'"
+                ]
+                def header = ['Id','Sample', 'Iteration','Cluster','Contig size', 'N\'s per 100 kbp']
+                return WorkflowCommons.multiqcTsvFromList(tsv_data, header, comments) // make it compatible with other mqc files
+        }
+        .collectFile(name:'failed_contig_quality_mqc.tsv')
+        .set { ch_contig_qc_fail_mqc }
+
+
+
     emit:
-    contigs       = ch_contigs_filtered           // channel: [ val(meta), [ fasta ] ]
-    contigs_stats = ch_contigs_filtered_stats     // channel: [ val(meta), [ fasta] , [ stats ] ]
-    versions      = ch_versions                   // channel: [ versions.yml ]
-    }
+    contigs            = ch_contigs_filtered.pass      // channel: [ val(meta), [ fasta ] ]
+    contig_qc_fail_mqc = ch_contig_qc_fail_mqc         // channel: [ tsv ]
+    versions           = ch_versions                   // channel: [ versions.yml ]
+}
 
