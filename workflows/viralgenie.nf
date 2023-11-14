@@ -390,6 +390,9 @@ workflow VIRALGENIE {
 
     }
 
+    ch_checkv_summary = Channel.empty()
+    ch_blast_summary  = Channel.empty()
+
     if ( !params.skip_consensus_qc ) {
         ch_checkv_db = Channel.empty()
         if (!params.skip_checkv) {
@@ -410,15 +413,19 @@ workflow VIRALGENIE {
             params.skip_blast_qc,
             params.skip_alignment_qc
             )
-        ch_versions      = ch_versions.mix(CONSENSUS_QC.out.versions)
-        ch_multiqc_files = ch_multiqc_files.mix(CONSENSUS_QC.out.mqc.collect{it[1]}.ifEmpty([]))
+        ch_versions       = ch_versions.mix(CONSENSUS_QC.out.versions)
+        ch_multiqc_files  = ch_multiqc_files.mix(CONSENSUS_QC.out.mqc.collect{it[1]}.ifEmpty([]))
+        ch_checkv_summary = CONSENSUS_QC.out.checkv_summary.collect{it[1]}.ifEmpty([])
+        ch_blast_summary  = CONSENSUS_QC.out.blast_txt.collect{it[1]}.ifEmpty([])
+
     }
 
     // Prepare MULTIQC custom tables
     CREATE_MULTIQC_TABLES (
             ch_clusters_summary,
-            ch_metadata
-            // ch_clusters_tsv
+            ch_metadata,
+            ch_checkv_summary,
+            ch_blast_summary
             )
     ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.summary_clusters_mqc.ifEmpty([]))
     ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.sample_metadata_mqc.ifEmpty([]))

@@ -56,9 +56,16 @@ def parse_args(argv=None):
     )
 
     parser.add_argument(
-        "--sample_metadata",
-        metavar="SAMPLE METADATA",
-        help="Sample metadata file",
+        "--checkv_files",
+        metavar="CHECKV FILES",
+        help="Checkv summary files for each sample",
+        type=Path,
+    )
+
+    parser.add_argument(
+        "--blast_files",
+        metavar="BLAST FILES",
+        help="Blast files for each contig, having the standard outfmt 6",
         type=Path,
     )
 
@@ -87,10 +94,10 @@ def read_header_file(file_path):
     return content
 
 
-def concat_clusters_summary_files(clusters_summary_files):
+def concat_table_files(table_files, **kwargs):
     """Concatenate all the cluster summary files into a single dataframe."""
-    clusters_summary_df = pd.concat([pd.read_csv(file, sep="\t") for file in clusters_summary_files])
-    return clusters_summary_df
+    df = pd.concat([pd.read_csv(file, sep="\t", **kwargs) for file in table_files])
+    return df
 
 
 def write_tsv_file_with_comments(df, file, comment):
@@ -127,7 +134,7 @@ def main(argv=None):
         header_cluster_summary.extend(comments_cluster_summary)
 
         # Concatenate all the cluster summary files into a single dataframe
-        clusters_summary_df = concat_clusters_summary_files(args.clusters_summary)
+        clusters_summary_df = concat_table_files(args.clusters_summary)
         write_tsv_file_with_comments(clusters_summary_df, "summary_clusters_mqc.tsv", comments_cluster_summary)
 
     # Sample metadata
@@ -147,7 +154,65 @@ def main(argv=None):
         # Write the dataframe to a file
         write_tsv_file_with_comments(sample_metadata_df, "sample_metadata_mqc.tsv", header_sample_metadata)
 
-    # Clusters more in depth
+    # Checkv summary
+    if args.checkv_files:
+        header_checkv = f"{args.header_dir}/checkv_mqc.txt"
+
+        # Check if the given files exist
+        check_file_exists([args.checkv_files])
+        check_file_exists([header_checkv])
+
+        # Read the header file
+        header_checkv = read_header_file(header_checkv)
+
+        # Read the checkv summary file
+        checkv_df = concat_table_files(args.checkv_files)
+
+        # TODO:  Split up the sample names into sample, cluster, iteration
+
+        # Write the dataframe to a file
+        write_tsv_file_with_comments(checkv_df, "checkv_mqc.tsv", header_checkv)
+
+    # Blast summary
+    if args.blast_files:
+        header_blast = f"{args.header_dir}/blast_mqc.txt"
+
+        # Check if the given files exist
+        check_file_exists([args.blast_files])
+        check_file_exists([header_blast])
+
+        # Read the header file
+        header_blast = read_header_file(header_blast)
+
+        # Read the blast summary file
+        blast_df = concat_table_files(args.blast_files, header=None)
+        blast_df.columns = [
+            "query",
+            "subject",
+            "pident",
+            "qlen",
+            "length",
+            "mismatch",
+            "gapopen",
+            "qstart",
+            "qend",
+            "sstart",
+            "send",
+            "evalue",
+            "bitscore",
+        ]
+
+        # Filter on best hit per contig and keep only the best hit
+        blast_df = blast_df.sort_values("bitscore", ascending=False).drop_duplicates("query")
+
+        # Extract the species name from the subject column
+        blast_df["species"] = blast_df["subject"].str.split(" ").str[1]
+
+        # TODO:  Split up the sample names into sample, cluster, iteration
+
+        # Write the dataframe to a file
+        write_tsv_file_with_comments(blast_df, "blast_mqc.tsv", header_blast)
+
     return 0
 
 

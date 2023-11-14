@@ -1,0 +1,5 @@
+# id: 'checkv'
+# section_name: 'Checkv'
+# format: 'tsv'
+# description: 'Checkv assesses the quality of metagenome-assembled viral genomes. '
+# plot_type: 'table'
