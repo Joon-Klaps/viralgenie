@@ -44,7 +44,7 @@ workflow CONSENSUS_QC  {
         // Align the different steps to each other to see how the sequences have changed
         // MAFFT doesn't like those that have only one sequence
         ch_genome_collapsed
-            .branch{ meta, scaffolds ->
+            .branch { meta, scaffolds ->
                 pass: scaffolds.countFasta() > 1
                 fail: scaffolds.countFasta() == 1
             }

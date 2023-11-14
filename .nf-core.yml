@@ -19,3 +19,6 @@ lint:
   multiqc_config:
     - report_section_order
     - report_comment
+  files_exist:
+    - conf/test.config
+    - conf/test_full.config
