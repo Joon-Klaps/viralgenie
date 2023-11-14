@@ -42,7 +42,7 @@ workflow FASTA_CONTIG_FILTERING {
                 return [ meta, fasta, stats ]}
         .set { ch_contigs_filtered }
 
-    ch_contigs
+    ch_contigs_filtered
         .fail
         .map { meta, fasta, stats ->
             ["$meta.id\t$meta.sample\t$meta.iteration\t$meta.cluster_id\t$stats.contig_size\t$stats.n_100"]

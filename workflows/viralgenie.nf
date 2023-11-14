@@ -184,7 +184,7 @@ workflow VIRALGENIE {
             .fail
             .map{ meta, scaffolds ->
                 def n_fasta = scaffolds.countFasta()
-                ["$meta.sample\t$n_fasta"]}
+                ["$meta.sample\t$n_fasta"]
             }
             .collect()
             .map {

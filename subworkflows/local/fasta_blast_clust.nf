@@ -42,7 +42,8 @@ workflow FASTA_BLAST_CLUST {
         .ifEmpty{"WARN: No blast hits were found in any samples of the given BLAST database. Consider updating the search parameters or the database: \n ${params.reference_pool} "}
         .view()
 
-    if (! ch_blast_txt.hits.count() ==0 ){
+    if (ch_blast_txt.hits.count() ==0 ){
+        println(" IWAS HERRREREREZNJKGNDSJKGNJKDS VKSD VKLDS FKLDS L")
         Nextflow.warn("No blast hits were found in any samples of the given BLAST database. Consider updating the search parameters or the database: \n ${params.reference_pool} ")
     }
 
