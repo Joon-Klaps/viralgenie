@@ -29,6 +29,12 @@
                     "description": "The output directory where the results will be saved. You have to use absolute paths to storage on Cloud infrastructure.",
                     "fa_icon": "fas fa-folder-open"
                 },
+                "metadata": {
+                    "type": "string",
+                    "fa_icon": "fas fa-file-csv",
+                    "description": "Sample metadata that is included in the multiqc report",
+                    "pattern": "^\\S+\\.tsv$"
+                },
                 "email": {
                     "type": "string",
                     "description": "Email address for completion summary.",
