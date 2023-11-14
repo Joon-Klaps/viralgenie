@@ -169,6 +169,9 @@ section_comments:
 sp:
   fastp:
     fn: "*.fastp.json"
+  quast:
+    fn: "*.tsv"
+    contains: "contigs"
   kraken:
     fn: "*kraken2.kraken2.report.txt"
 
@@ -180,6 +183,8 @@ extra_fn_clean_exts:
   - "_1"
   - "_2"
   - "_host"
+  - "_kraken2"
+  - "_bracken2"
   - "_spades"
   - "_megahit"
   - "_trinity"
