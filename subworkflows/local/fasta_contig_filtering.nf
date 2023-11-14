@@ -51,7 +51,7 @@ workflow FASTA_CONTIG_FILTERING {
         .map {
             tsv_data ->
                 def comments = [
-                    "id: 'Failed contig quality'",
+                    "id: 'failed_contig_quality'",
                     "anchor: 'Filtered contigs'",
                     "section_name: 'Failed contig quality'",
                     "format: 'tsv'",
