@@ -704,9 +704,15 @@
                     "fa_icon": "fas fa-info",
                     "description": "calculate summary statistics in final iteration"
                 },
+                "multiqc_headers": {
+                    "type": "string",
+                    "default": "${projectDir}/assets/mqc_headers",
+                    "fa_icon": "fas fa-heading",
+                    "description": "Directory containing the mutliqc headers for multiple tables like 'clusters_summary_mqc.txt', 'blast_mqc.txt', ..."
+                },
                 "ivar_header": {
                     "type": "string",
-                    "default": "https://raw.githubusercontent.com/Joon-Klaps/viralgenie/dev/assets/mqc_headers/ivar_variants_header_mqc.txt",
+                    "default": "https://raw.githubusercontent.com/Joon-Klaps/viralgenie/dev/assets/multiqc_headers/ivar_variants_header_mqc.txt",
                     "hidden": true,
                     "fa_icon": "fas fa-heading"
                 }

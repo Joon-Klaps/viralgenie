@@ -7,10 +7,11 @@ process CREATE_MULTIQC_TABLES {
         'biocontainers/bioframe:0.4.1--pyhdfd78af_0' }"
 
     input:
-    path clusters_summary_files
+    path headers_dir
+    path clusters_summary_files, stageAs: "?/*"
     path sample_metadata
-    path checkv_files
-    path blast_files
+    path checkv_files, stageAs: "?/*"
+    path blast_files, stageAs: "?/*"
 
     output:
     path("summary_clusters_mqc.tsv")    , emit: summary_clusters_mqc, optional: true
@@ -24,6 +25,7 @@ process CREATE_MULTIQC_TABLES {
 
     script:
     def args = task.ext.args ?: ''
+    def headers                = blast_files            ? "--header_dir ${headers_dir}"                            : ''
     def clusters_summary_files = clusters_summary_files ? "--clusters_summary ${clusters_summary_files.join(' ')}" : ''
     def sample_metadata        = sample_metadata        ? "--sample_metadata ${sample_metadata}"                   : ''
     def checkv_files           = checkv_files           ? "--checkv_files ${checkv_files.join(' ')}"               : ''
@@ -32,10 +34,12 @@ process CREATE_MULTIQC_TABLES {
     """
     create_multiqc_custom_tables.py\\
         $args \\
+        $headers \\
         $clusters_summary_files \\
         $sample_metadata \\
         $checkv_files \\
-        $blast_files
+        $blast_files \\
+
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

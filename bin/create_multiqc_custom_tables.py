@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 
 import pandas as pd
+import yaml
 
 logger = logging.getLogger()
 
@@ -58,6 +59,7 @@ def parse_args(argv=None):
     parser.add_argument(
         "--checkv_files",
         metavar="CHECKV FILES",
+        nargs="+",
         help="Checkv summary files for each sample",
         type=Path,
     )
@@ -65,7 +67,15 @@ def parse_args(argv=None):
     parser.add_argument(
         "--blast_files",
         metavar="BLAST FILES",
+        nargs="+",
         help="Blast files for each contig, having the standard outfmt 6",
+        type=Path,
+    )
+
+    parser.add_argument(
+        "--multiqc_dir",
+        metavar="MULTIQC DIR",
+        help="Multiqc directory where the multiqc files will be used to create the custom tables for multiqc",
         type=Path,
     )
 
@@ -82,7 +92,7 @@ def parse_args(argv=None):
 def check_file_exists(files):
     """Check if the given files exist."""
     for file in files:
-        if not file.exists():
+        if not Path(file).exists():
             logger.error(f"The given input file {file} was not found!")
             sys.exit(2)
 
@@ -90,7 +100,7 @@ def check_file_exists(files):
 def read_header_file(file_path):
     """Read a file and return its content as a list of strings."""
     with open(file_path, "r") as file:
-        content = file.readlines()
+        content = file.read().splitlines()
     return content
 
 
@@ -113,8 +123,6 @@ def main(argv=None):
     args = parse_args(argv)
     logging.basicConfig(level=args.log_level, format="[%(levelname)s] %(message)s")
 
-    headers = os.listdir(args.header_dir)
-
     # Cluster summaries
     if args.clusters_summary:
         header_cluster_summary = f"{args.header_dir}/clusters_summary_mqc.txt"
@@ -127,6 +135,7 @@ def main(argv=None):
 
         # append comments cluster summary to header
         comments_cluster_summary = [
+            "# pconfig:",
             "#    id: 'clusters_summary'",
             "#    namespace: 'Clusters summary (" + args.cluster_method + ")'",
             "#    table_title: 'Clusters summary (" + args.cluster_method + ")'",
@@ -135,7 +144,7 @@ def main(argv=None):
 
         # Concatenate all the cluster summary files into a single dataframe
         clusters_summary_df = concat_table_files(args.clusters_summary)
-        write_tsv_file_with_comments(clusters_summary_df, "summary_clusters_mqc.tsv", comments_cluster_summary)
+        write_tsv_file_with_comments(clusters_summary_df, "summary_clusters_mqc.tsv", header_cluster_summary)
 
     # Sample metadata
     if args.sample_metadata:
@@ -154,12 +163,12 @@ def main(argv=None):
         # Write the dataframe to a file
         write_tsv_file_with_comments(sample_metadata_df, "sample_metadata_mqc.tsv", header_sample_metadata)
 
-    # Checkv summary
+        # Checkv summary
     if args.checkv_files:
         header_checkv = f"{args.header_dir}/checkv_mqc.txt"
 
         # Check if the given files exist
-        check_file_exists([args.checkv_files])
+        check_file_exists(args.checkv_files)
         check_file_exists([header_checkv])
 
         # Read the header file
@@ -168,17 +177,26 @@ def main(argv=None):
         # Read the checkv summary file
         checkv_df = concat_table_files(args.checkv_files)
 
-        # TODO:  Split up the sample names into sample, cluster, iteration
+        # Split up the sample names into sample, cluster, step
+        checkv_df[["sample", "cluster", "step", "remaining"]] = checkv_df["contig_id"].str.split("_", n=3, expand=True)
+        checkv_df.drop(columns=["remaining", "contig_id"], inplace=True)
+        checkv_df["step"] = checkv_df["step"].str.split(".").str[0]
+
+        # Reorder the columns
+        checkv_df = checkv_df[
+            ["sample", "cluster", "step"]
+            + [column for column in checkv_df.columns if column not in ["sample", "cluster", "step"]]
+        ]
 
         # Write the dataframe to a file
-        write_tsv_file_with_comments(checkv_df, "checkv_mqc.tsv", header_checkv)
+        write_tsv_file_with_comments(checkv_df, "summary_checkv_mqc.tsv", header_checkv)
 
     # Blast summary
     if args.blast_files:
         header_blast = f"{args.header_dir}/blast_mqc.txt"
 
         # Check if the given files exist
-        check_file_exists([args.blast_files])
+        check_file_exists(args.blast_files)
         check_file_exists([header_blast])
 
         # Read the header file
@@ -206,12 +224,65 @@ def main(argv=None):
         blast_df = blast_df.sort_values("bitscore", ascending=False).drop_duplicates("query")
 
         # Extract the species name from the subject column
-        blast_df["species"] = blast_df["subject"].str.split(" ").str[1]
+        blast_df["species"] = blast_df["subject"].str.split("|").str[-1]
 
-        # TODO:  Split up the sample names into sample, cluster, iteration
+        #  Split up the sample names into sample, cluster, step
+        blast_df[["sample", "cluster", "step", "remaining"]] = blast_df["query"].str.split("_", n=3, expand=True)
+        blast_df.drop(columns=["remaining", "query"], inplace=True)
+        blast_df["step"] = blast_df["step"].str.split(".").str[0]
+
+        # Reorder the columns
+        blast_df = blast_df[
+            [
+                "sample",
+                "cluster",
+                "step",
+                "species",
+                "subject",
+                "pident",
+                "qlen",
+                "length",
+                "mismatch",
+                "gapopen",
+                "qstart",
+                "qend",
+                "sstart",
+                "send",
+                "evalue",
+                "bitscore",
+            ]
+        ]
 
         # Write the dataframe to a file
-        write_tsv_file_with_comments(blast_df, "blast_mqc.tsv", header_blast)
+        write_tsv_file_with_comments(blast_df, "summary_blast_mqc.tsv", header_blast)
+
+    # Multiqc output yml files
+    if args.multiqc_dir:
+        # Check if the given files exist
+        check_file_exists([args.multiqc_dir])
+
+        # Read the multiqc data yml files
+        multiqc_data = [file for file in args.multiqc_dir.glob("multiqc_data/*.yml")]
+
+        # Files of interest Sample:
+        files_of_interest = [
+            "fastqc",
+            "fastp",
+            "trimmomatic",
+            "trim_galore",
+            "kraken2",
+            "kraken2_report",
+        ]
+
+        # Files of interest contigs:
+        files_of_interest = [
+            "samtools_stats",
+            "samtools_idxstats",
+            "samtools_flagstat",
+        ]
+
+        # Write the dataframe to a file
+        write_tsv_file_with_comments(multiqc_output_df, "multiqc_output_mqc.tsv", [])
 
     return 0
 
