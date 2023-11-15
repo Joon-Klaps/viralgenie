@@ -124,6 +124,7 @@ def main(argv=None):
     logging.basicConfig(level=args.log_level, format="[%(levelname)s] %(message)s")
 
     # Cluster summaries
+    clusters_summary_df = pd.DataFrame()
     if args.clusters_summary:
         header_cluster_summary = f"{args.header_dir}/clusters_summary_mqc.txt"
         # Check if the given files exist
@@ -147,6 +148,7 @@ def main(argv=None):
         write_tsv_file_with_comments(clusters_summary_df, "summary_clusters_mqc.tsv", header_cluster_summary)
 
     # Sample metadata
+    sample_metadata_df = pd.DataFrame()
     if args.sample_metadata:
         header_sample_metadata = f"{args.header_dir}/sample_metadata_mqc.txt"
 
@@ -269,20 +271,42 @@ def main(argv=None):
             "fastqc",
             "fastp",
             "trimmomatic",
-            "trim_galore",
+            "bowtie2",
+            "bbduk",
             "kraken2",
-            "kraken2_report",
+            "general_stats",
+            "sample_metadata",
+            "kajiu",
         ]
+        # Filter the for the files of interest for samples
+        sample_files = [file for file in multiqc_data if any(x in file.stem for x in files_of_interest)]
 
-        # Files of interest contigs:
-        files_of_interest = [
-            "samtools_stats",
-            "samtools_idxstats",
-            "samtools_flagstat",
-        ]
+        # Read in the files
+        multiqc_samples_df = pd.DataFrame()
+        for file in sample_files:
+            with open(file, "r") as stream:
+                try:
+                    data = yaml.safe_load(stream)
+                    df_file = pd.DataFrame()
+                    for key, value in data.items():
+                        df = pd.DataFrame.from_dict(value)
+                        df["sample"] = key
+                        df["file"] = file.stem
+                        df_file = df_file.concat(df)
+                    multiqc_samples_df = multiqc_samples_df.concat(df_file)
+                except yaml.YAMLError as exc:
+                    print(exc)
+        write_tsv_file_with_comments(multiqc_samples_df, "multiqc_output_mqc.tsv", [])
+
+        # # Files of interest contigs:
+        # files_of_interest = [
+        #     "samtools_stats",
+        #     "samtools_idxstats",
+        #     "samtools_flagstat",
+        # ]
 
         # Write the dataframe to a file
-        write_tsv_file_with_comments(multiqc_output_df, "multiqc_output_mqc.tsv", [])
+        # write_tsv_file_with_comments(multiqc_samples_df, "multiqc_output_mqc.tsv", [])
 
     return 0
 
