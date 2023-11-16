@@ -2,4 +2,4 @@
 # section_name: 'Sample metadata'
 # format: 'tsv'
 # description: 'Sample metadata provided through the parameter --metadata'
-# plot_type: 'table'
+# plot_type: 'generalstats'

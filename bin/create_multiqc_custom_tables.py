@@ -267,6 +267,7 @@ def main(argv=None):
         multiqc_data = [file for file in args.multiqc_dir.glob("multiqc_data/*.yml")]
 
         # Files of interest Sample:
+        # TODO: For samples, this is reinventing the wheel, no need to do this, just add to the multiqc general stats table
         files_of_interest = [
             "fastqc",
             "fastp",

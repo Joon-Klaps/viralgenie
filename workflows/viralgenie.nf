@@ -90,7 +90,8 @@ include { CONSENSUS_QC                    } from '../subworkflows/local/consensu
 
 // Report generation
 include { CREATE_MULTIQC_TABLES           } from '../modules/local/create_multiqc_tables'
-include { MULTIQC                         } from '../modules/nf-core/multiqc/main'
+include { MULTIQC as MULTIQC_DATAPREP     } from '../modules/nf-core/multiqc/main'
+include { MULTIQC as MULTIQC_REPORT       } from '../modules/nf-core/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS     } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 
 /*
@@ -421,13 +422,23 @@ workflow VIRALGENIE {
 
     }
 
+    MULTIQC_DATAPREP (
+        ch_multiqc_files.collect(),
+        ch_multiqc_config.toList(),
+        ch_multiqc_custom_config.toList(),
+        ch_multiqc_logo.toList(),
+    )
+
+    multiqc_data = MULTIQC_DATAPREP.out.data.ifEmpty([])
+
     // Prepare MULTIQC custom tables
     CREATE_MULTIQC_TABLES (
             ch_multiqc_headers,
             ch_clusters_summary,
             ch_metadata,
             ch_checkv_summary,
-            ch_blast_summary
+            ch_blast_summary,
+            multiqc_data
             )
     ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.summary_clusters_mqc.ifEmpty([]))
     ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.sample_metadata_mqc.ifEmpty([]))
@@ -453,13 +464,13 @@ workflow VIRALGENIE {
     ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml'))
 
-    MULTIQC (
+    MULTIQC_REPORT (
         ch_multiqc_files.collect(),
         ch_multiqc_config.toList(),
         ch_multiqc_custom_config.toList(),
         ch_multiqc_logo.toList()
     )
-    multiqc_report = MULTIQC.out.report.toList()
+    multiqc_report = MULTIQC_REPORT.out.report.toList()
 }
 
 /*
