@@ -12,6 +12,7 @@ process CREATE_MULTIQC_TABLES {
     path sample_metadata
     path checkv_files, stageAs: "?/*"
     path blast_files, stageAs: "?/*"
+    path multiqc_dir
 
     output:
     path("summary_clusters_mqc.tsv")    , emit: summary_clusters_mqc, optional: true
@@ -30,6 +31,7 @@ process CREATE_MULTIQC_TABLES {
     def sample_metadata        = sample_metadata        ? "--sample_metadata ${sample_metadata}"                   : ''
     def checkv_files           = checkv_files           ? "--checkv_files ${checkv_files.join(' ')}"               : ''
     def blast_files            = blast_files            ? "--blast_files ${blast_files.join(' ')}"                 : ''
+    def multiqc_dir            = multiqc_dir            ? "--multiqc_dir ${multiqc_dir}"                           : ''
 
     """
     create_multiqc_custom_tables.py\\
@@ -39,12 +41,14 @@ process CREATE_MULTIQC_TABLES {
         $sample_metadata \\
         $checkv_files \\
         $blast_files \\
+        $multiqc_dir
 
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         python: \$(python --version | sed 's/Python //g')
         pandas: \$(pip show pandas | grep Version | sed 's/Version: //g')
+        yaml: \$(pip show pyyaml | grep Version | sed 's/Version: //g')
     END_VERSIONS
     """
 
@@ -59,6 +63,7 @@ process CREATE_MULTIQC_TABLES {
     "${task.process}":
         python: \$(python --version | sed 's/Python //g')
         pandas: \$(pip show pandas | grep Version | sed 's/Version: //g')
+        yaml: \$(pip show pyyaml | grep Version | sed 's/Version: //g')
     END_VERSIONS
     """
 }
