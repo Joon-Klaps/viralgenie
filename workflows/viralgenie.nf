@@ -393,6 +393,7 @@ workflow VIRALGENIE {
     }
 
     ch_checkv_summary = Channel.empty()
+    ch_quast_summary  = Channel.empty()
     ch_blast_summary  = Channel.empty()
 
     if ( !params.skip_consensus_qc ) {
@@ -418,6 +419,7 @@ workflow VIRALGENIE {
         ch_versions       = ch_versions.mix(CONSENSUS_QC.out.versions)
         ch_multiqc_files  = ch_multiqc_files.mix(CONSENSUS_QC.out.mqc.collect{it[1]}.ifEmpty([]))
         ch_checkv_summary = CONSENSUS_QC.out.checkv_summary.collect{it[1]}.ifEmpty([])
+        ch_quast_summary  = CONSENSUS_QC.out.quast_summary.collect{it[1]}.ifEmpty([])
         ch_blast_summary  = CONSENSUS_QC.out.blast_txt.collect{it[1]}.ifEmpty([])
 
     }
@@ -437,6 +439,7 @@ workflow VIRALGENIE {
             ch_clusters_summary,
             ch_metadata,
             ch_checkv_summary,
+            ch_quast_summary,
             ch_blast_summary,
             multiqc_data
             )

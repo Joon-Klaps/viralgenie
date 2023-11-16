@@ -1,30 +1,43 @@
-general_stats:
-  - "BBDuk_mqc-generalstats-bbdu"
-  - "BBDuk_mqc-generalstats-bbdu"
-  - "BBDuk_mqc-generalstats-bbduk-Total_Removed_bases_percent"
-  - "BBDuk_mqc-generalstats-bbduk-Total_Removed_reads"
-  - "BBDuk_mqc-generalstats-bbduk-Total_Removed_reads_percent"
-  - "Bowtie2 (Host-removal)_mqc-generalstats-bowtie2_host_removal-overall_alignment_rate"
-  - "FastQC (post-Trimming)_mqc-generalstats-fastqc_post_trimming-avg_sequence_length"
-  - "FastQC (post-Trimming)_mqc-generalstats-fastqc_post_trimming-median_sequence_length"
-  - "FastQC (post-Trimming)_mqc-generalstats-fastqc_post_trimming-percent_duplicates"
-  - "FastQC (post-Trimming)_mqc-generalstats-fastqc_post_trimming-percent_fails"
-  - "FastQC (post-Trimming)_mqc-generalstats-fastqc_post_trimming-percent_gc"
-  - "FastQC (post-Trimming)_mqc-generalstats-fastqc_post_trimming-total_sequences"
-  - "FastQC (pre-Trimming)_mqc-generalstats-fastqc_pre_trimming-avg_sequence_length"
-  - "FastQC (pre-Trimming)_mqc-generalstats-fastqc_pre_trimmin"
-  - "FastQC (pre-Trimming)_mqc-generalstats-fastqc_pre_trimming-percent_duplicates"
-  - "FastQC (pre-Trimming)_mqc-generalstats-fastqc_pre_trimming-percent_fails"
-  - "FastQC (pre-Trimming)_mqc-generalstats-fastqc_pre_trimming-percent_gc"
-  - "FastQC (pre-Trimming)_mqc-generalstats-fastqc_pre_trimming-total_sequences"
-  - "Quast (Megahit)_mqc-generalstats-quast_megahit-N50"
-  - "Quast (Megahit)_mqc-generalstats-quast_megahit-Total_length"
-  - "Quast (Spades)_mqc-generalstats-quast_spades-N50"
-  - "Quast (Spades)_mqc-generalstats-quast_spades-Total_length"
-  - "fastp_mqc-generalstats-fastp-after_filtering_gc_content"
-  - "fastp_mqc-generalstats-fastp-after_filtering_q30_bases"
-  - "fastp_mqc-generalstats-fastp-after_filtering_q30_rate"
-  - "fastp_mqc-generalstats-fastp-filtering_result_passed_filter_reads"
-  - "fastp_mqc-generalstats-fastp-pct_adapter"
-  - "fastp_mqc-generalstats-fastp-pct_duplication"
-  - "fastp_mqc-generalstats-fastp-pct_surviving"
+umitools:
+  - input_reads
+  - removed_reads
+  - output_reads
+  - positions_deduplicated
+  - max_umi_per_pos
+  - mean_umi_per_pos
+  - total_umis
+  - percent_passing_dedup
+  - unique_umis
+samtools_stats:
+  - sequences
+  - reads_paired_percent
+  - average_length
+  - is_sorted
+  - bases_mapped_(cigar)
+  - reads_QC_failed_percent
+  - reads_unmapped
+  - reads_unmapped_percent
+  - reads_properly_paired_percent
+  - average_quality
+  - reads_paired
+  - non-primary_alignments
+  - supplementary_alignments
+  - reads_mapped
+  - reads_mapped_percent
+  - bases_trimmed
+  - bases_duplicated
+  - reads_properly_paired
+  - outward_oriented_pairs
+  - reads_duplicated
+  - reads_duplicated_percent
+  - bases_mapped
+  - insert_size_average
+  - insert_size_standard_deviation
+  - inward_oriented_pairs
+  - error_rate
+  - mismatches
+  - reads_MQ0
+  - total_length
+  - reads_QC_failed
+mosdepth:
+  -

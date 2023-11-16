@@ -8,25 +8,23 @@ export_plots: true
 max_table_rows: 100000
 
 report_section_order:
-  sample_metadata:
-    order: 1000
   samples_without_contigs:
-    after: sample_metadata
-    before: samples_without_blast_hits
+    order: 998
   samples_without_blast_hits:
-    after: sample_metadata
-    before: failed_contig_quality
+    order: 999
   failed_contig_quality:
-    after: sample_metadata
-    before: failed_mapped
+    before: summary_contigs
   failed_mapped:
-    after: sample_metadata
+    before: summary_contigs
   "viralgenie-methods-description":
     order: -1000
   software_versions:
     order: -1001
   "Joon-Klaps-viralgenie-summary":
     order: -1002
+
+use_filename_as_sample_name:
+  - fastp
 
 run_modules:
   - custom_content
@@ -37,7 +35,9 @@ run_modules:
   - umitools
   - bowtie2
   - kaiju
+  - mosdepth
   - kraken
+  - bracken
   - quast
   - samtools
   - bcftools
@@ -59,29 +59,16 @@ module_order:
       name: "Bowtie2 (Host-removal)"
       path_filters:
         - "*_host*"
-  # Broken in Multiqc 1.17
-  # - "kraken":
-  #     name: "Kraken2"
-  #     path_filters:
-  #       - "*kraken2.kraken2.report.txt"
-  # - "kraken":
-  #     name: "Bracken"
-  #     anchor: "bracken"
-  #     doi: "10.7717/peerj-cs.104"
-  #     info: "Estimates species abundances in metagenomics samples by probabilistically re-distributing reads in the taxonomic tree."
-  #     extra: "ℹ️: plot title will say Kraken2 due to the first step of bracken producing the same output format as Kraken. Abundance information is currently not supported in MultiQC."
-  #     path_filters:
-  #       - "*bracken.kraken2.report.txt"
+  - "kraken":
+      name: "Kraken2"
+      path_filters:
+        - "*kraken2.kraken2.report.txt"
+  - "bracken":
+      name: "Bracken"
+      path_filters:
+        - "*bracken.kraken2.report.txt"
   - "kaiju":
       name: "Kaiju"
-  - "samtools":
-      name: "Samtools Stats"
-  - "bcftools":
-      name: "Bcftools Stats"
-  - "picard":
-      name: "Picard MarkDuplicates"
-  - "umitools":
-      name: "UMI-tools deduplication"
   - "quast":
       name: "Quast (Spades)"
       anchor: "quast"
@@ -97,12 +84,16 @@ module_order:
       anchor: "quast"
       path_filters:
         - "*_trinity.tsv"
+  - "samtools":
+      name: "Samtools Stats"
+  - "bcftools":
+      name: "Bcftools Stats"
+  - "picard":
+      name: "Picard MarkDuplicates"
+  - "umitools":
+      name: "UMI-tools deduplication"
+  - "mosdepth"
   - "custom_content"
-
-# TODO: Include the custom assembly table to compare assemblies tools
-# custom_plot_config:
-#   general_stats_table:
-#     hidden: false
 
 # Summary table names
 table_columns_name:
@@ -150,8 +141,16 @@ table_columns_visible:
     percent_gc: True
     percent_duplicates: True
     percent_fails: True
+  Bowtie2 (Host-removal):
+    overall_alignment_rate: True
   Samtools Stats: False
   Picard MarkDuplicates: False
+  UMI-tools deduplication: False
+  mosdepth: False
+  BBduk:
+    Total Removed bases percent: False
+    Total Removed reads percent: True
+    Total Removed reads: True
   Quast (Spades):
     N50: True
     L50: False
@@ -167,10 +166,47 @@ table_columns_visible:
     L50: False
     Largest contig: True
     Total length: False
-  Clusters summary:
-    "# Clusters": True
-    "Average cluster size": True
-    "Number of singletons": True
+
+# TODO
+# TRIED Give them all negative numbers so all columns from sample metadata are displayed first
+table_columns_placement:
+  FastQC (pre-Trimming):
+    total_sequences: 500
+    avg_sequence_length: 501
+    percent_gc: 502
+    percent_duplicates: 503
+    percent_fails: 504
+  FastQC (post-Trimming):
+    total_sequences: 505
+    avg_sequence_length: 506
+    percent_gc: 507
+    percent_duplicates: 508
+    percent_fails: 509
+  Bowtie2 (Host-removal):
+    overall_alignment_rate: 510
+  BBDuk:
+    Total Removed bases percent: 510
+    Total Removed reads percent: 510
+    Total Removed reads: 510
+  Quast (Spades):
+    N50: 511
+    L50: 512
+    Largest contig: 513
+    Total length: 514
+  Quast (Megahit):
+    N50: 515
+    L50: 516
+    Largest contig: 517
+    Total length: 518
+  Quast (Trinity):
+    N50: 519
+    L50: 520
+    Largest contig: 521
+    Total length: 522
+  "Custom content: clusters_summary":
+    "# Clusters": 523
+    "Average cluster size": 523
+    "Number of singletons": 523
 
 section_comments:
   general_stats: "By default, all read count columns are displayed as millions (M) of reads."

@@ -11,6 +11,7 @@ process CREATE_MULTIQC_TABLES {
     path clusters_summary_files, stageAs: "?/*"
     path sample_metadata
     path checkv_files, stageAs: "?/*"
+    path quast_files, stageAs: "?/*"
     path blast_files, stageAs: "?/*"
     path multiqc_dir
 
@@ -18,6 +19,7 @@ process CREATE_MULTIQC_TABLES {
     path("summary_clusters_mqc.tsv")    , emit: summary_clusters_mqc, optional: true
     path("sample_metadata_mqc.tsv")     , emit: sample_metadata_mqc , optional: true
     path("summary_checkv_mqc.tsv")      , emit: summary_checkv_mqc  , optional: true
+    path("summary_quast_mqc.tsv")       , emit: summary_quast_mqc   , optional: true
     path("summary_blast_mqc.tsv")       , emit: summary_blast_mqc   , optional: true
     path "versions.yml"                 , emit: versions
 
@@ -30,6 +32,7 @@ process CREATE_MULTIQC_TABLES {
     def clusters_summary_files = clusters_summary_files ? "--clusters_summary ${clusters_summary_files.join(' ')}" : ''
     def sample_metadata        = sample_metadata        ? "--sample_metadata ${sample_metadata}"                   : ''
     def checkv_files           = checkv_files           ? "--checkv_files ${checkv_files.join(' ')}"               : ''
+    def quast_files            = quast_files            ? "--quast_files ${quast_files.join(' ')}"                 : ''
     def blast_files            = blast_files            ? "--blast_files ${blast_files.join(' ')}"                 : ''
     def multiqc_dir            = multiqc_dir            ? "--multiqc_dir ${multiqc_dir}"                           : ''
 
@@ -40,6 +43,7 @@ process CREATE_MULTIQC_TABLES {
         $clusters_summary_files \\
         $sample_metadata \\
         $checkv_files \\
+        $quast_files \\
         $blast_files \\
         $multiqc_dir
 

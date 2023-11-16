@@ -73,6 +73,23 @@ def parse_args(argv=None):
     )
 
     parser.add_argument(
+        "--quast_files",
+        metavar="QUAST FILES",
+        nargs="+",
+        help="Quast summary files for each sample",
+        type=Path,
+    )
+
+    parser.add_argument(
+        "--save_intermediate",
+        metavar="SAVE INTERMEDIATE FILES",
+        type=bool,
+        nargs="?",
+        const=True,
+        default=False,
+    )
+
+    parser.add_argument(
         "--multiqc_dir",
         metavar="MULTIQC DIR",
         help="Multiqc directory where the multiqc files will be used to create the custom tables for multiqc",
@@ -110,6 +127,16 @@ def concat_table_files(table_files, **kwargs):
     return df
 
 
+def read_in_quast(table_files):
+    """Concatenate all the cluster summary files into a single dataframe."""
+    df = pd.DataFrame()
+    for file in table_files:
+        with open(file, "r") as f:
+            d = dict(line.strip().split("\t") for line in f)
+        df = pd.concat([df, pd.DataFrame.from_dict(d, orient="index").T])
+    return df
+
+
 def write_tsv_file_with_comments(df, file, comment):
     df_tsv = df.to_csv(sep="\t", index=False)
     with open(file, "w") as f:
@@ -133,15 +160,6 @@ def main(argv=None):
 
         # Read the header file
         header_cluster_summary = read_header_file(header_cluster_summary)
-
-        # append comments cluster summary to header
-        comments_cluster_summary = [
-            "# pconfig:",
-            "#    id: 'clusters_summary'",
-            "#    namespace: 'Clusters summary (" + args.cluster_method + ")'",
-            "#    table_title: 'Clusters summary (" + args.cluster_method + ")'",
-        ]
-        header_cluster_summary.extend(comments_cluster_summary)
 
         # Concatenate all the cluster summary files into a single dataframe
         clusters_summary_df = concat_table_files(args.clusters_summary)
@@ -191,7 +209,30 @@ def main(argv=None):
         ]
 
         # Write the dataframe to a file
-        write_tsv_file_with_comments(checkv_df, "summary_checkv_mqc.tsv", header_checkv)
+        if args.save_intermediate:
+            write_tsv_file_with_comments(checkv_df, "summary_checkv_mqc.tsv", header_checkv)
+
+    if args.quast_files:
+        # Check if the given files exist
+        check_file_exists(args.quast_files)
+
+        # Read the header file
+        header_quast = []
+
+        # Read the quast summary files & transpose
+        quast_df = read_in_quast(args.quast_files)
+
+        # Split up the sample names into sample, cluster, step
+        quast_df[["sample", "cluster", "step"]] = quast_df["Assembly"].str.split("_", n=2, expand=True)
+        quast_df.drop(columns=["Assembly"], inplace=True)
+        quast_df["step"] = quast_df["step"].str.split(".").str[0]
+
+        # Most of the columns are not good for a single contig evaluation
+        quast_df = quast_df[["sample", "cluster", "step", "# N's per 100 kbp"]]
+
+        # Write the dataframe to a file
+        if args.save_intermediate:
+            write_tsv_file_with_comments(quast_df, "summary_quast_mqc.tsv", header_quast)
 
     # Blast summary
     if args.blast_files:
@@ -256,7 +297,8 @@ def main(argv=None):
         ]
 
         # Write the dataframe to a file
-        write_tsv_file_with_comments(blast_df, "summary_blast_mqc.tsv", header_blast)
+        if args.save_intermediate:
+            write_tsv_file_with_comments(blast_df, "summary_blast_mqc.tsv", header_blast)
 
     # Multiqc output yml files
     if args.multiqc_dir:
@@ -266,11 +308,10 @@ def main(argv=None):
         # Read the multiqc data yml files
         multiqc_data = [file for file in args.multiqc_dir.glob("multiqc_data/*.yml")]
 
-        # Files of interest Sample:
-        # TODO: For samples, this is reinventing the wheel, no need to do this, just add to the multiqc general stats table
+        # Files of interest Contigs:
         files_of_interest = [
-            "fastqc",
-            "fastp",
+            "samtools_stats",
+            "umitools",
             "trimmomatic",
             "bowtie2",
             "bbduk",
@@ -279,7 +320,7 @@ def main(argv=None):
             "sample_metadata",
             "kajiu",
         ]
-        # Filter the for the files of interest for samples
+        # Filter the for the files of interest for contigs
         sample_files = [file for file in multiqc_data if any(x in file.stem for x in files_of_interest)]
 
         # Read in the files

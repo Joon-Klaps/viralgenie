@@ -1,5 +1,6 @@
 include { SAMTOOLS_INDEX                } from '../../modules/nf-core/samtools/index/main'
 include { PICARD_COLLECTMULTIPLEMETRICS } from '../../modules/nf-core/picard/collectmultiplemetrics/main'
+include { MOSDEPTH                      } from '../../modules/nf-core/mosdepth/main'
 include { BAM_STATS_SAMTOOLS            } from '../nf-core/bam_stats_samtools/main'
 
 workflow BAM_STATS_METRICS {
@@ -24,6 +25,14 @@ workflow BAM_STATS_METRICS {
 
     PICARD_COLLECTMULTIPLEMETRICS ( ch_sort_bam_bai, reference, [[:], []] )
     ch_versions  = ch_versions.mix(PICARD_COLLECTMULTIPLEMETRICS.out.versions)
+
+    ch_sort_bam_bai
+        .map{meta, bam, bai -> [meta, bam, bai, []]}
+        .set{ch_sort_bam_bai_bed}
+
+    MOSDEPTH(ch_sort_bam_bai_bed, reference)
+    ch_versions  = ch_versions.mix(MOSDEPTH.out.versions)
+    ch_multiqc   = ch_multiqc.mix(MOSDEPTH.out.global_txt)
 
     BAM_STATS_SAMTOOLS ( ch_sort_bam_bai, reference )
     ch_versions  = ch_versions.mix(BAM_STATS_SAMTOOLS.out.versions)
