@@ -158,6 +158,7 @@ workflow VIRALGENIE {
     ch_consensus_results_reads = Channel.empty()
     ch_clusters_summary        = Channel.empty()
     ch_clusters_tsv            = Channel.empty()
+    ch_aligned_raw_contigs     = Channel.empty()
 
     if (!params.skip_assembly) {
         // run different assemblers and combine contigs
@@ -205,7 +206,6 @@ workflow VIRALGENIE {
 
         ch_multiqc_files = ch_multiqc_files.mix(no_contigs.ifEmpty([]))
 
-        ch_aligned_raw_contigs = Channel.empty()
         if (!params.skip_polishing){
             // blast contigs against reference & identify clusters of (contigs & references)
             FASTA_BLAST_CLUST (
