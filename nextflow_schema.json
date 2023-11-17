@@ -251,6 +251,13 @@
                     "description": "Custom MultiQC yaml file containing HTML including a methods description.",
                     "fa_icon": "fas fa-cog"
                 },
+                "custom_table_headers": {
+                    "type": "string",
+                    "default": "${projectDir}/assets/custom_table_headers.yml",
+                    "fa_icon": "fas fa-heading",
+                    "description": "Custom yaml file contian g the table column names selection and new names.",
+                    "hidden": true
+                },
                 "validate_params": {
                     "type": "boolean",
                     "description": "Boolean whether to validate parameters against the schema at runtime",
@@ -708,7 +715,8 @@
                     "type": "string",
                     "default": "${projectDir}/assets/mqc_headers",
                     "fa_icon": "fas fa-heading",
-                    "description": "Directory containing the mutliqc headers for multiple tables like 'clusters_summary_mqc.txt', 'blast_mqc.txt', ..."
+                    "description": "Directory containing the mutliqc headers for multiple tables like 'clusters_summary_mqc.txt', 'blast_mqc.txt', ...",
+                    "hidden": true
                 },
                 "ivar_header": {
                     "type": "string",

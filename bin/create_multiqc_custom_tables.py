@@ -155,6 +155,38 @@ def write_tsv_file_with_comments(df, file, comment):
         f.write(df_tsv)
 
 
+def read_multiqc_data(directory, files_of_interest):
+    # Get all the multiqc data files
+    multiqc_data = [file for file in directory.glob("*.yaml")]
+
+    # Filter the for the files of interest for contigs
+    sample_files = [file for file in multiqc_data if any(x in file.stem for x in files_of_interest)]
+
+    print(sample_files)
+
+    # Read in the files
+    multiqc_samples_df = pd.DataFrame()
+
+    ## TODO: swap output to tsv, will be easier
+    # for file in sample_files:
+    #     with open(file, "r") as stream:
+    #         try:
+    #             data = yaml.safe_load(stream)
+    #             df_file = pd.DataFrame()
+    #             for key, value in data.items():
+    #                 df = pd.DataFrame.from_dict(value)
+    #                 df["sample"] = key
+    #                 df["file"] = file.stem
+    #                 df_file = df_file.concat(df)
+    #             multiqc_samples_df = multiqc_samples_df.concat(df_file)
+
+    #             print(multiqc_samples_df)
+    #         except yaml.YAMLError as exc:
+    #             print(exc)
+
+    return multiqc_samples_df
+
+
 def main(argv=None):
     """Coordinate argument parsing and program execution."""
     args = parse_args(argv)
@@ -210,7 +242,8 @@ def main(argv=None):
 
         # Split up the sample names into sample, cluster, step
         checkv_df[["sample", "cluster", "step", "remaining"]] = checkv_df["contig_id"].str.split("_", n=3, expand=True)
-        checkv_df.drop(columns=["remaining", "contig_id"], inplace=True)
+        checkv_df.drop(columns=["remaining"], inplace=True)
+        checkv_df = checkv_df.set_index("contig_id")
         checkv_df["step"] = checkv_df["step"].str.split(".").str[0]
 
         # Reorder the columns
@@ -237,7 +270,7 @@ def main(argv=None):
 
         # Split up the sample names into sample, cluster, step
         quast_df[["sample", "cluster", "step"]] = quast_df["Assembly"].str.split("_", n=2, expand=True)
-        quast_df.drop(columns=["Assembly"], inplace=True)
+        quast_df = quast_df.set_index("Assembly")
         quast_df["step"] = quast_df["step"].str.split(".").str[0]
 
         # Most of the columns are not good for a single contig evaluation
@@ -319,34 +352,17 @@ def main(argv=None):
         # Check if the given files exist
         check_file_exists([args.multiqc_dir])
 
-        # Read the multiqc data yml files
-        multiqc_data = [file for file in args.multiqc_dir.glob("multiqc_data/*.yml")]
-
-        # Files of interest Contigs:
+        # Files of interest contigs:
         files_of_interest = [
             "samtools_stats",
             "umitools",
-            "mosdepth",
+            "general_stats",
         ]
-        # Filter the for the files of interest for contigs
-        sample_files = [file for file in multiqc_data if any(x in file.stem for x in files_of_interest)]
 
-        # Read in the files
-        multiqc_samples_df = pd.DataFrame()
-        for file in sample_files:
-            with open(file, "r") as stream:
-                try:
-                    data = yaml.safe_load(stream)
-                    df_file = pd.DataFrame()
-                    for key, value in data.items():
-                        df = pd.DataFrame.from_dict(value)
-                        df["sample"] = key
-                        df["file"] = file.stem
-                        df_file = df_file.concat(df)
-                    multiqc_samples_df = multiqc_samples_df.concat(df_file)
-                except yaml.YAMLError as exc:
-                    print(exc)
-        write_tsv_file_with_comments(multiqc_samples_df, "multiqc_output_mqc.tsv", [])
+        # Read the multiqc data yml files
+        multiqc_contigs_df = read_multiqc_data(args.multiqc_dir, files_of_interest)
+
+        write_tsv_file_with_comments(multiqc_contigs_df, "multiqc_contigs_selection_mqc.tsv", [])
 
         # # Files of interest contigs:
         # files_of_interest = [
