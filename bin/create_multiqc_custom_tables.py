@@ -91,6 +91,13 @@ def parse_args(argv=None):
     )
 
     parser.add_argument(
+        "--table_headers",
+        metavar="TABLE HEADERS",
+        help="Yaml file with the table headers for the different tables that will be created",
+        type=Path,
+    )
+
+    parser.add_argument(
         "--multiqc_dir",
         metavar="MULTIQC DIR",
         help="Multiqc directory where the multiqc files will be used to create the custom tables for multiqc",
@@ -186,7 +193,8 @@ def main(argv=None):
         # Write the dataframe to a file
         write_tsv_file_with_comments(sample_metadata_df, "sample_metadata_mqc.tsv", header_sample_metadata)
 
-        # Checkv summary
+    # Checkv summary
+    checkv_df = pd.DataFrame()
     if args.checkv_files:
         header_checkv = f"{args.header_dir}/checkv_mqc.txt"
 
@@ -215,6 +223,8 @@ def main(argv=None):
         if args.save_intermediate:
             write_tsv_file_with_comments(checkv_df, "summary_checkv_mqc.tsv", header_checkv)
 
+    # Quast summary
+    quast_df = pd.DataFrame()
     if args.quast_files:
         # Check if the given files exist
         check_file_exists(args.quast_files)
@@ -238,6 +248,7 @@ def main(argv=None):
             write_tsv_file_with_comments(quast_df, "summary_quast_mqc.tsv", header_quast)
 
     # Blast summary
+    blast_df = pd.DataFrame()
     if args.blast_files:
         header_blast = f"{args.header_dir}/blast_mqc.txt"
 
@@ -315,13 +326,7 @@ def main(argv=None):
         files_of_interest = [
             "samtools_stats",
             "umitools",
-            "trimmomatic",
-            "bowtie2",
-            "bbduk",
-            "kraken2",
-            "general_stats",
-            "sample_metadata",
-            "kajiu",
+            "mosdepth",
         ]
         # Filter the for the files of interest for contigs
         sample_files = [file for file in multiqc_data if any(x in file.stem for x in files_of_interest)]

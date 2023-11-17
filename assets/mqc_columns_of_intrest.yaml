@@ -39,5 +39,10 @@ samtools_stats:
   - reads_MQ0
   - total_length
   - reads_QC_failed
-mosdepth:
-  -
+general_stats:
+  - mosdepth_mqc-generalstats-mosdepth-10_x_pc: "10X coverage"
+  - mosdepth_mqc-generalstats-mosdepth-1_x_pc: "1X coverage"
+  - mosdepth_mqc-generalstats-mosdepth-30_x_pc: "30X coverage"
+  - mosdepth_mqc-generalstats-mosdepth-50_x_pc: "50X coverage"
+  - mosdepth_mqc-generalstats-mosdepth-5_x_pc: "5X coverage"
+  - mosdepth_mqc-generalstats-mosdepth-median_coverage: "Median coverage"
