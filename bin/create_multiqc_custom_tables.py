@@ -4,6 +4,7 @@
 
 import argparse
 import logging
+import os
 import sys
 from pathlib import Path
 
@@ -112,6 +113,8 @@ def check_file_exists(files):
         if not Path(file).exists():
             logger.error(f"The given input file {file} was not found!")
             sys.exit(2)
+        if not os.stat(file).st_size > 0:
+            logger.warn(f"The given input file {file} is empty, it will not be used! ")
 
 
 def read_header_file(file_path):
@@ -123,7 +126,7 @@ def read_header_file(file_path):
 
 def concat_table_files(table_files, **kwargs):
     """Concatenate all the cluster summary files into a single dataframe."""
-    df = pd.concat([pd.read_csv(file, sep="\t", **kwargs) for file in table_files])
+    df = pd.concat([pd.read_csv(file, sep="\t", **kwargs) for file in table_files if os.stat(file).st_size > 0])
     return df
 
 
