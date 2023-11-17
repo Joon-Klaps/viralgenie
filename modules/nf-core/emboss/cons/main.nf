@@ -25,7 +25,7 @@ process EMBOSS_CONS {
     cons \\
         ${args} \\
         -name ${prefix} \\
-        -sequence ${fasta} \\
+        -sequence $fasta \\
         -outseq ${prefix}.fa \\
 
     cat <<-END_VERSIONS > versions.yml
