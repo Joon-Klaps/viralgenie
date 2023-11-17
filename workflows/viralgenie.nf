@@ -41,7 +41,6 @@ if (params.host_index       ) { ch_host_index = Channel.fromPath(params.host_ind
 if (params.contaminants     ) { ch_contaminants = file(params.contaminants)                        } else { ch_contaminants = []                                                    }
 if (params.spades_yml       ) { ch_spades_yml = file(params.spades_yml)                            } else { ch_spades_yml = []                                                      }
 if (params.spades_hmm       ) { ch_spades_hmm = file(params.spades_hmm)                            } else { ch_spades_hmm = []                                                      }
-if (params.multiqc_headers  ) { ch_multiqc_headers= file(params.multiqc_headers)                   } else { ch_multiqc_headers = []                                                     }
 
 def assemblers = params.assemblers ? params.assemblers.split(',').collect{ it.trim().toLowerCase() } : []
 
@@ -435,7 +434,6 @@ workflow VIRALGENIE {
 
     // Prepare MULTIQC custom tables
     CREATE_MULTIQC_TABLES (
-            ch_multiqc_headers,
             ch_clusters_summary,
             ch_metadata,
             ch_checkv_summary,

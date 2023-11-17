@@ -114,7 +114,7 @@ def check_file_exists(files):
             logger.error(f"The given input file {file} was not found!")
             sys.exit(2)
         if not os.stat(file).st_size > 0:
-            logger.warn(f"The given input file {file} is empty, it will not be used! ")
+            logger.warn(f"The given input file {file} is empty, it will not be used!")
 
 
 def read_header_file(file_path):
