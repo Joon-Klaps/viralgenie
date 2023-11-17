@@ -53,16 +53,13 @@ workflow CONSENSUS_QC  {
             }
             .set{ch_genome_collapsed_branch}
 
-        ch_genome_collapsed_branch.pass.view{it -> "PASSED: $it"}
-        ch_genome_collapsed_branch.fail.view{it -> "FAILED: $it"}
-
         MAFFT_PREPARE_QC (
             ch_genome_collapsed_branch.pass,
             [],
         )
         ch_versions = ch_versions.mix(MAFFT_PREPARE_QC.out.versions)
 
-        // Mix single sequences with the aligned ones
+        // Mix single sequences with the (multiple) aligned ones
         ch_genome_collapsed_branch
             .fail
             .mix(MAFFT_PREPARE_QC.out.fas)
@@ -87,6 +84,7 @@ workflow CONSENSUS_QC  {
             .map{ meta, scaffolds, contigs -> [contigs] }
             .set{addsequences}
 
+        ch_genome_collapsed_branch.view{it -> "BRANCHES: $it"}
         MAFFT_QC (
             scaffolds,
             addsequences,

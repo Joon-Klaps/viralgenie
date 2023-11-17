@@ -11,6 +11,10 @@ workflow ALIGN_COLLAPSE_CONTIGS {
 
     main:
 
+    ch_sequences = ch_references_members.map{ it -> [it[0], [it[1], it[2]]] }
+
+    CAT_CAT(ch_sequences)
+
     if (aligner == "mafft") {
         ch_references      = ch_references_members.map{ it -> [it[0], it[1]] }
         ch_members_no_meta = ch_references_members.map{ it -> it[2] }
@@ -22,9 +26,6 @@ workflow ALIGN_COLLAPSE_CONTIGS {
     }
 
     if (aligner == "muscle") {
-        ch_sequences = ch_references_members.map{ it -> [it[0], [it[1], it[2]]] }
-
-        CAT_CAT(ch_sequences)
 
         MUSCLE( CAT_CAT.out.file_out)
 
@@ -37,8 +38,9 @@ workflow ALIGN_COLLAPSE_CONTIGS {
     ch_versions = ch_versions.mix(EMBOSS_CONS.out.versions.first())
 
     emit:
-    consensus      = EMBOSS_CONS.out.consensus // channel: [ val(meta), [ fasta ] ]
-    aligned_fasta  = ch_align                  // channel: [ val(meta), [ fasta ] ]
-    versions       = ch_versions               // channel: [ versions.yml ]
+    consensus       = EMBOSS_CONS.out.consensus // channel: [ val(meta), [ fasta ] ]
+    aligned_fasta   = ch_align                  // channel: [ val(meta), [ fasta ] ]
+    unaligned_fasta = CAT_CAT.out.file_out      // channel: [ val(meta), [ fasta ] ]
+    versions        = ch_versions               // channel: [ versions.yml ]
 }
 

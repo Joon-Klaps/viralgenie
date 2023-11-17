@@ -158,7 +158,7 @@ workflow VIRALGENIE {
     ch_consensus_results_reads = Channel.empty()
     ch_clusters_summary        = Channel.empty()
     ch_clusters_tsv            = Channel.empty()
-    ch_aligned_raw_contigs     = Channel.empty()
+    ch_unaligned_raw_contigs     = Channel.empty()
 
     if (!params.skip_assembly) {
         // run different assemblers and combine contigs
@@ -267,8 +267,8 @@ workflow VIRALGENIE {
                 .mix( ch_singletons )
                 .set{ ch_consensus }
 
-            ch_aligned_raw_contigs = ALIGN_COLLAPSE_CONTIGS.out.aligned_fasta
-            ch_aligned_raw_contigs = ch_aligned_raw_contigs.mix( SINGLETON_FILTERING.out.renamed )
+            ch_unaligned_raw_contigs = ALIGN_COLLAPSE_CONTIGS.out.unaligned_fasta
+            ch_unaligned_raw_contigs = ch_unaligned_raw_contigs.mix( SINGLETON_FILTERING.out.renamed )
 
             // We want the meta from the reference channel to be used downstream as this is our varying factor
             // To do this we combine the channels based on sample
@@ -358,7 +358,7 @@ workflow VIRALGENIE {
             .set{ch_map_seq_anno_combined}
 
         // For QC we keep original sequence to compare to
-        ch_aligned_raw_contigs = ch_aligned_raw_contigs.mix(ch_map_seq_anno_combined)
+        ch_unaligned_raw_contigs = ch_unaligned_raw_contigs.mix(ch_map_seq_anno_combined)
 
         //rename fasta headers
         RENAME_FASTA_HEADER_CONSTRAIN (ch_map_seq_anno_combined,[])
@@ -409,7 +409,7 @@ workflow VIRALGENIE {
 
         CONSENSUS_QC(
             ch_consensus,
-            ch_aligned_raw_contigs,
+            ch_unaligned_raw_contigs,
             ch_checkv_db,
             ch_blast_db,
             params.skip_checkv,
