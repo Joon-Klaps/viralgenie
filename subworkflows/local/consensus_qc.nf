@@ -84,7 +84,6 @@ workflow CONSENSUS_QC  {
             .map{ meta, scaffolds, contigs -> [contigs] }
             .set{addsequences}
 
-        ch_genome_collapsed_branch.view{it -> "BRANCHES: $it"}
         MAFFT_QC (
             scaffolds,
             addsequences,
@@ -111,7 +110,6 @@ workflow CONSENSUS_QC  {
             blast_db
         )
     }
-
 
     emit:
     blast_txt = BLAST_BLASTN_QC.out.txt // channel: [ val(meta), [ txt ] ]
