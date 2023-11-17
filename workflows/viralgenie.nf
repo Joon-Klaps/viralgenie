@@ -205,6 +205,7 @@ workflow VIRALGENIE {
 
         ch_multiqc_files = ch_multiqc_files.mix(no_contigs.ifEmpty([]))
 
+        ch_aligned_raw_contigs = Channel.empty()
         if (!params.skip_polishing){
             // blast contigs against reference & identify clusters of (contigs & references)
             FASTA_BLAST_CLUST (
@@ -265,6 +266,9 @@ workflow VIRALGENIE {
                 .consensus
                 .mix( ch_singletons )
                 .set{ ch_consensus }
+
+            ch_aligned_raw_contigs = ALIGN_COLLAPSE_CONTIGS.out.aligned_fasta
+            ch_aligned_raw_contigs = ch_aligned_raw_contigs.mix( SINGLETON_FILTERING.out.renamed )
 
             // We want the meta from the reference channel to be used downstream as this is our varying factor
             // To do this we combine the channels based on sample
@@ -353,6 +357,9 @@ workflow VIRALGENIE {
                 }
             .set{ch_map_seq_anno_combined}
 
+        // For QC we keep original sequence to compare to
+        ch_aligned_raw_contigs = ch_aligned_raw_contigs.mix(ch_map_seq_anno_combined)
+
         //rename fasta headers
         RENAME_FASTA_HEADER_CONSTRAIN (ch_map_seq_anno_combined,[])
         ch_versions = ch_versions.mix(RENAME_FASTA_HEADER_CONSTRAIN.out.versions)
@@ -402,6 +409,7 @@ workflow VIRALGENIE {
 
         CONSENSUS_QC(
             ch_consensus,
+            ch_aligned_raw_contigs,
             ch_checkv_db,
             ch_blast_db,
             params.skip_checkv,

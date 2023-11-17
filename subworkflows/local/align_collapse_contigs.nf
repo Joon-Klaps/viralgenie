@@ -38,6 +38,7 @@ workflow ALIGN_COLLAPSE_CONTIGS {
 
     emit:
     consensus      = EMBOSS_CONS.out.consensus // channel: [ val(meta), [ fasta ] ]
-    versions = ch_versions                     // channel: [ versions.yml ]
+    aligned_fasta  = ch_align                  // channel: [ val(meta), [ fasta ] ]
+    versions       = ch_versions               // channel: [ versions.yml ]
 }
 
