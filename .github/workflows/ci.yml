@@ -63,7 +63,7 @@ jobs:
 
       - name: Run pipeline with complete test data
         run: |
-          nextflow run ${GITHUB_WORKSPACE} -profile test_full,docker --outdir ./results --max_cpus 4 --max_memory 16GB
+          nextflow run ${GITHUB_WORKSPACE} -profile test_full,docker --outdir ./results --max_cpus 4 --max_memory 15GB
 
   test_umi:
     name: Run pipeline with test umi data
