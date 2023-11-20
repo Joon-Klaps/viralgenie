@@ -713,7 +713,7 @@
                 },
                 "multiqc_comment_headers": {
                     "type": "string",
-                    "default": "${projectDir}/assets/mqc_headers",
+                    "default": "${projectDir}/assets/mqc_comment",
                     "fa_icon": "fas fa-heading",
                     "description": "Directory containing the mutliqc headers for multiple tables like 'clusters_summary_mqc.txt', 'blast_mqc.txt', ...",
                     "hidden": true

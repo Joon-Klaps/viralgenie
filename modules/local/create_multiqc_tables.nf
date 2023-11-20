@@ -17,6 +17,7 @@ process CREATE_MULTIQC_TABLES {
     output:
     path("summary_clusters_mqc.tsv")    , emit: summary_clusters_mqc, optional: true
     path("sample_metadata_mqc.tsv")     , emit: sample_metadata_mqc , optional: true
+    path("contigs_overview_mqc.tsv")    , emit: contigs_overview_mqc, optional: true
     path("summary_checkv_mqc.tsv")      , emit: summary_checkv_mqc  , optional: true
     path("summary_quast_mqc.tsv")       , emit: summary_quast_mqc   , optional: true
     path("summary_blast_mqc.tsv")       , emit: summary_blast_mqc   , optional: true

@@ -16,6 +16,8 @@ report_section_order:
     before: summary_contigs
   failed_mapped:
     before: summary_contigs
+  contig_overview:
+    before: samtools_stats
   "viralgenie-methods-description":
     order: -1000
   software_versions:

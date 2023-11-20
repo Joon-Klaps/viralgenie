@@ -1,0 +1,5 @@
+# id: 'contig_overview'
+# section_name: 'Clusters Table in Depth
+# format: 'tsv'
+# description: 'Concatenation information of multiple tools regarding the clusters and the different iterations of them'
+# plot_type: 'table'

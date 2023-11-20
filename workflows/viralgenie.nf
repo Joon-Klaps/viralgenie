@@ -443,8 +443,10 @@ workflow VIRALGENIE {
             )
     ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.summary_clusters_mqc.ifEmpty([]))
     ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.sample_metadata_mqc.ifEmpty([]))
+    ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.contigs_overview_mqc.ifEmpty([]))
     ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.summary_checkv_mqc.ifEmpty([]))
     ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.summary_blast_mqc.ifEmpty([]))
+    ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.summary_quast_mqc.ifEmpty([]))
     ch_versions      = ch_versions.mix(CREATE_MULTIQC_TABLES.out.versions)
 
     CUSTOM_DUMPSOFTWAREVERSIONS (

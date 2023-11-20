@@ -1,5 +1,3 @@
-picard_dups:
-  - picard_dups-CollectDuplicateMetrics-duplicates: "Duplicates"
 umitools:
   - input_reads
   - removed_reads
@@ -42,9 +40,9 @@ samtools_stats:
   - total_length
   - reads_QC_failed
 general_stats:
-  - mosdepth_mqc-generalstats-mosdepth-10_x_pc: "10X coverage"
-  - mosdepth_mqc-generalstats-mosdepth-1_x_pc: "1X coverage"
-  - mosdepth_mqc-generalstats-mosdepth-30_x_pc: "30X coverage"
-  - mosdepth_mqc-generalstats-mosdepth-50_x_pc: "50X coverage"
-  - mosdepth_mqc-generalstats-mosdepth-5_x_pc: "5X coverage"
-  - mosdepth_mqc-generalstats-mosdepth-median_coverage: "Median coverage"
+  - mosdepth_mqc-generalstats-mosdepth-10_x_pc: "mosdepth 10X coverage"
+  - mosdepth_mqc-generalstats-mosdepth-1_x_pc: "mosdepth 1X coverage"
+  - mosdepth_mqc-generalstats-mosdepth-30_x_pc: "mosdepth 30X coverage"
+  - mosdepth_mqc-generalstats-mosdepth-50_x_pc: "mosdepth 50X coverage"
+  - mosdepth_mqc-generalstats-mosdepth-5_x_pc: "mosdepth 5X coverage"
+  - mosdepth_mqc-generalstats-mosdepth-median_coverage: "mosdepth Median coverage"
