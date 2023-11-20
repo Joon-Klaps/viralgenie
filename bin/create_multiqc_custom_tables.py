@@ -409,6 +409,11 @@ def main(argv=None):
         multiqc_contigs_df = multiqc_contigs_df.join(quast_df, how="outer")
         multiqc_contigs_df = multiqc_contigs_df.join(blast_df, how="outer")
 
+        # If we are empty, just quit
+        if multiqc_contigs_df.shape[0] == 0:
+            logger.warning("No data was found to create the contig overview table!")
+            return 0
+
         # Keep only those rows we can split up in sample, cluster, step
         mqc_contigs_sel = multiqc_contigs_df.reset_index()
         mqc_contigs_sel = mqc_contigs_sel[mqc_contigs_sel["index"].str.contains("_")]
