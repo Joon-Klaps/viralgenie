@@ -711,7 +711,7 @@
                     "fa_icon": "fas fa-info",
                     "description": "calculate summary statistics in final iteration"
                 },
-                "multiqc_headers": {
+                "multiqc_comment_headers": {
                     "type": "string",
                     "default": "${projectDir}/assets/mqc_headers",
                     "fa_icon": "fas fa-heading",
@@ -720,7 +720,7 @@
                 },
                 "ivar_header": {
                     "type": "string",
-                    "default": "https://raw.githubusercontent.com/Joon-Klaps/viralgenie/dev/assets/multiqc_headers/ivar_variants_header_mqc.txt",
+                    "default": "https://raw.githubusercontent.com/Joon-Klaps/viralgenie/dev/assets/multiqc_comment_headers/ivar_variants_header_mqc.txt",
                     "hidden": true,
                     "fa_icon": "fas fa-heading"
                 }

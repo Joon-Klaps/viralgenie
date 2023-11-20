@@ -1,3 +1,5 @@
+picard_dups:
+  - picard_dups-CollectDuplicateMetrics-duplicates: "Duplicates"
 umitools:
   - input_reads
   - removed_reads

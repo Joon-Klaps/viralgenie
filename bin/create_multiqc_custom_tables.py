@@ -51,9 +51,9 @@ def parse_args(argv=None):
     )
 
     parser.add_argument(
-        "--header_dir",
-        metavar="MULTIQC HEADER DIR",
-        help="Directory with the multiqc header files that correspond to the different tables that will be created",
+        "--comment_dir",
+        metavar="MULTIQC COMMENT DIR",
+        help="Directory with the multiqc header files for table annotation that correspond to the different tables that will be created",
         type=Path,
     )
 
@@ -157,7 +157,7 @@ def write_tsv_file_with_comments(df, file, comment):
 
 def read_multiqc_data(directory, files_of_interest):
     # Get all the multiqc data files
-    multiqc_data = [file for file in directory.glob("*.yaml")]
+    multiqc_data = [file for file in directory.glob("*.txt")]
 
     # Filter the for the files of interest for contigs
     sample_files = [file for file in multiqc_data if any(x in file.stem for x in files_of_interest)]
@@ -167,22 +167,16 @@ def read_multiqc_data(directory, files_of_interest):
     # Read in the files
     multiqc_samples_df = pd.DataFrame()
 
-    ## TODO: swap output to tsv, will be easier
-    # for file in sample_files:
-    #     with open(file, "r") as stream:
-    #         try:
-    #             data = yaml.safe_load(stream)
-    #             df_file = pd.DataFrame()
-    #             for key, value in data.items():
-    #                 df = pd.DataFrame.from_dict(value)
-    #                 df["sample"] = key
-    #                 df["file"] = file.stem
-    #                 df_file = df_file.concat(df)
-    #             multiqc_samples_df = multiqc_samples_df.concat(df_file)
+    # Tsv's
+    for file in sample_files:
+        with open(file, "r") as table:
+            df = pd.read_csv(table, sep="\t")
+            df.set_index(df.columns[0], inplace=True)  # Set the first column as index
 
-    #             print(multiqc_samples_df)
-    #         except yaml.YAMLError as exc:
-    #             print(exc)
+            if multiqc_samples_df.empty:
+                multiqc_samples_df = df
+            else:
+                multiqc_samples_df = multiqc_samples_df.join(df)
 
     return multiqc_samples_df
 
@@ -195,7 +189,7 @@ def main(argv=None):
     # Cluster summaries
     clusters_summary_df = pd.DataFrame()
     if args.clusters_summary:
-        header_cluster_summary = f"{args.header_dir}/clusters_summary_mqc.txt"
+        header_cluster_summary = f"{args.comment_dir}/clusters_summary_mqc.txt"
         # Check if the given files exist
         check_file_exists(args.clusters_summary)
         check_file_exists([header_cluster_summary])
@@ -210,7 +204,7 @@ def main(argv=None):
     # Sample metadata
     sample_metadata_df = pd.DataFrame()
     if args.sample_metadata:
-        header_sample_metadata = f"{args.header_dir}/sample_metadata_mqc.txt"
+        header_sample_metadata = f"{args.comment_dir}/sample_metadata_mqc.txt"
 
         # Check if the given files exist
         check_file_exists([args.sample_metadata])
@@ -228,7 +222,7 @@ def main(argv=None):
     # Checkv summary
     checkv_df = pd.DataFrame()
     if args.checkv_files:
-        header_checkv = f"{args.header_dir}/checkv_mqc.txt"
+        header_checkv = f"{args.comment_dir}/checkv_mqc.txt"
 
         # Check if the given files exist
         check_file_exists(args.checkv_files)
@@ -283,7 +277,7 @@ def main(argv=None):
     # Blast summary
     blast_df = pd.DataFrame()
     if args.blast_files:
-        header_blast = f"{args.header_dir}/blast_mqc.txt"
+        header_blast = f"{args.comment_dir}/blast_mqc.txt"
 
         # Check if the given files exist
         check_file_exists(args.blast_files)
@@ -352,12 +346,19 @@ def main(argv=None):
         # Check if the given files exist
         check_file_exists([args.multiqc_dir])
 
-        # Files of interest contigs:
-        files_of_interest = [
-            "samtools_stats",
-            "umitools",
-            "general_stats",
-        ]
+        if args.table_headers:
+            check_file_exists([args.table_headers])
+            # Read the yaml column annotation file for the different tables
+            with open(args.table_headers, "r") as f:
+                header_multiqc = yaml.safe_load(f)
+            files_of_interest = list(header_multiqc.keys())
+        else:
+            # Files of interest contigs:
+            files_of_interest = [
+                "samtools_stats",
+                "umitools",
+                "general_stats",
+            ]
 
         # Read the multiqc data yml files
         multiqc_contigs_df = read_multiqc_data(args.multiqc_dir, files_of_interest)
