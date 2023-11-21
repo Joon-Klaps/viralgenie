@@ -161,7 +161,7 @@ def write_tsv_file_with_comments(df, file, comment):
 
 def read_multiqc_data(directory, files_of_interest):
     # Get all the multiqc data files
-    multiqc_data = [file for file in directory.glob("*.txt")]
+    multiqc_data = [file for file in directory.glob("multiqc_*.txt")]
 
     # Filter the for the files of interest for contigs
     sample_files = [file for file in multiqc_data if any(x in file.stem for x in files_of_interest)]
@@ -173,13 +173,16 @@ def read_multiqc_data(directory, files_of_interest):
     for file in sample_files:
         with open(file, "r") as table:
             df = pd.read_csv(table, sep="\t")
-            df.columns[0] = df.columns[0].str.split(".").str[0]
+            df[df.columns[0]] = df[df.columns[0]].str.split(".").str[0]
             df.set_index(df.columns[0], inplace=True)  # Set the first column as index
 
             if multiqc_samples_df.empty:
                 multiqc_samples_df = df
             else:
                 multiqc_samples_df = multiqc_samples_df.join(df, how="outer")
+        print(f"Read in {file}")
+        print(f"Shape of the dataframe: {multiqc_samples_df.shape}")
+        print(df)
     return multiqc_samples_df
 
 
@@ -417,8 +420,8 @@ def main(argv=None):
             return 0
 
         # Keep only those rows we can split up in sample, cluster, step
-        mqc_contigs_sel = multiqc_contigs_df.reset_index()
-        mqc_contigs_sel = mqc_contigs_sel[mqc_contigs_sel["index"].str.contains("_")]
+        mqc_contigs_sel = multiqc_contigs_df.reset_index().rename(columns={multiqc_contigs_df.index.name: "index"})
+        mqc_contigs_sel = mqc_contigs_sel[mqc_contigs_sel["index"].str.contains("_", na=False)]
         mqc_contigs_sel[["sample name", "cluster", "step"]] = mqc_contigs_sel["index"].str.split("_", n=3, expand=True)
 
         # Reorder the columns

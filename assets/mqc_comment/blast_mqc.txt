@@ -1,5 +1,5 @@
 # id: 'blast'
-# section_name: 'Blast'
+# section_name: 'CLUSTER: Blast'
 # format: 'tsv'
 # description: 'Overview of the identified clusters and their associated best hits in the provided reference pool'
 # plot_type: 'table'

@@ -1,4 +1,4 @@
 # id: 'quast_custom'
-# section_name: 'Quast Clusters '
+# section_name: 'CLUSTERS: Quast ambigous'
 # format: 'tsv'
 # description: 'Number of ambigous bases per 100kbp'

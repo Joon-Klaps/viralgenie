@@ -47,54 +47,58 @@ run_modules:
 
 module_order:
   - "fastqc":
-      name: "FastQC (pre-Trimming)"
+      name: "SAMPLE: FastQC (pre-Trimming)"
       path_filters:
         - "*_raw*fastqc.zip"
   - "fastqc":
-      name: "FastQC (post-Trimming)"
+      name: "SAMPLE: FastQC (post-Trimming)"
       path_filters:
         - "*_trim*fastqc.zip"
-  - "fastp"
-  - "trimmomatic"
-  - "bbduk"
+  - "fastp":
+      name: "SAMPLE: fastp"
+  - "trimmomatic":
+      name: "SAMPLE: trimmomatic"
+  - "bbduk":
+      name: "SAMPLE: bbduk"
   - "bowtie2":
-      name: "Bowtie2 (Host-removal)"
+      name: "SAMPLE: Bowtie2 (Host-removal)"
       path_filters:
         - "*_host*"
   - "kraken":
-      name: "Kraken2"
+      name: "SAMPLE: Kraken2"
       path_filters:
         - "*kraken2.kraken2.report.txt"
   - "bracken":
-      name: "Bracken"
+      name: "SAMPLE: Bracken"
       path_filters:
         - "*bracken.kraken2.report.txt"
   - "kaiju":
-      name: "Kaiju"
+      name: "SAMPLE: Kaiju"
   - "quast":
-      name: "Quast (Spades)"
+      name: "SAMPLE: Quast (Spades)"
       anchor: "quast"
       path_filters:
         - "*_spades.tsv"
   - "quast":
-      name: "Quast (Megahit)"
+      name: "SAMPLE: Quast (Megahit)"
       anchor: "quast"
       path_filters:
         - "*_megahit.tsv"
   - "quast":
-      name: "Quast (Trinity)"
+      name: "SAMPLE: Quast (Trinity)"
       anchor: "quast"
       path_filters:
         - "*_trinity.tsv"
   - "samtools":
-      name: "Samtools Stats"
+      name: "CLUSTER: Samtools Stats"
   - "bcftools":
-      name: "Bcftools Stats"
+      name: "CLUSTER: Bcftools Stats"
   - "picard":
-      name: "Picard MarkDuplicates"
+      name: "CLUSTER: Picard MarkDuplicates"
   - "umitools":
-      name: "UMI-tools deduplication"
-  - "mosdepth"
+      name: "CLUSTER: UMI-tools deduplication"
+  - "mosdepth":
+      name: "CLUSTER: mosdepth"
   - "custom_content"
 
 # Summary table names
@@ -236,3 +240,4 @@ extra_fn_clean_exts:
   - "_spades"
   - "_megahit"
   - "_trinity"
+  - ".filtered"
