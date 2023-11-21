@@ -54,6 +54,7 @@ workflow BAM_CALL_VARIANTS {
         ch_tbi      = VCF_TABIX_STATS.out.tbi
         ch_csi      = VCF_TABIX_STATS.out.csi
         ch_stats    = VCF_TABIX_STATS.out.stats
+        ch_multiqc  = ch_multiqc.mix(ch_stats)
 
         ch_versions = ch_versions.mix(VCF_TABIX_STATS.out.versions)
     }

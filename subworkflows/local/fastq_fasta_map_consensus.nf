@@ -94,6 +94,7 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
             get_stats
         )
         ch_versions   = ch_versions.mix(BAM_CALL_VARIANTS.out.versions.first())
+        ch_multiqc    = ch_multiqc.mix(BAM_CALL_VARIANTS.out.mqc.collect{it[1]}.ifEmpty([]))
         ch_vcf_filter = BAM_CALL_VARIANTS.out.vcf_filter
         ch_vcf        = BAM_CALL_VARIANTS.out.vcf
         ch_tbi        = BAM_CALL_VARIANTS.out.tbi

@@ -173,6 +173,7 @@ def read_multiqc_data(directory, files_of_interest):
     for file in sample_files:
         with open(file, "r") as table:
             df = pd.read_csv(table, sep="\t")
+            df.columns[0] = df.columns[0].str.split(".").str[0]
             df.set_index(df.columns[0], inplace=True)  # Set the first column as index
 
             if multiqc_samples_df.empty:

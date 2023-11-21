@@ -148,6 +148,7 @@ table_columns_visible:
   Samtools Stats: False
   Picard MarkDuplicates: False
   UMI-tools deduplication: False
+  bcftools_stats: False
   mosdepth: False
   BBduk:
     Total Removed bases percent: False
