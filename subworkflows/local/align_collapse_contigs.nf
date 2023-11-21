@@ -17,12 +17,12 @@ workflow ALIGN_COLLAPSE_CONTIGS {
 
     if (aligner == "mafft") {
         ch_references      = ch_references_members.map{ meta,centroid,members -> [meta, centroid] }
-        ch_members_no_meta = ch_references_members.map{ meta,centroid,members -> [meta, members] }
+        ch_members         = ch_references_members.map{ meta,centroid,members -> [meta, members] }
 
         MAFFT (
             ch_references,
             [[:],[]],
-            ch_members_no_meta,
+            ch_members,
             [[:],[]],
             [[:],[]],
             [[:],[]]
