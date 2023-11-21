@@ -224,14 +224,14 @@ def main(argv=None):
     # Checkv summary
     checkv_df = pd.DataFrame()
     if args.checkv_files:
-        header_checkv = []
+        header_checkv_list = []
         if args.comment_dir:
             header_checkv = f"{args.comment_dir}/checkv_mqc.txt"
             check_file_exists([header_checkv], throw_error=False)
             try:
-                header_checkv = read_header_file(header_checkv)
+                header_checkv_list = read_header_file(header_checkv)
             except:
-                header_checkv = []
+                header_checkv_list = []
 
         # Check if the given files exist
         check_file_exists(args.checkv_files)
@@ -255,7 +255,7 @@ def main(argv=None):
 
         # Write the dataframe to a file
         if args.save_intermediate:
-            write_tsv_file_with_comments(checkv_df, "summary_checkv_mqc.tsv", header_checkv)
+            write_tsv_file_with_comments(checkv_df, "summary_checkv_mqc.tsv", header_checkv_list)
 
         checkv_df.drop(columns=["sample", "cluster", "step"], inplace=True)
 
@@ -266,14 +266,14 @@ def main(argv=None):
         check_file_exists(args.quast_files)
 
         # Read the header file
-        header_quast = []
+        header_quast_list = []
         if args.comment_dir:
             header_quast = f"{args.comment_dir}/quast_mqc.txt"
             check_file_exists([header_quast], throw_error=False)
             try:
-                header_quast = read_header_file(header_quast)
+                header_quast_list = read_header_file(header_quast)
             except:
-                header_quast = []
+                header_quast_list = []
 
         # Read the quast summary files & transpose
         quast_df = read_in_quast(args.quast_files)
@@ -290,7 +290,7 @@ def main(argv=None):
 
         # Write the dataframe to a file
         if args.save_intermediate:
-            write_tsv_file_with_comments(quast_df.reset_index(), "summary_quast_mqc.tsv", header_quast)
+            write_tsv_file_with_comments(quast_df.reset_index(), "summary_quast_mqc.tsv", header_quast_list)
 
     # Blast summary
     blast_df = pd.DataFrame()
@@ -298,13 +298,14 @@ def main(argv=None):
         # Check if the given files exist
         check_file_exists(args.blast_files)
 
-        header_blast = []
+        header_blast_list = []
         if args.comment_dir:
             header_blast = f"{args.comment_dir}/blast_mqc.txt"
             check_file_exists([header_blast], throw_error=False)
-
-        # Read the header file
-        header_blast = read_header_file(header_blast)
+            try:
+                header_blast_list = read_header_file(header_blast)
+            except:
+                header_blast_list = []
 
         # Read the blast summary file
         blast_df = concat_table_files(args.blast_files, header=None)
@@ -343,7 +344,7 @@ def main(argv=None):
 
         # Write the dataframe to a file
         if args.save_intermediate:
-            write_tsv_file_with_comments(blast_df, "summary_blast_mqc.tsv", header_blast)
+            write_tsv_file_with_comments(blast_df, "summary_blast_mqc.tsv", header_blast_list)
 
         blast_df.drop(columns=["sample", "cluster", "step"], inplace=True)
 
@@ -410,7 +411,7 @@ def main(argv=None):
         multiqc_contigs_df = multiqc_contigs_df.join(blast_df, how="outer")
 
         # If we are empty, just quit
-        if multiqc_contigs_df.shape[0] == 0:
+        if multiqc_contigs_df.empty:
             logger.warning("No data was found to create the contig overview table!")
             return 0
 
