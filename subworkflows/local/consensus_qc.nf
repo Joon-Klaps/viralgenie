@@ -90,8 +90,8 @@ workflow CONSENSUS_QC  {
 
         MAFFT_QC (
             scaffolds,
-            [[:],[]],
             addsequences,
+            [[:],[]],
             [[:],[]],
             [[:],[]],
             [[:],[]],

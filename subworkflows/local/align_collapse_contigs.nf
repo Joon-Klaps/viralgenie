@@ -21,8 +21,8 @@ workflow ALIGN_COLLAPSE_CONTIGS {
 
         MAFFT (
             ch_references,
-            [[:],[]],
             ch_members,
+            [[:],[]],
             [[:],[]],
             [[:],[]],
             [[:],[]]
