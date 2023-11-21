@@ -5,10 +5,7 @@
 */
 
 def valid_params = [
-    trim_tool        : ['fastp', 'trimmomatic'],
-    assemblers       : ['spades', 'trinity', 'megahit'],
-    spades_modes     : ['rnaviral', 'corona', 'metaviral', 'meta', 'metaplasmid', 'plasmid', 'isolate', 'rna', 'bio'],
-    cluster_method   : ['cdhitest', 'vsearch']
+    spades_modes     : ['rnaviral', 'corona', 'metaviral', 'meta', 'metaplasmid', 'plasmid', 'isolate', 'rna', 'bio']
 ]
 
 include { paramsSummaryLog; paramsSummaryMap; fromSamplesheet } from 'plugin/nf-validation'

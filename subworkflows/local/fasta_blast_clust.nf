@@ -130,9 +130,7 @@ workflow FASTA_BLAST_CLUST {
         )
         ch_versions = ch_versions.mix(MMSEQS_CREATETSV.out.versions.first())
 
-
-
-        ch_clusters = MMSEQS_CLUSTER.out.db_cluster
+        ch_clusters = MMSEQS_CREATETSV.out.tsv
     }
 
     CLUST_SEQ_EXTRACT(
