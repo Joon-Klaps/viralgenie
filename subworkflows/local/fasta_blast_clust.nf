@@ -115,12 +115,9 @@ workflow FASTA_BLAST_CLUST {
         ch_versions = ch_versions.mix(CDHIT_CDHITEST.out.versions.first())
     }
     else if (cluster_method == "mmseqs") {
-        MMSEQS_CREATEDB(CAT_CAT.out.file_out)
+        MMSEQS_CREATEDB ( CAT_CAT.out.file_out )
         ch_versions = ch_versions.mix(MMSEQS_CREATEDB.out.versions.first())
-        MMSEQS_CLUSTER (
-            fasta,
-            MMSEQS_CREATEDB.out.db
-        )
+        MMSEQS_CLUSTER ( MMSEQS_CREATEDB.out.db )
         ch_versions = ch_versions.mix(MMSEQS_CLUSTER.out.versions.first())
 
         MMSEQS_CREATETSV (
