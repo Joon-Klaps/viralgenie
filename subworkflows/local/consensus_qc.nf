@@ -55,7 +55,11 @@ workflow CONSENSUS_QC  {
 
         MAFFT_PREPARE_QC (
             ch_genome_collapsed_branch.pass,
-            [],
+            [[:],[]],
+            [[:],[]],
+            [[:],[]],
+            [[:],[]],
+            [[:],[]]
         )
         ch_versions = ch_versions.mix(MAFFT_PREPARE_QC.out.versions)
 
@@ -81,12 +85,16 @@ workflow CONSENSUS_QC  {
             .map{ meta, scaffolds, contigs -> [meta, scaffolds] }
             .set{scaffolds}
         ch_genome_collapsed_branch
-            .map{ meta, scaffolds, contigs -> [contigs] }
+            .map{ meta, scaffolds, contigs -> [meta,contigs] }
             .set{addsequences}
 
         MAFFT_QC (
             scaffolds,
+            [[:],[]],
             addsequences,
+            [[:],[]],
+            [[:],[]],
+            [[:],[]],
         )
         ch_versions = ch_versions.mix(MAFFT_QC.out.versions)
     }

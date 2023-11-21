@@ -16,10 +16,17 @@ workflow ALIGN_COLLAPSE_CONTIGS {
     CAT_CAT(ch_sequences)
 
     if (aligner == "mafft") {
-        ch_references      = ch_references_members.map{ it -> [it[0], it[1]] }
-        ch_members_no_meta = ch_references_members.map{ it -> it[2] }
+        ch_references      = ch_references_members.map{ meta,centroid,members -> [meta, centroid] }
+        ch_members_no_meta = ch_references_members.map{ meta,centroid,members -> [meta, members] }
 
-        MAFFT ( ch_references, ch_members_no_meta )
+        MAFFT (
+            ch_references,
+            [[:],[]],
+            ch_members_no_meta,
+            [[:],[]],
+            [[:],[]],
+            [[:],[]]
+            )
 
         ch_align    = MAFFT.out.fas
         ch_versions = MAFFT.out.versions.first()
