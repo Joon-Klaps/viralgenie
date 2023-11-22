@@ -53,7 +53,7 @@ workflow BAM_FLAGSTAT_FILTER {
 
     bam_fail
         .map { meta, bam, mapped_reads ->
-            ["$meta.id\t$meta.sample\t$meta.cluster_id\t$meta.step\t$mapped_reads"]
+            ["$meta.id\t$meta.sample\t$meta.cluster_id\t$meta.previous_step\t$mapped_reads"]
             }
         .collect()
         .map {

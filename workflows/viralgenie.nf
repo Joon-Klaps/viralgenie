@@ -315,10 +315,10 @@ workflow VIRALGENIE {
     // add last step to it
     ch_consensus_results_reads
         .map{ meta, fasta, fastq ->
-            [meta + [step: "variant-calling", iteration:'variant-calling'], fasta, fastq]
+            [meta + [step: "variant-calling", iteration:'variant-calling', previous_step: meta.step], fasta, fastq]
             }
         .set{ch_consensus_results_reads}
-
+ 
     if (params.mapping_sequence ) {
         ch_mapping_sequence = Channel.fromPath(params.mapping_sequence)
 
@@ -349,7 +349,8 @@ workflow VIRALGENIE {
                         step: "constrain",
                         constrain: true,
                         reads: reads,
-                        iteration: 'variant-calling'
+                        iteration: 'variant-calling',
+                        previous_step: 'None'
                         ]
                     return [new_meta, seq]
                 }
