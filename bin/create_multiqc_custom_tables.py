@@ -177,7 +177,7 @@ def get_files_and_columns_of_interest(table_headers):
     Get the files of interest and the columns of interest from the table headers file
     """
     if table_headers:
-        check_file_exists([table_headers])
+        check_file_exists(table_headers)
         # Read the yaml column annotation file for the different tables
         with open(table_headers, "r") as f:
             header_multiqc = yaml.safe_load(f)
@@ -219,6 +219,19 @@ def filter_and_rename_columns(df, columns_of_interest):
     return df
 
 
+def read_dataframe_from_file(file):
+    with open(file, "r") as table:
+        df = pd.read_csv(table, sep="\t")
+    return df
+
+
+def join_dataframes(df1, df2):
+    if df1.empty:
+        return df2
+    else:
+        return df1.join(df2, how="outer")
+
+
 def process_multiqc_dataframe(df):
     df[df.columns[0]] = df[df.columns[0]].str.split(".").str[0]
     df.set_index(df.columns[0], inplace=True)
@@ -226,11 +239,16 @@ def process_multiqc_dataframe(df):
 
 
 def process_failed_contig_dataframe(df):
+    df = df.astype(str)
     df["Cluster"] = df["Cluster"].str.split(".0").str[0]
     df["Iteration"] = df["Iteration"].str.split(".0").str[0]
-    df["id"] = df["Sample"] + "_" + df["Cluster"] + "_" + df["Iteration"]
+    df["id"] = df["Sample.1"] + "_" + df["Cluster"] + "_" + df["Iteration"]
     df.set_index("id", inplace=True)
     return df
+
+
+def filter_files_of_interest(multiqc_data, files_of_interest):
+    return [file for file in multiqc_data if any(x in file.stem for x in files_of_interest)]
 
 
 def read_data(directory, files_of_interest, process_dataframe):
@@ -289,17 +307,14 @@ def handle_dataframe(df, prefix, column_to_split, header=False, output=False):
 
         # Apply the dynamic split function to each row in the column
         split_data = df[f"({prefix}) {column_to_split}"].apply(dynamic_split).apply(pd.Series)
-        keys_to_rename = {"0": "sample", "1": "cluster", "2": "step", "3": "remaining"}
-        split_data = split_data.rename(
-            columns={k: v for k, v in keys_to_rename.items() if k in split_data.columns}, inplace=True
+        # take the first three columns & rename
+        split_data = split_data.iloc[:, :3]
+        split_data.rename(
+            columns={split_data.columns[0]: "sample", split_data.columns[1]: "cluster", split_data.columns[2]: "step"},
+            inplace=True,
         )
+
         df = pd.concat([df, split_data], axis=1)
-
-        # Check if 'remaining' column exists before trying to drop it
-        if "remaining" in df.columns:
-            df.drop(columns=["remaining"], inplace=True)
-
-        print(df)
 
         df["step"] = df["step"].str.split(".").str[0]
         df["id"] = df["sample"] + "_" + df["cluster"] + "_" + df["step"]
@@ -378,7 +393,7 @@ def main(argv=None):
     # Multiqc output yml files
     if args.multiqc_dir:
         # Check if the given files exist
-        check_file_exists([args.multiqc_dir])
+        check_file_exists(args.multiqc_dir)
 
         header_clusters_overview = get_header(args.comment_dir, "contig_overview_mqc.txt")
         files_of_interest, columns_of_interest = get_files_and_columns_of_interest(args.table_headers)
@@ -404,8 +419,8 @@ def main(argv=None):
 
         # adding a tag saying that contig faild qc check
         failed_contigs = ["failed_mapped", "failed_contig_quality"]
-        failed_contig_df = read_data(args.multiqc_dir, files_of_interest, process_failed_contig_dataframe)
-        multiqc_contigs_df = multiqc_contigs_df.join(failed_contigs_df, how="outer")
+        failed_contig_df = read_data(args.multiqc_dir, failed_contigs, process_failed_contig_dataframe)
+        multiqc_contigs_df = multiqc_contigs_df.join(failed_contig_df, how="outer")
 
         # If we are empty, just quit
         if multiqc_contigs_df.empty:
