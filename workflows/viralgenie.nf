@@ -223,11 +223,13 @@ workflow VIRALGENIE {
                 .out
                 .centroids_members
                 .map { meta, centroids, members ->
-                    [ meta + [step: "clusterd"], centroids, members ]
+                    [ meta, centroids, members ]
                 }
                 .branch { meta, centroids, members ->
-                    singletons: meta.cluster_size == 0
-                    multiple: meta.cluster_size > 0
+                    singletons: meta.cluster_size == 0 
+                        return [ meta + [step:"singleton"], centroids ]
+                    multiple: meta.cluster_size > 0 
+                        return [ meta + [step:"consensus"], centroids, members ]
                 }
                 .set{ch_centroids_members}
 
@@ -235,12 +237,6 @@ workflow VIRALGENIE {
             ch_clusters_tsv        = FASTA_BLAST_CLUST.out.clusters_tsv.collect{it[1]}.ifEmpty([])
 
             ch_multiqc_files       =  ch_multiqc_files.mix(FASTA_BLAST_CLUST.out.no_blast_hits_mqc.ifEmpty([]))
-
-            ch_centroids_members
-                .singletons
-                .map{ meta, centroids, members ->
-                    [ meta, centroids] }
-                .set{ ch_single_centroids }
 
             // Align clustered contigs & collapse into a single consensus per cluster
             ALIGN_COLLAPSE_CONTIGS (
@@ -251,7 +247,7 @@ workflow VIRALGENIE {
 
 
             SINGLETON_FILTERING (
-                ch_single_centroids,
+                ch_centroids_members.singletons,
                 params.min_contig_size,
                 params.max_n_1OOkbp
                 )

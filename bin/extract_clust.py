@@ -19,7 +19,8 @@ class Cluster:
     """
 
     def __init__(self, cluster_id, centroid, members):
-        self.cluster_id = cluster_id
+        # Having only a number get's removed by multiqc which causes merging errors downstream
+        self.cluster_id = "cl" + str(number)
         self.centroid = centroid
         self.members = members
         if members is not None:
