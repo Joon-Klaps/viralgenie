@@ -146,11 +146,10 @@ def read_in_quast(table_files):
     """Concatenate all the cluster summary files into a single dataframe."""
     df = pd.DataFrame()
     for file in table_files:
-        d = {}
         if check_file_exists(file, throw_error=False):
             with open(file, "r") as f:
                 d = dict(line.strip().split("\t") for line in f)
-        df = pd.concat([df, pd.DataFrame.from_dict(d, orient="index").T])
+                df = pd.concat([df, pd.DataFrame.from_dict(d, orient="index").T])
     return df
 
 
@@ -287,15 +286,20 @@ def handle_dataframe(df, prefix, column_to_split, header=False, output=False):
     result_df = pd.DataFrame()
     if not df.empty:
         df = df.add_prefix(f"({prefix}) ")
-        # Apply the dynamic split function to each row in the column
-        df[[f"part_{i}" for i in range(1, 5)]] = (
-            df[f"({prefix}) {column_to_split}"].apply(dynamic_split, delimiter="_").apply(pd.Series)
-        )
-        df.rename(
-            columns={"part_1": "sample", "part_2": "cluster", "part_3": "step", "part_4": "remaining"}, inplace=True
-        )
 
-        df.drop(columns=["remaining"], inplace=True)
+        # Apply the dynamic split function to each row in the column
+        split_data = df[f"({prefix}) {column_to_split}"].apply(dynamic_split).apply(pd.Series)
+        keys_to_rename = {"0": "sample", "1": "cluster", "2": "step", "3": "remaining"}
+        split_data = split_data.rename(
+            columns={k: v for k, v in keys_to_rename.items() if k in split_data.columns}, inplace=True
+        )
+        df = pd.concat([df, split_data], axis=1)
+
+        # Check if 'remaining' column exists before trying to drop it
+        if "remaining" in df.columns:
+            df.drop(columns=["remaining"], inplace=True)
+
+        print(df)
 
         df["step"] = df["step"].str.split(".").str[0]
         df["id"] = df["sample"] + "_" + df["cluster"] + "_" + df["step"]
@@ -314,14 +318,14 @@ def main(argv=None):
 
     # Cluster summaries
     cluster_header = get_header(args.comment_dir, "clusters_summary_mqc.txt")
-    clusters_summary_df = handle_tables([args.clusters_summary], cluster_header, "summary_clusters_mqc.tsv")
+    clusters_summary_df = handle_tables(args.clusters_summary, cluster_header, "summary_clusters_mqc.tsv")
 
     # Sample metadata
     sample_header = get_header(args.comment_dir, "sample_metadata_mqc.txt")
     sample_metadata_df = handle_tables([args.sample_metadata], sample_header, "sample_metadata_mqc.tsv")
 
     # Checkv summary
-    checkv_df = handle_tables([args.checkv_files])
+    checkv_df = handle_tables(args.checkv_files)
     checkv_header = []
     if args.save_intermediate:
         checkv_header = get_header(args.comment_dir, "checkv_mqc.txt")
@@ -329,7 +333,7 @@ def main(argv=None):
         checkv_df = handle_dataframe(checkv_df, "checkv", "contig_id", checkv_header, "summary_checkv_mqc.tsv")
 
     # Quast summary
-    quast_df = read_in_quast([args.quast_files])
+    quast_df = read_in_quast(args.quast_files)
     quast_header = []
     if args.save_intermediate:
         quast_header = get_header(args.comment_dir, "quast_mqc.txt")
@@ -340,7 +344,7 @@ def main(argv=None):
         quast_df = quast_df[["(quast) # N's per 100 kbp"]]
 
     # Blast summary
-    blast_df = handle_tables([args.blast_files], header=None)
+    blast_df = handle_tables(args.blast_files, header=None)
     blast_header = []
     if args.save_intermediate:
         blast_header = get_header(args.comment_dir, "blast_mqc.txt")
