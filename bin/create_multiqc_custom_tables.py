@@ -226,7 +226,10 @@ def read_dataframe_from_file(file):
 
 
 def join_dataframes(df1, df2):
-    if df1.empty:
+    if isinstance(df1, pd.Series):  # Check if df1 is a Series
+        df1 = df1.to_frame()  # Convert Series to DataFrame
+        return pd.concat([df1, df2], axis=1, join="outer")
+    elif df1.empty:
         return df2
     else:
         return df1.join(df2, how="outer")
@@ -241,10 +244,11 @@ def process_multiqc_dataframe(df):
 def process_failed_contig_dataframe(df):
     df = df.astype(str)
     df["Cluster"] = df["Cluster"].str.split(".0").str[0]
-    df["Iteration"] = df["Iteration"].str.split(".0").str[0]
+    df["Iteration"] = df["Step"].str.split(".0").str[0]
     df["id"] = df["Sample.1"] + "_" + df["Cluster"] + "_" + df["Iteration"]
     df.set_index("id", inplace=True)
-    return df
+    index_series = df.index
+    return index_series
 
 
 def filter_files_of_interest(multiqc_data, files_of_interest):
@@ -333,11 +337,11 @@ def main(argv=None):
 
     # Cluster summaries
     cluster_header = get_header(args.comment_dir, "clusters_summary_mqc.txt")
-    clusters_summary_df = handle_tables(args.clusters_summary, cluster_header, "summary_clusters_mqc.tsv")
+    handle_tables(args.clusters_summary, cluster_header, "summary_clusters_mqc.tsv")
 
     # Sample metadata
     sample_header = get_header(args.comment_dir, "sample_metadata_mqc.txt")
-    sample_metadata_df = handle_tables([args.sample_metadata], sample_header, "sample_metadata_mqc.tsv")
+    handle_tables([args.sample_metadata], sample_header, "sample_metadata_mqc.tsv")
 
     # Checkv summary
     checkv_df = handle_tables(args.checkv_files)
@@ -420,7 +424,9 @@ def main(argv=None):
         # adding a tag saying that contig faild qc check
         failed_contigs = ["failed_mapped", "failed_contig_quality"]
         failed_contig_df = read_data(args.multiqc_dir, failed_contigs, process_failed_contig_dataframe)
-        multiqc_contigs_df = multiqc_contigs_df.join(failed_contig_df, how="outer")
+        if not failed_contig_df.empty:
+            print(failed_contig_df)
+            multiqc_contigs_df["Contig failed QC check"] = multiqc_contigs_df.index.isin(failed_contig_df)
 
         # If we are empty, just quit
         if multiqc_contigs_df.empty:
@@ -438,6 +444,7 @@ def main(argv=None):
             ["index", "sample name", "cluster", "step"]
             + [column for column in mqc_contigs_sel.columns if "blast" in column]
             + [column for column in mqc_contigs_sel.columns if "checkv" in column]
+            + [column for column in mqc_contigs_sel.columns if "QC check" in column]
             + [column for column in mqc_contigs_sel.columns if "quast" in column]
         )
 

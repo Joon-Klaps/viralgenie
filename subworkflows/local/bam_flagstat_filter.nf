@@ -53,7 +53,7 @@ workflow BAM_FLAGSTAT_FILTER {
 
     bam_fail
         .map { meta, bam, mapped_reads ->
-            ["$meta.id\t$meta.sample\t$meta.iteration\t$meta.cluster_id\t$mapped_reads"]
+            ["$meta.id\t$meta.sample\t$meta.cluster_id\t$meta.step\t$mapped_reads"]
             }
         .collect()
         .map {
@@ -66,7 +66,7 @@ workflow BAM_FLAGSTAT_FILTER {
                     "description: 'Contigs that did not have more then ${min_mapped_reads} mapped reads were filtered out'",
                     "plot_type: 'table'"
                 ]
-                def header = ['Id','Sample', 'Iteration','Cluster','Mapped reads']
+                def header = ['Id','Sample', 'Cluster','Step','Mapped reads']
                 return WorkflowCommons.multiqcTsvFromList(tsv_data, header, comments) // make it compatible with other mqc files
         }
         .collectFile(name:'failed_mapped_reads_mqc.tsv')
