@@ -114,17 +114,19 @@ def parse_args(argv=None):
     return parser.parse_args(argv)
 
 
-def check_file_exists(files, throw_error=True):
+def check_file_exists(file, throw_error=True):
     """Check if the given files exist."""
-    for file in files:
-        if not Path(file).exists():
-            if throw_error:
-                logger.error(f"The given input file {file} was not found!")
-                sys.exit(2)
-            else:
-                logger.warning(f"The given input file {file} was not found!")
-        elif not os.stat(file).st_size > 0:
-            logger.warning(f"The given input file {file} is empty, it will not be used!")
+    if not Path(file).exists():
+        if throw_error:
+            logger.error(f"The given input file {file} was not found!")
+            sys.exit(2)
+        else:
+            logger.warning(f"The given input file {file} was not found!")
+            return False
+    elif not os.stat(file).st_size > 0:
+        logger.warning(f"The given input file {file} is empty, it will not be used!")
+        return False
+    return True
 
 
 def read_header_file(file_path):
@@ -136,7 +138,7 @@ def read_header_file(file_path):
 
 def concat_table_files(table_files, **kwargs):
     """Concatenate all the cluster summary files into a single dataframe."""
-    df = pd.concat([pd.read_csv(file, sep="\t", **kwargs) for file in table_files if os.stat(file).st_size > 0])
+    df = pd.concat([pd.read_csv(file, sep="\t", **kwargs) for file in table_files if check_file_exists(file)])
     return df
 
 
@@ -144,13 +146,15 @@ def read_in_quast(table_files):
     """Concatenate all the cluster summary files into a single dataframe."""
     df = pd.DataFrame()
     for file in table_files:
-        with open(file, "r") as f:
-            d = dict(line.strip().split("\t") for line in f)
+        d = {}
+        if check_file_exists(file, throw_error=False):
+            with open(file, "r") as f:
+                d = dict(line.strip().split("\t") for line in f)
         df = pd.concat([df, pd.DataFrame.from_dict(d, orient="index").T])
     return df
 
 
-def write_tsv_file_with_comments(df, file, comment):
+def write_dataframe(df, file, comment):
     df_tsv = df.to_csv(sep="\t", index=False)
     with open(file, "w") as f:
         if comment:
@@ -180,10 +184,84 @@ def read_multiqc_data(directory, files_of_interest):
                 multiqc_samples_df = df
             else:
                 multiqc_samples_df = multiqc_samples_df.join(df, how="outer")
-        print(f"Read in {file}")
-        print(f"Shape of the dataframe: {multiqc_samples_df.shape}")
-        print(df)
     return multiqc_samples_df
+
+
+def read_failed_contig_data(directory, files_of_interest):
+    multiqc_data = [file for file in directory.glob("multiqc_*.txt")]
+
+    # Filter the for the files of interest for contigs
+    sample_files = [file for file in multiqc_data if any(x in file.stem for x in files_of_interest)]
+
+    # Read in the files
+    multiqc_samples_df = pd.DataFrame()
+
+    # Tsv's
+    for file in sample_files:
+        with open(file, "r") as table:
+            df = pd.read_csv(table, sep="\t")
+            df["Cluster"] = df["Cluster"].str.split(".0").str[0]
+            df["Iteration"] = df["Iteration"].str.split(".0").str[0]
+            df["id"] = df["Sample"] + "_" + df["Cluster"] + "_" + df["Iteration"]
+            df.set_index("id", inplace=True)  # Set the first column as index
+            df = df[["id"]]
+
+            if multiqc_samples_df.empty:
+                multiqc_samples_df = df
+            else:
+                multiqc_samples_df = multiqc_samples_df.join(df, how="outer")
+
+    dic = {"Contig qc fail": "True"}
+    multiqc_samples_df.assign(**dic)
+    return
+
+
+def get_header(comment_dir, header_file_name):
+    header = []
+    if comment_dir:
+        header_file_path = f"{comment_dir}/{header_file_name}"
+        if check_file_exists(header_file_path):
+            header = read_header_file(header_file_path)
+    return header
+
+
+# Function to split column dynamically
+def dynamic_split(row, delimiter="_"):
+    parts = row.split(delimiter)
+    return parts
+
+
+def handle_tables(table_files, header_name=False, output=False, **kwargs):
+    result_df = pd.DataFrame()
+    if table_files:
+        result_df = concat_table_files(table_files, **kwargs)
+    if output:
+        write_dataframe(result_df, output, header_name)
+    return result_df
+
+
+def handle_dataframe(df, prefix, column_to_split, header=False, output=False):
+    result_df = pd.DataFrame()
+    if not df.empty:
+        df = df.add_prefix(f"({prefix}) ")
+        # Apply the dynamic split function to each row in the column
+        df[[f"part_{i}" for i in range(1, 5)]] = (
+            df[f"({prefix}) {column_to_split}"].apply(dynamic_split, delimiter="_").apply(pd.Series)
+        )
+        df.rename(
+            columns={"part_1": "sample", "part_2": "cluster", "part_3": "step", "part_4": "remaining"}, inplace=True
+        )
+
+        df.drop(columns=["remaining"], inplace=True)
+
+        df["step"] = df["step"].str.split(".").str[0]
+        df["id"] = df["sample"] + "_" + df["cluster"] + "_" + df["step"]
+        df = df.set_index("id")
+        result_df = df
+    if output:
+        write_dataframe(result_df, output, [])
+    result_df.drop(columns=["sample", "cluster", "step"], inplace=True)
+    return result_df
 
 
 def main(argv=None):
@@ -192,127 +270,39 @@ def main(argv=None):
     logging.basicConfig(level=args.log_level, format="[%(levelname)s] %(message)s")
 
     # Cluster summaries
-    clusters_summary_df = pd.DataFrame()
-    if args.clusters_summary:
-        header_cluster_summary = []
-        if args.comment_dir:
-            header_cluster_summary = f"{args.comment_dir}/clusters_summary_mqc.txt"
-            check_file_exists([header_cluster_summary])
-            header_cluster_summary = read_header_file(header_cluster_summary)
-
-        # Check if the given files exist
-        check_file_exists(args.clusters_summary)
-
-        # Concatenate all the cluster summary files into a single dataframe
-        clusters_summary_df = concat_table_files(args.clusters_summary)
-        write_tsv_file_with_comments(clusters_summary_df, "summary_clusters_mqc.tsv", header_cluster_summary)
+    cluster_header = get_header(args.comment_dir, "clusters_summary_mqc.txt")
+    clusters_summary_df = handle_table([args.clusters_summary], cluster_header, "summary_clusters_mqc.tsv")
 
     # Sample metadata
-    sample_metadata_df = pd.DataFrame()
-    if args.sample_metadata:
-        # Check if the given files exist
-        check_file_exists([args.sample_metadata])
-
-        header_sample_metadata = []
-        if args.comment_dir:
-            header_sample_metadata = f"{args.comment_dir}/sample_metadata_mqc.txt"
-            check_file_exists([header_sample_metadata])
-            header_sample_metadata = read_header_file(header_sample_metadata)
-
-        # Read the sample metadata file
-        sample_metadata_df = pd.read_csv(args.sample_metadata, sep="\t")
-
-        # Write the dataframe to a file
-        write_tsv_file_with_comments(sample_metadata_df, "sample_metadata_mqc.tsv", header_sample_metadata)
+    sample_header = get_header(args.comment_dir, "sample_metadata_mqc.txt")
+    sample_metadata_df = handle_table([args.sample_metadata], sample_header, "sample_metadata_mqc.tsv")
 
     # Checkv summary
-    checkv_df = pd.DataFrame()
-    if args.checkv_files:
-        header_checkv_list = []
-        if args.comment_dir:
-            header_checkv = f"{args.comment_dir}/checkv_mqc.txt"
-            check_file_exists([header_checkv], throw_error=False)
-            try:
-                header_checkv_list = read_header_file(header_checkv)
-            except:
-                header_checkv_list = []
-
-        # Check if the given files exist
-        check_file_exists(args.checkv_files)
-
-        # Read the header file
-        header_checkv = read_header_file(header_checkv)
-
-        # Read the checkv summary file
-        checkv_df = concat_table_files(args.checkv_files)
-
-        # Split up the sample names into sample, cluster, step
-        checkv_df = checkv_df.add_prefix("(checkv) ")
-        checkv_df[["sample", "cluster", "step", "remaining"]] = checkv_df["(checkv) contig_id"].str.split(
-            "_", n=3, expand=True
-        )
-        checkv_df.drop(columns=["remaining"], inplace=True)
-        # Rename for id for joining samples again
-        checkv_df["step"] = checkv_df["step"].str.split(".").str[0]
-        checkv_df["id"] = checkv_df["sample"] + "_" + checkv_df["cluster"] + "_" + checkv_df["step"]
-        checkv_df = checkv_df.set_index("id")
-
-        # Write the dataframe to a file
-        if args.save_intermediate:
-            write_tsv_file_with_comments(checkv_df, "summary_checkv_mqc.tsv", header_checkv_list)
-
-        checkv_df.drop(columns=["sample", "cluster", "step"], inplace=True)
+    checkv_df = handle_table([args.checkv_files])
+    checkv_header = []
+    if args.save_intermediate:
+        checkv_header = get_header(args.comment_dir, "checkv_mqc.txt")
+    if not checkv_df.empty:
+        checkv_df = handle_dataframe(checkv_df, "checkv", "contig_id", checkv_header, "summary_checkv_mqc.tsv")
 
     # Quast summary
-    quast_df = pd.DataFrame()
-    if args.quast_files:
-        # Check if the given files exist
-        check_file_exists(args.quast_files)
-
-        # Read the header file
-        header_quast_list = []
-        if args.comment_dir:
-            header_quast = f"{args.comment_dir}/quast_mqc.txt"
-            check_file_exists([header_quast], throw_error=False)
-            try:
-                header_quast_list = read_header_file(header_quast)
-            except:
-                header_quast_list = []
-
-        # Read the quast summary files & transpose
-        quast_df = read_in_quast(args.quast_files)
-
-        # Split up the sample names into sample, cluster, step
-        quast_df = quast_df.add_prefix("(quast) ")
-        quast_df[["sample", "cluster", "step"]] = quast_df["(quast) Assembly"].str.split("_", n=2, expand=True)
-        quast_df["step"] = quast_df["step"].str.split(".").str[0]
-        quast_df["id"] = quast_df["sample"] + "_" + quast_df["cluster"] + "_" + quast_df["step"]
-        quast_df = quast_df.set_index("id")
+    quast_df = read_in_quast([args.quast_files])
+    quast_header = []
+    if args.save_intermediate:
+        quast_header = get_header(args.comment_dir, "quast_mqc.txt")
+    if not quast_df.empty:
+        quast_df = handle_dataframe(quast_df, "quast", "Assembly", quast_header, "summary_quast_mqc.tsv")
 
         # Most of the columns are not good for a single contig evaluation
         quast_df = quast_df[["(quast) # N's per 100 kbp"]]
 
-        # Write the dataframe to a file
-        if args.save_intermediate:
-            write_tsv_file_with_comments(quast_df.reset_index(), "summary_quast_mqc.tsv", header_quast_list)
-
     # Blast summary
-    blast_df = pd.DataFrame()
-    if args.blast_files:
-        # Check if the given files exist
-        check_file_exists(args.blast_files)
-
-        header_blast_list = []
-        if args.comment_dir:
-            header_blast = f"{args.comment_dir}/blast_mqc.txt"
-            check_file_exists([header_blast], throw_error=False)
-            try:
-                header_blast_list = read_header_file(header_blast)
-            except:
-                header_blast_list = []
-
+    blast_df = handle_table([args.blast_files], header=None)
+    blast_header = []
+    if args.save_intermediate:
+        blast_header = get_header(args.comment_dir, "blast_mqc.txt")
+    if not blast_df.empty:
         # Read the blast summary file
-        blast_df = concat_table_files(args.blast_files, header=None)
         blast_df.columns = [
             "query",
             "subject",
@@ -334,23 +324,9 @@ def main(argv=None):
 
         # Extract the species name from the subject column
         blast_df["species"] = blast_df["subject"].str.split("|").str[-1]
+        blast_df = blast_df[["species"] + blast_df.columns.difference(["species"], sort=False).tolist()]
 
-        #  Split up the sample names into sample, cluster, step
-        blast_df = blast_df.add_prefix("(blast) ")
-        blast_df[["sample", "cluster", "step", "remaining"]] = blast_df["(blast) query"].str.split(
-            "_", n=3, expand=True
-        )
-        blast_df.drop(columns=["remaining", "(blast) query"], inplace=True)
-        blast_df["step"] = blast_df["step"].str.split(".").str[0]
-        blast_df["id"] = blast_df["sample"] + "_" + blast_df["cluster"] + "_" + blast_df["step"]
-        blast_df = blast_df.set_index("id")
-        blast_df = blast_df[["(blast) species"] + blast_df.columns.difference(["(blast) species"], sort=False).tolist()]
-
-        # Write the dataframe to a file
-        if args.save_intermediate:
-            write_tsv_file_with_comments(blast_df, "summary_blast_mqc.tsv", header_blast_list)
-
-        blast_df.drop(columns=["sample", "cluster", "step"], inplace=True)
+        blast_df = handle_dataframe(blast_df, "blast", "query", blast_header, "summary_blast_mqc.tsv")
 
     # Multiqc output yml files
     if args.multiqc_dir:
@@ -421,6 +397,10 @@ def main(argv=None):
         multiqc_contigs_df = multiqc_contigs_df.join(checkv_df, how="outer")
         multiqc_contigs_df = multiqc_contigs_df.join(quast_df, how="outer")
         multiqc_contigs_df = multiqc_contigs_df.join(blast_df, how="outer")
+
+        # adding a tag saying that contig faild qc check
+        failed_contigs = ["failed_mapped", "failed_contig_quality"]
+        failed_contigs_df = read_failed_contig_data(args.multiqc_dir, failed_contigs)
 
         # If we are empty, just quit
         if multiqc_contigs_df.empty:
