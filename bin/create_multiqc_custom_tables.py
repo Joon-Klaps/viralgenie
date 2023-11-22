@@ -154,6 +154,52 @@ def read_in_quast(table_files):
     return df
 
 
+def get_columns_of_interest(header_multiqc):
+    """
+    Flatten, and make dic with old name and new name
+    New name contains the tool and the annotation of the column specified in suppl file
+    """
+    columns_of_interest = {}
+    for bigkey, element in header_multiqc.items():
+        if bigkey == "general_stats":
+            bigkey = "multiqc"
+        if isinstance(element, list):
+            for item in element:
+                if isinstance(item, dict):
+                    for key, value in item.items():
+                        columns_of_interest.update({key: f"({bigkey}) {value}"})
+                else:
+                    columns_of_interest.update({item: f"({bigkey}) {item.replace('_',' ')}"})
+    return columns_of_interest
+
+
+def get_files_and_columns_of_interest(table_headers):
+    """
+    Get the files of interest and the columns of interest from the table headers file
+    """
+    if table_headers:
+        check_file_exists([table_headers])
+        # Read the yaml column annotation file for the different tables
+        with open(table_headers, "r") as f:
+            header_multiqc = yaml.safe_load(f)
+        files_of_interest = list(header_multiqc.keys())
+
+        columns_of_interest = get_columns_of_interest(header_multiqc)
+    else:
+        # Files of interest contigs:
+        files_of_interest = [
+            "samtools_stats",
+            "umitools",
+            "general_stats",
+            "picard_dups",
+            "ivar_variants",
+            "bcftools_stats",
+        ]
+        columns_of_interest = {}
+
+    return files_of_interest, columns_of_interest
+
+
 def write_dataframe(df, file, comment):
     df_tsv = df.to_csv(sep="\t", index=False)
     with open(file, "w") as f:
@@ -163,57 +209,54 @@ def write_dataframe(df, file, comment):
         f.write(df_tsv)
 
 
-def read_multiqc_data(directory, files_of_interest):
-    # Get all the multiqc data files
+def filter_and_rename_columns(df, columns_of_interest):
+    """
+    Filter for columns of interest and rename those we can
+    """
+    if columns_of_interest:
+        columns_available = {key: value for key, value in columns_of_interest.items() if key in df.columns}
+        df = df[columns_available.keys()]
+        df = df.rename(columns=columns_available, inplace=False)
+    return df
+
+
+def process_multiqc_dataframe(df):
+    df[df.columns[0]] = df[df.columns[0]].str.split(".").str[0]
+    df.set_index(df.columns[0], inplace=True)
+    return df
+
+
+def process_failed_contig_dataframe(df):
+    df["Cluster"] = df["Cluster"].str.split(".0").str[0]
+    df["Iteration"] = df["Iteration"].str.split(".0").str[0]
+    df["id"] = df["Sample"] + "_" + df["Cluster"] + "_" + df["Iteration"]
+    df.set_index("id", inplace=True)
+    return df
+
+
+def read_data(directory, files_of_interest, process_dataframe):
+    """
+    This function reads data from multiple files and processes it.
+
+    Args:
+    directory: The directory where the files are located.
+    files_of_interest: A list of filenames that we are interested in.
+    process_dataframe: A function that processes a dataframe.
+
+    Returns:
+    A dataframe that contains the processed data from all the files of interest.
+    """
     multiqc_data = [file for file in directory.glob("multiqc_*.txt")]
+    sample_files = filter_files_of_interest(multiqc_data, files_of_interest)
 
-    # Filter the for the files of interest for contigs
-    sample_files = [file for file in multiqc_data if any(x in file.stem for x in files_of_interest)]
-
-    # Read in the files
     multiqc_samples_df = pd.DataFrame()
 
-    # Tsv's
     for file in sample_files:
-        with open(file, "r") as table:
-            df = pd.read_csv(table, sep="\t")
-            df[df.columns[0]] = df[df.columns[0]].str.split(".").str[0]
-            df.set_index(df.columns[0], inplace=True)  # Set the first column as index
+        df = read_dataframe_from_file(file)
+        df = process_dataframe(df)
+        multiqc_samples_df = join_dataframes(multiqc_samples_df, df)
 
-            if multiqc_samples_df.empty:
-                multiqc_samples_df = df
-            else:
-                multiqc_samples_df = multiqc_samples_df.join(df, how="outer")
     return multiqc_samples_df
-
-
-def read_failed_contig_data(directory, files_of_interest):
-    multiqc_data = [file for file in directory.glob("multiqc_*.txt")]
-
-    # Filter the for the files of interest for contigs
-    sample_files = [file for file in multiqc_data if any(x in file.stem for x in files_of_interest)]
-
-    # Read in the files
-    multiqc_samples_df = pd.DataFrame()
-
-    # Tsv's
-    for file in sample_files:
-        with open(file, "r") as table:
-            df = pd.read_csv(table, sep="\t")
-            df["Cluster"] = df["Cluster"].str.split(".0").str[0]
-            df["Iteration"] = df["Iteration"].str.split(".0").str[0]
-            df["id"] = df["Sample"] + "_" + df["Cluster"] + "_" + df["Iteration"]
-            df.set_index("id", inplace=True)  # Set the first column as index
-            df = df[["id"]]
-
-            if multiqc_samples_df.empty:
-                multiqc_samples_df = df
-            else:
-                multiqc_samples_df = multiqc_samples_df.join(df, how="outer")
-
-    dic = {"Contig qc fail": "True"}
-    multiqc_samples_df.assign(**dic)
-    return
 
 
 def get_header(comment_dir, header_file_name):
@@ -271,14 +314,14 @@ def main(argv=None):
 
     # Cluster summaries
     cluster_header = get_header(args.comment_dir, "clusters_summary_mqc.txt")
-    clusters_summary_df = handle_table([args.clusters_summary], cluster_header, "summary_clusters_mqc.tsv")
+    clusters_summary_df = handle_tables([args.clusters_summary], cluster_header, "summary_clusters_mqc.tsv")
 
     # Sample metadata
     sample_header = get_header(args.comment_dir, "sample_metadata_mqc.txt")
-    sample_metadata_df = handle_table([args.sample_metadata], sample_header, "sample_metadata_mqc.tsv")
+    sample_metadata_df = handle_tables([args.sample_metadata], sample_header, "sample_metadata_mqc.tsv")
 
     # Checkv summary
-    checkv_df = handle_table([args.checkv_files])
+    checkv_df = handle_tables([args.checkv_files])
     checkv_header = []
     if args.save_intermediate:
         checkv_header = get_header(args.comment_dir, "checkv_mqc.txt")
@@ -297,7 +340,7 @@ def main(argv=None):
         quast_df = quast_df[["(quast) # N's per 100 kbp"]]
 
     # Blast summary
-    blast_df = handle_table([args.blast_files], header=None)
+    blast_df = handle_tables([args.blast_files], header=None)
     blast_header = []
     if args.save_intermediate:
         blast_header = get_header(args.comment_dir, "blast_mqc.txt")
@@ -333,48 +376,11 @@ def main(argv=None):
         # Check if the given files exist
         check_file_exists([args.multiqc_dir])
 
-        header_clusters_overview = []
-        if args.comment_dir:
-            header_clusters_overview = f"{args.comment_dir}/contig_overview_mqc.txt"
-            check_file_exists([header_clusters_overview], throw_error=True)
-            try:
-                header_clusters_overview = read_header_file(header_clusters_overview)
-            except:
-                header_clusters_overview = []
-
-        if args.table_headers:
-            check_file_exists([args.table_headers])
-            # Read the yaml column annotation file for the different tables
-            with open(args.table_headers, "r") as f:
-                header_multiqc = yaml.safe_load(f)
-            files_of_interest = list(header_multiqc.keys())
-
-            # Flatten, and make dic with old name and new name
-            # New name contains the tool and the annotation of the column specified in suppl file
-            columns_of_interest = {}
-            for bigkey, element in header_multiqc.items():
-                if bigkey == "general_stats":
-                    bigkey = "multiqc"
-                if isinstance(element, list):
-                    for item in element:
-                        if isinstance(item, dict):
-                            for key, value in item.items():
-                                columns_of_interest.update({key: f"({bigkey}) {value}"})
-                        else:
-                            columns_of_interest.update({item: f"({bigkey}) {item.replace('_',' ')}"})
-        else:
-            # Files of interest contigs:
-            files_of_interest = [
-                "samtools_stats",
-                "umitools",
-                "general_stats",
-                "picard_dups",
-                "ivar_variants",
-                "bcftools_stats",
-            ]
+        header_clusters_overview = get_header(args.comment_dir, "contig_overview_mqc.txt")
+        files_of_interest, columns_of_interest = get_files_and_columns_of_interest(args.table_headers)
 
         # Read the multiqc data yml files
-        multiqc_contigs_df = read_multiqc_data(args.multiqc_dir, files_of_interest)
+        multiqc_contigs_df = read_data(args.multiqc_dir, files_of_interest, process_multiqc_dataframe)
 
         # If we are empty, just quit
         if multiqc_contigs_df.empty:
@@ -383,15 +389,9 @@ def main(argv=None):
 
         # Write the complete dataframe to a file
         if args.save_intermediate:
-            write_tsv_file_with_comments(multiqc_contigs_df.reset_index(inplace=False), "contigs_intermediate.tsv", [])
+            write_dataframe(multiqc_contigs_df.reset_index(inplace=False), "contigs_intermediate.tsv", [])
 
-        # Filter for columns of interest and rename those we can
-        if columns_of_interest:
-            columns_available = {
-                key: value for key, value in columns_of_interest.items() if key in multiqc_contigs_df.columns
-            }
-            multiqc_contigs_df = multiqc_contigs_df[columns_available.keys()]
-            multiqc_contigs_df.rename(columns=columns_available, inplace=True)
+        multiqc_contigs_df = filter_and_rename_columns(multiqc_contigs_df, columns_of_interest)
 
         # Join with the custom contig tables
         multiqc_contigs_df = multiqc_contigs_df.join(checkv_df, how="outer")
@@ -400,7 +400,8 @@ def main(argv=None):
 
         # adding a tag saying that contig faild qc check
         failed_contigs = ["failed_mapped", "failed_contig_quality"]
-        failed_contigs_df = read_failed_contig_data(args.multiqc_dir, failed_contigs)
+        failed_contig_df = read_data(args.multiqc_dir, files_of_interest, process_failed_contig_dataframe)
+        multiqc_contigs_df = multiqc_contigs_df.join(failed_contigs_df, how="outer")
 
         # If we are empty, just quit
         if multiqc_contigs_df.empty:
@@ -424,7 +425,7 @@ def main(argv=None):
         remaining_columns = mqc_contigs_sel.columns.difference(final_columns, sort=False).tolist()
         mqc_contigs_sel = mqc_contigs_sel[final_columns + remaining_columns]
 
-        write_tsv_file_with_comments(mqc_contigs_sel, "contigs_overview_mqc.tsv", header_clusters_overview)
+        write_dataframe(mqc_contigs_sel, "contigs_overview_mqc.tsv", header_clusters_overview)
     return 0
 
 
