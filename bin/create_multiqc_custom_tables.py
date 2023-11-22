@@ -392,10 +392,18 @@ def main(argv=None):
                 "samtools_stats",
                 "umitools",
                 "general_stats",
+                "picard_dups",
+                "ivar_variants",
+                "bcftools_stats",
             ]
 
         # Read the multiqc data yml files
         multiqc_contigs_df = read_multiqc_data(args.multiqc_dir, files_of_interest)
+
+        # If we are empty, just quit
+        if multiqc_contigs_df.empty:
+            logger.warning("No data was found to create the contig overview table!")
+            return 0
 
         # Write the complete dataframe to a file
         if args.save_intermediate:
