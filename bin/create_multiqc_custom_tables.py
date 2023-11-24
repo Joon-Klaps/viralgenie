@@ -30,13 +30,6 @@ def parse_args(argv=None):
     )
 
     parser.add_argument(
-        "--cluster_method",
-        metavar="METHOD",
-        type=str,
-        help=" Algorithm used for clustering of input files",
-    )
-
-    parser.add_argument(
         "--prefix",
         metavar="FILE_OUT_PREFIX",
         type=str,
@@ -336,63 +329,67 @@ def main(argv=None):
     logging.basicConfig(level=args.log_level, format="[%(levelname)s] %(message)s")
 
     # Cluster summaries
-    cluster_header = get_header(args.comment_dir, "clusters_summary_mqc.txt")
-    handle_tables(args.clusters_summary, cluster_header, "summary_clusters_mqc.tsv")
+    if args.clusters_summary:
+        cluster_header = get_header(args.comment_dir, "clusters_summary_mqc.txt")
+        handle_tables(args.clusters_summary, cluster_header, "summary_clusters_mqc.tsv")
 
     # Sample metadata
-    sample_header = get_header(args.comment_dir, "sample_metadata_mqc.txt")
-    handle_tables([args.sample_metadata], sample_header, "sample_metadata_mqc.tsv")
+    if args.sample_metadata:
+        sample_header = get_header(args.comment_dir, "sample_metadata_mqc.txt")
+        handle_tables([args.sample_metadata], sample_header, "sample_metadata_mqc.tsv")
 
     # Checkv summary
-    checkv_df = handle_tables(args.checkv_files)
-    checkv_header = []
-    if args.save_intermediate:
-        checkv_header = get_header(args.comment_dir, "checkv_mqc.txt")
-    if not checkv_df.empty:
-        checkv_df = handle_dataframe(checkv_df, "checkv", "contig_id", checkv_header, "summary_checkv_mqc.tsv")
+    if args.checkv_files:
+        checkv_df = handle_tables(args.checkv_files)
+        checkv_header = []
+        if args.save_intermediate:
+            checkv_header = get_header(args.comment_dir, "checkv_mqc.txt")
+        if not checkv_df.empty:
+            checkv_df = handle_dataframe(checkv_df, "checkv", "contig_id", checkv_header, "summary_checkv_mqc.tsv")
 
     # Quast summary
-    quast_df = read_in_quast(args.quast_files)
-    quast_header = []
-    if args.save_intermediate:
-        quast_header = get_header(args.comment_dir, "quast_mqc.txt")
-    if not quast_df.empty:
-        quast_df = handle_dataframe(quast_df, "quast", "Assembly", quast_header, "summary_quast_mqc.tsv")
-
-        # Most of the columns are not good for a single contig evaluation
-        quast_df = quast_df[["(quast) # N's per 100 kbp"]]
+    if args.quast_files:
+        quast_df = read_in_quast(args.quast_files)
+        quast_header = []
+        if args.save_intermediate:
+            quast_header = get_header(args.comment_dir, "quast_mqc.txt")
+        if not quast_df.empty:
+            quast_df = handle_dataframe(quast_df, "quast", "Assembly", quast_header, "summary_quast_mqc.tsv")
+            # Most of the columns are not good for a single contig evaluation
+            quast_df = quast_df[["(quast) # N's per 100 kbp"]]
 
     # Blast summary
-    blast_df = handle_tables(args.blast_files, header=None)
-    blast_header = []
-    if args.save_intermediate:
-        blast_header = get_header(args.comment_dir, "blast_mqc.txt")
-    if not blast_df.empty:
-        # Read the blast summary file
-        blast_df.columns = [
-            "query",
-            "subject",
-            "pident",
-            "qlen",
-            "length",
-            "mismatch",
-            "gapopen",
-            "qstart",
-            "qend",
-            "sstart",
-            "send",
-            "evalue",
-            "bitscore",
-        ]
+    if args.blast_files:
+        blast_df = handle_tables(args.blast_files, header=None)
+        blast_header = []
+        if args.save_intermediate:
+            blast_header = get_header(args.comment_dir, "blast_mqc.txt")
+        if not blast_df.empty:
+            # Read the blast summary file
+            blast_df.columns = [
+                "query",
+                "subject",
+                "pident",
+                "qlen",
+                "length",
+                "mismatch",
+                "gapopen",
+                "qstart",
+                "qend",
+                "sstart",
+                "send",
+                "evalue",
+                "bitscore",
+            ]
 
-        # Filter on best hit per contig and keep only the best hit
-        blast_df = blast_df.sort_values("bitscore", ascending=False).drop_duplicates("query")
+            # Filter on best hit per contig and keep only the best hit
+            blast_df = blast_df.sort_values("bitscore", ascending=False).drop_duplicates("query")
 
-        # Extract the species name from the subject column
-        blast_df["species"] = blast_df["subject"].str.split("|").str[-1]
-        blast_df = blast_df[["species"] + blast_df.columns.difference(["species"], sort=False).tolist()]
+            # Extract the species name from the subject column
+            blast_df["species"] = blast_df["subject"].str.split("|").str[-1]
+            blast_df = blast_df[["species"] + blast_df.columns.difference(["species"], sort=False).tolist()]
 
-        blast_df = handle_dataframe(blast_df, "blast", "query", blast_header, "summary_blast_mqc.tsv")
+            blast_df = handle_dataframe(blast_df, "blast", "query", blast_header, "summary_blast_mqc.tsv")
 
     # Multiqc output yml files
     if args.multiqc_dir:
