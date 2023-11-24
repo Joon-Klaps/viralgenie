@@ -15,6 +15,21 @@ logger = logging.getLogger()
 
 
 def parse_args(argv=None):
+    """
+    Define and immediately parse command line arguments.
+
+    :param argv: List of command line arguments (default: None)
+    :return: Parsed command line arguments
+    """
+    parser = argparse.ArgumentParser(
+        description="Provide a command line tool to combine individual log & summary files which we will pass down to multiqc subsequently.",
+        epilog="Example: python create_multiqc_custom_tables.py --clusters_summary file1,file2,file3,... ",
+    )
+
+    # Rest of the code...
+
+
+def parse_args(argv=None):
     """Define and immediately parse command line arguments."""
     parser = argparse.ArgumentParser(
         description="Provide a command line tool to combine individual log & summary files which we will pass down to multiqc subsequently.",
@@ -108,7 +123,16 @@ def parse_args(argv=None):
 
 
 def check_file_exists(file, throw_error=True):
-    """Check if the given files exist."""
+    """Check if the given files exist.
+
+    Args:
+        file (str): The path to the file to be checked.
+        throw_error (bool, optional): Whether to throw an error and exit the program if the file is not found.
+            Defaults to True.
+
+    Returns:
+        bool: True if the file exists and is not empty, False otherwise.
+    """
     if not Path(file).exists():
         if throw_error:
             logger.error(f"The given input file {file} was not found!")
@@ -123,26 +147,50 @@ def check_file_exists(file, throw_error=True):
 
 
 def read_header_file(file_path):
-    """Read a file and return its content as a list of strings."""
+    """
+    Read a file and return its content as a list of strings.
+
+    Args:
+        file_path (str): The path to the file to be read.
+
+    Returns:
+        list: A list of strings representing the content of the file.
+    """
     with open(file_path, "r") as file:
         content = file.read().splitlines()
     return content
 
 
 def concat_table_files(table_files, **kwargs):
-    """Concatenate all the cluster summary files into a single dataframe."""
+    """Concatenate all the cluster summary files into a single dataframe.
+
+    Args:
+        table_files (list): List of file paths to be concatenated.
+        **kwargs: Additional keyword arguments to be passed to pd.read_csv().
+
+    Returns:
+        pandas.DataFrame: The concatenated dataframe.
+    """
     df = pd.concat([pd.read_csv(file, sep="\t", **kwargs) for file in table_files if check_file_exists(file)])
     return df
 
 
 def read_in_quast(table_files):
-    """Concatenate all the cluster summary files into a single dataframe."""
+    """Concatenate all the cluster summary files into a single dataframe.
+
+    Args:
+        table_files (list): List of file paths to the cluster summary files.
+
+    Returns:
+        pandas.DataFrame: A dataframe containing the concatenated data from all the cluster summary files.
+    """
     df = pd.DataFrame()
-    for file in table_files:
-        if check_file_exists(file, throw_error=False):
-            with open(file, "r") as f:
-                d = dict(line.strip().split("\t") for line in f)
-                df = pd.concat([df, pd.DataFrame.from_dict(d, orient="index").T])
+    if table_files:
+        for file in table_files:
+            if check_file_exists(file, throw_error=False):
+                with open(file, "r") as f:
+                    d = dict(line.strip().split("\t") for line in f)
+                    df = pd.concat([df, pd.DataFrame.from_dict(d, orient="index").T])
     return df
 
 
@@ -150,6 +198,12 @@ def get_columns_of_interest(header_multiqc):
     """
     Flatten, and make dic with old name and new name
     New name contains the tool and the annotation of the column specified in suppl file
+
+    Args:
+        header_multiqc (dict): A dictionary containing the header information from MultiQC report.
+
+    Returns:
+        dict: A dictionary mapping the old column names to the new column names.
     """
     columns_of_interest = {}
     for bigkey, element in header_multiqc.items():
@@ -168,6 +222,12 @@ def get_columns_of_interest(header_multiqc):
 def get_files_and_columns_of_interest(table_headers):
     """
     Get the files of interest and the columns of interest from the table headers file
+
+    Args:
+        table_headers (str): Path to the table headers file
+
+    Returns:
+        tuple: A tuple containing the files of interest and the columns of interest
     """
     if table_headers:
         check_file_exists(table_headers)
@@ -193,6 +253,17 @@ def get_files_and_columns_of_interest(table_headers):
 
 
 def write_dataframe(df, file, comment):
+    """
+    Write a pandas DataFrame to a file in TSV format.
+
+    Args:
+        df (pandas.DataFrame): The DataFrame to be written.
+        file (str): The file path to write the DataFrame to.
+        comment (list): A list of strings to be written as comments at the beginning of the file.
+
+    Returns:
+        None
+    """
     df_tsv = df.to_csv(sep="\t", index=False)
     with open(file, "w") as f:
         if comment:
@@ -213,12 +284,32 @@ def filter_and_rename_columns(df, columns_of_interest):
 
 
 def read_dataframe_from_file(file):
+    """
+    Read a dataframe from a file.
+
+    Args:
+        file (str): The path to the file.
+
+    Returns:
+        pandas.DataFrame: The dataframe read from the file.
+    """
     with open(file, "r") as table:
         df = pd.read_csv(table, sep="\t")
     return df
 
 
 def join_dataframes(df1, df2):
+    """
+    Join two DataFrames or a DataFrame and a Series together.
+
+    Args:
+        df1 (pd.DataFrame or pd.Series): The first DataFrame or Series to be joined.
+        df2 (pd.DataFrame): The second DataFrame to be joined.
+
+    Returns:
+        pd.DataFrame: The joined DataFrame.
+
+    """
     if isinstance(df1, pd.Series):  # Check if df1 is a Series
         df1 = df1.to_frame()  # Convert Series to DataFrame
         return pd.concat([df1, df2], axis=1, join="outer")
@@ -229,12 +320,32 @@ def join_dataframes(df1, df2):
 
 
 def process_multiqc_dataframe(df):
+    """
+    Process the MultiQC dataframe by splitting the values in the first column by "." and setting it as the index.
+
+    Args:
+        df (pandas.DataFrame): The MultiQC dataframe to be processed.
+
+    Returns:
+        pandas.DataFrame: The processed MultiQC dataframe.
+    """
     df[df.columns[0]] = df[df.columns[0]].str.split(".").str[0]
     df.set_index(df.columns[0], inplace=True)
     return df
 
 
 def process_failed_contig_dataframe(df):
+    """
+    Process the failed contig dataframe by converting columns to string type,
+    splitting values in "Cluster" and "Iteration" columns, creating a new "id" column,
+    setting "id" as the index, and returning the index series.
+
+    Args:
+        df (pandas.DataFrame): The dataframe containing the failed contig data.
+
+    Returns:
+        pandas.Index: The index series of the processed dataframe.
+    """
     df = df.astype(str)
     df["Cluster"] = df["Cluster"].str.split(".0").str[0]
     df["Iteration"] = df["Step"].str.split(".0").str[0]
@@ -245,6 +356,16 @@ def process_failed_contig_dataframe(df):
 
 
 def filter_files_of_interest(multiqc_data, files_of_interest):
+    """
+    Filters the multiqc_data list to include only files whose stem contains any of the files_of_interest.
+
+    Args:
+        multiqc_data (list): List of file paths.
+        files_of_interest (list): List of file names to filter by.
+
+    Returns:
+        list: Filtered list of file paths.
+    """
     return [file for file in multiqc_data if any(x in file.stem for x in files_of_interest)]
 
 
@@ -274,6 +395,16 @@ def read_data(directory, files_of_interest, process_dataframe):
 
 
 def get_header(comment_dir, header_file_name):
+    """
+    Get the header from a header file located in the specified comment directory.
+
+    Args:
+        comment_dir (str): The directory where the header file is located.
+        header_file_name (str): The name of the header file.
+
+    Returns:
+        list: The header as a list of strings.
+    """
     header = []
     if comment_dir:
         header_file_path = f"{comment_dir}/{header_file_name}"
@@ -284,11 +415,34 @@ def get_header(comment_dir, header_file_name):
 
 # Function to split column dynamically
 def dynamic_split(row, delimiter="_"):
+    """
+    Splits a string into multiple parts based on the specified delimiter.
+
+    Args:
+        row (str): The string to be split.
+        delimiter (str, optional): The delimiter to use for splitting the string. Defaults to "_".
+
+    Returns:
+        list: A list of the split parts.
+    """
     parts = row.split(delimiter)
     return parts
 
 
 def handle_tables(table_files, header_name=False, output=False, **kwargs):
+    """
+    Handle multiple table files and perform concatenation and writing to output file if specified.
+
+    Args:
+        table_files (list): List of table file paths.
+        header_name (bool, optional): Flag to include header name in the output file. Defaults to False.
+        output (str, optional): Output file path. Defaults to False.
+        **kwargs: Additional keyword arguments for concatenation.
+
+    Returns:
+        pandas.DataFrame: Concatenated table data.
+
+    """
     result_df = pd.DataFrame()
     if table_files:
         result_df = concat_table_files(table_files, **kwargs)
@@ -298,6 +452,20 @@ def handle_tables(table_files, header_name=False, output=False, **kwargs):
 
 
 def handle_dataframe(df, prefix, column_to_split, header=False, output=False):
+    """
+    Handle the given dataframe by adding a prefix to column names, splitting a specific column,
+    and generating an ID based on sample, cluster, and step information.
+
+    Args:
+        df (pandas.DataFrame): The input dataframe.
+        prefix (str): The prefix to add to column names.
+        column_to_split (str): The column to split.
+        header (bool, optional): Whether the dataframe has a header. Defaults to False.
+        output (bool, optional): Whether to write the resulting dataframe to a file. Defaults to False.
+
+    Returns:
+        pandas.DataFrame: The processed dataframe.
+    """
     result_df = pd.DataFrame()
     if not df.empty:
         df = df.add_prefix(f"({prefix}) ")
@@ -324,7 +492,15 @@ def handle_dataframe(df, prefix, column_to_split, header=False, output=False):
 
 
 def main(argv=None):
-    """Coordinate argument parsing and program execution."""
+    """
+    Main function for creating custom tables for MultiQC.
+
+    Args:
+        argv (list): List of command line arguments.
+
+    Returns:
+        int: Exit code.
+    """
     args = parse_args(argv)
     logging.basicConfig(level=args.log_level, format="[%(levelname)s] %(message)s")
 
@@ -339,58 +515,51 @@ def main(argv=None):
         handle_tables([args.sample_metadata], sample_header, "sample_metadata_mqc.tsv")
 
     # Checkv summary
-    if args.checkv_files:
-        checkv_df = handle_tables(args.checkv_files)
-        checkv_header = []
-        if args.save_intermediate:
-            checkv_header = get_header(args.comment_dir, "checkv_mqc.txt")
-        if not checkv_df.empty:
-            checkv_df = handle_dataframe(checkv_df, "checkv", "contig_id", checkv_header, "summary_checkv_mqc.tsv")
+    checkv_df = handle_tables(args.checkv_files)
+    checkv_header = []
+    if args.save_intermediate:
+        checkv_header = get_header(args.comment_dir, "checkv_mqc.txt")
+    if not checkv_df.empty:
+        checkv_df = handle_dataframe(checkv_df, "checkv", "contig_id", checkv_header, "summary_checkv_mqc.tsv")
 
     # Quast summary
-    if args.quast_files:
-        quast_df = read_in_quast(args.quast_files)
-        quast_header = []
-        if args.save_intermediate:
-            quast_header = get_header(args.comment_dir, "quast_mqc.txt")
-        if not quast_df.empty:
-            quast_df = handle_dataframe(quast_df, "quast", "Assembly", quast_header, "summary_quast_mqc.tsv")
-            # Most of the columns are not good for a single contig evaluation
-            quast_df = quast_df[["(quast) # N's per 100 kbp"]]
+    quast_df = read_in_quast(args.quast_files)
+    quast_header = []
+    if args.save_intermediate:
+        quast_header = get_header(args.comment_dir, "quast_mqc.txt")
+    if not quast_df.empty:
+        quast_df = handle_dataframe(quast_df, "quast", "Assembly", quast_header, "summary_quast_mqc.tsv")
+        # Most of the columns are not good for a single contig evaluation
+        quast_df = quast_df[["(quast) # N's per 100 kbp"]]
 
     # Blast summary
-    if args.blast_files:
-        blast_df = handle_tables(args.blast_files, header=None)
-        blast_header = []
-        if args.save_intermediate:
-            blast_header = get_header(args.comment_dir, "blast_mqc.txt")
-        if not blast_df.empty:
-            # Read the blast summary file
-            blast_df.columns = [
-                "query",
-                "subject",
-                "pident",
-                "qlen",
-                "length",
-                "mismatch",
-                "gapopen",
-                "qstart",
-                "qend",
-                "sstart",
-                "send",
-                "evalue",
-                "bitscore",
-            ]
-
-            # Filter on best hit per contig and keep only the best hit
-            blast_df = blast_df.sort_values("bitscore", ascending=False).drop_duplicates("query")
-
-            # Extract the species name from the subject column
-            blast_df["species"] = blast_df["subject"].str.split("|").str[-1]
-            blast_df = blast_df[["species"] + blast_df.columns.difference(["species"], sort=False).tolist()]
-
-            blast_df = handle_dataframe(blast_df, "blast", "query", blast_header, "summary_blast_mqc.tsv")
-
+    blast_df = handle_tables(args.blast_files, header=None)
+    blast_header = []
+    if args.save_intermediate:
+        blast_header = get_header(args.comment_dir, "blast_mqc.txt")
+    if not blast_df.empty:
+        # Read the blast summary file
+        blast_df.columns = [
+            "query",
+            "subject",
+            "pident",
+            "qlen",
+            "length",
+            "mismatch",
+            "gapopen",
+            "qstart",
+            "qend",
+            "sstart",
+            "send",
+            "evalue",
+            "bitscore",
+        ]
+        # Filter on best hit per contig and keep only the best hit
+        blast_df = blast_df.sort_values("bitscore", ascending=False).drop_duplicates("query")
+        # Extract the species name from the subject column
+        blast_df["species"] = blast_df["subject"].str.split("|").str[-1]
+        blast_df = blast_df[["species"] + blast_df.columns.difference(["species"], sort=False).tolist()]
+        blast_df = handle_dataframe(blast_df, "blast", "query", blast_header, "summary_blast_mqc.tsv")
     # Multiqc output yml files
     if args.multiqc_dir:
         # Check if the given files exist
