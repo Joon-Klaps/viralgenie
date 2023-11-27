@@ -46,7 +46,7 @@ Tools given for each step can change as benchmarking is in progress.
    - Merge blast hit seqs and contigs into a single file & cluster ([`cdhit`](https://sites.google.com/view/cd-hit), [`vsearch`](https://github.com/torognes/vsearch/wiki/Clustering))
    - Filter for only contigs that correspond to the identified centroid
 
-6. Scaffolding of contigs ((MAFFT)[https://mafft.cbrc.jp/alignment/server/], (MUSCLE)[https://www.drive5.com/muscle/])
+6. Scaffolding of contigs ([`MAFFT`](https://mafft.cbrc.jp/alignment/server/), [`MUSCLE`](https://www.drive5.com/muscle/))
 7. Creation of hybrid supercontig by combining contigs and the reference.
 8. Mapping filtered reads to hybrid supercontig ([`BowTie2`](http://bowtie-bio.sourceforge.net/bowtie2/),[`BWAmem2`](https://github.com/bwa-mem2/bwa-mem2))
 9. Update consensus genome with mapped reads ([`BCFTools`](http://samtools.github.io/bcftools/bcftools.html),[`iVar`](https://andersen-lab.github.io/ivar/html/manualpage.html))
