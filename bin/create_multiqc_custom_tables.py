@@ -486,7 +486,7 @@ def handle_dataframe(df, prefix, column_to_split, header=False, output=False):
         df = df.set_index("id")
         result_df = df
     if output:
-        write_dataframe(result_df, output, [])
+        write_dataframe(result_df, output, header)
     result_df.drop(columns=["sample", "cluster", "step"], inplace=True)
     return result_df
 

@@ -103,31 +103,31 @@ module_order:
 
 # Summary table names
 table_columns_name:
-  FastQC (pre-Trimming):
+  "SAMPLE: FastQC (pre-Trimming)":
     total_sequences: "Nr. Input Reads"
     avg_sequence_length: "Length Input Reads"
     percent_gc: "% GC Input Reads"
     percent_duplicates: "% Dups Input Reads"
     percent_fails: "% Failed Input Reads"
-  FastQC (post-Trimming):
+  "SAMPLE: FastQC (post-Trimming)":
     total_sequences: "Nr. Processed Reads"
     avg_sequence_length: "Length Processed Reads"
     percent_gc: "% GC Processed Reads"
     percent_duplicates: "% Dups Processed Reads"
     percent_fails: "% Failed Processed Reads"
-  Bowtie2 (Host-removal):
+  "SAMPLE: Bowtie2 (Host-removal)":
     overall_alignment_rate: "% Host reads"
-  Quast (Spades):
+  "SAMPLE: Quast (Spades)":
     N50: "N50 (Spades)"
     L50: "L50 (Spades)"
     Largest contig: "Largest contig (Spades)"
     Total length: "Total length (Spades)"
-  Quast (Megahit):
+  "SAMPLE: Quast (Megahit)":
     N50: "N50 (Megahit)"
     L50: "L50 (Megahit)"
     Largest contig: "Largest contig (Megahit)"
     Total length: "Total length (Megahit)"
-  Quast (Trinity):
+  "SAMPLE: Quast (Trinity)":
     N50: "N50 (Trinity)"
     L50: "L50 (Trinity)"
     Largest contig: "Largest contig (Trinity)"
@@ -152,13 +152,13 @@ table_columns_visible:
   "CLUSTER: Samtools Stats": False
   "CLUSTER: Bcftools: Stats": False
   "CLUSTER: Picard: Mark Duplicates": False
-  "CLUSTER: UMI-tools deduplication ": False
+  "CLUSTER: UMI-tools": False
   "CLUSTER: mosdepth": False
   "SAMPLE: BBduk":
     Total Removed bases percent: False
     Total Removed reads percent: True
     Total Removed reads: True
-  "SAMPLE Quast (Spades)":
+  "SAMPLE: Quast (Spades)":
     N50: True
     L50: False
     Largest contig: True

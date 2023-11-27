@@ -56,7 +56,7 @@ workflow FASTA_BLAST_CLUST {
             tsv_data ->
                 def comments = [
                     "id: 'samples_without_blast_hits'",
-                    "anchor: 'Filtered samples'",
+                    "anchor: 'WARNING: Filtered samples'",
                     "section_name: 'Samples without blast hits'",
                     "format: 'tsv'",
                     "description: 'Samples that did not have any blast hits for their contigs (using ${params.assemblers}) were not included in further assembly polishing'",

@@ -60,7 +60,7 @@ workflow BAM_FLAGSTAT_FILTER {
             tsv_data ->
                 def comments = [
                     "id: 'failed_mapped'",
-                    "anchor: 'Filtered contigs'",
+                    "anchor: 'WARNING: Filtered contigs'",
                     "section_name: 'Minimum mapped reads'",
                     "format: 'tsv'",
                     "description: 'Contigs that did not have more then ${min_mapped_reads} mapped reads were filtered out'",

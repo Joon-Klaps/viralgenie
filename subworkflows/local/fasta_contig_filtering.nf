@@ -52,7 +52,7 @@ workflow FASTA_CONTIG_FILTERING {
             tsv_data ->
                 def comments = [
                     "id: 'failed_contig_quality'",
-                    "anchor: 'Filtered contigs'",
+                    "anchor: 'WARNING: Filtered contigs'",
                     "section_name: 'Failed contig quality'",
                     "format: 'tsv'",
                     "description: 'Contigs that are not of minimum size ${min_len} or have more then ${n_100} ambigous bases per 100 kbp were filtered out'",

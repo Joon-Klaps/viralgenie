@@ -194,7 +194,7 @@ workflow VIRALGENIE {
                 tsv_data ->
                     def comments = [
                         "id: 'samples_without_contigs'",
-                        "anchor: 'Filtered samples'",
+                        "anchor: 'WARNING: Filtered samples'",
                         "section_name: 'Samples without contigs'",
                         "format: 'tsv'",
                         "description: 'Samples that did not have any contigs (using ${params.assemblers}) were not included in further assembly polishing'",
@@ -318,7 +318,7 @@ workflow VIRALGENIE {
             [meta + [step: "variant-calling", iteration:'variant-calling', previous_step: meta.step], fasta, fastq]
             }
         .set{ch_consensus_results_reads}
- 
+
     if (params.mapping_sequence ) {
         ch_mapping_sequence = Channel.fromPath(params.mapping_sequence)
 
