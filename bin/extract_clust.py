@@ -20,7 +20,7 @@ class Cluster:
 
     def __init__(self, cluster_id, centroid, members):
         # Having only a number get's removed by multiqc which causes merging errors downstream
-        self.cluster_id = "cl" + str(cluster_id)
+        self.cluster_id = cluster_id
         self.centroid = centroid
         self.members = members
         if members is not None:
@@ -91,7 +91,7 @@ def parse_clusters_chdit(file_in):
                 clusters.append(cluster)
 
             # Extract the cluster cluster_id from the line and reset the members and centroid
-            current_cluster_id = line.strip().split()[1]
+            current_cluster_id = f"cl{line.strip().split()[1]}"
             current_members = []
             current_centroid = None
         else:
@@ -129,7 +129,7 @@ def parse_clusters_vsearch(file_in):
 
             parts = line.split("\t")
             # parts = ['member_type', 'cluster_id', 'length', 'ANI', '...', '...', '...', '...', 'member_name', 'centroid_name']
-            cluster_id = parts[1]
+            cluster_id = f"cl{parts[1]}"
             member_name = parts[-2]
 
             # Create a new cluster object if the cluster cluster_id is not present in the dictionary
