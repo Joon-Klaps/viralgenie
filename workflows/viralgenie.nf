@@ -350,7 +350,7 @@ workflow VIRALGENIE {
                         constrain: true,
                         reads: reads,
                         iteration: 'variant-calling',
-                        previous_step: 'None'
+                        previous_step: 'constrain'
                         ]
                     return [new_meta, seq]
                 }

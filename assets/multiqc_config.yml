@@ -92,11 +92,11 @@ module_order:
   - "samtools":
       name: "CLUSTER: Samtools Stats"
   - "bcftools":
-      name: "CLUSTER: Bcftools Stats"
+      name: "CLUSTER: Bcftools"
   - "picard":
-      name: "CLUSTER: Picard MarkDuplicates"
+      name: "CLUSTER: Picard"
   - "umitools":
-      name: "CLUSTER: UMI-tools deduplication"
+      name: "CLUSTER: UMI-tools"
   - "mosdepth":
       name: "CLUSTER: mosdepth"
   - "custom_content"
@@ -150,9 +150,9 @@ table_columns_visible:
   "SAMPLE: Bowtie2 (Host-removal)":
     overall_alignment_rate: True
   "CLUSTER: Samtools Stats": False
-  "CLUSTER: Picard MarkDuplicates": False
-  "CLUSTER: UMI-tools deduplication": False
-  "CLUSTER: bcftools_stats": False
+  "CLUSTER: Bcftools: Stats": False
+  "CLUSTER: Picard: Mark Duplicates": False
+  "CLUSTER: UMI-tools deduplication ": False
   "CLUSTER: mosdepth": False
   "SAMPLE: BBduk":
     Total Removed bases percent: False
