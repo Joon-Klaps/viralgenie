@@ -1,4 +1,4 @@
 # id: 'quast_custom'
-# section_name: 'CLUSTER: Quast ambigous'
+# section_name: 'CLUSTER: Quast'
 # format: 'tsv'
-# description: 'Number of ambigous bases per 100kbp'
+# description: 'QUAST is a quality assessment tool for genome assemblies, written by the Center for Algorithmic Biotechnology.DOI: 10.1093/bioinformatics/btt086.'
