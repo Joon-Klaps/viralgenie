@@ -35,6 +35,7 @@ for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true
 // Check mandatory parameters
 if (params.input            ) { ch_input = file(params.input)                                      } else { exit 1, 'Input samplesheet not specified!'                              }
 if (params.adapter_fasta    ) { ch_adapter_fasta = file(params.adapter_fasta)                      } else { ch_adapter_fasta  = []                                                  }
+if (params.metadata         ) { ch_metadata = file(params.metadata)                                } else { ch_metadata  = []                                                  }
 if (params.host_genome      ) { ch_host_genome = file(params.host_genome)                          } else { ch_host_genome = file(WorkflowMain.getGenomeAttribute(params, 'fasta')) }
 if (params.host_index       ) { ch_host_index = Channel.fromPath(params.host_index).map{[[], it]}  } else { ch_host_index = []                                                      }
 if (params.contaminants     ) { ch_contaminants = file(params.contaminants)                        } else { ch_contaminants = []                                                    }
@@ -88,7 +89,8 @@ include { CONSENSUS_QC                    } from '../subworkflows/local/consensu
 
 // Report generation
 include { CREATE_MULTIQC_TABLES           } from '../modules/local/create_multiqc_tables'
-include { MULTIQC                         } from '../modules/nf-core/multiqc/main'
+include { MULTIQC as MULTIQC_DATAPREP     } from '../modules/nf-core/multiqc/main'
+include { MULTIQC as MULTIQC_REPORT       } from '../modules/nf-core/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS     } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 
 /*
@@ -191,8 +193,8 @@ workflow VIRALGENIE {
             .map {
                 tsv_data ->
                     def comments = [
-                        "id: 'Samples without contigs'",
-                        "anchor: 'Filtered samples'",
+                        "id: 'samples_without_contigs'",
+                        "anchor: 'WARNING: Filtered samples'",
                         "section_name: 'Samples without contigs'",
                         "format: 'tsv'",
                         "description: 'Samples that did not have any contigs (using ${params.assemblers}) were not included in further assembly polishing'",
@@ -221,11 +223,13 @@ workflow VIRALGENIE {
                 .out
                 .centroids_members
                 .map { meta, centroids, members ->
-                    [ meta + [step: "clusterd"], centroids, members ]
+                    [ meta, centroids, members ]
                 }
                 .branch { meta, centroids, members ->
-                    singletons: meta.cluster_size == 0
-                    multiple: meta.cluster_size > 0
+                    singletons: meta.cluster_size == 0 
+                        return [ meta + [step:"singleton"], centroids ]
+                    multiple: meta.cluster_size > 0 
+                        return [ meta + [step:"consensus"], centroids, members ]
                 }
                 .set{ch_centroids_members}
 
@@ -233,12 +237,6 @@ workflow VIRALGENIE {
             ch_clusters_tsv        = FASTA_BLAST_CLUST.out.clusters_tsv.collect{it[1]}.ifEmpty([])
 
             ch_multiqc_files       =  ch_multiqc_files.mix(FASTA_BLAST_CLUST.out.no_blast_hits_mqc.ifEmpty([]))
-
-            ch_centroids_members
-                .singletons
-                .map{ meta, centroids, members ->
-                    [ meta, centroids] }
-                .set{ ch_single_centroids }
 
             // Align clustered contigs & collapse into a single consensus per cluster
             ALIGN_COLLAPSE_CONTIGS (
@@ -249,7 +247,7 @@ workflow VIRALGENIE {
 
 
             SINGLETON_FILTERING (
-                ch_single_centroids,
+                ch_centroids_members.singletons,
                 params.min_contig_size,
                 params.max_n_1OOkbp
                 )
@@ -317,7 +315,7 @@ workflow VIRALGENIE {
     // add last step to it
     ch_consensus_results_reads
         .map{ meta, fasta, fastq ->
-            [meta + [step: "it_variant_calling", iteration:'variant_calling'], fasta, fastq]
+            [meta + [step: "variant-calling", iteration:'variant-calling', previous_step: meta.step], fasta, fastq]
             }
         .set{ch_consensus_results_reads}
 
@@ -351,7 +349,8 @@ workflow VIRALGENIE {
                         step: "constrain",
                         constrain: true,
                         reads: reads,
-                        iteration: 'variant_calling'
+                        iteration: 'variant-calling',
+                        previous_step: 'constrain'
                         ]
                     return [new_meta, seq]
                 }
@@ -396,6 +395,10 @@ workflow VIRALGENIE {
 
     }
 
+    ch_checkv_summary = Channel.empty()
+    ch_quast_summary  = Channel.empty()
+    ch_blast_summary  = Channel.empty()
+
     if ( !params.skip_consensus_qc ) {
         ch_checkv_db = Channel.empty()
         if (!params.skip_checkv) {
@@ -417,18 +420,39 @@ workflow VIRALGENIE {
             params.skip_blast_qc,
             params.skip_alignment_qc
             )
-        ch_versions      = ch_versions.mix(CONSENSUS_QC.out.versions)
-        ch_multiqc_files = ch_multiqc_files.mix(CONSENSUS_QC.out.mqc.collect{it[1]}.ifEmpty([]))
+        ch_versions       = ch_versions.mix(CONSENSUS_QC.out.versions)
+        ch_multiqc_files  = ch_multiqc_files.mix(CONSENSUS_QC.out.mqc.collect{it[1]}.ifEmpty([]))
+        ch_checkv_summary = CONSENSUS_QC.out.checkv_summary.collect{it[1]}.ifEmpty([])
+        ch_quast_summary  = CONSENSUS_QC.out.quast_summary.collect{it[1]}.ifEmpty([])
+        ch_blast_summary  = CONSENSUS_QC.out.blast_txt.collect{it[1]}.ifEmpty([])
+
     }
+
+    MULTIQC_DATAPREP (
+        ch_multiqc_files.collect(),
+        ch_multiqc_config.toList(),
+        ch_multiqc_custom_config.toList(),
+        ch_multiqc_logo.toList(),
+    )
+
+    multiqc_data = MULTIQC_DATAPREP.out.data.ifEmpty([])
 
     // Prepare MULTIQC custom tables
     CREATE_MULTIQC_TABLES (
-            ch_clusters_summary
-            // ch_clusters_tsv
+            ch_clusters_summary,
+            ch_metadata,
+            ch_checkv_summary,
+            ch_quast_summary,
+            ch_blast_summary,
+            multiqc_data
             )
-        ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.summary_clusters_mqc.ifEmpty([]))
-
-        ch_versions      = ch_versions.mix(CREATE_MULTIQC_TABLES.out.versions)
+    ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.summary_clusters_mqc.ifEmpty([]))
+    ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.sample_metadata_mqc.ifEmpty([]))
+    ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.contigs_overview_mqc.ifEmpty([]))
+    ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.summary_checkv_mqc.ifEmpty([]))
+    ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.summary_blast_mqc.ifEmpty([]))
+    ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.summary_quast_mqc.ifEmpty([]))
+    ch_versions      = ch_versions.mix(CREATE_MULTIQC_TABLES.out.versions)
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
@@ -448,13 +472,13 @@ workflow VIRALGENIE {
     ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml'))
 
-    MULTIQC (
+    MULTIQC_REPORT (
         ch_multiqc_files.collect(),
         ch_multiqc_config.toList(),
         ch_multiqc_custom_config.toList(),
         ch_multiqc_logo.toList()
     )
-    multiqc_report = MULTIQC.out.report.toList()
+    multiqc_report = MULTIQC_REPORT.out.report.toList()
 }
 
 /*

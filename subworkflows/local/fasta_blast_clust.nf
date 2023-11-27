@@ -35,11 +35,10 @@ workflow FASTA_BLAST_CLUST {
         .set { ch_blast_txt }
 
     // Throw an warning if no hits are found
-    //TODO: This isn't clean at all.
     ch_blast_txt
         .hits
         .collect()
-        .ifEmpty{ log.warn "WARN: No blast hits were found in any samples of the given BLAST database. Consider updating the search parameters or the database: \n ${params.reference_pool} "}
+        .ifEmpty{ log.warn "No blast hits were found in any samples of the given BLAST database. Consider updating the search parameters or the database: \n ${params.reference_pool} "}
 
     // if (ch_blast_txt.hits.count() ==0 ){
     //     println(" IWAS HERRREREREZNJKGNDSJKGNJKDS VKSD VKLDS FKLDS L")
@@ -56,8 +55,8 @@ workflow FASTA_BLAST_CLUST {
         .map {
             tsv_data ->
                 def comments = [
-                    "id: 'Samples without blast hits'",
-                    "anchor: 'Filtered samples'",
+                    "id: 'samples_without_blast_hits'",
+                    "anchor: 'WARNING: Filtered samples'",
                     "section_name: 'Samples without blast hits'",
                     "format: 'tsv'",
                     "description: 'Samples that did not have any blast hits for their contigs (using ${params.assemblers}) were not included in further assembly polishing'",

@@ -20,6 +20,9 @@ workflow CONSENSUS_QC  {
 
     ch_versions      = Channel.empty()
     ch_multiqc_files = Channel.empty()
+    blast_txt        = Channel.empty()
+    checkv_summary   = Channel.empty()
+    quast_summary    = Channel.empty()
 
     if ( !skip_checkv || !skip_alignment_qc) {
         ch_genome
@@ -39,7 +42,8 @@ workflow CONSENSUS_QC  {
     if ( !skip_checkv ) {
         // uses HMM and AA alignment to deterimine completeness
         CHECKV_ENDTOEND ( ch_genome_collapsed, checkv_db )
-        ch_versions = ch_versions.mix(CHECKV_ENDTOEND.out.versions)
+        checkv_summary = CHECKV_ENDTOEND.out.quality_summary
+        ch_versions    = ch_versions.mix(CHECKV_ENDTOEND.out.versions)
     }
 
     // Align the different steps to each other to see how the sequences have changed
@@ -106,9 +110,8 @@ workflow CONSENSUS_QC  {
             [[:],[]],
             [[:],[]]
         )
-        ch_versions = ch_versions.mix(QUAST_QC.out.versions)
-        // Will keep this for now but this should be handled by another process that makes it into a nice table for the multiqc report
-            ch_multiqc_files = ch_multiqc_files.mix(QUAST_QC.out.tsv)
+        ch_versions   = ch_versions.mix(QUAST_QC.out.versions)
+        quast_summary = QUAST_QC.out.tsv
     }
 
     if ( !skip_blast_qc ){
@@ -117,11 +120,15 @@ workflow CONSENSUS_QC  {
             ch_genome,
             blast_db
         )
+        ch_versions = ch_versions.mix(BLAST_BLASTN_QC.out.versions)
+        blast_txt   = BLAST_BLASTN_QC.out.txt
     }
 
     emit:
-    blast_txt = BLAST_BLASTN_QC.out.txt // channel: [ val(meta), [ txt ] ]
-    mqc       = ch_multiqc_files        // channel: [ tsv ]
-    versions  = ch_versions             // channel: [ versions.yml ]
+    blast_txt       = blast_txt         // channel: [ val(meta), [ txt ] ]
+    checkv_summary  = checkv_summary    // channel: [ val(meta), [ tsv ] ]
+    quast_summary   = quast_summary     // channel: [ val(meta), [ tsv ] ]
+    mqc             = ch_multiqc_files  // channel: [ tsv ]
+    versions        = ch_versions       // channel: [ versions.yml ]
 }
 

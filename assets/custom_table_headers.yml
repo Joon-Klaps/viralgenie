@@ -1,0 +1,91 @@
+umitools:
+  - input_reads
+  - removed_reads
+  - output_reads
+  - positions_deduplicated
+  - max_umi_per_pos
+  - mean_umi_per_pos
+  - total_umis
+  - percent_passing_dedup
+  - unique_umis
+picard_dups:
+  - UNPAIRED_READS_EXAMINED: "unpaired reads examined"
+  - READ_PAIR_OPTICAL_DUPLICATES: "read pair optical duplicates"
+  - UNMAPPED_READS: "unmapped reads"
+  - ESTIMATED_LIBRARY_SIZE: "estimated library size"
+  - UNPAIRED_READ_DUPLICATES: "unpaired read duplicates"
+  - SECONDARY_OR_SUPPLEMENTARY_RDS: "secondary or supplementary rds"
+  - READ_PAIRS_EXAMINED: "read pairs examined"
+  - READ_PAIR_DUPLICATES: "read pair duplicates"
+  - PERCENT_DUPLICATION: "% duplication"
+  - LIBRARY: "library"
+samtools_stats:
+  - sequences
+  - reads_paired_percent
+  - average_length
+  - is_sorted
+  - bases_mapped_(cigar)
+  - reads_QC_failed_percent
+  - reads_unmapped
+  - reads_unmapped_percent
+  - reads_properly_paired_percent
+  - average_quality
+  - reads_paired
+  - non-primary_alignments
+  - supplementary_alignments
+  - reads_mapped
+  - reads_mapped_percent
+  - bases_trimmed
+  - bases_duplicated
+  - reads_properly_paired
+  - outward_oriented_pairs
+  - reads_duplicated
+  - reads_duplicated_percent
+  - bases_mapped
+  - insert_size_average
+  - insert_size_standard_deviation
+  - inward_oriented_pairs
+  - error_rate
+  - mismatches
+  - reads_MQ0
+  - total_length
+  - reads_QC_failed
+ivar_variants:
+  - INS: "raw inserts"
+  - SNP: "raw SNPs"
+  - DEL: "raw deletions"
+bcftools_stats:
+  - number_of_indels: "number of indels"
+  - number_of_samples: "number of samples"
+  - number_of_SNPs: "number of SNPs"
+  - number_of_MNPs: "number of MNPs"
+  - number_of_no-ALTs: "number of no-ALTs"
+  - number_of_records: "number of records"
+  - number_of_others: "number of others"
+  - number_of_multiallelic_sites: "number of multiallelic sites"
+  - number_of_multiallelic_SNP_sites: "number of multiallelic SNP sites"
+  - tv: "number of transversions"
+  - tv_1st_ALT: "transversion in 1st alternative"
+  - ts: "number of transitions"
+  - ts_1st_ALT: "transistion in 1st alternative"
+  - tstv: "transistions/transversions ratio"
+  - tstv_1st_ALT: "transition/transversion in 1st alternative"
+  - substitution_type_T>C: "substitution T->C"
+  - substitution_type_A>C: "substitution A->C"
+  - substitution_type_C>A: "substitution C->A"
+  - substitution_type_G>T: "substitution G->T"
+  - substitution_type_A>T: "substitution A->T"
+  - substitution_type_C>T: "substitution C->T"
+  - substitution_type_T>G: "substitution T->G"
+  - substitution_type_T>A: "substitution T->A"
+  - substitution_type_G>C: "substitution G->C"
+  - substitution_type_C>G: "substitution C->G"
+  - substitution_type_G>A: "substitution G->A"
+  - substitution_type_A>G: "substitution A->G"
+general_stats:
+  - mosdepth_mqc-generalstats-mosdepth-10_x_pc: "mosdepth 10X coverage"
+  - mosdepth_mqc-generalstats-mosdepth-1_x_pc: "mosdepth 1X coverage"
+  - mosdepth_mqc-generalstats-mosdepth-30_x_pc: "mosdepth 30X coverage"
+  - mosdepth_mqc-generalstats-mosdepth-50_x_pc: "mosdepth 50X coverage"
+  - mosdepth_mqc-generalstats-mosdepth-5_x_pc: "mosdepth 5X coverage"
+  - mosdepth_mqc-generalstats-mosdepth-median_coverage: "mosdepth Median coverage"

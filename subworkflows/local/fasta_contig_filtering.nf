@@ -45,20 +45,20 @@ workflow FASTA_CONTIG_FILTERING {
     ch_contigs_filtered
         .fail
         .map { meta, fasta, stats ->
-            ["$meta.id\t$meta.sample\t$meta.iteration\t$meta.cluster_id\t$stats.contig_size\t$stats.n_100"]
+            ["$meta.id\t$meta.sample\t$meta.cluster_id\t$meta.step\t$stats.contig_size\t$stats.n_100"]
         }
         .collect()
         .map {
             tsv_data ->
                 def comments = [
-                    "id: 'Failed contig quality'",
-                    "anchor: 'Filtered contigs'",
+                    "id: 'failed_contig_quality'",
+                    "anchor: 'WARNING: Filtered contigs'",
                     "section_name: 'Failed contig quality'",
                     "format: 'tsv'",
                     "description: 'Contigs that are not of minimum size ${min_len} or have more then ${n_100} ambigous bases per 100 kbp were filtered out'",
                     "plot_type: 'table'"
                 ]
-                def header = ['Id','Sample', 'Iteration','Cluster','Contig size', 'N\'s per 100 kbp']
+                def header = ['Id','Sample', 'Cluster','Step','Contig size', 'N\'s per 100 kbp']
                 return WorkflowCommons.multiqcTsvFromList(tsv_data, header, comments) // make it compatible with other mqc files
         }
         .collectFile(name:'failed_contig_quality_mqc.tsv')

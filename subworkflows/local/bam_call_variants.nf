@@ -39,7 +39,8 @@ workflow BAM_CALL_VARIANTS {
     }
 
     if (save_stats){
-        vcf_fasta = ch_vcf_filter.join(meta_fasta, by: [0])
+        // run stats on all variants not only those that pass the filter
+        vcf_fasta = ch_vcf.join(meta_fasta, by: [0])
         vcf       = vcf_fasta.map{ meta, vcf, fasta -> [ meta, vcf ] }
         fasta     = vcf_fasta.map{ meta, vcf, fasta -> [ meta, fasta ] }
 
@@ -54,6 +55,7 @@ workflow BAM_CALL_VARIANTS {
         ch_tbi      = VCF_TABIX_STATS.out.tbi
         ch_csi      = VCF_TABIX_STATS.out.csi
         ch_stats    = VCF_TABIX_STATS.out.stats
+        ch_multiqc  = ch_multiqc.mix(ch_stats)
 
         ch_versions = ch_versions.mix(VCF_TABIX_STATS.out.versions)
     }
