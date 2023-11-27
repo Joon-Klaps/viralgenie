@@ -1,11 +1,11 @@
-process MMSEQS_CLUSTER {
+process MMSEQS_LINCLUST {
     tag "$meta.id"
     label 'process_high'
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/mmseqs2:14.7e284--pl5321hf1761c0_0':
-        'biocontainers/mmseqs2:14.7e284--pl5321hf1761c0_0' }"
+        'https://depot.galaxyproject.org/singularity/mmseqs2:15.6f452--pl5321h6a68c12_0':
+        'biocontainers/mmseqs2:15.6f452--pl5321h6a68c12_0' }"
 
     input:
     tuple val(meta), path(db_input)
@@ -29,7 +29,7 @@ process MMSEQS_CLUSTER {
     DB_INPUT_PATH_NAME=\$(find -L "$db_input/" -maxdepth 1 -name "$args2" | sed 's/\\.\\[^.\\]*\$//' |  sed -e 'N;s/^\\(.*\\).*\\n\\1.*\$/\\1\\n\\1/;D' )
 
     mmseqs \\
-        cluster \\
+        linclust \\
         \$DB_INPUT_PATH_NAME \\
         ${prefix}/${prefix} \\
         tmp1 \\

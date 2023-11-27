@@ -165,11 +165,6 @@
                         "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
                         "installed_by": ["modules"]
                     },
-                    "mmseqs/cluster": {
-                        "branch": "master",
-                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
-                        "installed_by": ["modules"]
-                    },
                     "mmseqs/createdb": {
                         "branch": "master",
                         "git_sha": "18a43d316b6fd683dc2346867b42882b99811cfd",
@@ -178,6 +173,11 @@
                     "mmseqs/createtsv": {
                         "branch": "master",
                         "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
+                        "installed_by": ["modules"]
+                    },
+                    "mmseqs/linclust": {
+                        "branch": "master",
+                        "git_sha": "18a43d316b6fd683dc2346867b42882b99811cfd",
                         "installed_by": ["modules"]
                     },
                     "multiqc": {

@@ -6,7 +6,7 @@ include { CDHIT_CDHITEST    } from '../../modules/nf-core/cdhit/cdhitest/main'
 include { VSEARCH_CLUSTER   } from '../../modules/nf-core/vsearch/cluster/main'
 include { CAT_CAT           } from '../../modules/nf-core/cat/cat/main'
 include { MMSEQS_CREATEDB   } from '../../modules/nf-core/mmseqs/createdb/main'
-include { MMSEQS_CLUSTER    } from '../../modules/nf-core/mmseqs/cluster/main'
+include { MMSEQS_LINCLUST   } from '../../modules/nf-core/mmseqs/linclust/main'
 include { MMSEQS_CREATETSV  } from '../../modules/nf-core/mmseqs/createtsv/main'
 include { CLUST_SEQ_EXTRACT } from '../../subworkflows/local/clust_seq_extract'
 
@@ -117,13 +117,13 @@ workflow FASTA_BLAST_CLUST {
     else if (cluster_method == "mmseqs") {
         MMSEQS_CREATEDB ( CAT_CAT.out.file_out )
         ch_versions = ch_versions.mix(MMSEQS_CREATEDB.out.versions.first())
-        MMSEQS_CLUSTER ( MMSEQS_CREATEDB.out.db )
-        ch_versions = ch_versions.mix(MMSEQS_CLUSTER.out.versions.first())
+        MMSEQS_LINCLUST ( MMSEQS_CREATEDB.out.db )
+        ch_versions = ch_versions.mix(MMSEQS_LINCLUST.out.versions.first())
 
         MMSEQS_CREATETSV (
+            MMSEQS_LINCLUST.out.db_cluster,
             MMSEQS_CREATEDB.out.db,
-            MMSEQS_CREATEDB.out.db,
-            MMSEQS_CLUSTER.out.db_cluster,
+            [[:],[]]
         )
         ch_versions = ch_versions.mix(MMSEQS_CREATETSV.out.versions.first())
 
