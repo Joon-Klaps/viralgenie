@@ -36,7 +36,7 @@ workflow FASTQ_SPADES_TRINITY_MEGAHIT  {
         spades_filtered     = SPADES.out.scaffolds.filter{ meta, contigs -> contigs.countFasta() > 0 }
 
         QUAST_SPADES (
-            SPADES.out.scaffolds.filter(),
+            spades_filtered,
             [[:],[]],
             [[:],[]]
         )
