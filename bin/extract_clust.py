@@ -114,6 +114,28 @@ def parse_clusters_chdit(file_in):
     return clusters
 
 
+def parse_clusters_mmseqs(file_in):
+    """
+    Extract sequence names from mmseqs createtsv output.
+    """
+    clusters = {}  # Dictionary to store clusters {cluster_id: Cluster}
+
+    with open(file_in, "rt") as file:
+        for line in file:
+            centroid_name, member_name = line.strip().split("\t")
+            cluster_id = f"cl{len(clusters)}"  # Generate unique cluster ID
+
+            # Check if centroid already exists in clusters
+            existing_cluster = next((c for c in clusters.values() if c.centroid == centroid_name), None)
+
+            if existing_cluster:
+                existing_cluster.members.append(member_name)
+            else:
+                new_cluster = Cluster(cluster_id, centroid_name, [member_name])
+                clusters[cluster_id] = new_cluster
+    return list(clusters.values())
+
+
 def parse_clusters_vsearch(file_in):
     """
     Extract sequence names from vsearch gzipped cluster files.
@@ -187,7 +209,7 @@ def write_clusters_summary(clusters, prefix):
 
 def filter_clusters(clusters, pattern):
     """
-    Filter clusters on members given regex pattern.
+    Filter clusters on members given regex pattern, members cannot contain the pattern.
     """
     filtered_clusters = []
     regex = re.compile(pattern)
@@ -212,13 +234,14 @@ def parse_args(argv=None):
         "option",
         metavar="OPTION",
         type=str,
-        help=".clstr file from cdhitestcontaining cluster information.",
+        choices=("cdhitest", "vsearch", "mmseqs", "sourmash", "vrhyme"),
+        help="Used cluster algorithm. Choose between cdhitest, vsearch, mmseqs, sourmash and vrhyme. ",
     )
     parser.add_argument(
         "file_in",
         metavar="FILE_IN",
         type=Path,
-        help="cluster file from chdit or vsearch containing cluster information.",
+        help="cluster file from chdit, vsearch, mmseqs_createtsv containing cluster information.",
     )
     parser.add_argument(
         "file_out_prefix",
@@ -256,6 +279,8 @@ def main(argv=None):
         cluster_list = parse_clusters_chdit(args.file_in)
     elif args.option == "vsearch":
         cluster_list = parse_clusters_vsearch(args.file_in)
+    elif args.option == "mmseqs":
+        cluster_list = parse_clusters_mmseqs(args.file_in)
     else:
         logger.error(f"Option {args.option} is not supported!")
         sys.exit(2)

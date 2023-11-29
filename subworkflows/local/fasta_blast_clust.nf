@@ -100,7 +100,7 @@ workflow FASTA_BLAST_CLUST {
 
     CAT_CAT(ch_reference_contigs_comb)
 
-    // cluster our reference hits and contigs
+    // cluster our reference hits and contigs should make this a subworkflow
     if ( cluster_method == "vsearch" ){
         VSEARCH_CLUSTER (CAT_CAT.out.file_out)
 
@@ -119,9 +119,17 @@ workflow FASTA_BLAST_CLUST {
         MMSEQS_LINCLUST ( MMSEQS_CREATEDB.out.db )
         ch_versions = ch_versions.mix(MMSEQS_LINCLUST.out.versions.first())
 
+        mmseqs = MMSEQS_LINCLUST
+            .out
+            .db_cluster
+            .join(MMSEQS_CREATEDB.out.db, by: [0])
+        
+        mmseqs_cluster = mmseqs.map{ meta, db_cluster, db -> [meta, db_cluster] }
+        mmseqs_db      = mmseqs.map{ meta, db_cluster, db -> [meta, db] }
+
         MMSEQS_CREATETSV (
-            MMSEQS_LINCLUST.out.db_cluster,
-            MMSEQS_CREATEDB.out.db,
+            mmseqs_cluster,
+            mmseqs_db,
             [[:],[]]
         )
         ch_versions = ch_versions.mix(MMSEQS_CREATETSV.out.versions.first())
