@@ -1,7 +1,7 @@
-name: bcftools_mpileup
+name: vrhyme_vrhyme
 channels:
   - conda-forge
   - bioconda
   - defaults
 dependencies:
-  - bioconda::bcftools=1.18
+  - bioconda::vrhyme=1.1.0
