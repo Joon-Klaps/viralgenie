@@ -13,24 +13,6 @@ def getClustersFromJson(json_file) {
     return json
 }
 
-//
-// Function to get list of [ meta, [ centroids, members ] ]
-// Here the meta contains metadata on the sample and cluster, so instead of $it represinting samples, $it represents a single cluster
-//
-def create_member_ref_channel(row) {
-    meta         = row[0]
-    centroids    = row[1]
-    members      = row[2]
-
-    sample       = String.valueOf(meta.id) // just to make sure we don't pass by reference
-    id           = centroids.baseName.replaceAll("_centroids.fa", "")
-
-    new_meta = meta + [ id: id]
-
-    def result = [ new_meta, centroids, members]
-    return result
-}
-
 workflow CLUST_SEQ_EXTRACT {
 
     take:

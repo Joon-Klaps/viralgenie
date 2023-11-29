@@ -33,9 +33,10 @@ workflow FASTQ_SPADES_TRINITY_MEGAHIT  {
 
         ch_versions         = ch_versions.mix(SPADES.out.versions.first())
         ch_scaffolds        = ch_scaffolds.mix( SPADES.out.scaffolds)
+        spades_filtered     = SPADES.out.scaffolds.filter{ meta, contigs -> contigs.countFasta() > 0 }
 
         QUAST_SPADES (
-            SPADES.out.scaffolds,
+            spades_filtered,
             [[:],[]],
             [[:],[]]
         )
@@ -51,13 +52,13 @@ workflow FASTQ_SPADES_TRINITY_MEGAHIT  {
             .out
             .transcript_fasta
             .filter{ meta, contigs -> contigs != null } // filter out empty contigs check issue #21
-            .set{ch_scaffolds_trinity}
+            .set{trinity_filtered}
 
-        ch_scaffolds         = ch_scaffolds.mix(ch_scaffolds_trinity)
+        ch_scaffolds         = ch_scaffolds.mix(trinity_filtered)
         ch_versions          = ch_versions.mix(TRINITY.out.versions.first())
 
         QUAST_TRINITY (
-            ch_scaffolds_trinity,
+            trinity_filtered,
             [[:],[]],
             [[:],[]]
         )
@@ -71,9 +72,11 @@ workflow FASTQ_SPADES_TRINITY_MEGAHIT  {
         MEGAHIT(reads)
         ch_versions          = ch_versions.mix(MEGAHIT.out.versions.first())
         ch_scaffolds         = ch_scaffolds.mix(MEGAHIT.out.contigs)
+        megahit_filtered     = MEGAHIT.out.contigs.filter{ meta, contigs -> contigs.countFasta() > 0 }
+
 
         QUAST_MEGAHIT (
-            MEGAHIT.out.contigs,
+            megahit_filtered,
             [[:],[]],
             [[:],[]]
         )
@@ -84,7 +87,7 @@ workflow FASTQ_SPADES_TRINITY_MEGAHIT  {
     // ch_scaffolds, go from [[meta,scaffold1],[meta,scaffold2], ...] to [meta,[scaffolds]]
     ch_scaffolds
         .map { meta, scaffold  -> tuple( groupKey(meta, assemblers.size()), scaffold ) }
-        .groupTuple()
+        .groupTuple(remainder: true)
         .set{ch_scaffolds_combined}
 
     CAT_CAT(ch_scaffolds_combined)

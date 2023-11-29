@@ -28,7 +28,7 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
 
     if (repeats >= 1){
         ch_reference_reads_intermediate
-            .map{meta, fasta, reads -> [meta + [iteration:'1', step:"it1"], fasta, reads]}
+            .map{meta, fasta, reads -> [meta + [iteration:'1', step:"it1", previous_step: meta.step], fasta, reads]}
             .set{ch_reference_reads_intermediate}
 
         ITERATION_1(
@@ -57,7 +57,7 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
     }
     if (repeats >= 2){
         ch_reference_reads_intermediate
-            .map{meta, fasta, reads -> [meta + [iteration:'2', step:"it2"], fasta, reads]}
+            .map{meta, fasta, reads -> [meta + [iteration:'2', step:"it2", previous_step: meta.step], fasta, reads]}
             .set{ch_reference_reads_intermediate}
 
         ITERATION_2(
@@ -86,7 +86,7 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
     }
     if (repeats >= 3){
         ch_reference_reads_intermediate
-            .map{meta, fasta, reads -> [meta + [iteration:'3', step:"it3"], fasta, reads]}
+            .map{meta, fasta, reads -> [meta + [iteration:'3', step:"it3", previous_step: meta.step], fasta, reads]}
             .set{ch_reference_reads_intermediate}
 
         ITERATION_3(
@@ -115,7 +115,7 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
     }
     if (repeats >= 4){
         ch_reference_reads_intermediate
-            .map{meta, fasta, reads -> [meta + [iteration:'4', step:"it4"], fasta, reads]}
+            .map{meta, fasta, reads -> [meta + [iteration:'4', step:"it4", previous_step: meta.step], fasta, reads]}
             .set{ch_reference_reads_intermediate}
 
         ITERATION_4(

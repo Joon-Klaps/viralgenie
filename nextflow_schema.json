@@ -29,6 +29,12 @@
                     "description": "The output directory where the results will be saved. You have to use absolute paths to storage on Cloud infrastructure.",
                     "fa_icon": "fas fa-folder-open"
                 },
+                "metadata": {
+                    "type": "string",
+                    "fa_icon": "fas fa-file-csv",
+                    "description": "Sample metadata that is included in the multiqc report",
+                    "pattern": "^\\S+\\.tsv$"
+                },
                 "email": {
                     "type": "string",
                     "description": "Email address for completion summary.",
@@ -244,6 +250,13 @@
                     "type": "string",
                     "description": "Custom MultiQC yaml file containing HTML including a methods description.",
                     "fa_icon": "fas fa-cog"
+                },
+                "custom_table_headers": {
+                    "type": "string",
+                    "default": "${projectDir}/assets/custom_table_headers.yml",
+                    "fa_icon": "fas fa-heading",
+                    "description": "Custom yaml file contian g the table column names selection and new names.",
+                    "hidden": true
                 },
                 "validate_params": {
                     "type": "boolean",
@@ -698,9 +711,16 @@
                     "fa_icon": "fas fa-info",
                     "description": "calculate summary statistics in final iteration"
                 },
+                "multiqc_comment_headers": {
+                    "type": "string",
+                    "default": "${projectDir}/assets/mqc_comment",
+                    "fa_icon": "fas fa-heading",
+                    "description": "Directory containing the mutliqc headers for multiple tables like 'clusters_summary_mqc.txt', 'blast_mqc.txt', ...",
+                    "hidden": true
+                },
                 "ivar_header": {
                     "type": "string",
-                    "default": "https://raw.githubusercontent.com/Joon-Klaps/viralgenie/dev/assets/headers/ivar_variants_header_mqc.txt",
+                    "default": "https://raw.githubusercontent.com/Joon-Klaps/viralgenie/dev/assets/multiqc_comment_headers/ivar_variants_header_mqc.txt",
                     "hidden": true,
                     "fa_icon": "fas fa-heading"
                 }
