@@ -62,12 +62,12 @@
                     },
                     "bowtie2/align": {
                         "branch": "master",
-                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
+                        "git_sha": "1fea64f5132a813ec97c1c6d3a74e0aee7142b6d",
                         "installed_by": ["modules"]
                     },
                     "bowtie2/build": {
                         "branch": "master",
-                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
+                        "git_sha": "1fea64f5132a813ec97c1c6d3a74e0aee7142b6d",
                         "installed_by": ["modules"]
                     },
                     "bracken/bracken": {
@@ -107,7 +107,7 @@
                     },
                     "custom/dumpsoftwareversions": {
                         "branch": "master",
-                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
+                        "git_sha": "bba7e362e4afead70653f84d8700588ea28d0f9e",
                         "installed_by": ["modules"]
                     },
                     "emboss/cons": {
@@ -152,12 +152,12 @@
                     },
                     "kraken2/kraken2": {
                         "branch": "master",
-                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
+                        "git_sha": "d6549f46c3c1c3fe3def110f3d18059a68a65cc6",
                         "installed_by": ["modules"]
                     },
                     "mafft": {
                         "branch": "master",
-                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
+                        "git_sha": "c0a22acfb0accdf8ab3ea4f755a4865d538dc53f",
                         "installed_by": ["modules"]
                     },
                     "megahit": {
@@ -172,17 +172,17 @@
                     },
                     "mmseqs/createtsv": {
                         "branch": "master",
-                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
+                        "git_sha": "151460db852d636979d9ff3ee631e2268060d4c3",
                         "installed_by": ["modules"]
                     },
                     "mmseqs/linclust": {
                         "branch": "master",
-                        "git_sha": "18a43d316b6fd683dc2346867b42882b99811cfd",
+                        "git_sha": "151460db852d636979d9ff3ee631e2268060d4c3",
                         "installed_by": ["modules"]
                     },
                     "multiqc": {
                         "branch": "master",
-                        "git_sha": "214d575774c172062924ad3564b4f66655600730",
+                        "git_sha": "1537442a7be4a78efa3d1ff700a923c627bbda5d",
                         "installed_by": ["modules"]
                     },
                     "muscle": {
@@ -192,12 +192,12 @@
                     },
                     "picard/collectmultiplemetrics": {
                         "branch": "master",
-                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
+                        "git_sha": "20b0918591d4ba20047d7e13e5094bcceba81447",
                         "installed_by": ["modules"]
                     },
                     "picard/markduplicates": {
                         "branch": "master",
-                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
+                        "git_sha": "20b0918591d4ba20047d7e13e5094bcceba81447",
                         "installed_by": ["modules"]
                     },
                     "quast": {
@@ -212,17 +212,17 @@
                     },
                     "samtools/flagstat": {
                         "branch": "master",
-                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
+                        "git_sha": "63e817de8c617131447192ab2c4e70b4ed4071f7",
                         "installed_by": ["bam_stats_samtools"]
                     },
                     "samtools/idxstats": {
                         "branch": "master",
-                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
+                        "git_sha": "63e817de8c617131447192ab2c4e70b4ed4071f7",
                         "installed_by": ["bam_stats_samtools"]
                     },
                     "samtools/index": {
                         "branch": "master",
-                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
+                        "git_sha": "5394565c5fe4c760e5b35977ec7607c62e81d1f8",
                         "installed_by": ["modules"]
                     },
                     "samtools/sort": {
@@ -286,7 +286,7 @@
                 "nf-core": {
                     "bam_stats_samtools": {
                         "branch": "master",
-                        "git_sha": "cfd937a668919d948f6fcbf4218e79de50c2f36f",
+                        "git_sha": "0da36ce43056d68253d3c422c7137223ac6d3c3a",
                         "installed_by": ["subworkflows"]
                     },
                     "fastq_fastqc_umitools_fastp": {
