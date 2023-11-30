@@ -207,8 +207,13 @@ workflow VIRALGENIE {
 
         if (!params.skip_polishing){
             // blast contigs against reference & identify clusters of (contigs & references)
+            ch_contigs
+                .pass
+                .join(ch_host_trim_reads, by: [0], remainder: false)
+                .set{ch_contigs_reads}
+            
             FASTA_BLAST_CLUST (
-                ch_contigs.pass,
+                ch_contigs_reads,
                 ch_blast_db,
                 unpacked_references,
                 params.cluster_method

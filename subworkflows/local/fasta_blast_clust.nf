@@ -2,24 +2,21 @@ include { BLAST_BLASTN      } from '../../modules/nf-core/blast/blastn/main'
 include { BLAST_FILTER      } from '../../modules/local/blast_filter'
 include { GUNZIP            } from '../../modules/nf-core/gunzip/main'
 include { SEQKIT_GREP       } from '../../modules/nf-core/seqkit/grep/main'
-include { CDHIT_CDHITEST    } from '../../modules/nf-core/cdhit/cdhitest/main'
-include { VSEARCH_CLUSTER   } from '../../modules/nf-core/vsearch/cluster/main'
 include { CAT_CAT           } from '../../modules/nf-core/cat/cat/main'
-include { MMSEQS_CREATEDB   } from '../../modules/nf-core/mmseqs/createdb/main'
-include { MMSEQS_LINCLUST   } from '../../modules/nf-core/mmseqs/linclust/main'
-include { MMSEQS_CREATETSV  } from '../../modules/nf-core/mmseqs/createtsv/main'
+include { FASTA_FASTQ_CLUST } from '../../subworkflows/local/fasta_fastq_clust'
 include { CLUST_SEQ_EXTRACT } from '../../subworkflows/local/clust_seq_extract'
 
 workflow FASTA_BLAST_CLUST {
 
     take:
-    fasta          // channel: [ val(meta), [ fasta.gz ] ]
+    fasta_fastq    // channel: [ val(meta), [ fasta ],  [ fastq ] ]
     blast_db       // channel: [ val(meta), path(db) ]
     blast_db_fasta // channel: [ val(meta), path(fasta) ]
     cluster_method // string
 
     main:
     ch_versions = Channel.empty()
+    fasta       = fasta_fastq.map{ meta, fasta, fastq -> [meta, fasta] }
 
     // Blast results, to a reference database, to find a complete genome that's already assembled
     BLAST_BLASTN (
@@ -100,52 +97,28 @@ workflow FASTA_BLAST_CLUST {
 
     CAT_CAT(ch_reference_contigs_comb)
 
+    CAT_CAT
+        .out
+        .file_out
+        .join(fasta_fastq, by: [0])
+        .map{meta, contigs_joined, contigs, reads -> [meta, contigs_joined, reads]}
+        .set{ch_contigs_reads}
+
     // cluster our reference hits and contigs should make this a subworkflow
-    if ( cluster_method == "vsearch" ){
-        VSEARCH_CLUSTER (CAT_CAT.out.file_out)
-
-        ch_clusters = VSEARCH_CLUSTER.out.uc
-        ch_versions = ch_versions.mix(VSEARCH_CLUSTER.out.versions.first())
-    }
-    else if (cluster_method == "cdhitest") {
-        CDHIT_CDHITEST(CAT_CAT.out.file_out)
-
-        ch_clusters = CDHIT_CDHITEST.out.clusters
-        ch_versions = ch_versions.mix(CDHIT_CDHITEST.out.versions.first())
-    }
-    else if (cluster_method == "mmseqs") {
-        MMSEQS_CREATEDB ( CAT_CAT.out.file_out )
-        ch_versions = ch_versions.mix(MMSEQS_CREATEDB.out.versions.first())
-        MMSEQS_LINCLUST ( MMSEQS_CREATEDB.out.db )
-        ch_versions = ch_versions.mix(MMSEQS_LINCLUST.out.versions.first())
-
-        mmseqs = MMSEQS_LINCLUST
-            .out
-            .db_cluster
-            .join(MMSEQS_CREATEDB.out.db, by: [0])
-        
-        mmseqs_cluster = mmseqs.map{ meta, db_cluster, db -> [meta, db_cluster] }
-        mmseqs_db      = mmseqs.map{ meta, db_cluster, db -> [meta, db] }
-
-        MMSEQS_CREATETSV (
-            mmseqs_cluster,
-            mmseqs_db,
-            [[:],[]]
-        )
-        ch_versions = ch_versions.mix(MMSEQS_CREATETSV.out.versions.first())
-
-        ch_clusters = MMSEQS_CREATETSV.out.tsv
-    }
-
+    FASTA_FASTQ_CLUST (
+        ch_contigs_reads,
+        cluster_method
+    )
+    
     CLUST_SEQ_EXTRACT(
-        ch_clusters,
+        FASTA_FASTQ_CLUST.out.clusters,
         cluster_method,
         CAT_CAT.out.file_out
     )
     ch_centroids_members = CLUST_SEQ_EXTRACT.out.seq_centroids_members
 
     emit:
-    clusters              = ch_clusters                              // channel: [ [ meta ], [ clusters ] ]
+    clusters              = FASTA_FASTQ_CLUST.out.clusters           // channel: [ [ meta ], [ clusters ] ]
     centroids_members     = ch_centroids_members                     // channel: [ [ meta ], [ seq_centroids.fa], [ seq_members.fa] ]
     clusters_tsv          = CLUST_SEQ_EXTRACT.out.clusters_tsv       // channel: [ [ meta ], [ tsv ] ]
     clusters_summary      = CLUST_SEQ_EXTRACT.out.clusters_summary   // channel: [ [ meta ], [ tsv ] ]

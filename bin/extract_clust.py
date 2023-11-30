@@ -170,6 +170,33 @@ def parse_clusters_vsearch(file_in):
     return list(clusters.values())
 
 
+def parse_clusters_vrhyme(file_in):
+    """
+    Extract sequence names from vrhyme gzipped cluster files.
+    """
+    clusters = {}  # Dictionary to store clusters {cluster_id: Cluster}
+
+    with open(file_in, "rt") as file:
+        for line in file:
+            if line.strip():  # Check if the line is not empty
+                scaffold, cluster_id = line.strip().split("\t")
+                if not clusters:  # If clusters is empty, make the first scaffold the centroid
+                    centroid = scaffold
+                    current_cluster_id = f"cl{cluster_id}"
+                    clusters[current_cluster_id] = Cluster(current_cluster_id, centroid, [scaffold])
+                else:
+                    current_cluster_id = f"cl{cluster_id}"
+                    if current_cluster_id in clusters:
+                        clusters[current_cluster_id].members.append(scaffold)
+                    else:
+                        clusters[current_cluster_id] = Cluster(current_cluster_id, scaffold, [scaffold])
+
+    return clusters
+
+    # Convert the dictionary values to a list of clusters and return
+    return list(clusters.values())
+
+
 def print_clusters(clusters, prefix):
     for cluster in clusters:
         cluster._save_cluster_members(prefix)
@@ -281,6 +308,8 @@ def main(argv=None):
         cluster_list = parse_clusters_vsearch(args.file_in)
     elif args.option == "mmseqs":
         cluster_list = parse_clusters_mmseqs(args.file_in)
+    elif args.option == "vrhyme":
+        cluster_list = parse_clusters_vrhyme(args.file_in)
     else:
         logger.error(f"Option {args.option} is not supported!")
         sys.exit(2)
