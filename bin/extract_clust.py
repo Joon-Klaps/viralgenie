@@ -132,7 +132,7 @@ def parse_clusters_mmseqs(file_in):
                 existing_cluster.members.append(member_name)
                 existing_cluster.cluster_size = len(existing_cluster.members)
             else:
-                new_cluster = Cluster(cluster_id, centroid_name, [member_name])
+                new_cluster = Cluster(cluster_id, centroid_name, [])
                 clusters[cluster_id] = new_cluster
     return list(clusters.values())
 
@@ -324,12 +324,7 @@ def main(argv=None):
         logger.error(f"Option {args.option} is not supported!")
         sys.exit(2)
 
-    for cluster in cluster_list:
-        print(cluster)
     filtered_clusters = filter_clusters(cluster_list, args.pattern)
-
-    for filtered_cluster in filtered_clusters:
-        print(filtered_cluster)
 
     print_clusters(filtered_clusters, args.file_out_prefix)
 
