@@ -187,6 +187,7 @@ def parse_clusters_vrhyme(file_in, pattern):
         next(file)  # Skip header
         for line in file:
             scaffold, cluster_id = line.strip().split("\t")
+            scaffold = scaffold.split()[0]  # Extracting the first word
             current_cluster_id = f"cl{cluster_id}"
 
             # Initialize cluster if not exists
