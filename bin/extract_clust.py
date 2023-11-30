@@ -130,6 +130,7 @@ def parse_clusters_mmseqs(file_in):
 
             if existing_cluster:
                 existing_cluster.members.append(member_name)
+                existing_cluster.cluster_size = len(existing_cluster.members)
             else:
                 new_cluster = Cluster(cluster_id, centroid_name, [member_name])
                 clusters[cluster_id] = new_cluster
@@ -170,30 +171,39 @@ def parse_clusters_vsearch(file_in):
     return list(clusters.values())
 
 
-def parse_clusters_vrhyme(file_in):
+def parse_clusters_vrhyme(file_in, pattern):
     """
-    Extract sequence names from vrhyme gzipped cluster files.
+    Extract sequence names from vrhyme gzipped cluster files using regex.
+    input file:
+        scaffold	bin
+        k39_0 flag=1 multi=111.6808 len=29849	1
+        Japan/DP0078/2020	1
+        CHN/HN04/2020	1
     """
     clusters = {}  # Dictionary to store clusters {cluster_id: Cluster}
+    pattern_regex = re.compile(pattern)
 
     with open(file_in, "rt") as file:
+        next(file)  # Skip header
         for line in file:
-            if line.strip():  # Check if the line is not empty
-                scaffold, cluster_id = line.strip().split("\t")
-                if not clusters:  # If clusters is empty, make the first scaffold the centroid
-                    centroid = scaffold
-                    current_cluster_id = f"cl{cluster_id}"
-                    clusters[current_cluster_id] = Cluster(current_cluster_id, centroid, [scaffold])
-                else:
-                    current_cluster_id = f"cl{cluster_id}"
-                    if current_cluster_id in clusters:
-                        clusters[current_cluster_id].members.append(scaffold)
-                    else:
-                        clusters[current_cluster_id] = Cluster(current_cluster_id, scaffold, [scaffold])
+            scaffold, cluster_id = line.strip().split("\t")
+            current_cluster_id = f"cl{cluster_id}"
 
-    return clusters
+            # Initialize cluster if not exists
+            if current_cluster_id not in clusters:
+                clusters[current_cluster_id] = Cluster(current_cluster_id, None, [])
 
-    # Convert the dictionary values to a list of clusters and return
+            # Check and set centroid or append to members
+            if clusters[current_cluster_id].centroid is None and not pattern_regex.search(scaffold):
+                clusters[current_cluster_id].set_centroid(scaffold)
+            else:
+                clusters[current_cluster_id].members.append(scaffold)
+
+    for cluster in clusters.values():
+        if cluster.centroid is None and cluster.members:
+            cluster.set_centroid(cluster.members.pop(0))
+        cluster.cluster_size = len(cluster.members)
+
     return list(clusters.values())
 
 
@@ -309,11 +319,17 @@ def main(argv=None):
     elif args.option == "mmseqs":
         cluster_list = parse_clusters_mmseqs(args.file_in)
     elif args.option == "vrhyme":
-        cluster_list = parse_clusters_vrhyme(args.file_in)
+        cluster_list = parse_clusters_vrhyme(args.file_in, args.pattern)
     else:
         logger.error(f"Option {args.option} is not supported!")
         sys.exit(2)
+
+    for cluster in cluster_list:
+        print(cluster)
     filtered_clusters = filter_clusters(cluster_list, args.pattern)
+
+    for filtered_cluster in filtered_clusters:
+        print(filtered_cluster)
 
     print_clusters(filtered_clusters, args.file_out_prefix)
 
