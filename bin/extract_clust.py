@@ -272,8 +272,8 @@ def parse_args(argv=None):
         "option",
         metavar="OPTION",
         type=str,
-        choices=("cdhitest", "vsearch", "mmseqs", "sourmash", "vrhyme"),
-        help="Used cluster algorithm. Choose between cdhitest, vsearch, mmseqs, sourmash and vrhyme. ",
+        choices=("cdhitest", "vsearch", "mmseqs-linclust", "mmseqs-cluster", "sourmash", "vrhyme"),
+        help="Used cluster algorithm. Choose between cdhitest, vsearch, mmseqs-linclust, mmseqs-cluster, sourmash and vrhyme. ",
     )
     parser.add_argument(
         "file_in",
@@ -317,7 +317,7 @@ def main(argv=None):
         cluster_list = parse_clusters_chdit(args.file_in)
     elif args.option == "vsearch":
         cluster_list = parse_clusters_vsearch(args.file_in)
-    elif args.option == "mmseqs":
+    elif args.option == "mmseqs-linclust" or args.option == "mmseqs-cluster" :
         cluster_list = parse_clusters_mmseqs(args.file_in)
     elif args.option == "vrhyme":
         cluster_list = parse_clusters_vrhyme(args.file_in, args.pattern)

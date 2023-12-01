@@ -3,6 +3,7 @@ include { CDHIT_CDHITEST           } from '../../modules/nf-core/cdhit/cdhitest/
 include { VSEARCH_CLUSTER          } from '../../modules/nf-core/vsearch/cluster/main'
 include { MMSEQS_CREATEDB          } from '../../modules/nf-core/mmseqs/createdb/main'
 include { MMSEQS_LINCLUST          } from '../../modules/nf-core/mmseqs/linclust/main'
+include { MMSEQS_CLUSTER           } from '../../modules/nf-core/mmseqs/cluster/main'
 include { MMSEQS_CREATETSV         } from '../../modules/nf-core/mmseqs/createtsv/main'
 include { VRHYME_VRHYME            } from '../../modules/nf-core/vrhyme/vrhyme/main'
 include { GUNZIP as GUNZIP_CONTIGS } from '../../modules/nf-core/gunzip/main'
@@ -15,7 +16,7 @@ workflow FASTA_FASTQ_CLUST {
 
     main:
     ch_versions = Channel.empty()
-    ch_fasta    = fasta_fastq.map{ meta, fasta, fastq -> [meta, fasta] }   
+    ch_fasta    = fasta_fastq.map{ meta, fasta, fastq -> [meta, fasta] }
 
     // cluster our reference hits and contigs should make this a subworkflow
     if ( cluster_method == "vsearch" ){
@@ -30,30 +31,35 @@ workflow FASTA_FASTQ_CLUST {
         ch_clusters = CDHIT_CDHITEST.out.clusters
         ch_versions = ch_versions.mix(CDHIT_CDHITEST.out.versions.first())
     }
-    else if (cluster_method == "mmseqs") {
+    else if (cluster_method == "mmseqs-linclust" || cluster_method == "mmseqs-cluster") {
         MMSEQS_CREATEDB ( ch_fasta )
         ch_versions = ch_versions.mix(MMSEQS_CREATEDB.out.versions.first())
-        MMSEQS_LINCLUST ( MMSEQS_CREATEDB.out.db )
-        ch_versions = ch_versions.mix(MMSEQS_LINCLUST.out.versions.first())
 
-        mmseqs = MMSEQS_LINCLUST
-            .out
-            .db_cluster
-            .join(MMSEQS_CREATEDB.out.db, by: [0])
-        
-        mmseqs_cluster = mmseqs.map{ meta, db_cluster, db -> [meta, db_cluster] }
-        mmseqs_db      = mmseqs.map{ meta, db_cluster, db -> [meta, db] }
+        if (cluster_method == "mmseqs-linclust") {
+            MMSEQS_LINCLUST ( MMSEQS_CREATEDB.out.db )
+            ch_versions = ch_versions.mix(MMSEQS_LINCLUST.out.versions.first())
+            MMSEQS_LINCLUST
+                .out
+                .db_cluster
+                .join(MMSEQS_CREATEDB.out.db, by: [0])
+                .set{ mmseqs_cluster } // channel: [ [ meta ], [ db_cluster ], [ db ] ]
+        }
+        else {
+            MMSEQS_CLUSTER ( MMSEQS_CREATEDB.out.db )
+            ch_versions = ch_versions.mix(MMSEQS_CLUSTER.out.versions.first())
+            MMSEQS_CLUSTER
+                .out
+                .db_cluster
+                .join(MMSEQS_CREATEDB.out.db, by: [0])
+                .set{ mmseqs_cluster } // channel: [ [ meta ], [ db_cluster ], [ db ] ]
+        }
 
-        MMSEQS_CREATETSV (
-            mmseqs_cluster,
-            mmseqs_db,
-            [[:],[]]
-        )
+        MMSEQS_CREATETSV ( mmseqs_cluster )
         ch_versions = ch_versions.mix(MMSEQS_CREATETSV.out.versions.first())
 
         ch_clusters = MMSEQS_CREATETSV.out.tsv
     }
-    else if (cluster_method == "vrhyme") { 
+    else if (cluster_method == "vrhyme") {
 
         GUNZIP_CONTIGS (ch_fasta)
         ch_versions = ch_versions.mix(GUNZIP_CONTIGS.out.versions.first())
