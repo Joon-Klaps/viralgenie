@@ -553,7 +553,15 @@
                     "type": "string",
                     "default": "cdhitest",
                     "description": "Cluster algorithm used for contigs",
-                    "enum": ["cdhitest", "vsearch", "mmseqs-linclust", "mmseqs-cluster", "vrhyme", "sourmash"],
+                    "enum": [
+                        "cdhitest",
+                        "vsearch",
+                        "mmseqs-linclust",
+                        "mmseqs-cluster",
+                        "vrhyme",
+                        "mashtree",
+                        "diamond"
+                    ],
                     "fa_icon": "fas fa-bezier-curve"
                 },
                 "identity_threshold": {

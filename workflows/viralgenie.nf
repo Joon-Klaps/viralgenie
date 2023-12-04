@@ -211,7 +211,7 @@ workflow VIRALGENIE {
                 .pass
                 .join(ch_host_trim_reads, by: [0], remainder: false)
                 .set{ch_contigs_reads}
-            
+
             FASTA_BLAST_CLUST (
                 ch_contigs_reads,
                 ch_blast_db,
@@ -228,9 +228,9 @@ workflow VIRALGENIE {
                     [ meta, centroids, members ]
                 }
                 .branch { meta, centroids, members ->
-                    singletons: meta.cluster_size == 0 
+                    singletons: meta.cluster_size == 0
                         return [ meta + [step:"singleton"], centroids ]
-                    multiple: meta.cluster_size > 0 
+                    multiple: meta.cluster_size > 0
                         return [ meta + [step:"consensus"], centroids, members ]
                 }
                 .set{ch_centroids_members}

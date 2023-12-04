@@ -6,6 +6,8 @@ include { MMSEQS_LINCLUST          } from '../../modules/nf-core/mmseqs/linclust
 include { MMSEQS_CLUSTER           } from '../../modules/nf-core/mmseqs/cluster/main'
 include { MMSEQS_CREATETSV         } from '../../modules/nf-core/mmseqs/createtsv/main'
 include { VRHYME_VRHYME            } from '../../modules/nf-core/vrhyme/vrhyme/main'
+include { MASH_DIST                } from '../../modules/nf-core/mash/dist/main'
+include { MASHTREE                 } from '../../modules/nf-core/mashtree/main'
 include { GUNZIP as GUNZIP_CONTIGS } from '../../modules/nf-core/gunzip/main'
 
 workflow FASTA_FASTQ_CLUST {
@@ -71,6 +73,31 @@ workflow FASTA_FASTQ_CLUST {
         VRHYME_VRHYME (ch_gunzip_fastq)
         ch_clusters = VRHYME_VRHYME.out.membership
         ch_versions = ch_versions.mix(VRHYME_VRHYME.out.versions.first())
+    }
+    else if (cluster_method == "mashtree") {
+
+        MASH_DIST(ch_fasta)
+        // mashtree doesn't like a single fasta file with multiple contigs
+        // Instead, split up into multiple fasta files & group them together
+        // [meta, fasta] -> [meta, [fasta.1, fasta.2, ...]]
+        // ch_fasta
+        //     .splitFasta(record: [id: true])
+        //     .set {seq_names}
+
+        // ch_fasta
+        //     .map{ meta, fasta ->
+        //         def n_fasta = fasta.countFasta()
+        //         [meta + [n_fasta : n_fasta.intValue()], fasta]} // some reason, groupKey doens't like longs
+        //     .map{meta, fasta -> tuple(groupKey(meta, meta.n_fasta), fasta)}
+        //     .splitFasta(decompress: true, compress:true, file:true)
+        //     .
+        //     .groupTuple()
+        //     .set{ split_fasta}
+        // TODO: add network_cluster from mash dist here
+        // MASHTREE (MASH_DIST.out.dist)
+        // ch_clusters = MASHTREE.out.matrix
+        // ch_versions = ch_versions.mix(MASHTREE.out.versions.first())
+
     }
     else {
         error "Unknown cluster method: ${cluster_method}"
