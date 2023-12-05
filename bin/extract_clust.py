@@ -9,6 +9,7 @@ import logging
 import re
 import sys
 from pathlib import Path
+from collections import defaultdict
 
 logger = logging.getLogger()
 
@@ -171,7 +172,7 @@ def parse_clusters_vsearch(file_in):
     return list(clusters.values())
 
 
-def parse_clusters_vrhyme(file_in, pattern):
+def parse_clusters_vrhyme(file_in, pattern, skip_header=True):
     """
     Extract sequence names from vrhyme gzipped cluster files using regex.
     input file:
@@ -181,32 +182,34 @@ def parse_clusters_vrhyme(file_in, pattern):
         CHN/HN04/2020	1
     """
     clusters = {}  # Dictionary to store clusters {cluster_id: Cluster}
+    grouped = defaultdict(list)
     pattern_regex = re.compile(pattern)
 
-    with open(file_in, "rt") as file:
-        next(file)  # Skip header
+    with open(file_in, 'r') as file:
+        if skip_header:
+            next(file)
         for line in file:
-            scaffold, cluster_id = line.strip().split("\t")
-            scaffold = scaffold.split()[0]  # Extracting the first word
-            current_cluster_id = f"cl{cluster_id}"
+            key, value = line.strip().split('\t')
+            grouped[value].append(key)
 
-            # Initialize cluster if not exists
-            if current_cluster_id not in clusters:
-                clusters[current_cluster_id] = Cluster(current_cluster_id, None, [])
-
-            # Check and set centroid or append to members
-            if clusters[current_cluster_id].centroid is None and not pattern_regex.search(scaffold):
-                clusters[current_cluster_id].set_centroid(scaffold)
-            else:
-                clusters[current_cluster_id].members.append(scaffold)
-
-    for cluster in clusters.values():
-        if cluster.centroid is None and cluster.members:
-            cluster.set_centroid(cluster.members.pop(0))
-        cluster.cluster_size = len(cluster.members)
+        for key, values in grouped.items():
+            centroid = get_first_not_match(pattern_regex, values)
+            members = [value for value in values if value != centroid]
+            cluster_id = f"cl{key}"
+            clusters[cluster_id] = Cluster(cluster_id, centroid, members)
+            print(clusters[cluster_id])
 
     return list(clusters.values())
 
+def get_first_not_match(regex_pattern, data_list):
+    """
+    Return the first element that matches the regex_pattern else return the first element.
+    """
+    for item in data_list:
+        match = re.search(regex_pattern, item)
+        if not match:
+            return item
+    return data_list[0]
 
 def print_clusters(clusters, prefix):
     for cluster in clusters:
@@ -272,7 +275,7 @@ def parse_args(argv=None):
         "option",
         metavar="OPTION",
         type=str,
-        choices=("cdhitest", "vsearch", "mmseqs-linclust", "mmseqs-cluster", "sourmash", "vrhyme"),
+        choices=("cdhitest", "vsearch", "mmseqs-linclust", "mmseqs-cluster", "mash", "vrhyme"),
         help="Used cluster algorithm. Choose between cdhitest, vsearch, mmseqs-linclust, mmseqs-cluster, sourmash and vrhyme. ",
     )
     parser.add_argument(
@@ -321,6 +324,8 @@ def main(argv=None):
         cluster_list = parse_clusters_mmseqs(args.file_in)
     elif args.option == "vrhyme":
         cluster_list = parse_clusters_vrhyme(args.file_in, args.pattern)
+    elif args.option == "mash":
+        cluster_list = parse_clusters_vrhyme(args.file_in, args.pattern, False)
     else:
         logger.error(f"Option {args.option} is not supported!")
         sys.exit(2)

@@ -522,6 +522,11 @@
                     "fa_icon": "fas fa-file",
                     "description": "Path to yml file containing read information.",
                     "help_text": "The raw FASTQ files listed in this YAML file MUST be supplied to the respective illumina/pacbio/nanopore input channel(s) _in addition_ to this YML. File entries in this yml must contain only the file name and no paths."
+                },
+                "assembler_patterns": {
+                    "type": "string",
+                    "description": "Regex pattern to identify contigs that have been made by the assemblers",
+                    "fa_icon": "fab fa-behance"
                 }
             },
             "fa_icon": "fas fa-bezier-curve"
@@ -553,15 +558,7 @@
                     "type": "string",
                     "default": "cdhitest",
                     "description": "Cluster algorithm used for contigs",
-                    "enum": [
-                        "cdhitest",
-                        "vsearch",
-                        "mmseqs-linclust",
-                        "mmseqs-cluster",
-                        "vrhyme",
-                        "mashtree",
-                        "diamond"
-                    ],
+                    "enum": ["cdhitest", "vsearch", "mmseqs-linclust", "mmseqs-cluster", "vrhyme", "mash", "diamond"],
                     "fa_icon": "fas fa-bezier-curve"
                 },
                 "identity_threshold": {

@@ -3,10 +3,9 @@
 """Cluster based on a the created network generated from tools"""
 
 import argparse
-import networkx as nx
-import matplotlib.pyplot as plt
+import igraph as ig
 import pandas as pd
-import re
+import leidenalg as la
 import logging
 import sys
 from pathlib import Path
@@ -16,8 +15,8 @@ logger = logging.getLogger()
 def parse_args(argv=None):
     """Define and immediately parse command line arguments."""
     parser = argparse.ArgumentParser(
-        description="Provide a command line tool to extract sequence names from cdhit's cluster files.",
-        epilog="Example: python blast_filter.py in.clstr prefix",
+        description="Provide a command line tool to create clusters or communities from distance measures using the Leiden method.",
+        epilog="Example: python network_cluster.py in.dist prefix",
     )
 
     parser.add_argument(
@@ -28,14 +27,16 @@ def parse_args(argv=None):
     )
 
     parser.add_argument(
-        "method",
+        "-m",
+        "--method",
         metavar="METHOD",
-        type=Path,
+        type=str,
         help="Comparison method containing the necessary information for creating a network.",
     )
 
     parser.add_argument(
-        "file_out_prefix",
+        "-p",
+        "--prefix",
         metavar="FILE_OUT_PREFIX",
         type=str,
         help="Output file prefix",
@@ -51,7 +52,6 @@ def parse_args(argv=None):
     )
 
     parser.add_argument(
-        "-p",
         "--pattern",
         metavar="PATTERN",
         type=str,
@@ -73,7 +73,7 @@ def read_in_file(file_in, method):
     Read in the file and return a networkx graph object
     """
     method_dict = {
-        'mash': read_in_mash
+        'mash' : read_in_mash
         # Add more methods here if needed
     }
 
@@ -88,35 +88,49 @@ def read_in_mash(file_in):
     Read in the file and return a networkx graph object
     """
     df = pd.read_csv(file_in,sep="\t", index_col="#query")
-    G = nx.from_pandas_adjacency(df)
+    # wide to long
+    long_df = df.reset_index().melt(id_vars="#query", var_name="target", value_name="weight")
+    # to a network igraph object
+    G = ig.Graph.TupleList(long_df.itertuples(index=False), directed=True, weights=True)
     return G
 
 
-def filter_network(network, treshold):
+def filter_network(network, threshold):
     """
     Filter the network based on the given score
     """
     filtered_network = network.copy()
-    edges_to_remove = [(u, v) for u, v, d in filtered_network.edges(data=True) if d["weight"] >= threshold ]
-    return filtered_network.remove_edges_from(edges_to_remove)
+
+    # Get a copy of the edges before removal for iteration
+    edges_to_remove = [(edge.source, edge.target) for edge in filtered_network.es if edge["weight"] >= threshold or edge["weight"] == 0]
+
+    # Remove edges based on the specified conditions
+    filtered_network.delete_edges(edges_to_remove)
+
+    return filtered_network
 
 def cluster_network(network):
     """
     Cluster the network based on the given score
     """
-    partition = nx.community.louvain_communities(network, seed=10)
-    return partition
+    # Partition the network
+    partitions = la.find_partition(network, partition_type=la.ModularityVertexPartition)
 
-def to_tsv(network, file_out_prefix):
+    # extract the names of the vertices
+    vertices_names = [ [ network.vs[index]["name"] for index in cluster] for cluster in partitions]
+
+    return partitions, vertices_names
+
+def to_tsv(vertices_names, prefix):
     """
     Write the network to a tsv file
     """
-    # Create a list of tuples containing the first word (if it's a set) and its index
-    indexed_data = [(list(s)[0], i) for i, s in enumerate(data) if s]
+    # Create a list of lists with the indexed vertices
+    indexed_vertices = [[name, idx] for idx, names in enumerate(vertices_names) for name in names]
 
     # Write the indexed data to a TSV file
-    with open(f'{file_out_prefix}.tsv', 'w') as file:
-        for line in indexed_data:
+    with open(f'{prefix}.tsv', 'w') as file:
+        for line in indexed_vertices:
             file.write(f"{line[0]}\t{line[1]}\n")
 
 # have a look at this example on how to do this.
@@ -134,11 +148,12 @@ def main(argv=None):
 
     network = read_in_file(args.file_in, args.method)
 
-    network = filter_network(network, 1 - args.score)
+    # args.score is ANI, mash calculates distances, so we need to invert the score
+    network_filtered = filter_network(network, 1 - args.score)
 
-    clusters = cluster_network(network)
+    clusters,vertices_names = cluster_network(network_filtered)
 
-    to_tsv(clusters, args.file_out_prefix)
+    to_tsv(vertices_names, args.prefix)
 
 if __name__ == "__main__":
     sys.exit(main())

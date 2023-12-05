@@ -7,7 +7,7 @@ include { MMSEQS_CLUSTER           } from '../../modules/nf-core/mmseqs/cluster/
 include { MMSEQS_CREATETSV         } from '../../modules/nf-core/mmseqs/createtsv/main'
 include { VRHYME_VRHYME            } from '../../modules/nf-core/vrhyme/vrhyme/main'
 include { MASH_DIST                } from '../../modules/nf-core/mash/dist/main'
-include { MASHTREE                 } from '../../modules/nf-core/mashtree/main'
+include { NETWORK_CLUSTER          } from '../../modules/local/network_cluster/main'
 include { GUNZIP as GUNZIP_CONTIGS } from '../../modules/nf-core/gunzip/main'
 
 workflow FASTA_FASTQ_CLUST {
@@ -19,6 +19,7 @@ workflow FASTA_FASTQ_CLUST {
     main:
     ch_versions = Channel.empty()
     ch_fasta    = fasta_fastq.map{ meta, fasta, fastq -> [meta, fasta] }
+    ch_dist     = Channel.empty()
 
     // cluster our reference hits and contigs should make this a subworkflow
     if ( cluster_method == "vsearch" ){
@@ -74,34 +75,25 @@ workflow FASTA_FASTQ_CLUST {
         ch_clusters = VRHYME_VRHYME.out.membership
         ch_versions = ch_versions.mix(VRHYME_VRHYME.out.versions.first())
     }
-    else if (cluster_method == "mashtree") {
+    else if (cluster_method == "mash") {
 
+        // Calculate distances
         MASH_DIST(ch_fasta)
-        // mashtree doesn't like a single fasta file with multiple contigs
-        // Instead, split up into multiple fasta files & group them together
-        // [meta, fasta] -> [meta, [fasta.1, fasta.2, ...]]
-        // ch_fasta
-        //     .splitFasta(record: [id: true])
-        //     .set {seq_names}
-
-        // ch_fasta
-        //     .map{ meta, fasta ->
-        //         def n_fasta = fasta.countFasta()
-        //         [meta + [n_fasta : n_fasta.intValue()], fasta]} // some reason, groupKey doens't like longs
-        //     .map{meta, fasta -> tuple(groupKey(meta, meta.n_fasta), fasta)}
-        //     .splitFasta(decompress: true, compress:true, file:true)
-        //     .
-        //     .groupTuple()
-        //     .set{ split_fasta}
-        // TODO: add network_cluster from mash dist here
-        // MASHTREE (MASH_DIST.out.dist)
-        // ch_clusters = MASHTREE.out.matrix
-        // ch_versions = ch_versions.mix(MASHTREE.out.versions.first())
-
+        ch_versions = ch_versions.mix(MASH_DIST.out.versions.first())
+        ch_dist = MASH_DIST.out.dist
     }
     else {
         error "Unknown cluster method: ${cluster_method}"
     }
+
+    // Calculate clusters for distance based methods (mash)
+    if (cluster_method in ["mash"] ) {
+        // Calculate clusters using leidenalg
+        NETWORK_CLUSTER(ch_dist, cluster_method)
+        ch_clusters = NETWORK_CLUSTER.out.clusters
+        ch_versions = ch_versions.mix(NETWORK_CLUSTER.out.versions.first())
+    }
+
     emit:
     clusters =  ch_clusters // channel: [ [ meta ], [ clusters ] ]
 
