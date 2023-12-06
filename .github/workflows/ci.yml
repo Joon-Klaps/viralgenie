@@ -221,3 +221,25 @@ jobs:
       - name: Run pipeline with test data and cluster using vrhyme
         run: |
           nextflow run ${GITHUB_WORKSPACE} -profile test,docker --cluster_method vrhyme --skip_iterative_refinement --skip_variant_calling --outdir ./results --max_cpus 2 --max_memory 4GB
+
+  test_cdhit:
+    name: Run pipeline with test data and cluster using vrhyme
+    # Only run on push if this is the nf-core dev branch (merged PRs)
+    if: "${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'nf-core/viralgenie') }}"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        NXF_VER:
+          - "latest-everything"
+    steps:
+      - name: Check out pipeline code
+        uses: actions/checkout@v3
+
+      - name: Install Nextflow
+        uses: nf-core/setup-nextflow@v1
+        with:
+          version: "${{ matrix.NXF_VER }}"
+
+      - name: Run pipeline with test data and cluster using vrhyme
+        run: |
+          nextflow run ${GITHUB_WORKSPACE} -profile test,docker --cluster_method cdhit --skip_iterative_refinement --skip_variant_calling --outdir ./results --max_cpus 2 --max_memory 4GB
