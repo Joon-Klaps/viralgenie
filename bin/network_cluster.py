@@ -114,7 +114,7 @@ def cluster_network(network):
     Cluster the network based on the given score
     """
     # Partition the network
-    partitions = la.find_partition(network, partition_type=la.ModularityVertexPartition)
+    partitions = la.find_partition(network, partition_type=la.ModularityVertexPartition, n_iterations = -1, seed = 42, weights = "weight" )
 
     # extract the names of the vertices
     vertices_names = [ [ network.vs[index]["name"] for index in cluster] for cluster in partitions]
@@ -133,10 +133,16 @@ def to_tsv(vertices_names, prefix):
         for line in indexed_vertices:
             file.write(f"{line[0]}\t{line[1]}\n")
 
-# have a look at this example on how to do this.
-# https://community.plotly.com/t/displaying-edge-labels-of-networkx-graph-in-plotly/39113/2
-# Also go into more depth on how to visualize with weights in networkx or use an heatmap
-#def visualize_network(network):
+def visualize_network(partitions,network, prefix):
+    """
+    Visualize the network
+    """
+    # Set the layout of the network
+    layout = network.layout("kk")
+
+    # Plot the network
+    ig.plot(partitions, target =f"{prefix}.png", layout=layout, vertex_label=network.vs["name"])
+
 
 def main(argv=None):
     """Coordinate argument parsing and program execution."""
@@ -154,6 +160,8 @@ def main(argv=None):
     clusters,vertices_names = cluster_network(network_filtered)
 
     to_tsv(vertices_names, args.prefix)
+
+    visualize_network(clusters,network_filtered, args.prefix)
 
 if __name__ == "__main__":
     sys.exit(main())
