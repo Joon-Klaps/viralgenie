@@ -189,8 +189,8 @@ def parse_clusters_vrhyme(file_in, pattern, skip_header=True):
         if skip_header:
             next(file)
         for line in file:
-            key, value = line.strip().split("\t")
-            grouped[value].append(key)
+            value, key = line.strip().split("\t")
+            grouped[key].append(value.split()[0])
 
         for key, values in grouped.items():
             centroid = get_first_not_match(pattern_regex, values)
