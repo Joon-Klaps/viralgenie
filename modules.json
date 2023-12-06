@@ -12,7 +12,7 @@
                     },
                     "bcftools/consensus": {
                         "branch": "master",
-                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
+                        "git_sha": "44096c08ffdbc694f5f92ae174ea0f7ba0f37e09",
                         "installed_by": ["modules"]
                     },
                     "bcftools/filter": {
@@ -22,7 +22,7 @@
                     },
                     "bcftools/mpileup": {
                         "branch": "master",
-                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
+                        "git_sha": "44096c08ffdbc694f5f92ae174ea0f7ba0f37e09",
                         "installed_by": ["modules"]
                     },
                     "bcftools/norm": {
@@ -32,12 +32,12 @@
                     },
                     "bcftools/sort": {
                         "branch": "master",
-                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
+                        "git_sha": "44096c08ffdbc694f5f92ae174ea0f7ba0f37e09",
                         "installed_by": ["modules"]
                     },
                     "bcftools/stats": {
                         "branch": "master",
-                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
+                        "git_sha": "44096c08ffdbc694f5f92ae174ea0f7ba0f37e09",
                         "installed_by": ["modules"]
                     },
                     "bedtools/maskfasta": {
@@ -62,12 +62,12 @@
                     },
                     "bowtie2/align": {
                         "branch": "master",
-                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
+                        "git_sha": "1fea64f5132a813ec97c1c6d3a74e0aee7142b6d",
                         "installed_by": ["modules"]
                     },
                     "bowtie2/build": {
                         "branch": "master",
-                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
+                        "git_sha": "1fea64f5132a813ec97c1c6d3a74e0aee7142b6d",
                         "installed_by": ["modules"]
                     },
                     "bracken/bracken": {
@@ -152,7 +152,7 @@
                     },
                     "kraken2/kraken2": {
                         "branch": "master",
-                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
+                        "git_sha": "d6549f46c3c1c3fe3def110f3d18059a68a65cc6",
                         "installed_by": ["modules"]
                     },
                     "mafft": {
@@ -160,14 +160,46 @@
                         "git_sha": "c0a22acfb0accdf8ab3ea4f755a4865d538dc53f",
                         "installed_by": ["modules"]
                     },
+                    "mash/dist": {
+                        "branch": "master",
+                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
+                        "installed_by": ["modules"],
+                        "patch": "modules/nf-core/mash/dist/mash-dist.diff"
+                    },
+                    "mashtree": {
+                        "branch": "master",
+                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
+                        "installed_by": ["modules"]
+                    },
                     "megahit": {
                         "branch": "master",
                         "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
                         "installed_by": ["modules"]
                     },
+                    "mmseqs/cluster": {
+                        "branch": "master",
+                        "git_sha": "151460db852d636979d9ff3ee631e2268060d4c3",
+                        "installed_by": ["modules"]
+                    },
+                    "mmseqs/createdb": {
+                        "branch": "master",
+                        "git_sha": "18a43d316b6fd683dc2346867b42882b99811cfd",
+                        "installed_by": ["modules"]
+                    },
+                    "mmseqs/createtsv": {
+                        "branch": "master",
+                        "git_sha": "151460db852d636979d9ff3ee631e2268060d4c3",
+                        "installed_by": ["modules"],
+                        "patch": "modules/nf-core/mmseqs/createtsv/mmseqs-createtsv.diff"
+                    },
+                    "mmseqs/linclust": {
+                        "branch": "master",
+                        "git_sha": "151460db852d636979d9ff3ee631e2268060d4c3",
+                        "installed_by": ["modules"]
+                    },
                     "mosdepth": {
                         "branch": "master",
-                        "git_sha": "214d575774c172062924ad3564b4f66655600730",
+                        "git_sha": "69e3eb17fb31b772b18f134d6e8f8b93ee980e65",
                         "installed_by": ["modules"]
                     },
                     "multiqc": {
@@ -182,12 +214,12 @@
                     },
                     "picard/collectmultiplemetrics": {
                         "branch": "master",
-                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
+                        "git_sha": "20b0918591d4ba20047d7e13e5094bcceba81447",
                         "installed_by": ["modules"]
                     },
                     "picard/markduplicates": {
                         "branch": "master",
-                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
+                        "git_sha": "20b0918591d4ba20047d7e13e5094bcceba81447",
                         "installed_by": ["modules"]
                     },
                     "quast": {
@@ -265,10 +297,17 @@
                         "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
                         "installed_by": ["modules"]
                     },
+                    "vrhyme/vrhyme": {
+                        "branch": "master",
+                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
+                        "installed_by": ["modules"],
+                        "patch": "modules/nf-core/vrhyme/vrhyme/vrhyme-vrhyme.diff"
+                    },
                     "vsearch/cluster": {
                         "branch": "master",
                         "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
-                        "installed_by": ["modules"]
+                        "installed_by": ["modules"],
+                        "patch": "modules/nf-core/vsearch/cluster/vsearch-cluster.diff"
                     }
                 }
             },

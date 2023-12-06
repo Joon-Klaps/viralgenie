@@ -5,10 +5,7 @@
 */
 
 def valid_params = [
-    trim_tool        : ['fastp', 'trimmomatic'],
-    assemblers       : ['spades', 'trinity', 'megahit'],
-    spades_modes     : ['rnaviral', 'corona', 'metaviral', 'meta', 'metaplasmid', 'plasmid', 'isolate', 'rna', 'bio'],
-    cluster_method   : ['cdhitest', 'vsearch']
+    spades_modes     : ['rnaviral', 'corona', 'metaviral', 'meta', 'metaplasmid', 'plasmid', 'isolate', 'rna', 'bio']
 ]
 
 include { paramsSummaryLog; paramsSummaryMap; fromSamplesheet } from 'plugin/nf-validation'
@@ -210,8 +207,13 @@ workflow VIRALGENIE {
 
         if (!params.skip_polishing){
             // blast contigs against reference & identify clusters of (contigs & references)
+            ch_contigs
+                .pass
+                .join(ch_host_trim_reads, by: [0], remainder: false)
+                .set{ch_contigs_reads}
+
             FASTA_BLAST_CLUST (
-                ch_contigs.pass,
+                ch_contigs_reads,
                 ch_blast_db,
                 unpacked_references,
                 params.cluster_method
@@ -226,9 +228,9 @@ workflow VIRALGENIE {
                     [ meta, centroids, members ]
                 }
                 .branch { meta, centroids, members ->
-                    singletons: meta.cluster_size == 0 
+                    singletons: meta.cluster_size == 0
                         return [ meta + [step:"singleton"], centroids ]
-                    multiple: meta.cluster_size > 0 
+                    multiple: meta.cluster_size > 0
                         return [ meta + [step:"consensus"], centroids, members ]
                 }
                 .set{ch_centroids_members}

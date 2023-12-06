@@ -9,6 +9,7 @@ import logging
 import re
 import sys
 from pathlib import Path
+from collections import defaultdict
 
 logger = logging.getLogger()
 
@@ -114,6 +115,29 @@ def parse_clusters_chdit(file_in):
     return clusters
 
 
+def parse_clusters_mmseqs(file_in):
+    """
+    Extract sequence names from mmseqs createtsv output.
+    """
+    clusters = {}  # Dictionary to store clusters {cluster_id: Cluster}
+
+    with open(file_in, "rt") as file:
+        for line in file:
+            centroid_name, member_name = line.strip().split("\t")
+            cluster_id = f"cl{len(clusters)}"  # Generate unique cluster ID
+
+            # Check if centroid already exists in clusters
+            existing_cluster = next((c for c in clusters.values() if c.centroid == centroid_name), None)
+
+            if existing_cluster:
+                existing_cluster.members.append(member_name)
+                existing_cluster.cluster_size = len(existing_cluster.members)
+            else:
+                new_cluster = Cluster(cluster_id, centroid_name, [])
+                clusters[cluster_id] = new_cluster
+    return list(clusters.values())
+
+
 def parse_clusters_vsearch(file_in):
     """
     Extract sequence names from vsearch gzipped cluster files.
@@ -146,6 +170,47 @@ def parse_clusters_vsearch(file_in):
 
     # Convert the dictionary values to a list of clusters and return
     return list(clusters.values())
+
+
+def parse_clusters_vrhyme(file_in, pattern, skip_header=True):
+    """
+    Extract sequence names from vrhyme gzipped cluster files using regex.
+    input file:
+        scaffold	bin
+        k39_0 flag=1 multi=111.6808 len=29849	1
+        Japan/DP0078/2020	1
+        CHN/HN04/2020	1
+    """
+    clusters = {}  # Dictionary to store clusters {cluster_id: Cluster}
+    grouped = defaultdict(list)
+    pattern_regex = re.compile(pattern)
+
+    with open(file_in, "r") as file:
+        if skip_header:
+            next(file)
+        for line in file:
+            value, key = line.strip().split("\t")
+            grouped[key].append(value.split()[0])
+
+        for key, values in grouped.items():
+            centroid = get_first_not_match(pattern_regex, values)
+            members = [value for value in values if value != centroid]
+            cluster_id = f"cl{key}"
+            clusters[cluster_id] = Cluster(cluster_id, centroid, members)
+            print(clusters[cluster_id])
+
+    return list(clusters.values())
+
+
+def get_first_not_match(regex_pattern, data_list):
+    """
+    Return the first element that matches the regex_pattern else return the first element.
+    """
+    for item in data_list:
+        match = re.search(regex_pattern, item)
+        if not match:
+            return item
+    return data_list[0]
 
 
 def print_clusters(clusters, prefix):
@@ -187,7 +252,7 @@ def write_clusters_summary(clusters, prefix):
 
 def filter_clusters(clusters, pattern):
     """
-    Filter clusters on members given regex pattern.
+    Filter clusters on members given regex pattern, members cannot contain the pattern.
     """
     filtered_clusters = []
     regex = re.compile(pattern)
@@ -212,13 +277,14 @@ def parse_args(argv=None):
         "option",
         metavar="OPTION",
         type=str,
-        help=".clstr file from cdhitestcontaining cluster information.",
+        choices=("cdhitest", "vsearch", "mmseqs-linclust", "mmseqs-cluster", "mash", "vrhyme"),
+        help="Used cluster algorithm. Choose between cdhitest, vsearch, mmseqs-linclust, mmseqs-cluster, sourmash and vrhyme. ",
     )
     parser.add_argument(
         "file_in",
         metavar="FILE_IN",
         type=Path,
-        help="cluster file from chdit or vsearch containing cluster information.",
+        help="cluster file from chdit, vsearch, mmseqs_createtsv containing cluster information.",
     )
     parser.add_argument(
         "file_out_prefix",
@@ -256,9 +322,16 @@ def main(argv=None):
         cluster_list = parse_clusters_chdit(args.file_in)
     elif args.option == "vsearch":
         cluster_list = parse_clusters_vsearch(args.file_in)
+    elif args.option == "mmseqs-linclust" or args.option == "mmseqs-cluster":
+        cluster_list = parse_clusters_mmseqs(args.file_in)
+    elif args.option == "vrhyme":
+        cluster_list = parse_clusters_vrhyme(args.file_in, args.pattern)
+    elif args.option == "mash":
+        cluster_list = parse_clusters_vrhyme(args.file_in, args.pattern, False)
     else:
         logger.error(f"Option {args.option} is not supported!")
         sys.exit(2)
+
     filtered_clusters = filter_clusters(cluster_list, args.pattern)
 
     print_clusters(filtered_clusters, args.file_out_prefix)
