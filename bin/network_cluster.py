@@ -12,6 +12,7 @@ from pathlib import Path
 
 logger = logging.getLogger()
 
+
 def parse_args(argv=None):
     """Define and immediately parse command line arguments."""
     parser = argparse.ArgumentParser(
@@ -68,12 +69,13 @@ def parse_args(argv=None):
     )
     return parser.parse_args(argv)
 
+
 def read_in_file(file_in, method):
     """
     Read in the file and return a networkx graph object
     """
     method_dict = {
-        'mash' : read_in_mash
+        "mash": read_in_mash
         # Add more methods here if needed
     }
 
@@ -83,11 +85,12 @@ def read_in_file(file_in, method):
     else:
         raise ValueError(f"Method '{method}' not found.")
 
+
 def read_in_mash(file_in):
     """
     Read in the file and return a networkx graph object
     """
-    df = pd.read_csv(file_in,sep="\t", index_col="#query")
+    df = pd.read_csv(file_in, sep="\t", index_col="#query")
     # wide to long
     long_df = df.reset_index().melt(id_vars="#query", var_name="target", value_name="weight")
     # to a network igraph object
@@ -102,24 +105,30 @@ def filter_network(network, threshold):
     filtered_network = network.copy()
 
     # Get a copy of the edges before removal for iteration
-    edges_to_remove = [(edge.source, edge.target) for edge in filtered_network.es if edge["weight"] >= threshold or edge["weight"] == 0]
+    edges_to_remove = [
+        (edge.source, edge.target) for edge in filtered_network.es if edge["weight"] >= threshold or edge["weight"] == 0
+    ]
 
     # Remove edges based on the specified conditions
     filtered_network.delete_edges(edges_to_remove)
 
     return filtered_network
 
+
 def cluster_network(network):
     """
     Cluster the network based on the given score
     """
     # Partition the network
-    partitions = la.find_partition(network, partition_type=la.ModularityVertexPartition, n_iterations = -1, seed = 42, weights = "weight" )
+    partitions = la.find_partition(
+        network, partition_type=la.ModularityVertexPartition, n_iterations=-1, seed=42, weights="weight"
+    )
 
     # extract the names of the vertices
-    vertices_names = [ [ network.vs[index]["name"] for index in cluster] for cluster in partitions]
+    vertices_names = [[network.vs[index]["name"] for index in cluster] for cluster in partitions]
 
     return partitions, vertices_names
+
 
 def to_tsv(vertices_names, prefix):
     """
@@ -129,11 +138,12 @@ def to_tsv(vertices_names, prefix):
     indexed_vertices = [[name, idx] for idx, names in enumerate(vertices_names) for name in names]
 
     # Write the indexed data to a TSV file
-    with open(f'{prefix}.tsv', 'w') as file:
+    with open(f"{prefix}.tsv", "w") as file:
         for line in indexed_vertices:
             file.write(f"{line[0]}\t{line[1]}\n")
 
-def visualize_network(partitions,network, prefix):
+
+def visualize_network(partitions, network, prefix):
     """
     Visualize the network
     """
@@ -141,7 +151,7 @@ def visualize_network(partitions,network, prefix):
     layout = network.layout("kk")
 
     # Plot the network
-    ig.plot(partitions, target =f"{prefix}.png", layout=layout, vertex_label=network.vs["name"])
+    ig.plot(partitions, target=f"{prefix}.png", layout=layout, vertex_label=network.vs["name"])
 
 
 def main(argv=None):
@@ -157,11 +167,12 @@ def main(argv=None):
     # args.score is ANI, mash calculates distances, so we need to invert the score
     network_filtered = filter_network(network, 1 - args.score)
 
-    clusters,vertices_names = cluster_network(network_filtered)
+    clusters, vertices_names = cluster_network(network_filtered)
 
     to_tsv(vertices_names, args.prefix)
 
-    visualize_network(clusters,network_filtered, args.prefix)
+    visualize_network(clusters, network_filtered, args.prefix)
+
 
 if __name__ == "__main__":
     sys.exit(main())

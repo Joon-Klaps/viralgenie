@@ -185,11 +185,11 @@ def parse_clusters_vrhyme(file_in, pattern, skip_header=True):
     grouped = defaultdict(list)
     pattern_regex = re.compile(pattern)
 
-    with open(file_in, 'r') as file:
+    with open(file_in, "r") as file:
         if skip_header:
             next(file)
         for line in file:
-            key, value = line.strip().split('\t')
+            key, value = line.strip().split("\t")
             grouped[value].append(key)
 
         for key, values in grouped.items():
@@ -201,6 +201,7 @@ def parse_clusters_vrhyme(file_in, pattern, skip_header=True):
 
     return list(clusters.values())
 
+
 def get_first_not_match(regex_pattern, data_list):
     """
     Return the first element that matches the regex_pattern else return the first element.
@@ -210,6 +211,7 @@ def get_first_not_match(regex_pattern, data_list):
         if not match:
             return item
     return data_list[0]
+
 
 def print_clusters(clusters, prefix):
     for cluster in clusters:
@@ -320,7 +322,7 @@ def main(argv=None):
         cluster_list = parse_clusters_chdit(args.file_in)
     elif args.option == "vsearch":
         cluster_list = parse_clusters_vsearch(args.file_in)
-    elif args.option == "mmseqs-linclust" or args.option == "mmseqs-cluster" :
+    elif args.option == "mmseqs-linclust" or args.option == "mmseqs-cluster":
         cluster_list = parse_clusters_mmseqs(args.file_in)
     elif args.option == "vrhyme":
         cluster_list = parse_clusters_vrhyme(args.file_in, args.pattern)
