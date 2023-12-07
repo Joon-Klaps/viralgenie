@@ -68,7 +68,7 @@ include { FASTQ_KRAKEN_KAIJU              } from '../subworkflows/local/fastq_kr
 include { FASTQ_SPADES_TRINITY_MEGAHIT    } from '../subworkflows/local/fastq_spades_trinity_megahit'
 
 // Consensus polishing of genome
-include { FASTA_BLAST_CLUST               } from '../subworkflows/local/fasta_blast_clust'
+include { FASTA_CONTIG_CLUST               } from '../subworkflows/local/fasta_contig_clust'
 include { BLAST_MAKEBLASTDB               } from '../modules/nf-core/blast/makeblastdb/main'
 include { ALIGN_COLLAPSE_CONTIGS          } from '../subworkflows/local/align_collapse_contigs'
 include { UNPACK_DB as UNPACK_DB_BLAST    } from '../subworkflows/local/unpack_db'
@@ -151,13 +151,13 @@ workflow VIRALGENIE {
     }
 
     // Assembly
+    ch_unaligned_raw_contigs   = Channel.empty()
     // Channel for consensus sequences that have been generated across different iteration
     ch_consensus               = Channel.empty()
     // Channel for consensus sequences that have been generated at the LAST iteration
     ch_consensus_results_reads = Channel.empty()
+    // Channel for summary table of cluseters to include in mqc report
     ch_clusters_summary        = Channel.empty()
-    ch_clusters_tsv            = Channel.empty()
-    ch_unaligned_raw_contigs     = Channel.empty()
 
     if (!params.skip_assembly) {
         // run different assemblers and combine contigs
@@ -212,16 +212,16 @@ workflow VIRALGENIE {
                 .join(ch_host_trim_reads, by: [0], remainder: false)
                 .set{ch_contigs_reads}
 
-            FASTA_BLAST_CLUST (
+            FASTA_CONTIG_CLUST (
                 ch_contigs_reads,
                 ch_blast_db,
                 unpacked_references,
                 params.cluster_method
                 )
-            ch_versions = ch_versions.mix(FASTA_BLAST_CLUST.out.versions)
+            ch_versions = ch_versions.mix(FASTA_CONTIG_CLUST.out.versions)
 
             // Split up clusters into singletons and clusters of multiple contigs
-            FASTA_BLAST_CLUST
+            FASTA_CONTIG_CLUST
                 .out
                 .centroids_members
                 .map { meta, centroids, members ->
@@ -235,10 +235,9 @@ workflow VIRALGENIE {
                 }
                 .set{ch_centroids_members}
 
-            ch_clusters_summary    = FASTA_BLAST_CLUST.out.clusters_summary.collect{it[1]}.ifEmpty([])
-            ch_clusters_tsv        = FASTA_BLAST_CLUST.out.clusters_tsv.collect{it[1]}.ifEmpty([])
+            ch_clusters_summary    = FASTA_CONTIG_CLUST.out.clusters_summary.collect{it[1]}.ifEmpty([])
 
-            ch_multiqc_files       =  ch_multiqc_files.mix(FASTA_BLAST_CLUST.out.no_blast_hits_mqc.ifEmpty([]))
+            ch_multiqc_files       =  ch_multiqc_files.mix(FASTA_CONTIG_CLUST.out.no_blast_hits_mqc.ifEmpty([]))
 
             // Align clustered contigs & collapse into a single consensus per cluster
             ALIGN_COLLAPSE_CONTIGS (
@@ -321,7 +320,7 @@ workflow VIRALGENIE {
             }
         .set{ch_consensus_results_reads}
 
-    if (params.mapping_sequence ) {
+    if (params.mapping_sequence && !params.skip_variant_calling ) {
         ch_mapping_sequence = Channel.fromPath(params.mapping_sequence)
 
         //get header names of sequences

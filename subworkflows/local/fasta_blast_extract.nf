@@ -3,21 +3,16 @@ include { BLAST_FILTER      } from '../../modules/local/blast_filter'
 include { GUNZIP            } from '../../modules/nf-core/gunzip/main'
 include { SEQKIT_GREP       } from '../../modules/nf-core/seqkit/grep/main'
 include { CAT_CAT           } from '../../modules/nf-core/cat/cat/main'
-include { FASTA_FASTQ_CLUST } from '../../subworkflows/local/fasta_fastq_clust'
-include { CLUST_SEQ_EXTRACT } from '../../subworkflows/local/clust_seq_extract'
 
-workflow FASTA_BLAST_CLUST {
+workflow FASTA_BLAST_EXTRACT {
 
     take:
-    fasta_fastq    // channel: [ val(meta), [ fasta ],  [ fastq ] ]
+    fasta          // channel: [ val(meta), path(fasta)]
     blast_db       // channel: [ val(meta), path(db) ]
     blast_db_fasta // channel: [ val(meta), path(fasta) ]
-    cluster_method // string
 
     main:
     ch_versions = Channel.empty()
-    fasta       = fasta_fastq.map{ meta, fasta, fastq -> [meta, fasta] }
-
     // Blast results, to a reference database, to find a complete genome that's already assembled
     BLAST_BLASTN (
         fasta,
@@ -40,11 +35,8 @@ workflow FASTA_BLAST_CLUST {
         .collect()
         .ifEmpty{ log.warn "No blast hits were found in any samples of the given BLAST database. Consider updating the search parameters or the database: \n ${params.reference_pool} "}
 
-    // if (ch_blast_txt.hits.count() ==0 ){
-    //     println(" IWAS HERRREREREZNJKGNDSJKGNJKDS VKSD VKLDS FKLDS L")
-    //     Nextflow.warn("No blast hits were found in any samples of the given BLAST database. Consider updating the search parameters or the database: \n ${params.reference_pool} ")
-    // }
-
+    // Make a table of samples that did not have any blast hits
+    ch_no_blast_hits = Channel.empty()
     ch_blast_txt
         .no_hits
         .join(fasta)
@@ -66,8 +58,9 @@ workflow FASTA_BLAST_CLUST {
                 return WorkflowCommons.multiqcTsvFromList(tsv_data, header, comments) // make it compatible with the other mqc files
         }
         .collectFile(name:'samples_no_blast_hits_mqc.tsv')
-        .set { no_blast_hits }
+        .set { ch_no_blast_hits }
 
+    // Filter out false positve hits that based on query length, alignment length, identity, e-score & bit-score
     BLAST_FILTER (
         ch_blast_txt.hits
     )
@@ -97,33 +90,10 @@ workflow FASTA_BLAST_CLUST {
 
     CAT_CAT(ch_reference_contigs_comb)
 
-    CAT_CAT
-        .out
-        .file_out
-        .join(fasta_fastq, by: [0])
-        .map{meta, contigs_joined, contigs, reads -> [meta, contigs_joined, reads]}
-        .set{ch_contigs_reads}
-
-    // cluster our reference hits and contigs should make this a subworkflow
-    FASTA_FASTQ_CLUST (
-        ch_contigs_reads,
-        cluster_method
-    )
-    
-    CLUST_SEQ_EXTRACT(
-        FASTA_FASTQ_CLUST.out.clusters,
-        cluster_method,
-        CAT_CAT.out.file_out
-    )
-    ch_centroids_members = CLUST_SEQ_EXTRACT.out.seq_centroids_members
-
     emit:
-    clusters              = FASTA_FASTQ_CLUST.out.clusters           // channel: [ [ meta ], [ clusters ] ]
-    centroids_members     = ch_centroids_members                     // channel: [ [ meta ], [ seq_centroids.fa], [ seq_members.fa] ]
-    clusters_tsv          = CLUST_SEQ_EXTRACT.out.clusters_tsv       // channel: [ [ meta ], [ tsv ] ]
-    clusters_summary      = CLUST_SEQ_EXTRACT.out.clusters_summary   // channel: [ [ meta ], [ tsv ] ]
-    no_blast_hits_mqc     = no_blast_hits                            // channel: [ tsv ]
-    versions              = ch_versions                              // channel: [ versions.yml ]
+    fasta_ref_contigs = CAT_CAT.out.file_out     // channel: [ val(meta), [ bam ] ]
+    no_blast_hits     = ch_no_blast_hits         // channel: [ val(meta), [ bai ] ]
 
+    versions          = ch_versions              // channel: [ versions.yml ]
 }
 
