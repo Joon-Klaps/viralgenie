@@ -5,11 +5,13 @@ include { CLUST_SEQ_EXTRACT   } from '../../subworkflows/local/clust_seq_extract
 workflow FASTA_CONTIG_CLUST {
 
     take:
-    fasta_fastq    // channel: [ val(meta), [ fasta ],  [ fastq ] ]
-    blast_db       // channel: [ val(meta), path(db) ]
-    blast_db_fasta // channel: [ val(meta), path(fasta) ]
-    cluster_method // string
-    // pre_cluster    // boolean
+    fasta_fastq     // channel: [ val(meta), [ fasta ],  [ fastq ] ]
+    blast_db        // channel: [ val(meta), path(db) ]
+    blast_db_fasta  // channel: [ val(meta), path(fasta) ]
+    cluster_method  // string
+    skip_precluster // boolean
+    kraken2_db      // channel: [ val(meta), path(db) ]
+    kaiju_db        // channel: [ val(meta), path(db) ]
 
     main:
     ch_versions = Channel.empty()
@@ -24,8 +26,16 @@ workflow FASTA_CONTIG_CLUST {
     ch_versions   = ch_versions.mix(FASTA_BLAST_EXTRACT.out.versions)
     no_blast_hits = FASTA_BLAST_EXTRACT.out.no_blast_hits
 
-    // if (!pre_cluster) {
-    //     // precluster our reference hits and contigs using kraken to delineate species
+    // precluster our reference hits and contigs using kraken & Kaiju to delineate contigs at a species level
+    if (pre_cluster) {
+        FASTA_CONTIG_PRECLUST (
+            fasta,
+            kaiju_db,
+            kraken2_db
+        )
+        ch_versions = ch_versions.mix(FASTA_CONTIG_PRECLUST.out.versions)
+        fasta_fastq = FASTA_CONTIG_PRECLUST.out.classifications
+    }
     fasta_ref_contigs = FASTA_BLAST_EXTRACT.out.fasta_ref_contigs
 
     // Combine with reads if vrhyme is used

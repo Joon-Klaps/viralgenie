@@ -5,9 +5,6 @@ include { KRAKEN2_KRAKEN2                } from '../../modules/nf-core/kraken2/k
 include { BRACKEN_BRACKEN                } from '../../modules/nf-core/bracken/bracken/main'
 include { KAIJU_KAIJU                    } from '../../modules/nf-core/kaiju/kaiju/main'
 include { KAIJU_KAIJU2TABLE              } from '../../modules/nf-core/kaiju/kaiju2table/main'
-include { UNPACK_DB as UNPACK_DB_KRAKEN2 } from './unpack_db'
-include { UNPACK_DB as UNPACK_DB_BRACKEN } from './unpack_db'
-include { UNPACK_DB as UNPACK_DB_KAIJU   } from './unpack_db'
 
 workflow FASTQ_KRAKEN_KAIJU {
 
@@ -24,13 +21,6 @@ workflow FASTQ_KRAKEN_KAIJU {
 
     // Kraken
     if (!params.skip_kraken2){
-        // decompress kraken2_db if needed
-
-        UNPACK_DB_KRAKEN2 (
-            kraken2_db
-        )
-        ch_kraken2_db = UNPACK_DB_KRAKEN2.out.db
-        ch_versions   = ch_versions.mix(UNPACK_DB_KRAKEN2.out.versions)
 
         KRAKEN2_KRAKEN2 ( reads, ch_kraken2_db, params.kraken2_save_reads, params.kraken2_save_readclassification )
         ch_raw_classifications = ch_raw_classifications.mix(KRAKEN2_KRAKEN2.out.classified_reads_assignment)
@@ -38,16 +28,7 @@ workflow FASTQ_KRAKEN_KAIJU {
         ch_versions            = ch_versions.mix( KRAKEN2_KRAKEN2.out.versions.first() )
 
         // Bracken: get more accurate estimates of abundance
-        // TODO TEST
         if (!params.skip_bracken){
-            // decompress bracken_db if needed
-
-            UNPACK_DB_BRACKEN (
-                bracken_db
-            )
-            ch_bracken_db = UNPACK_DB_BRACKEN.out.db
-            ch_versions   = ch_versions.mix(UNPACK_DB_BRACKEN.out.versions)
-
             BRACKEN_BRACKEN (KRAKEN2_KRAKEN2.out.report, ch_bracken_db )
             ch_versions   = ch_versions.mix( BRACKEN_BRACKEN.out.versions.first() )
         }
@@ -55,14 +36,6 @@ workflow FASTQ_KRAKEN_KAIJU {
 
     // Kaiju
     if (!params.skip_kaiju){
-        // decompress kaiju_db if needed
-
-        UNPACK_DB_KAIJU (
-            kaiju_db
-        )
-        ch_kaiju_db = UNPACK_DB_KAIJU.out.db
-        ch_versions = ch_versions.mix(UNPACK_DB_KAIJU.out.versions)
-
         KAIJU_KAIJU(reads, ch_kaiju_db)
         ch_versions = ch_versions.mix( KAIJU_KAIJU.out.versions.first() )
 
