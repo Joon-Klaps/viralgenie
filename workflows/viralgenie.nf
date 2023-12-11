@@ -17,14 +17,10 @@ def summary_params = paramsSummaryMap(workflow)
 // Print parameter summary log to screen
 log.info logo + paramsSummaryLog(workflow) + citation
 
-// Validate input parameters
-WorkflowViralgenie.initialise(params, log)
-
 // TODO nf-core: Add all file path parameters for the pipeline to the list below
 // Check input path parameters to see if they exist
 def checkPathParamList = [
-    params.input, params.multiqc_config, params.adapter_fasta,
-    params.host_index,params.host_genome,params.contaminants,
+    params.input, params.multiqc_config, params.adapter_fasta, params.contaminants,
     params.spades_yml,params.spades_hmm
     ]
 for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
@@ -33,8 +29,6 @@ for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true
 if (params.input            ) { ch_input = file(params.input)                                      } else { exit 1, 'Input samplesheet not specified!'                              }
 if (params.adapter_fasta    ) { ch_adapter_fasta = file(params.adapter_fasta)                      } else { ch_adapter_fasta  = []                                                  }
 if (params.metadata         ) { ch_metadata = file(params.metadata)                                } else { ch_metadata  = []                                                  }
-if (params.host_genome      ) { ch_host_genome = file(params.host_genome)                          } else { ch_host_genome = file(WorkflowMain.getGenomeAttribute(params, 'fasta')) }
-if (params.host_index       ) { ch_host_index = Channel.fromPath(params.host_index).map{[[], it]}  } else { ch_host_index = []                                                      }
 if (params.contaminants     ) { ch_contaminants = file(params.contaminants)                        } else { ch_contaminants = []                                                    }
 if (params.spades_yml       ) { ch_spades_yml = file(params.spades_yml)                            } else { ch_spades_yml = []                                                      }
 if (params.spades_hmm       ) { ch_spades_hmm = file(params.spades_hmm)                            } else { ch_spades_hmm = []                                                      }
@@ -60,6 +54,7 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 
 // Preprocessing
 include { PREPROCESSING_ILLUMINA          } from '../subworkflows/local/preprocessing_illumina'
+include { UNPACK_DB as UNPACK_DB_KRAKEN2_HOST  } from '../subworkflows/local/unpack_db'
 
 // metagenomic diversity
 include { FASTQ_KRAKEN_KAIJU              } from '../subworkflows/local/fastq_kraken_kaiju'
@@ -112,11 +107,17 @@ workflow VIRALGENIE {
             [meta , [read1, read2]]
             }
 
+    // unpack DB
+    ch_host_k2 = Channel.empty()
+    if (!params.skip_hostremoval){
+        UNPACK_DB_KRAKEN2_HOST(params.host_k2_db)
+        ch_host_k2 = UNPACK_DB_KRAKEN2_HOST.out.db
+    }
+
     // preprocessing illumina reads
     PREPROCESSING_ILLUMINA (
         ch_samplesheet,
-        ch_host_genome,
-        ch_host_index,
+        ch_host_k2,
         ch_adapter_fasta,
         ch_contaminants)
     ch_host_trim_reads      = PREPROCESSING_ILLUMINA.out.reads

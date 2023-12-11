@@ -1,21 +1,14 @@
 // modules
 include { BBMAP_BBDUK                          } from '../../modules/nf-core/bbmap/bbduk/main'
-include { BOWTIE2_BUILD                        } from '../../modules/nf-core/bowtie2/build/main'
-include { BOWTIE2_ALIGN as BOWTIE2_HOST_REMOVE } from '../../modules/nf-core/bowtie2/align/main'
-
-// Subworkflows
-// > local
-include { FASTQ_FASTQC_UMITOOLS_TRIMMOMATIC } from './fastq_fastqc_umitools_trimmomatic'
-
-// > nf-core
-include { FASTQ_FASTQC_UMITOOLS_FASTP       } from '../nf-core/fastq_fastqc_umitools_fastp/main'
+include { FASTQ_FASTQC_UMITOOLS_TRIMMOMATIC    } from './fastq_fastqc_umitools_trimmomatic'
+include { FASTQ_FASTQC_UMITOOLS_FASTP          } from '../nf-core/fastq_fastqc_umitools_fastp/main'
+include { FASTQ_KRAKEN_HOST_REMOVE             } from './fastq_kraken_host_remove'
 
 workflow PREPROCESSING_ILLUMINA {
 
     take:
     ch_reads                   // channel: [ [ meta ], [ ch_reads ] ]
-    ch_host                    // channel: [ path(host_fasta) ]
-    ch_index                   // channel: [ [ meta ], path(index) ]
+    ch_kraken2_host_db         // channel: [ path(kraken2_host_db) ]
     ch_adapter_fasta           // channel: [ path(adapter_fasta) ]
     ch_contaminants            // channel: [ path(contaminants_fasta) ]
 
@@ -81,23 +74,18 @@ workflow PREPROCESSING_ILLUMINA {
         ch_reads_decomplexified = ch_reads_trim
     }
 
-    // Host removal with Bowtie2
+    // Host removal with kraken2
     if (!params.skip_hostremoval){
+        FASTQ_KRAKEN_HOST_REMOVE (
+            ch_reads_decomplexified,
+            ch_kraken2_host_db,
+            params.host_k2_library,
+            params.skip_host_fastqc,
+        )
 
-        // check if index needs to be build
-        if ( !ch_index ) {
-            ch_bowtie2_index = BOWTIE2_BUILD ( [ [], ch_host ] ).index
-            ch_versions      = ch_versions.mix( BOWTIE2_BUILD.out.versions )
-        } else {
-            ch_bowtie2_index = ch_index.first()
-        }
-
-        BOWTIE2_HOST_REMOVE ( ch_reads_decomplexified, ch_bowtie2_index, true, false )
-
-        ch_reads_hostremoved   = BOWTIE2_HOST_REMOVE.out.fastq
-
-        ch_multiqc_files       = ch_multiqc_files.mix( BOWTIE2_HOST_REMOVE.out.log)
-        ch_versions            = ch_versions.mix(BOWTIE2_HOST_REMOVE.out.versions)
+        ch_reads_hostremoved   = FASTQ_KRAKEN_HOST_REMOVE.out.reads_hostremoved
+        ch_multiqc_files       = ch_multiqc_files.mix( FASTQ_KRAKEN_HOST_REMOVE.out.mqc )
+        ch_versions            = ch_versions.mix( FASTQ_KRAKEN_HOST_REMOVE.out.versions )
 
     } else {
         ch_reads_hostremoved = ch_reads_decomplexified
