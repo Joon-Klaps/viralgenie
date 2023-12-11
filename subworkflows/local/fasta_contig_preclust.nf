@@ -1,5 +1,6 @@
-include { KAIJU_KAIJU     as KAIJU_CONTIG      } from '../../../modules/nf-core/kaiju/kaiju/main'
-include { KRAKEN2_KRAKEN2 as KRAKEN2_CONTIG    } from '../../../modules/nf-core/kraken2/kraken2/main'
+include { KAIJU_KAIJU     as KAIJU_CONTIG      } from '../../modules/nf-core/kaiju/kaiju/main'
+include { KRAKEN2_KRAKEN2 as KRAKEN2_CONTIG    } from '../../modules/nf-core/kraken2/kraken2/main'
+include { KAIJU_MERGEOUTPUTS                   } from '../../modules/local/kaiju/mergeoutputs/main'
 
 workflow FASTA_CONTIG_PRECLUST {
 
@@ -9,23 +10,27 @@ workflow FASTA_CONTIG_PRECLUST {
     ch_kraken2_db      // channel: [ val(meta), [ db ] ]
 
     main:
-
     ch_versions = Channel.empty()
 
-    KAIJU_CONTIG ( reads, ch_kaiju_db, params.kaiju_save_reads, true )
-    ch_classifications_kaiju = KAIJU_CONTIG.out.results
-    ch_versions              = ch_versions.mix( KAIJU_CONTIG.out.versions.first() )
+    KAIJU_CONTIG ( ch_contigs, ch_kaiju_db, params.kaiju_save_reads, true )
+    kaiju       = KAIJU_CONTIG.out.results
+    ch_versions = ch_versions.mix( KAIJU_CONTIG.out.versions.first() )
 
     KRAKEN2_CONTIG ( ch_contigs, ch_kraken2_db, false, true )
-    ch_classifications_kraken = KRAKEN2_CONTIG.out.classified_reads_assignment
-    ch_versions               = ch_versions.mix( KRAKEN2_CONTIG.out.versions.first() )
+    // combine classified & non classified reads into one channel which we merge later on
+    kraken       = KRAKEN2_CONTIG.out.classified_reads_fastq.join(KRAKEN2_CONTIG.out.unclassified_reads_fastq, by: [0], remainder: true)
+    ch_versions  = ch_versions.mix( KRAKEN2_CONTIG.out.versions.first() )
 
-    ch_classifications = ch_classifications_kaiju.join(ch_classifications_kraken )
+    ch_classifications = kaiju.join(kraken) // channel: [ val(meta), [ kaiju ] , [ classified ], [ unclassified ] ]
+
+    KAIJU_MERGEOUTPUTS ( ch_classifications, ch_kaiju_db )
+    merged_classifications = KAIJU_MERGEOUTPUTS.out.merged
+    ch_versions            = ch_versions.mix( KAIJU_MERGEOUTPUTS.out.versions.first() )
 
     emit:
-    classifications_kaiju   = ch_classifications_kaiju      // channel: [ val(meta), [ kaiju ] ]
-    classifications_kraken  = ch_classifications_kraken     // channel: [ val(meta), [ kraken ] ]
-    classifications         = ch_classifications            // channel: [ val(meta), [ kaiju ] , [ kraken ] ]
-    versions                = ch_versions                   // channel: [ versions.yml ]
+    merged_classifications  = merged_classifications  // channel: [ val(meta), [ kaiju ] , [ kraken ] ]
+    kraken                  = kraken                  // channel: [ val(meta), [ kraken ] ]
+    kaiju                   = kaiju                   // channel: [ val(meta), [ kaiju ] ]
+    versions                = ch_versions             // channel: [ versions.yml ]
 }
 

@@ -1,6 +1,7 @@
-include { FASTA_BLAST_EXTRACT } from '../../subworkflows/local/fasta_blast_extract'
-include { FASTA_FASTQ_CLUST   } from '../../subworkflows/local/fasta_fastq_clust'
-include { CLUST_SEQ_EXTRACT   } from '../../subworkflows/local/clust_seq_extract'
+include { FASTA_BLAST_EXTRACT     } from '../../subworkflows/local/fasta_blast_extract'
+include { FASTA_FASTQ_CLUST       } from '../../subworkflows/local/fasta_fastq_clust'
+include { FASTA_CONTIG_PRECLUST   } from '../../subworkflows/local/fasta_contig_preclust'
+include { CLUST_SEQ_EXTRACT       } from '../../subworkflows/local/clust_seq_extract'
 
 workflow FASTA_CONTIG_CLUST {
 
@@ -8,8 +9,6 @@ workflow FASTA_CONTIG_CLUST {
     fasta_fastq     // channel: [ val(meta), [ fasta ],  [ fastq ] ]
     blast_db        // channel: [ val(meta), path(db) ]
     blast_db_fasta  // channel: [ val(meta), path(fasta) ]
-    cluster_method  // string
-    skip_precluster // boolean
     kraken2_db      // channel: [ val(meta), path(db) ]
     kaiju_db        // channel: [ val(meta), path(db) ]
 
@@ -27,7 +26,7 @@ workflow FASTA_CONTIG_CLUST {
     no_blast_hits = FASTA_BLAST_EXTRACT.out.no_blast_hits
 
     // precluster our reference hits and contigs using kraken & Kaiju to delineate contigs at a species level
-    if (pre_cluster) {
+    if (!params.skip_precluster) {
         FASTA_CONTIG_PRECLUST (
             fasta,
             kaiju_db,
@@ -47,7 +46,7 @@ workflow FASTA_CONTIG_CLUST {
     // cluster our reference hits and contigs should make this a subworkflow
     FASTA_FASTQ_CLUST (
         ch_contigs_reads,
-        cluster_method
+        params.cluster_method,
     )
     ch_versions = ch_versions.mix(FASTA_FASTQ_CLUST.out.versions)
 

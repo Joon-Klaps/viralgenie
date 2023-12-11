@@ -14,6 +14,14 @@ def logo = NfcoreTemplate.logo(workflow, params.monochrome_logs)
 def citation = '\n' + WorkflowMain.citation(workflow) + '\n'
 def summary_params = paramsSummaryMap(workflow)
 
+def createFileChannel(param) {
+    return param ? Channel.fromPath(param, checkIfExists: true) : Channel.empty()
+}
+
+def createChannel(dbPath, dbName, skipFlag) {
+    return dbPath && skipFlag ? Channel.fromPath(dbPath, checkIfExists: true).map { db -> [[id: dbName], db] } : Channel.empty()
+}
+
 // Print parameter summary log to screen
 log.info logo + paramsSummaryLog(workflow) + citation
 
@@ -22,16 +30,25 @@ log.info logo + paramsSummaryLog(workflow) + citation
 def checkPathParamList = [
     params.input, params.multiqc_config, params.adapter_fasta, params.contaminants,
     params.spades_yml,params.spades_hmm
-    ]
+]
 for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
 
 // Check mandatory parameters
 if (params.input            ) { ch_input = file(params.input)                                      } else { exit 1, 'Input samplesheet not specified!'                              }
-if (params.adapter_fasta    ) { ch_adapter_fasta = file(params.adapter_fasta)                      } else { ch_adapter_fasta  = []                                                  }
-if (params.metadata         ) { ch_metadata = file(params.metadata)                                } else { ch_metadata  = []                                                       }
-if (params.contaminants     ) { ch_contaminants = file(params.contaminants)                        } else { ch_contaminants = []                                                    }
-if (params.spades_yml       ) { ch_spades_yml = file(params.spades_yml)                            } else { ch_spades_yml = []                                                      }
-if (params.spades_hmm       ) { ch_spades_hmm = file(params.spades_hmm)                            } else { ch_spades_hmm = []                                                      }
+
+// Optional parameters
+ch_adapter_fasta = createFileChannel(params.adapter_fasta)
+ch_metadata      = createFileChannel(params.metadata)
+ch_contaminants  = createFileChannel(params.contaminants)
+ch_spades_yml    = createFileChannel(params.spades_yml)
+ch_spades_hmm    = createFileChannel(params.spades_hmm)
+ch_ref_pool      = !params.skip_polishing  || !params.skip_consensus_qc          ? createChannel(params.reference_pool, "blast", true)              : Channel.empty()
+ch_kraken2_db    = !params.skip_precluster || !params.skip_metagenomic_diversity ? createChannel(params.kraken2_db, "kraken2", params.skip_kraken2) : Channel.empty()
+ch_kaiju_db      = !params.skip_precluster || !params.skip_metagenomic_diversity ? createChannel(params.kaiju_db, "kaiju", params.skip_kaiju)       : Channel.empty()
+ch_checkv_raw_db = !params.skip_consensus_qc                                     ? createChannel(params.checkv_db, "checkv", params.skip_checkv)    : Channel.empty()
+ch_bracken_db    = !params.skip_metagenomic_diversity                            ? createChannel(params.bracken_db, "bracken", params.skip_bracken) : Channel.empty()
+ch_k2_host       = !params.skip_hostremoval                                      ? createChannel(params.host_k2_db, "k2_host", true)                : Channel.empty()
+
 
 def assemblers = params.assemblers ? params.assemblers.split(',').collect{ it.trim().toLowerCase() } : []
 
@@ -106,17 +123,38 @@ workflow VIRALGENIE {
             [meta , [read1, read2]]
             }
 
-    // unpack DB
-    ch_host_k2 = Channel.empty()
-    if (!params.skip_hostremoval){
-        UNPACK_DB_KRAKEN2_HOST(params.host_k2_db)
-        ch_host_k2 = UNPACK_DB_KRAKEN2_HOST.out.db
+    // Prepare Databases
+    ch_db = Channel.empty()
+    if (!params.skip_polishing || !params.skip_consensus_qc || !params.skip_metagenomic_diversity || !params.skip_hostremoval){
+
+        ch_db_raw = ch_ref_pool.mix(ch_ref_pool, ch_kraken2_db, ch_kaiju_db, ch_checkv_raw_db, ch_bracken_db, ch_k2_host)
+        UNPACK_DB (ch_db_raw)
+
+        UNPACK_DB
+            .out
+            .db
+            .branch { meta, unpacked ->
+                k2_host: meta.id == 'k2_host'
+                    return [ unpacked ]
+                blast: meta.id == 'blast'
+                    return [ meta, unpacked ]
+                checkv: meta.id == 'checkv'
+                    return [ unpacked ]
+                kraken2: meta.id == 'kraken2'
+                    return [ unpacked ]
+                bracken: meta.id == 'bracken'
+                    return [ unpacked ]
+                kaiju: meta.id == 'kaiju'
+                    return [ unpacked ]
+            }
+            .set{ch_db}
+        ch_versions         = ch_versions.mix(UNPACK_DB.out.versions)
     }
 
     // preprocessing illumina reads
     PREPROCESSING_ILLUMINA (
         ch_samplesheet,
-        ch_host_k2,
+        ch_db.k2_host,
         ch_adapter_fasta,
         ch_contaminants)
     ch_host_trim_reads      = PREPROCESSING_ILLUMINA.out.reads
@@ -124,30 +162,6 @@ workflow VIRALGENIE {
     ch_multiqc_files        = ch_multiqc_files.mix(PREPROCESSING_ILLUMINA.out.mqc.collect{it[1]}.ifEmpty([]))
     ch_versions             = ch_versions.mix(PREPROCESSING_ILLUMINA.out.versions)
 
-    // Prepare Databases
-    if (!params.skip_polishing || !params.skip_consensus_qc || !params.skip_metagenomic_diversity){
-        ch_ref_pool       = params.reference_pool ? Channel.fromPath( params.multiqc_config, checkIfExists: true ).map{db -> [[id:"blast"],db]} : Channel.empty()
-        ch_checkv_raw_db  = params.checkv_db      ? Channel.fromPath( params.checkv_db, checkIfExists: true ).map{db -> [[id:"checkv"],db]} : Channel.empty()
-        ch_kraken2_raw_db = params.kraken2_db     ? Channel.fromPath( params.kraken2_db, checkIfExists: true ).map{db -> [[id:"kraken2"],db]} : Channel.empty()
-        ch_bracken_raw_db = params.bracken_db     ? Channel.fromPath( params.bracken_db, checkIfExists: true ).map{db -> [[id:"bracken"],db]} : Channel.empty()
-        ch_kaiju_raw_db   = params.kaiju_db       ? Channel.fromPath( params.kaiju_db, checkIfExists: true ).map{db -> [[id:"kaiju"],db]} : Channel.empty()
-
-        ch_dbs = ch_ref_pool.mix(ch_checkv_raw_db, ch_kraken2_raw_db, ch_bracken_raw_db, ch_kaiju_raw_db)
-        UNPACK_DB (ch_dbs)
-        ch_db
-            .branch { meta, unpacked ->
-                blast: meta.id == 'blast'
-                checkv: meta.id == 'checkv'
-                kraken2: meta.id == 'kraken2'
-                bracken: meta.id == 'bracken'
-                kaiju: meta.id == 'kaiju'
-            }
-        ch_versions         = ch_versions.mix(UNPACK_DB.out.versions)
-
-        BLAST_MAKEBLASTDB ( ch_db.blast )
-        ch_blast_db  = BLAST_MAKEBLASTDB.out.db
-        ch_versions  = ch_versions.mix(BLAST_MAKEBLASTDB.out.versions)
-    }
 
     // Determining metagenomic diversity
     if (!params.skip_metagenomic_diversity) {
@@ -216,6 +230,12 @@ workflow VIRALGENIE {
 
         ch_multiqc_files = ch_multiqc_files.mix(no_contigs.ifEmpty([]))
 
+        if (!params.skip_polishing || !params.skip_consensus_qc) {
+            BLAST_MAKEBLASTDB ( ch_db.blast )
+            ch_blast_db  = BLAST_MAKEBLASTDB.out.db
+            ch_versions  = ch_versions.mix(BLAST_MAKEBLASTDB.out.versions)
+        }
+
         if (!params.skip_polishing){
             // blast contigs against reference & identify clusters of (contigs & references)
             ch_contigs
@@ -226,9 +246,7 @@ workflow VIRALGENIE {
             FASTA_CONTIG_CLUST (
                 ch_contigs_reads,
                 ch_blast_db,
-                unpacked_references,
-                params.cluster_method,
-                params.skip_preclustering,
+                ch_db.blast,
                 ch_db.kraken2,
                 ch_db.kaiju
                 )
@@ -415,13 +433,11 @@ workflow VIRALGENIE {
     ch_blast_summary  = Channel.empty()
 
     if ( !params.skip_consensus_qc || (params.skip_assembly && params.skip_variant_calling) ) {
-        ch_checkv_db = Channel.empty()
         if (!params.skip_checkv) {
-            checkv_db = params.checkv_db
-            if (!checkv_db) {
+            if (!ch_db.checkv) {
                 ch_checkv_db = CHECKV_DOWNLOADDATABASE().checkv_db
             } else {
-                ch_checkv_db = UNPACK_DB_CHECKV(checkv_db).db
+                ch_checkv_db = ch_db.checkv
             }
         }
 
