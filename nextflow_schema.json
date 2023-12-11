@@ -49,23 +49,6 @@
                 }
             }
         },
-        "reference_genome_options": {
-            "title": "Reference genome options",
-            "type": "object",
-            "fa_icon": "fas fa-dna",
-            "description": "Reference genome related files and options required for the workflow.",
-            "properties": {
-                "fasta": {
-                    "type": "string",
-                    "format": "file-path",
-                    "mimetype": "text/plain",
-                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
-                    "description": "Path to FASTA genome file.",
-                    "help_text": "This parameter is *mandatory* if `--genome` is not specified. If you don't have a BWA index available this will be generated for you automatically. Combine with `--save_reference` to save BWA index for future runs.",
-                    "fa_icon": "far fa-file-code"
-                }
-            }
-        },
         "institutional_config_options": {
             "title": "Institutional config options",
             "type": "object",
@@ -259,8 +242,7 @@
                     "help_text": "By default, when an unrecognised parameter is found, it returns a warinig."
                 },
                 "validationSchemaIgnoreParams": {
-                    "type": "string",
-                    "default": "genomes"
+                    "type": "string"
                 },
                 "validationLenientMode": {
                     "type": "boolean",
@@ -363,8 +345,8 @@
                     "help_text": "Only used when no host kraken2 database is specified."
                 },
                 "skip_host_fastqc": {
-                    "type": "string",
-                    "default": "true",
+                    "type": "boolean",
+                    "default": true,
                     "fa_icon": "fas fa-forward",
                     "description": "Skip the fastqc step after host & contaminants were removed"
                 }
