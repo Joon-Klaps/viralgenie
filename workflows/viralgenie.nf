@@ -45,7 +45,7 @@ ch_spades_hmm    = createFileChannel(params.spades_hmm)
 ch_ref_pool      = !params.skip_polishing  || !params.skip_consensus_qc          ? createChannel(params.reference_pool, "blast", true)              : Channel.empty()
 ch_kraken2_db    = !params.skip_precluster || !params.skip_metagenomic_diversity ? createChannel(params.kraken2_db, "kraken2", params.skip_kraken2) : Channel.empty()
 ch_kaiju_db      = !params.skip_precluster || !params.skip_metagenomic_diversity ? createChannel(params.kaiju_db, "kaiju", params.skip_kaiju)       : Channel.empty()
-ch_checkv_raw_db = !params.skip_consensus_qc                                     ? createChannel(params.checkv_db, "checkv", params.skip_checkv)    : Channel.empty()
+ch_checkv_db     = !params.skip_consensus_qc                                     ? createChannel(params.checkv_db, "checkv", params.skip_checkv)    : Channel.empty()
 ch_bracken_db    = !params.skip_metagenomic_diversity                            ? createChannel(params.bracken_db, "bracken", params.skip_bracken) : Channel.empty()
 ch_k2_host       = !params.skip_hostremoval                                      ? createChannel(params.host_k2_db, "k2_host", true)                : Channel.empty()
 
@@ -116,7 +116,7 @@ workflow VIRALGENIE {
     ch_multiqc_files = Channel.empty()
 
     // Importing samplesheet
-    ch_samplesheet = Channel.fromSamplesheet(
+    ch_reads = Channel.fromSamplesheet(
         'input'
         ).map{
             meta, read1, read2 ->
@@ -127,7 +127,7 @@ workflow VIRALGENIE {
     ch_db = Channel.empty()
     if (!params.skip_polishing || !params.skip_consensus_qc || !params.skip_metagenomic_diversity || !params.skip_hostremoval){
 
-        ch_db_raw = ch_db.mix(ch_ref_pool,ch_kraken2_db, ch_kaiju_db, ch_checkv_raw_db, ch_bracken_db, ch_k2_host)
+        ch_db_raw = ch_db.mix(ch_ref_pool,ch_kraken2_db, ch_kaiju_db, ch_checkv_db, ch_bracken_db, ch_k2_host)
         UNPACK_DB (ch_db_raw)
 
         UNPACK_DB
@@ -149,12 +149,18 @@ workflow VIRALGENIE {
             }
             .set{ch_db}
         ch_versions         = ch_versions.mix(UNPACK_DB.out.versions)
+        ch_ref_pool         = ch_db.blast ?: [[:],[]]
+        ch_kraken2_db       = ch_db.kraken2 ?: []
+        ch_kaiju_db         = ch_db.kaiju ?: []
+        ch_checkv_db        = ch_db.checkv ?: []
+        ch_bracken_db       = ch_db.bracken ?: []
+        ch_k2_host          = ch_db.k2_host ?: []
     }
 
     // preprocessing illumina reads
     PREPROCESSING_ILLUMINA (
-        ch_samplesheet,
-        ch_db.k2_host ?: [],
+        ch_reads,
+        ch_k2_host,
         ch_adapter_fasta,
         ch_contaminants)
     ch_host_trim_reads      = PREPROCESSING_ILLUMINA.out.reads
@@ -167,9 +173,9 @@ workflow VIRALGENIE {
     if (!params.skip_metagenomic_diversity) {
         FASTQ_KRAKEN_KAIJU(
             ch_host_trim_reads,
-            ch_db.kraken2 ?: [],
-            ch_db.bracken ?: [],
-            ch_db.kaiju ?: []
+            ch_kraken2_db,
+            ch_bracken_db,
+            ch_kaiju_db
             )
         ch_multiqc_files = ch_multiqc_files.mix(FASTQ_KRAKEN_KAIJU.out.mqc.collect{it[1]}.ifEmpty([]))
         ch_versions      = ch_versions.mix(FASTQ_KRAKEN_KAIJU.out.versions)
@@ -231,7 +237,7 @@ workflow VIRALGENIE {
         ch_multiqc_files = ch_multiqc_files.mix(no_contigs.ifEmpty([]))
 
         if (!params.skip_polishing || !params.skip_consensus_qc) {
-            BLAST_MAKEBLASTDB ( ch_db.blast )
+            BLAST_MAKEBLASTDB ( ch_ref_pool )
             ch_blast_db  = BLAST_MAKEBLASTDB.out.db
             ch_versions  = ch_versions.mix(BLAST_MAKEBLASTDB.out.versions)
         }
@@ -246,9 +252,9 @@ workflow VIRALGENIE {
             FASTA_CONTIG_CLUST (
                 ch_contigs_reads,
                 ch_blast_db,
-                ch_db.blast,
-                ch_db.kraken2 ?:[],
-                ch_db.kaiju ?:[]
+                ch_ref_pool,
+                ch_kraken2_db ?:[],
+                ch_kaiju_db ?:[]
                 )
             ch_versions = ch_versions.mix(FASTA_CONTIG_CLUST.out.versions)
 
@@ -433,9 +439,7 @@ workflow VIRALGENIE {
     ch_blast_summary  = Channel.empty()
 
     if ( !params.skip_consensus_qc || (params.skip_assembly && params.skip_variant_calling) ) {
-        ch_checkv_db = ch_db.checkv
-
-        if (!params.skip_checkv && !ch_db.checkv ) {
+        if (!params.skip_checkv && !ch_checkv_db ) {
             ch_checkv_db = CHECKV_DOWNLOADDATABASE().checkv_db
         }
 
