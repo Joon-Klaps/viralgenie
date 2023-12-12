@@ -11,18 +11,11 @@ workflow UNPACK_DB  {
 
     db_in
     .branch { meta, db ->
-        tar: db.endsWith('.tar.gz') || db.endsWith('.tgz')
-        gzip: db.endsWith('.gz')
-        dir: file(db).isDirectory() || db.endsWith('.fna') || db.endsWith('.fa')
+        tar: db.name.endsWith('.tar.gz') || db.name.endsWith('.tgz')
+        gzip: db.name.endsWith('.gz')
         other: true
     }
     .set{db}
-
-    if (db.other) {
-        db.other.map{ meta, db ->
-            Nextflow.error("Database: ${db} not recognized as '.tar.gz', '.tgz' or '.gz' file. \n\n please download and unpack manually and try again specifying the directory.")
-        }
-    }
 
     ch_untar = UNTAR(db.tar).untar
     ch_versions   = ch_versions.mix(UNTAR.out.versions)
@@ -31,7 +24,7 @@ workflow UNPACK_DB  {
     ch_versions   = ch_versions.mix(GUNZIP.out.versions)
 
     ch_db = Channel.empty()
-    ch_db = ch_db.mix(db.dir, ch_untar, ch_gunzip)
+    ch_db = ch_db.mix(db.other, ch_untar, ch_gunzip)
 
     emit:
     db       = ch_db            // channel: [ db ]

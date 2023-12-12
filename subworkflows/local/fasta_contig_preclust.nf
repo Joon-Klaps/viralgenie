@@ -12,7 +12,7 @@ workflow FASTA_CONTIG_PRECLUST {
     main:
     ch_versions = Channel.empty()
 
-    KAIJU_CONTIG ( ch_contigs, ch_kaiju_db, params.kaiju_save_reads, true )
+    KAIJU_CONTIG ( ch_contigs, ch_kaiju_db)
     kaiju       = KAIJU_CONTIG.out.results
     ch_versions = ch_versions.mix( KAIJU_CONTIG.out.versions.first() )
 
@@ -28,9 +28,9 @@ workflow FASTA_CONTIG_PRECLUST {
     ch_versions            = ch_versions.mix( KAIJU_MERGEOUTPUTS.out.versions.first() )
 
     emit:
-    merged_classifications  = merged_classifications  // channel: [ val(meta), [ kaiju ] , [ kraken ] ]
-    kraken                  = kraken                  // channel: [ val(meta), [ kraken ] ]
-    kaiju                   = kaiju                   // channel: [ val(meta), [ kaiju ] ]
-    versions                = ch_versions             // channel: [ versions.yml ]
+    classifications  = merged_classifications  // channel: [ val(meta), [ kaiju ] , [ kraken ] ]
+    kraken           = kraken                  // channel: [ val(meta), [ kraken ] ]
+    kaiju            = kaiju                   // channel: [ val(meta), [ kaiju ] ]
+    versions         = ch_versions             // channel: [ versions.yml ]
 }
 

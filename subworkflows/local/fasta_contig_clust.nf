@@ -52,7 +52,7 @@ workflow FASTA_CONTIG_CLUST {
 
     CLUST_SEQ_EXTRACT(
         FASTA_FASTQ_CLUST.out.clusters,
-        cluster_method,
+        params.cluster_method,
         fasta_ref_contigs
     )
     ch_versions = ch_versions.mix(CLUST_SEQ_EXTRACT.out.versions)

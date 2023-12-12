@@ -127,7 +127,7 @@ workflow VIRALGENIE {
     ch_db = Channel.empty()
     if (!params.skip_polishing || !params.skip_consensus_qc || !params.skip_metagenomic_diversity || !params.skip_hostremoval){
 
-        ch_db_raw = ch_ref_pool.mix(ch_ref_pool, ch_kraken2_db, ch_kaiju_db, ch_checkv_raw_db, ch_bracken_db, ch_k2_host)
+        ch_db_raw = ch_db.mix(ch_ref_pool,ch_kraken2_db, ch_kaiju_db, ch_checkv_raw_db, ch_bracken_db, ch_k2_host)
         UNPACK_DB (ch_db_raw)
 
         UNPACK_DB
@@ -154,7 +154,7 @@ workflow VIRALGENIE {
     // preprocessing illumina reads
     PREPROCESSING_ILLUMINA (
         ch_samplesheet,
-        ch_db.k2_host,
+        ch_db.k2_host ?: [],
         ch_adapter_fasta,
         ch_contaminants)
     ch_host_trim_reads      = PREPROCESSING_ILLUMINA.out.reads
@@ -167,9 +167,9 @@ workflow VIRALGENIE {
     if (!params.skip_metagenomic_diversity) {
         FASTQ_KRAKEN_KAIJU(
             ch_host_trim_reads,
-            ch_db.kraken2,
-            ch_db.bracken,
-            ch_db.kaiju
+            ch_db.kraken2 ?: [],
+            ch_db.bracken ?: [],
+            ch_db.kaiju ?: []
             )
         ch_multiqc_files = ch_multiqc_files.mix(FASTQ_KRAKEN_KAIJU.out.mqc.collect{it[1]}.ifEmpty([]))
         ch_versions      = ch_versions.mix(FASTQ_KRAKEN_KAIJU.out.versions)
@@ -247,8 +247,8 @@ workflow VIRALGENIE {
                 ch_contigs_reads,
                 ch_blast_db,
                 ch_db.blast,
-                ch_db.kraken2,
-                ch_db.kaiju
+                ch_db.kraken2 ?:[],
+                ch_db.kaiju ?:[]
                 )
             ch_versions = ch_versions.mix(FASTA_CONTIG_CLUST.out.versions)
 
@@ -433,12 +433,10 @@ workflow VIRALGENIE {
     ch_blast_summary  = Channel.empty()
 
     if ( !params.skip_consensus_qc || (params.skip_assembly && params.skip_variant_calling) ) {
-        if (!params.skip_checkv) {
-            if (!ch_db.checkv) {
-                ch_checkv_db = CHECKV_DOWNLOADDATABASE().checkv_db
-            } else {
-                ch_checkv_db = ch_db.checkv
-            }
+        ch_checkv_db = ch_db.checkv
+
+        if (!params.skip_checkv && !ch_db.checkv ) {
+            ch_checkv_db = CHECKV_DOWNLOADDATABASE().checkv_db
         }
 
         CONSENSUS_QC(
