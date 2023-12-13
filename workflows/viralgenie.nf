@@ -42,13 +42,6 @@ ch_metadata      = createFileChannel(params.metadata)
 ch_contaminants  = createFileChannel(params.contaminants)
 ch_spades_yml    = createFileChannel(params.spades_yml)
 ch_spades_hmm    = createFileChannel(params.spades_hmm)
-ch_ref_pool      = !params.skip_polishing  || !params.skip_consensus_qc          ? createChannel(params.reference_pool, "blast", true)              : Channel.empty()
-ch_kraken2_db    = !params.skip_precluster || !params.skip_metagenomic_diversity ? createChannel(params.kraken2_db, "kraken2", params.skip_kraken2) : Channel.empty()
-ch_kaiju_db      = !params.skip_precluster || !params.skip_metagenomic_diversity ? createChannel(params.kaiju_db, "kaiju", params.skip_kaiju)       : Channel.empty()
-ch_checkv_db     = !params.skip_consensus_qc                                     ? createChannel(params.checkv_db, "checkv", params.skip_checkv)    : Channel.empty()
-ch_bracken_db    = !params.skip_metagenomic_diversity                            ? createChannel(params.bracken_db, "bracken", params.skip_bracken) : Channel.empty()
-ch_k2_host       = !params.skip_hostremoval                                      ? createChannel(params.host_k2_db, "k2_host", true)                : Channel.empty()
-
 
 def assemblers = params.assemblers ? params.assemblers.split(',').collect{ it.trim().toLowerCase() } : []
 
@@ -75,6 +68,9 @@ include { UNPACK_DB as UNPACK_DB_KRAKEN2_HOST  } from '../subworkflows/local/unp
 
 // metagenomic diversity
 include { FASTQ_KRAKEN_KAIJU              } from '../subworkflows/local/fastq_kraken_kaiju'
+include { UNPACK_DB as UNPACK_DB_KRAKEN   } from '../subworkflows/local/unpack_db'
+include { UNPACK_DB as UNPACK_DB_BRACKEN  } from '../subworkflows/local/unpack_db'
+include { UNPACK_DB as UNPACK_DB_KAIJU    } from '../subworkflows/local/unpack_db'
 
 // Assembly
 include { FASTQ_SPADES_TRINITY_MEGAHIT    } from '../subworkflows/local/fastq_spades_trinity_megahit'
@@ -83,7 +79,7 @@ include { FASTQ_SPADES_TRINITY_MEGAHIT    } from '../subworkflows/local/fastq_sp
 include { FASTA_CONTIG_CLUST              } from '../subworkflows/local/fasta_contig_clust'
 include { BLAST_MAKEBLASTDB               } from '../modules/nf-core/blast/makeblastdb/main'
 include { ALIGN_COLLAPSE_CONTIGS          } from '../subworkflows/local/align_collapse_contigs'
-include { UNPACK_DB                       } from '../subworkflows/local/unpack_db'
+include { UNPACK_DB as UNPACK_DB_BLAST    } from '../subworkflows/local/unpack_db'
 include { FASTQ_FASTA_ITERATIVE_CONSENSUS } from '../subworkflows/local/fastq_fasta_iterative_consensus'
 include { SINGLETON_FILTERING             } from '../subworkflows/local/singleton_filtering'
 
@@ -92,6 +88,7 @@ include { RENAME_FASTA_HEADER as RENAME_FASTA_HEADER_CONSTRAIN } from '../module
 include { FASTQ_FASTA_MAP_CONSENSUS                            } from '../subworkflows/local/fastq_fasta_map_consensus'
 
 // QC consensus
+include { UNPACK_DB as UNPACK_DB_CHECKV   } from '../subworkflows/local/unpack_db'
 include { CHECKV_DOWNLOADDATABASE         } from '../modules/nf-core/checkv/downloaddatabase/main'
 include { CONSENSUS_QC                    } from '../subworkflows/local/consensus_qc'
 
@@ -123,41 +120,14 @@ workflow VIRALGENIE {
             [meta , [read1, read2]]
             }
 
-    // Prepare Databases
-    ch_db = Channel.empty()
-    if (!params.skip_polishing || !params.skip_consensus_qc || !params.skip_metagenomic_diversity || !params.skip_hostremoval){
-
-        ch_db_raw = ch_db.mix(ch_ref_pool,ch_kraken2_db, ch_kaiju_db, ch_checkv_db, ch_bracken_db, ch_k2_host)
-        UNPACK_DB (ch_db_raw)
-
-        UNPACK_DB
-            .out
-            .db
-            .branch { meta, unpacked ->
-                k2_host: meta.id == 'k2_host'
-                    return [ unpacked ]
-                blast: meta.id == 'blast'
-                    return [ meta, unpacked ]
-                checkv: meta.id == 'checkv'
-                    return [ unpacked ]
-                kraken2: meta.id == 'kraken2'
-                    return [ unpacked ]
-                bracken: meta.id == 'bracken'
-                    return [ unpacked ]
-                kaiju: meta.id == 'kaiju'
-                    return [ unpacked ]
-            }
-            .set{ch_db}
-        ch_versions         = ch_versions.mix(UNPACK_DB.out.versions)
-        ch_ref_pool         = ch_db.blast ?: [[:],[]]
-        ch_kraken2_db       = ch_db.kraken2 ?: []
-        ch_kaiju_db         = ch_db.kaiju ?: []
-        ch_checkv_db        = ch_db.checkv ?: []
-        ch_bracken_db       = ch_db.bracken ?: []
-        ch_k2_host          = ch_db.k2_host ?: []
+    // unpack host & contamination DB
+    ch_k2_host = Channel.empty()
+    if (!params.skip_hostremoval){
+        UNPACK_DB_KRAKEN2_HOST(ch_k2_host)
+        ch_k2_host = UNPACK_DB_KRAKEN2_HOST.out.db
     }
 
-    // preprocessing illumina reads
+    // preprocessing illumina reads (trim - decomplexify - host remove)
     PREPROCESSING_ILLUMINA (
         ch_reads,
         ch_k2_host,
@@ -169,8 +139,20 @@ workflow VIRALGENIE {
     ch_versions             = ch_versions.mix(PREPROCESSING_ILLUMINA.out.versions)
 
 
+    // Prepare database for read & contig annotation
+    ch_kraken2_db = Channel.empty()
+    ch_kaiju_db   = Channel.empty()
+    if(!params.skip_metagenomic_diversity || !params.skip_precluster){
+        ch_kraken2_db = UNPACK_DB_KRAKEN(params.kraken2_db).db
+        ch_kaiju_db   = UNPACK_DB_KAIJU(params.kaiju_db).db
+    }
+
     // Determining metagenomic diversity
     if (!params.skip_metagenomic_diversity) {
+        ch_bracken_db   = Channel.empty()
+        if (!params.skip_bracken){
+            ch_bracken_db = UNPACK_DB_BRACKEN(params.bracken_db).db
+        }
         FASTQ_KRAKEN_KAIJU(
             ch_host_trim_reads,
             ch_kraken2_db,
@@ -237,9 +219,17 @@ workflow VIRALGENIE {
         ch_multiqc_files = ch_multiqc_files.mix(no_contigs.ifEmpty([]))
 
         if (!params.skip_polishing || !params.skip_consensus_qc) {
-            BLAST_MAKEBLASTDB ( ch_ref_pool )
-            ch_blast_db  = BLAST_MAKEBLASTDB.out.db
-            ch_versions  = ch_versions.mix(BLAST_MAKEBLASTDB.out.versions)
+        UNPACK_DB_BLAST (params.reference_pool)
+        UNPACK_DB_BLAST
+            .out
+            .db
+            .map{db -> [[id:"blast_db"], db]}
+            .set{ch_ref_pool}
+        ch_versions         = ch_versions.mix(UNPACK_DB_BLAST.out.versions)
+
+        BLAST_MAKEBLASTDB ( unpacked_references )
+        ch_blast_db  = BLAST_MAKEBLASTDB.out.db
+        ch_versions  = ch_versions.mix(BLAST_MAKEBLASTDB.out.versions)
         }
 
         if (!params.skip_polishing){
@@ -253,8 +243,8 @@ workflow VIRALGENIE {
                 ch_contigs_reads,
                 ch_blast_db,
                 ch_ref_pool,
-                ch_kraken2_db ?:[],
-                ch_kaiju_db ?:[]
+                ch_kraken2_db,
+                ch_kaiju_db
                 )
             ch_versions = ch_versions.mix(FASTA_CONTIG_CLUST.out.versions)
 
@@ -439,8 +429,13 @@ workflow VIRALGENIE {
     ch_blast_summary  = Channel.empty()
 
     if ( !params.skip_consensus_qc || (params.skip_assembly && params.skip_variant_calling) ) {
-        if (!params.skip_checkv && !ch_checkv_db ) {
-            ch_checkv_db = CHECKV_DOWNLOADDATABASE().checkv_db
+
+        if (!params.skip_checkv ) {
+            if (params.checkv_db){
+                ch_checkv_db = UNPACK_DB_CHECKV(params.checkv_db)
+            } else {
+                ch_checkv_db = CHECKV_DOWNLOADDATABASE().checkv_db
+            }
         }
 
         CONSENSUS_QC(
