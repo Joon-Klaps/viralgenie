@@ -122,8 +122,8 @@ workflow VIRALGENIE {
 
     // unpack host & contamination DB
     ch_k2_host = Channel.empty()
-    if (!params.skip_hostremoval){
-        UNPACK_DB_KRAKEN2_HOST(ch_k2_host)
+    if (!params.skip_hostremoval && params.host_k2_db){
+        UNPACK_DB_KRAKEN2_HOST(params.host_k2_db)
         ch_k2_host = UNPACK_DB_KRAKEN2_HOST.out.db
     }
 
@@ -229,7 +229,7 @@ workflow VIRALGENIE {
             .set{ch_ref_pool}
         ch_versions         = ch_versions.mix(UNPACK_DB_BLAST.out.versions)
 
-        BLAST_MAKEBLASTDB ( unpacked_references )
+        BLAST_MAKEBLASTDB ( ch_ref_pool )
         ch_blast_db  = BLAST_MAKEBLASTDB.out.db
         ch_versions  = ch_versions.mix(BLAST_MAKEBLASTDB.out.versions)
         }
@@ -431,7 +431,7 @@ workflow VIRALGENIE {
     ch_blast_summary  = Channel.empty()
 
     if ( !params.skip_consensus_qc || (params.skip_assembly && params.skip_variant_calling) ) {
-
+        ch_checkv_db = Channel.empty()
         if (!params.skip_checkv ) {
             if (params.checkv_db){
                 ch_checkv_db = UNPACK_DB_CHECKV(params.checkv_db)

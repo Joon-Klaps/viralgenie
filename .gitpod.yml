@@ -1,4 +1,4 @@
-image: nfcore/gitpod:latest
+image: nfcore/gitpod:2.10
 tasks:
   - name: Update Nextflow and setup pre-commit
     command: |
