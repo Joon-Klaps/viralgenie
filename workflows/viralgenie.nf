@@ -143,8 +143,10 @@ workflow VIRALGENIE {
     ch_kraken2_db = Channel.empty()
     ch_kaiju_db   = Channel.empty()
     if(!params.skip_metagenomic_diversity || !params.skip_precluster){
-        ch_kraken2_db = UNPACK_DB_KRAKEN(params.kraken2_db).db
-        ch_kaiju_db   = UNPACK_DB_KAIJU(params.kaiju_db).db
+        UNPACK_DB_KRAKEN(params.kraken2_db)
+        ch_kraken2_db = UNPACK_DB_KRAKEN.out.db
+        UNPACK_DB_KAIJU(params.kaiju_db)
+        ch_kaiju_db   = UNPACK_DB_KAIJU.out.db
     }
 
     // Determining metagenomic diversity
