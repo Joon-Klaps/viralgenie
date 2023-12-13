@@ -4,16 +4,19 @@ include { GUNZIP    } from '../../modules/nf-core/gunzip/main'
 workflow UNPACK_DB  {
 
     take:
-    db_in  // channel [ val(meta), [ db ] ]
+    db_in  // channel [ [ db ] ]
 
     main:
     ch_versions = Channel.empty()
 
     db_in
-    .branch { meta, db ->
+    .branch { db ->
         tar: db.name.endsWith('.tar.gz') || db.name.endsWith('.tgz')
+            return [[id:db.name], db]
         gzip: db.name.endsWith('.gz')
+            return [[id:db.name], db]
         other: true
+            return [[id:db.name], db]
     }
     .set{db}
 
@@ -25,6 +28,7 @@ workflow UNPACK_DB  {
 
     ch_db = Channel.empty()
     ch_db = ch_db.mix(db.other, ch_untar, ch_gunzip)
+
 
     emit:
     db       = ch_db            // channel: [ db ]
