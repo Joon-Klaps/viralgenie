@@ -12,6 +12,8 @@ workflow FASTA_CONTIG_PRECLUST {
     main:
     ch_versions = Channel.empty()
 
+    ch_contigs = ch_contigs.map{ meta, fasta -> [meta + [single_end:true, og_single_end:meta.single_end], fasta] }
+
     kaiju = Channel.empty()
     if (!params.skip_kaiju){
         KAIJU_CONTIG ( ch_contigs, ch_kaiju_db)
@@ -35,6 +37,8 @@ workflow FASTA_CONTIG_PRECLUST {
         classifications = KAIJU_MERGEOUTPUTS.out.merged
         ch_versions     = ch_versions.mix( KAIJU_MERGEOUTPUTS.out.versions.first() )
     }
+
+    classifications = classifications.map{ meta, txt -> [meta + [single_end:meta.og_single_end], txt] }
 
     emit:
     classifications  = classifications  // channel: [ val(meta), [ kaiju ] , [ kraken ] ]

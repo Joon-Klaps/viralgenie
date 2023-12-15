@@ -26,6 +26,7 @@ process KRAKEN2_KRAKEN2 {
     script:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
+    def paired       = meta.single_end ? "" : "--paired"  
     def classified   = meta.single_end ? "${prefix}.classified.fastq"   : "${prefix}.classified#.fastq"
     def unclassified = meta.single_end ? "${prefix}.unclassified.fastq" : "${prefix}.unclassified#.fastq"
     def classified_option = save_output_fastqs ? "--classified-out ${classified}" : ""
@@ -43,6 +44,7 @@ process KRAKEN2_KRAKEN2 {
         $unclassified_option \\
         $classified_option \\
         $readclassification_option \\
+        $paired \\
         $args \\
         $reads
 
