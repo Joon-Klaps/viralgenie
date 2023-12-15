@@ -14,6 +14,16 @@ def logo = NfcoreTemplate.logo(workflow, params.monochrome_logs)
 def citation = '\n' + WorkflowMain.citation(workflow) + '\n'
 def summary_params = paramsSummaryMap(workflow)
 
+def assemblers = params.assemblers ? params.assemblers.split(',').collect{ it.trim().toLowerCase() } : []
+
+def createFileChannel(param) {
+    return param ? Channel.fromPath(param, checkIfExists: true) : []
+}
+
+def createChannel(dbPath, dbName, skipFlag) {
+    return dbPath && skipFlag ? Channel.fromPath(dbPath, checkIfExists: true).map { db -> [[id: dbName], db] } : Channel.empty()
+}
+
 // Print parameter summary log to screen
 log.info logo + paramsSummaryLog(workflow) + citation
 
@@ -25,15 +35,21 @@ def checkPathParamList = [
     ]
 for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
 
-// Check mandatory parameters
-if (params.input            ) { ch_input = file(params.input)                                      } else { exit 1, 'Input samplesheet not specified!'                              }
-if (params.adapter_fasta    ) { ch_adapter_fasta = file(params.adapter_fasta)                      } else { ch_adapter_fasta  = []                                                  }
-if (params.metadata         ) { ch_metadata = file(params.metadata)                                } else { ch_metadata  = []                                                  }
-if (params.contaminants     ) { ch_contaminants = file(params.contaminants)                        } else { ch_contaminants = []                                                    }
-if (params.spades_yml       ) { ch_spades_yml = file(params.spades_yml)                            } else { ch_spades_yml = []                                                      }
-if (params.spades_hmm       ) { ch_spades_hmm = file(params.spades_hmm)                            } else { ch_spades_hmm = []                                                      }
 
-def assemblers = params.assemblers ? params.assemblers.split(',').collect{ it.trim().toLowerCase() } : []
+// Check mandatory parameters
+if (params.input) { ch_input = file(params.input)} else { exit 1, 'Input samplesheet not specified!'}
+
+ch_adapter_fasta = createFileChannel(params.adapter_fasta)
+ch_metadata      = createFileChannel(params.metadata)
+ch_contaminants  = createFileChannel(params.contaminants)
+ch_spades_yml    = createFileChannel(params.spades_yml)
+ch_spades_hmm    = createFileChannel(params.spades_hmm)
+ch_ref_pool      = !params.skip_polishing  || !params.skip_consensus_qc          ? createChannel(params.reference_pool, "blast", true)              : Channel.empty()
+ch_kraken2_db    = !params.skip_metagenomic_diversity ? createChannel(params.kraken2_db, "kraken2", !params.skip_kraken2) : Channel.empty()
+ch_kaiju_db      = !params.skip_metagenomic_diversity ? createChannel(params.kaiju_db, "kaiju", !params.skip_kaiju)       : Channel.empty()
+ch_checkv_db     = !params.skip_consensus_qc                                     ? createChannel(params.checkv_db, "checkv", !params.skip_checkv)    : Channel.empty()
+ch_bracken_db    = !params.skip_metagenomic_diversity                            ? createChannel(params.bracken_db, "bracken", !params.skip_bracken) : Channel.empty()
+ch_k2_host       = !params.skip_hostremoval                                      ? createChannel(params.host_k2_db, "k2_host", true)                : Channel.empty()
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -41,10 +57,14 @@ def assemblers = params.assemblers ? params.assemblers.split(',').collect{ it.tr
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-ch_multiqc_config          = Channel.fromPath("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
-ch_multiqc_custom_config   = params.multiqc_config ? Channel.fromPath( params.multiqc_config, checkIfExists: true ) : Channel.empty()
-ch_multiqc_logo            = params.multiqc_logo   ? Channel.fromPath( params.multiqc_logo, checkIfExists: true ) : Channel.empty()
+ch_multiqc_config                     = Channel.fromPath("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
+ch_multiqc_custom_config              = params.multiqc_config ? Channel.fromPath( params.multiqc_config, checkIfExists: true ) : Channel.empty()
+ch_multiqc_logo                       = params.multiqc_logo   ? Channel.fromPath( params.multiqc_logo, checkIfExists: true ) : Channel.empty()
 ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
+ch_multiqc_comment_headers            = params.multiqc_comment_headers     ? Channel.fromPath(params.multiqc_comment_headers, checkIfExists:true ) : Channel.empty()
+ch_multiqc_custom_table_headers       = params.custom_table_headers        ? Channel.fromPath(params.custom_table_headers, checkIfExists:true ) : Channel.empty()
+
+
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -54,7 +74,6 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 
 // Preprocessing
 include { PREPROCESSING_ILLUMINA          } from '../subworkflows/local/preprocessing_illumina'
-include { UNPACK_DB as UNPACK_DB_KRAKEN2_HOST  } from '../subworkflows/local/unpack_db'
 
 // metagenomic diversity
 include { FASTQ_KRAKEN_KAIJU              } from '../subworkflows/local/fastq_kraken_kaiju'
@@ -66,7 +85,7 @@ include { FASTQ_SPADES_TRINITY_MEGAHIT    } from '../subworkflows/local/fastq_sp
 include { FASTA_BLAST_CLUST               } from '../subworkflows/local/fasta_blast_clust'
 include { BLAST_MAKEBLASTDB               } from '../modules/nf-core/blast/makeblastdb/main'
 include { ALIGN_COLLAPSE_CONTIGS          } from '../subworkflows/local/align_collapse_contigs'
-include { UNPACK_DB as UNPACK_DB_BLAST    } from '../subworkflows/local/unpack_db'
+include { UNPACK_DB                       } from '../subworkflows/local/unpack_db'
 include { FASTQ_FASTA_ITERATIVE_CONSENSUS } from '../subworkflows/local/fastq_fasta_iterative_consensus'
 include { SINGLETON_FILTERING             } from '../subworkflows/local/singleton_filtering'
 
@@ -75,7 +94,6 @@ include { RENAME_FASTA_HEADER as RENAME_FASTA_HEADER_CONSTRAIN } from '../module
 include { FASTQ_FASTA_MAP_CONSENSUS                            } from '../subworkflows/local/fastq_fasta_map_consensus'
 
 // QC consensus
-include { UNPACK_DB as UNPACK_DB_CHECKV   } from '../subworkflows/local/unpack_db'
 include { CHECKV_DOWNLOADDATABASE         } from '../modules/nf-core/checkv/downloaddatabase/main'
 include { CONSENSUS_QC                    } from '../subworkflows/local/consensus_qc'
 
@@ -107,17 +125,52 @@ workflow VIRALGENIE {
             [meta , [read1, read2]]
             }
 
-    // unpack DB
-    ch_host_k2 = Channel.empty()
-    if (!params.skip_hostremoval){
-        UNPACK_DB_KRAKEN2_HOST(params.host_k2_db)
-        ch_host_k2 = UNPACK_DB_KRAKEN2_HOST.out.db
+    // Prepare Databases
+    ch_db = Channel.empty()
+    if (!params.skip_polishing || !params.skip_consensus_qc || !params.skip_metagenomic_diversity || !params.skip_hostremoval){
+
+        ch_db_raw = ch_db.mix(ch_ref_pool,ch_kraken2_db, ch_kaiju_db, ch_checkv_db, ch_bracken_db, ch_k2_host)
+        UNPACK_DB (ch_db_raw)
+
+        UNPACK_DB
+            .out
+            .db
+            .branch { meta, unpacked ->
+                k2_host: meta.id == 'k2_host'
+                    return [ unpacked ]
+                blast: meta.id == 'blast'
+                    return [ meta, unpacked ]
+                checkv: meta.id == 'checkv'
+                    return [ unpacked ]
+                kraken2: meta.id == 'kraken2'
+                    return [ unpacked ]
+                bracken: meta.id == 'bracken'
+                    return [ unpacked ]
+                kaiju: meta.id == 'kaiju'
+                    return [ unpacked ]
+            }
+            .set{ch_db}
+        ch_versions         = ch_versions.mix(UNPACK_DB.out.versions)
+        // transfer to value channels so processes are not just done once
+        ch_ref_pool         = ch_db.blast.collect{it[1]}.ifEmpty([]).map{it -> [[id: 'blast'], it]}
+        ch_kraken2_db       = ch_db.kraken2.collect().ifEmpty([])
+        ch_kaiju_db         = ch_db.kaiju.collect().ifEmpty([])
+        ch_checkv_db        = ch_db.checkv.collect().ifEmpty([])
+        ch_bracken_db       = ch_db.bracken.collect().ifEmpty([])
+        ch_k2_host          = ch_db.k2_host.collect().ifEmpty([])
+    }
+
+    // Prepare blast DB
+    if (!params.skip_polishing || !params.skip_consensus_qc){
+        BLAST_MAKEBLASTDB ( ch_ref_pool )
+        ch_blast_db  = BLAST_MAKEBLASTDB.out.db
+        ch_versions  = ch_versions.mix(BLAST_MAKEBLASTDB.out.versions)
     }
 
     // preprocessing illumina reads
     PREPROCESSING_ILLUMINA (
         ch_samplesheet,
-        ch_host_k2,
+        ch_k2_host,
         ch_adapter_fasta,
         ch_contaminants)
     ch_host_trim_reads      = PREPROCESSING_ILLUMINA.out.reads
@@ -125,28 +178,14 @@ workflow VIRALGENIE {
     ch_multiqc_files        = ch_multiqc_files.mix(PREPROCESSING_ILLUMINA.out.mqc.collect{it[1]}.ifEmpty([]))
     ch_versions             = ch_versions.mix(PREPROCESSING_ILLUMINA.out.versions)
 
-    // Prepare blast DB
-    if (!params.skip_polishing || !params.skip_consensus_qc){
-        UNPACK_DB_BLAST (params.reference_pool)
-        UNPACK_DB_BLAST
-            .out
-            .db
-            .map{db -> [[id:"blast_db"], db]}
-            .set{unpacked_references}
-        ch_versions         = ch_versions.mix(UNPACK_DB_BLAST.out.versions)
-
-        BLAST_MAKEBLASTDB ( unpacked_references )
-        ch_blast_db  = BLAST_MAKEBLASTDB.out.db
-        ch_versions  = ch_versions.mix(BLAST_MAKEBLASTDB.out.versions)
-    }
-
     // Determining metagenomic diversity
     if (!params.skip_metagenomic_diversity) {
         FASTQ_KRAKEN_KAIJU(
             ch_host_trim_reads,
-            params.kraken2_db,
-            params.bracken_db,
-            params.kaiju_db )
+            ch_kraken2_db,
+            ch_bracken_db,
+            ch_kaiju_db
+            )
         ch_multiqc_files = ch_multiqc_files.mix(FASTQ_KRAKEN_KAIJU.out.mqc.collect{it[1]}.ifEmpty([]))
         ch_versions      = ch_versions.mix(FASTQ_KRAKEN_KAIJU.out.versions)
     }
@@ -158,7 +197,7 @@ workflow VIRALGENIE {
     ch_consensus_results_reads = Channel.empty()
     ch_clusters_summary        = Channel.empty()
     ch_clusters_tsv            = Channel.empty()
-    ch_unaligned_raw_contigs     = Channel.empty()
+    ch_unaligned_raw_contigs   = Channel.empty()
 
     if (!params.skip_assembly) {
         // run different assemblers and combine contigs
@@ -216,7 +255,7 @@ workflow VIRALGENIE {
             FASTA_BLAST_CLUST (
                 ch_contigs_reads,
                 ch_blast_db,
-                unpacked_references,
+                ch_ref_pool,
                 params.cluster_method
                 )
             ch_versions = ch_versions.mix(FASTA_BLAST_CLUST.out.versions)
@@ -402,15 +441,9 @@ workflow VIRALGENIE {
     ch_quast_summary  = Channel.empty()
     ch_blast_summary  = Channel.empty()
 
-    if ( !params.skip_consensus_qc ) {
-        ch_checkv_db = Channel.empty()
-        if (!params.skip_checkv) {
-            checkv_db = params.checkv_db
-            if (!checkv_db) {
-                ch_checkv_db = CHECKV_DOWNLOADDATABASE().checkv_db
-            } else {
-                ch_checkv_db = UNPACK_DB_CHECKV(checkv_db).db
-            }
+    if ( !params.skip_consensus_qc || (params.skip_assembly && params.skip_variant_calling) ) {
+        if (!params.skip_checkv && !ch_checkv_db ) {
+            ch_checkv_db = CHECKV_DOWNLOADDATABASE().checkv_db
         }
 
         CONSENSUS_QC(
@@ -447,7 +480,9 @@ workflow VIRALGENIE {
             ch_checkv_summary,
             ch_quast_summary,
             ch_blast_summary,
-            multiqc_data
+            multiqc_data,
+            ch_multiqc_comment_headers,
+            ch_multiqc_custom_table_headers
             )
     ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.summary_clusters_mqc.ifEmpty([]))
     ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.sample_metadata_mqc.ifEmpty([]))
