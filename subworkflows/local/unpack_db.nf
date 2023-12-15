@@ -1,5 +1,5 @@
-include { UNTAR     } from '../../modules/nf-core/untar/main'
-include { GUNZIP    } from '../../modules/nf-core/gunzip/main'
+include { UNTAR as UNTAR_DB     } from '../../modules/nf-core/untar/main'
+include { GUNZIP as GUNZIP_DB    } from '../../modules/nf-core/gunzip/main'
 
 workflow UNPACK_DB  {
 
@@ -17,11 +17,11 @@ workflow UNPACK_DB  {
     }
     .set{db}
 
-    ch_untar = UNTAR(db.tar).untar
-    ch_versions   = ch_versions.mix(UNTAR.out.versions)
+    ch_untar = UNTAR_DB(db.tar).untar
+    ch_versions   = ch_versions.mix(UNTAR_DB.out.versions)
 
-    ch_gunzip = GUNZIP(db.gzip).gunzip
-    ch_versions   = ch_versions.mix(GUNZIP.out.versions)
+    ch_gunzip = GUNZIP_DB(db.gzip).gunzip
+    ch_versions   = ch_versions.mix(GUNZIP_DB.out.versions)
 
     ch_db = Channel.empty()
     ch_db = ch_db.mix(db.other, ch_untar, ch_gunzip)

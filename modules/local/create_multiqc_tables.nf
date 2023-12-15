@@ -13,15 +13,17 @@ process CREATE_MULTIQC_TABLES {
     path quast_files, stageAs: "?/*"
     path blast_files, stageAs: "?/*"
     path multiqc_dir
+    path comment_headers
+    path custom_table_headers
 
     output:
-    path("summary_clusters_mqc.tsv")    , emit: summary_clusters_mqc, optional: true
-    path("sample_metadata_mqc.tsv")     , emit: sample_metadata_mqc , optional: true
-    path("contigs_overview_mqc.tsv")    , emit: contigs_overview_mqc, optional: true
-    path("summary_checkv_mqc.tsv")      , emit: summary_checkv_mqc  , optional: true
-    path("summary_quast_mqc.tsv")       , emit: summary_quast_mqc   , optional: true
-    path("summary_blast_mqc.tsv")       , emit: summary_blast_mqc   , optional: true
-    path "versions.yml"                 , emit: versions
+    path("summary_clusters_mqc.tsv"), emit: summary_clusters_mqc, optional: true
+    path("sample_metadata_mqc.tsv") , emit: sample_metadata_mqc , optional: true
+    path("contigs_overview_mqc.tsv"), emit: contigs_overview_mqc, optional: true
+    path("summary_checkv_mqc.tsv")  , emit: summary_checkv_mqc  , optional: true
+    path("summary_quast_mqc.tsv")   , emit: summary_quast_mqc   , optional: true
+    path("summary_blast_mqc.tsv")   , emit: summary_blast_mqc   , optional: true
+    path "versions.yml"             , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -34,8 +36,9 @@ process CREATE_MULTIQC_TABLES {
     def quast_files            = quast_files            ? "--quast_files ${quast_files.join(' ')}"                 : ''
     def blast_files            = blast_files            ? "--blast_files ${blast_files.join(' ')}"                 : ''
     def multiqc_dir            = multiqc_dir            ? "--multiqc_dir ${multiqc_dir}"                           : ''
+    def comment_headers        = comment_headers        ? "--comment_dir ${comment_headers}"                       : ''
+    def custom_table_headers   = custom_table_headers   ? "--table_headers ${custom_table_headers}"                : ''
 
-    // TODO: Comment dir & table headers have to be given trough the input as they aren't staged otherwise.
     """
     create_multiqc_custom_tables.py\\
         $args \\
@@ -44,6 +47,8 @@ process CREATE_MULTIQC_TABLES {
         $checkv_files \\
         $quast_files \\
         $blast_files \\
+        $comment_headers \\
+        $custom_table_headers \\
         $multiqc_dir
 
 

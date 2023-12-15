@@ -57,10 +57,14 @@ ch_k2_host       = !params.skip_hostremoval                                     
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-ch_multiqc_config          = Channel.fromPath("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
-ch_multiqc_custom_config   = params.multiqc_config ? Channel.fromPath( params.multiqc_config, checkIfExists: true ) : Channel.empty()
-ch_multiqc_logo            = params.multiqc_logo   ? Channel.fromPath( params.multiqc_logo, checkIfExists: true ) : Channel.empty()
+ch_multiqc_config                     = Channel.fromPath("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
+ch_multiqc_custom_config              = params.multiqc_config ? Channel.fromPath( params.multiqc_config, checkIfExists: true ) : Channel.empty()
+ch_multiqc_logo                       = params.multiqc_logo   ? Channel.fromPath( params.multiqc_logo, checkIfExists: true ) : Channel.empty()
 ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
+ch_multiqc_comment_headers            = params.multiqc_comment_headers     ? Channel.fromPath(params.multiqc_comment_headers, checkIfExists:true ) : Channel.empty()
+ch_multiqc_custom_table_headers       = params.custom_table_headers        ? Channel.fromPath(params.custom_table_headers, checkIfExists:true ) : Channel.empty()
+
+
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -70,7 +74,6 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 
 // Preprocessing
 include { PREPROCESSING_ILLUMINA          } from '../subworkflows/local/preprocessing_illumina'
-include { UNPACK_DB as UNPACK_DB_KRAKEN2_HOST  } from '../subworkflows/local/unpack_db'
 
 // metagenomic diversity
 include { FASTQ_KRAKEN_KAIJU              } from '../subworkflows/local/fastq_kraken_kaiju'
@@ -82,8 +85,7 @@ include { FASTQ_SPADES_TRINITY_MEGAHIT    } from '../subworkflows/local/fastq_sp
 include { FASTA_BLAST_CLUST               } from '../subworkflows/local/fasta_blast_clust'
 include { BLAST_MAKEBLASTDB               } from '../modules/nf-core/blast/makeblastdb/main'
 include { ALIGN_COLLAPSE_CONTIGS          } from '../subworkflows/local/align_collapse_contigs'
-include { UNPACK_DB as UNPACK_DB_BLAST    } from '../subworkflows/local/unpack_db'
-include { UNPACK_DB } from '../subworkflows/local/unpack_db'
+include { UNPACK_DB                       } from '../subworkflows/local/unpack_db'
 include { FASTQ_FASTA_ITERATIVE_CONSENSUS } from '../subworkflows/local/fastq_fasta_iterative_consensus'
 include { SINGLETON_FILTERING             } from '../subworkflows/local/singleton_filtering'
 
@@ -92,7 +94,6 @@ include { RENAME_FASTA_HEADER as RENAME_FASTA_HEADER_CONSTRAIN } from '../module
 include { FASTQ_FASTA_MAP_CONSENSUS                            } from '../subworkflows/local/fastq_fasta_map_consensus'
 
 // QC consensus
-include { UNPACK_DB as UNPACK_DB_CHECKV   } from '../subworkflows/local/unpack_db'
 include { CHECKV_DOWNLOADDATABASE         } from '../modules/nf-core/checkv/downloaddatabase/main'
 include { CONSENSUS_QC                    } from '../subworkflows/local/consensus_qc'
 
@@ -479,7 +480,9 @@ workflow VIRALGENIE {
             ch_checkv_summary,
             ch_quast_summary,
             ch_blast_summary,
-            multiqc_data
+            multiqc_data,
+            ch_multiqc_comment_headers,
+            ch_multiqc_custom_table_headers
             )
     ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.summary_clusters_mqc.ifEmpty([]))
     ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.sample_metadata_mqc.ifEmpty([]))
