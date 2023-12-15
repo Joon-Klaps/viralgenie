@@ -9,10 +9,10 @@ include { KAIJU_KAIJU2TABLE              } from '../../modules/nf-core/kaiju/kai
 workflow FASTQ_KRAKEN_KAIJU {
 
     take:
-    reads // channel: [ val(meta), [ fastq ] ]
-    kraken2_db
-    bracken_db
-    kaiju_db
+    reads           // channel: [ val(meta), [ fastq ] ]
+    kraken2_db      // channel: [ path(kraken2_db) ]
+    bracken_db      // channel: [ path(bracken_db) ]
+    kaiju_db        // channel: [ path(kaiju_db) ]
 
     main:
     ch_versions             = Channel.empty()
@@ -21,7 +21,6 @@ workflow FASTQ_KRAKEN_KAIJU {
 
     // Kraken
     if (!params.skip_kraken2){
-
         KRAKEN2_KRAKEN2 ( reads, kraken2_db, params.kraken2_save_reads, params.kraken2_save_readclassification )
         ch_raw_classifications = ch_raw_classifications.mix(KRAKEN2_KRAKEN2.out.classified_reads_assignment)
         ch_multiqc_files       = ch_multiqc_files.mix( KRAKEN2_KRAKEN2.out.report )

@@ -14,8 +14,10 @@ def logo = NfcoreTemplate.logo(workflow, params.monochrome_logs)
 def citation = '\n' + WorkflowMain.citation(workflow) + '\n'
 def summary_params = paramsSummaryMap(workflow)
 
+def assemblers = params.assemblers ? params.assemblers.split(',').collect{ it.trim().toLowerCase() } : []
+
 def createFileChannel(param) {
-    return param ? Channel.fromPath(param, checkIfExists: true) : Channel.empty()
+    return param ? Channel.fromPath(param, checkIfExists: true) : []
 }
 
 def createChannel(dbPath, dbName, skipFlag) {
@@ -33,6 +35,7 @@ def checkPathParamList = [
 ]
 for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
 
+
 // Check mandatory parameters
 if (params.input            ) { ch_input = file(params.input)                                      } else { exit 1, 'Input samplesheet not specified!'                              }
 
@@ -49,19 +52,20 @@ ch_checkv_db     = !params.skip_consensus_qc                                    
 ch_bracken_db    = !params.skip_metagenomic_diversity                            ? createChannel(params.bracken_db, "bracken", params.skip_bracken) : Channel.empty()
 ch_k2_host       = !params.skip_hostremoval                                      ? createChannel(params.host_k2_db, "k2_host", true)                : Channel.empty()
 
-
-def assemblers = params.assemblers ? params.assemblers.split(',').collect{ it.trim().toLowerCase() } : []
-
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     CONFIG FILES
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-ch_multiqc_config          = Channel.fromPath("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
-ch_multiqc_custom_config   = params.multiqc_config ? Channel.fromPath( params.multiqc_config, checkIfExists: true ) : Channel.empty()
-ch_multiqc_logo            = params.multiqc_logo   ? Channel.fromPath( params.multiqc_logo, checkIfExists: true ) : Channel.empty()
+ch_multiqc_config                     = Channel.fromPath("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
+ch_multiqc_custom_config              = params.multiqc_config ? Channel.fromPath( params.multiqc_config, checkIfExists: true ) : Channel.empty()
+ch_multiqc_logo                       = params.multiqc_logo   ? Channel.fromPath( params.multiqc_logo, checkIfExists: true ) : Channel.empty()
 ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
+ch_multiqc_comment_headers            = params.multiqc_comment_headers     ? Channel.fromPath(params.multiqc_comment_headers, checkIfExists:true ) : Channel.empty()
+ch_multiqc_custom_table_headers       = params.custom_table_headers        ? Channel.fromPath(params.custom_table_headers, checkIfExists:true ) : Channel.empty()
+
+
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -71,7 +75,6 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 
 // Preprocessing
 include { PREPROCESSING_ILLUMINA          } from '../subworkflows/local/preprocessing_illumina'
-include { UNPACK_DB as UNPACK_DB_KRAKEN2_HOST  } from '../subworkflows/local/unpack_db'
 
 // metagenomic diversity
 include { FASTQ_KRAKEN_KAIJU              } from '../subworkflows/local/fastq_kraken_kaiju'
@@ -149,12 +152,21 @@ workflow VIRALGENIE {
             }
             .set{ch_db}
         ch_versions         = ch_versions.mix(UNPACK_DB.out.versions)
-        ch_ref_pool         = ch_db.blast ?: [[:],[]]
-        ch_kraken2_db       = ch_db.kraken2 ?: []
-        ch_kaiju_db         = ch_db.kaiju ?: []
-        ch_checkv_db        = ch_db.checkv ?: []
-        ch_bracken_db       = ch_db.bracken ?: []
-        ch_k2_host          = ch_db.k2_host ?: []
+
+// transfer to value channels so processes are not just done once
+        ch_ref_pool         = ch_db.blast.collect{it[1]}.ifEmpty([]).map{it -> [[id: 'blast'], it]}
+        ch_kraken2_db       = ch_db.kraken2.collect().ifEmpty([])
+        ch_kaiju_db         = ch_db.kaiju.collect().ifEmpty([])
+        ch_checkv_db        = ch_db.checkv.collect().ifEmpty([])
+        ch_bracken_db       = ch_db.bracken.collect().ifEmpty([])
+        ch_k2_host          = ch_db.k2_host.collect().ifEmpty([])
+    }
+
+    // Prepare blast DB
+    if (!params.skip_polishing || !params.skip_consensus_qc){
+        BLAST_MAKEBLASTDB ( ch_ref_pool )
+        ch_blast_db  = BLAST_MAKEBLASTDB.out.db
+        ch_versions  = ch_versions.mix(BLAST_MAKEBLASTDB.out.versions)
     }
 
     // preprocessing illumina reads
@@ -167,7 +179,6 @@ workflow VIRALGENIE {
     ch_decomplex_trim_reads = PREPROCESSING_ILLUMINA.out.reads_decomplexified
     ch_multiqc_files        = ch_multiqc_files.mix(PREPROCESSING_ILLUMINA.out.mqc.collect{it[1]}.ifEmpty([]))
     ch_versions             = ch_versions.mix(PREPROCESSING_ILLUMINA.out.versions)
-
 
     // Determining metagenomic diversity
     if (!params.skip_metagenomic_diversity) {
@@ -189,7 +200,7 @@ workflow VIRALGENIE {
     ch_consensus_results_reads = Channel.empty()
     // Channel for summary table of cluseters to include in mqc report
     ch_clusters_summary        = Channel.empty()
-
+    
     if (!params.skip_assembly) {
         // run different assemblers and combine contigs
         FASTQ_SPADES_TRINITY_MEGAHIT(
@@ -253,8 +264,8 @@ workflow VIRALGENIE {
                 ch_contigs_reads,
                 ch_blast_db,
                 ch_ref_pool,
-                ch_kraken2_db ?:[],
-                ch_kaiju_db ?:[]
+                ch_kraken2_db,
+                ch_kaiju_db
                 )
             ch_versions = ch_versions.mix(FASTA_CONTIG_CLUST.out.versions)
 
@@ -477,7 +488,9 @@ workflow VIRALGENIE {
             ch_checkv_summary,
             ch_quast_summary,
             ch_blast_summary,
-            multiqc_data
+            multiqc_data,
+            ch_multiqc_comment_headers,
+            ch_multiqc_custom_table_headers
             )
     ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.summary_clusters_mqc.ifEmpty([]))
     ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.sample_metadata_mqc.ifEmpty([]))
