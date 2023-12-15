@@ -9,9 +9,6 @@ workflow UNPACK_DB  {
     main:
     ch_versions = Channel.empty()
 
-    db_in.view()
-
-    // ch_db = Channel.fromPath(db_in, checkIfExists: true)
     db_in
     .branch { meta, db ->
         tar: db.name.endsWith('.tar.gz') || db.name.endsWith('.tgz')

@@ -45,10 +45,10 @@ ch_contaminants  = createFileChannel(params.contaminants)
 ch_spades_yml    = createFileChannel(params.spades_yml)
 ch_spades_hmm    = createFileChannel(params.spades_hmm)
 ch_ref_pool      = !params.skip_polishing  || !params.skip_consensus_qc          ? createChannel(params.reference_pool, "blast", true)              : Channel.empty()
-ch_kraken2_db    = !params.skip_metagenomic_diversity ? createChannel(params.kraken2_db, "kraken2", params.skip_kraken2) : Channel.empty()
-ch_kaiju_db      = !params.skip_metagenomic_diversity ? createChannel(params.kaiju_db, "kaiju", params.skip_kaiju)       : Channel.empty()
-ch_checkv_db     = !params.skip_consensus_qc                                     ? createChannel(params.checkv_db, "checkv", params.skip_checkv)    : Channel.empty()
-ch_bracken_db    = !params.skip_metagenomic_diversity                            ? createChannel(params.bracken_db, "bracken", params.skip_bracken) : Channel.empty()
+ch_kraken2_db    = !params.skip_metagenomic_diversity ? createChannel(params.kraken2_db, "kraken2", !params.skip_kraken2) : Channel.empty()
+ch_kaiju_db      = !params.skip_metagenomic_diversity ? createChannel(params.kaiju_db, "kaiju", !params.skip_kaiju)       : Channel.empty()
+ch_checkv_db     = !params.skip_consensus_qc                                     ? createChannel(params.checkv_db, "checkv", !params.skip_checkv)    : Channel.empty()
+ch_bracken_db    = !params.skip_metagenomic_diversity                            ? createChannel(params.bracken_db, "bracken", !params.skip_bracken) : Channel.empty()
 ch_k2_host       = !params.skip_hostremoval                                      ? createChannel(params.host_k2_db, "k2_host", true)                : Channel.empty()
 
 /*
@@ -159,6 +159,13 @@ workflow VIRALGENIE {
         ch_k2_host          = ch_db.k2_host.collect().ifEmpty([])
     }
 
+    // Prepare blast DB
+    if (!params.skip_polishing || !params.skip_consensus_qc){
+        BLAST_MAKEBLASTDB ( ch_ref_pool )
+        ch_blast_db  = BLAST_MAKEBLASTDB.out.db
+        ch_versions  = ch_versions.mix(BLAST_MAKEBLASTDB.out.versions)
+    }
+
     // preprocessing illumina reads
     PREPROCESSING_ILLUMINA (
         ch_samplesheet,
@@ -236,14 +243,6 @@ workflow VIRALGENIE {
             .set{no_contigs}
 
         ch_multiqc_files = ch_multiqc_files.mix(no_contigs.ifEmpty([]))
-
-            // Prepare blast DB
-            if (!params.skip_polishing || !params.skip_consensus_qc){
-                BLAST_MAKEBLASTDB ( ch_ref_pool )
-                ch_blast_db  = BLAST_MAKEBLASTDB.out.db
-                ch_versions  = ch_versions.mix(BLAST_MAKEBLASTDB.out.versions)
-            }
-
 
         if (!params.skip_polishing){
             // blast contigs against reference & identify clusters of (contigs & references)
