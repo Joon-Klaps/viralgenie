@@ -200,7 +200,7 @@ workflow VIRALGENIE {
     ch_consensus_results_reads = Channel.empty()
     // Channel for summary table of cluseters to include in mqc report
     ch_clusters_summary        = Channel.empty()
-    
+
     if (!params.skip_assembly) {
         // run different assemblers and combine contigs
         FASTQ_SPADES_TRINITY_MEGAHIT(
@@ -246,12 +246,6 @@ workflow VIRALGENIE {
             .set{no_contigs}
 
         ch_multiqc_files = ch_multiqc_files.mix(no_contigs.ifEmpty([]))
-
-        if (!params.skip_polishing || !params.skip_consensus_qc) {
-            BLAST_MAKEBLASTDB ( ch_ref_pool )
-            ch_blast_db  = BLAST_MAKEBLASTDB.out.db
-            ch_versions  = ch_versions.mix(BLAST_MAKEBLASTDB.out.versions)
-        }
 
         if (!params.skip_polishing){
             // blast contigs against reference & identify clusters of (contigs & references)
