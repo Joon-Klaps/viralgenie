@@ -35,6 +35,7 @@ process CREATE_MULTIQC_TABLES {
     def blast_files            = blast_files            ? "--blast_files ${blast_files.join(' ')}"                 : ''
     def multiqc_dir            = multiqc_dir            ? "--multiqc_dir ${multiqc_dir}"                           : ''
 
+    // TODO: Comment dir & table headers have to be given trough the input as they aren't staged otherwise.
     """
     create_multiqc_custom_tables.py\\
         $args \\

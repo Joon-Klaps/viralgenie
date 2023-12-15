@@ -4,22 +4,30 @@ include { GUNZIP    } from '../../modules/nf-core/gunzip/main'
 workflow UNPACK_DB  {
 
     take:
-    db  // path: [ db ]
+    db_in  // channel [ val(meta), [ db ] ]
 
     main:
     ch_versions = Channel.empty()
 
-    if (db.endsWith('.tar.gz')){
-        ch_db = UNTAR([ [:], db ]).untar.map{ it[1] }
-        ch_versions   = ch_versions.mix(UNTAR.out.versions)
-    } else if(db.endsWith('.gz')){
-        ch_db = GUNZIP([ [:], db ]).gunzip.map{ it[1] }
-        ch_versions   = ch_versions.mix(GUNZIP.out.versions)
-    } else if (db){
-        ch_db = Channel.value(file(db))
-    } else (
-        Nextflow.error("Database: ${db} not recognized as '.tar.gz' or '.gz' file. \n\n please download and unpack manually and try again specifying the directory.")
-    )
+    db_in.view()
+
+    // ch_db = Channel.fromPath(db_in, checkIfExists: true)
+    db_in
+    .branch { meta, db ->
+        tar: db.name.endsWith('.tar.gz') || db.name.endsWith('.tgz')
+        gzip: db.name.endsWith('.gz')
+        other: true
+    }
+    .set{db}
+
+    ch_untar = UNTAR(db.tar).untar
+    ch_versions   = ch_versions.mix(UNTAR.out.versions)
+
+    ch_gunzip = GUNZIP(db.gzip).gunzip
+    ch_versions   = ch_versions.mix(GUNZIP.out.versions)
+
+    ch_db = Channel.empty()
+    ch_db = ch_db.mix(db.other, ch_untar, ch_gunzip)
 
     emit:
     db = ch_db                  // channel: [ db ]
