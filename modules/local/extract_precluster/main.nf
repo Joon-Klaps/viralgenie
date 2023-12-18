@@ -11,7 +11,7 @@ process EXTRACT_PRECLUSTER {
     tuple val(meta), path(classifications), path(sequence)
 
     output:
-    tuple val(meta), path("*fa")  , emit: sequences
+    tuple val(meta), path("*.fa") , emit: sequences
     path "versions.yml"           , emit: versions
     when:
     task.ext.when == null || task.ext.when
@@ -20,7 +20,7 @@ process EXTRACT_PRECLUSTER {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    extract_preclust \\
+    extract_preclust.py \\
         ${classifications} \\
         ${sequence} \\
         ${prefix} \\

@@ -35,12 +35,12 @@ workflow FASTA_CONTIG_CLUST {
     // precluster our reference hits and contigs using kraken & Kaiju to delineate contigs at a species level
     if (!params.skip_precluster) {
         FASTA_CONTIG_PRECLUST (
-            fasta_ref_contigs,
+            ch_contigs_reads,
             kaiju_db,
             kraken2_db
         )
         ch_versions = ch_versions.mix(FASTA_CONTIG_PRECLUST.out.versions)
-        fasta_fastq = FASTA_CONTIG_PRECLUST.out.classifications
+        ch_contigs_reads = FASTA_CONTIG_PRECLUST.out.sequences_reads
     }
 
     // cluster our reference hits and contigs should make this a subworkflow

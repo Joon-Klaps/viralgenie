@@ -123,7 +123,7 @@ workflow VIRALGENIE {
         'input'
         ).map{
             meta, read1, read2 ->
-            [meta , [read1, read2]]
+            [meta + [sample: meta.id] , [read1, read2]]
             }
 
     // Prepare Databases

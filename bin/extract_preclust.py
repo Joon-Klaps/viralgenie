@@ -61,8 +61,9 @@ def create_groups(file):
     """
     groups = {}
     with open(file, "r") as f:
-        for line in f:
-            parts = line.split("\t")
+        lines = f.readlines()
+        for line in lines:
+            parts = line.strip().split("\t")
             classified = parts[0]
             seq_name = parts[1]
             taxid = parts[2]
@@ -86,7 +87,7 @@ def extract_sequences(groups, sequences, file_out_prefix):
         file_out_prefix (str): The prefix of the output file.
     """
     for taxid, seq_names in groups.items():
-        with open(f"{file_out_prefix}_taxid{taxid}.fa", "aw") as f_out:
+        with open(f"{file_out_prefix}_taxid{taxid}.fa", "w") as f_out:
             for record in SeqIO.parse(sequences, "fasta"):
                 if record.id in seq_names:
                     SeqIO.write(record, f_out, "fasta")
