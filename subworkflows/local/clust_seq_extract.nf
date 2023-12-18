@@ -16,9 +16,9 @@ def getClustersFromJson(json_file) {
 workflow CLUST_SEQ_EXTRACT {
 
     take:
-    ch_clusters     // channel: [ [ meta ], [ clusters ] ]
+    ch_clusters     // channel: [ [ meta ], [ clusters ], [ reads ] ]
     cluster_method  // value: cdhitest| vsearch
-    db_seq          // channel: [ [ meta ], [ db ] ]
+    db_seq_reads    // channel: [ [ meta ], [ db ] ]
 
 
     main:
@@ -27,6 +27,10 @@ workflow CLUST_SEQ_EXTRACT {
     // extract members and centroids from clusters
     CLUSTER_EXTRACT(ch_clusters, cluster_method)
     ch_versions =  ch_versions.mix(CLUSTER_EXTRACT.out.versions.first())
+
+    db_seq_reads
+        .map{ meta, seq, reads -> [meta, seq] }
+        .set{db_seq}
 
     CLUSTER_EXTRACT
         .out

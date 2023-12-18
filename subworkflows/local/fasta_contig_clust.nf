@@ -39,7 +39,7 @@ workflow FASTA_CONTIG_CLUST {
             kaiju_db,
             kraken2_db
         )
-        ch_versions = ch_versions.mix(FASTA_CONTIG_PRECLUST.out.versions)
+        ch_versions      = ch_versions.mix(FASTA_CONTIG_PRECLUST.out.versions)
         ch_contigs_reads = FASTA_CONTIG_PRECLUST.out.sequences_reads
     }
 
@@ -53,9 +53,9 @@ workflow FASTA_CONTIG_CLUST {
     CLUST_SEQ_EXTRACT(
         FASTA_FASTQ_CLUST.out.clusters,
         params.cluster_method,
-        fasta_ref_contigs
+        ch_contigs_reads
     )
-    ch_versions = ch_versions.mix(CLUST_SEQ_EXTRACT.out.versions)
+    ch_versions          = ch_versions.mix(CLUST_SEQ_EXTRACT.out.versions)
     ch_centroids_members = CLUST_SEQ_EXTRACT.out.seq_centroids_members
 
     emit:

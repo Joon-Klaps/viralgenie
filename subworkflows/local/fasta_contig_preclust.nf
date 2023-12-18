@@ -43,20 +43,13 @@ workflow FASTA_CONTIG_PRECLUST {
         classifications = kraken
     }
 
-
     clas_contig = classifications.join(ch_contigs, by:[0])
 
     EXTRACT_PRECLUSTER ( clas_contig )
     ch_versions = ch_versions.mix( EXTRACT_PRECLUSTER.out.versions.first() )
 
-    EXTRACT_PRECLUSTER
-        .out
-        .sequences
-        .view()
-
     reads = ch_contigs_reads.map{ meta, fasta,reads -> [meta.sample, meta, reads] }
-
-    // modify meta.id to include the taxid
+    // modify meta.id to include the taxid & join with reads
     EXTRACT_PRECLUSTER
         .out
         .sequences
@@ -69,8 +62,6 @@ workflow FASTA_CONTIG_PRECLUST {
         .map{ sample, meta_contig, fasta, meta_reads, reads -> [meta_contig, fasta, reads] }
         .map{ meta, fasta, reads -> [meta + [single_end:meta.og_single_end], fasta, reads]}
         .set{sequences_reads}
-
-    sequences_reads.view()
 
     classifications = classifications.map{ meta, txt -> [meta + [single_end:meta.og_single_end], txt] }
 
