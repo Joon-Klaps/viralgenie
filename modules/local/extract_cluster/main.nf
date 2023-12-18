@@ -1,4 +1,4 @@
-process CLUSTER_EXTRACT {
+process EXTRACT_CLUSTER {
     tag "${meta.id}"
     label 'process_single'
 
@@ -8,11 +8,11 @@ process CLUSTER_EXTRACT {
         'biocontainers/python:3.8.3' }"
 
     input:
-    tuple val(meta) , path(cluster)
+    tuple val(meta), path(clusters), path(seq)
     val(module)
 
     output:
-    tuple val(meta), path('*_members.txt'), path('*_centroid.txt'), emit: members_centroids
+    tuple val(meta), path('*_members.fa'), path('*_centroid.fa')  , emit: members_centroids
     tuple val(meta), path("*.json")                               , emit: json
     tuple val(meta), path("*.clusters.tsv")                       , emit: tsv
     tuple val(meta), path("*.summary_mqc.tsv")                    , emit: summary
@@ -23,12 +23,14 @@ process CLUSTER_EXTRACT {
 
     script:
     def prefix = task.ext.prefix ?: "${meta.id}"
-    def module = task.ext.args ?: "${module}"
+    def args = task.ext.args ?: ''
     """
     extract_clust.py \\
-        $module \\
-        $cluster \\
-        $prefix
+        $args \\
+        -m $module \\
+        -c ${clusters.join(' ')} \\
+        -s $seq \\
+        -p $prefix
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

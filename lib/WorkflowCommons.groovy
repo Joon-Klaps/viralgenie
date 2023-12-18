@@ -57,4 +57,12 @@ class WorkflowCommons {
         }
         return num_vars
     }
+
+    //
+    // Function to get a Map from a JSON file
+    //
+    public static Map getMapFromJson(json_file) {
+        def Map json = (Map) new JsonSlurper().parse(json_file)
+        return json
+    }
 }

@@ -76,6 +76,23 @@ def create_groups(file):
     return groups
 
 
+def write_json(groups, file_out_prefix):
+    """
+    Write the groups to a json file.
+
+    Args:
+        groups (dict): A dictionary where the keys are taxids and the values are lists of sequence names.
+            The 'U' key represents unclassified sequences.
+        file_out_prefix (str): The prefix of the output file.
+    """
+    with open(f"{file_out_prefix}.json", "w") as f_out:
+        # Construct the JSON string manually
+        json_str = "{\n"
+        json_str += f'\t"ntaxa": {groups.size()},\n'
+        json_str = json_str.rstrip(",\n") + "\n}"
+        f_out.write(json_str)
+
+
 def extract_sequences(groups, sequences, file_out_prefix):
     """
     Extract the sequences from the input file based on the groups.

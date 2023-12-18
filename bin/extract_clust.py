@@ -8,8 +8,8 @@ import json
 import logging
 import re
 import sys
-from pathlib import Path
 from collections import defaultdict
+from pathlib import Path
 
 logger = logging.getLogger()
 
@@ -271,7 +271,7 @@ def parse_args(argv=None):
     """Define and immediately parse command line arguments."""
     parser = argparse.ArgumentParser(
         description="Provide a command line tool to extract sequence names from cdhit's cluster files.",
-        epilog="Example: python extract_cluster.py [cdhitest|vsearch] in.clstr prefix",
+        epilog="Example: python extract_cluster.py [cdhitest|vsearch] --clusters in.clstr1 in.clstr2 ... --seq in.seq prefix",
     )
     parser.add_argument(
         "option",
@@ -281,8 +281,17 @@ def parse_args(argv=None):
         help="Used cluster algorithm. Choose between cdhitest, vsearch, mmseqs-linclust, mmseqs-cluster, sourmash and vrhyme. ",
     )
     parser.add_argument(
-        "file_in",
-        metavar="FILE_IN",
+        "-c",
+        "--clusters",
+        nargs="+",
+        metavar="CLUSTERS_IN",
+        type=Path,
+        help="cluster file from cluster methods containing cluster information.",
+    )
+    parser.add_argument(
+        "-s",
+        "--seq",
+        metavar="SEQ_IN",
         type=Path,
         help="cluster file from chdit, vsearch, mmseqs_createtsv containing cluster information.",
     )
@@ -292,6 +301,7 @@ def parse_args(argv=None):
         type=str,
         help="Output file prefix",
     )
+
     parser.add_argument(
         "-p",
         "--pattern",
@@ -314,23 +324,29 @@ def main(argv=None):
     """Coordinate argument parsing and program execution."""
     args = parse_args(argv)
     logging.basicConfig(level=args.log_level, format="[%(levelname)s] %(message)s")
-    if not args.file_in.is_file():
-        logger.error(f"The given input file {args.file_in} was not found!")
+    for cluster_file in args.clusters:
+        if not cluster_file.is_file():
+            logger.error(f"The given input file {cluster_file} was not found!")
+            sys.exit(2)
+    if not args.seq.is_file():
+        logger.error(f"The given input file {args.seq} was not found!")
         sys.exit(2)
 
-    if args.option == "cdhitest":
-        cluster_list = parse_clusters_chdit(args.file_in)
-    elif args.option == "vsearch":
-        cluster_list = parse_clusters_vsearch(args.file_in)
-    elif args.option == "mmseqs-linclust" or args.option == "mmseqs-cluster":
-        cluster_list = parse_clusters_mmseqs(args.file_in)
-    elif args.option == "vrhyme":
-        cluster_list = parse_clusters_vrhyme(args.file_in, args.pattern)
-    elif args.option == "mash":
-        cluster_list = parse_clusters_vrhyme(args.file_in, args.pattern, False)
-    else:
-        logger.error(f"Option {args.option} is not supported!")
-        sys.exit(2)
+    cluster_list = []
+    for cluster_file in args.clusters:
+        if args.option == "cdhitest":
+            cluster_list += parse_clusters_chdit(cluster_file)
+        elif args.option == "vsearch":
+            cluster_list += parse_clusters_vsearch(cluster_file)
+        elif args.option == "mmseqs-linclust" or args.option == "mmseqs-cluster":
+            cluster_list += parse_clusters_mmseqs(cluster_file)
+        elif args.option == "vrhyme":
+            cluster_list += parse_clusters_vrhyme(cluster_file, args.pattern)
+        elif args.option == "mash":
+            cluster_list += parse_clusters_vrhyme(cluster_file, args.pattern, False)
+        else:
+            logger.error(f"Option {args.option} is not supported!")
+            sys.exit(2)
 
     filtered_clusters = filter_clusters(cluster_list, args.pattern)
 

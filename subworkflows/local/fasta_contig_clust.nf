@@ -29,7 +29,7 @@ workflow FASTA_CONTIG_CLUST {
     // Combine with reads if vrhyme is used
     fasta_ref_contigs
         .join(fasta_fastq, by: [0])
-        .map{meta, contigs_joined, contigs, reads -> [meta, contigs_joined, reads]}
+        .map{meta, contigs_joined, contigs, reads -> [meta + [ntaxa: 1], contigs_joined, reads]} // ntaxa will use later
         .set{ch_contigs_reads}
 
     // precluster our reference hits and contigs using kraken & Kaiju to delineate contigs at a species level
@@ -50,19 +50,33 @@ workflow FASTA_CONTIG_CLUST {
     )
     ch_versions = ch_versions.mix(FASTA_FASTQ_CLUST.out.versions)
 
-    CLUST_SEQ_EXTRACT(
-        FASTA_FASTQ_CLUST.out.clusters,
-        params.cluster_method,
-        ch_contigs_reads
-    )
-    ch_versions          = ch_versions.mix(CLUST_SEQ_EXTRACT.out.versions)
-    ch_centroids_members = CLUST_SEQ_EXTRACT.out.seq_centroids_members
+    // Join cluster files with contigs & group based on number of preclusters (ntaxa)
+    FASTA_FASTQ_CLUST
+        .out
+        .clusters
+        .map{ meta, clusters -> tuple( groupKey(meta, meta.ntaxa), clusters ) } // group by ntaxa
+        .groupTuple(remainder: true)
+        .join(ch_contigs_reads)
+        .map{ meta, clusters, contigs, reads -> [meta, clusters, contigs] }     // get rid of reads
+        .set{ch_clusters_contigs}
+
+    ch_clusters_contigs.view()
+    // CLUST_SEQ_EXTRACT(
+    //     ch_clusters_contigs,
+    //     params.cluster_method
+    // )
+
+    // ch_versions          = ch_versions.mix(CLUST_SEQ_EXTRACT.out.versions)
+    // ch_centroids_members = CLUST_SEQ_EXTRACT.out.seq_centroids_members
+    ch_centroids_members = ch_clusters_contigs
+    clusters_summary = channel.empty()
 
     emit:
     clusters              = FASTA_FASTQ_CLUST.out.clusters           // channel: [ [ meta ], [ clusters ] ]
     centroids_members     = ch_centroids_members                     // channel: [ [ meta ], [ seq_centroids.fa], [ seq_members.fa] ]
-    clusters_tsv          = CLUST_SEQ_EXTRACT.out.clusters_tsv       // channel: [ [ meta ], [ tsv ] ]
-    clusters_summary      = CLUST_SEQ_EXTRACT.out.clusters_summary   // channel: [ [ meta ], [ tsv ] ]
+    // clusters_tsv          = CLUST_SEQ_EXTRACT.out.clusters_tsv       // channel: [ [ meta ], [ tsv ] ]
+    // clusters_summary      = CLUST_SEQ_EXTRACT.out.clusters_summary   // channel: [ [ meta ], [ tsv ] ]
+    clusters_summary      = clusters_summary   // channel: [ [ meta ], [ tsv ] ]
     no_blast_hits_mqc     = no_blast_hits                            // channel: [ tsv ]
     versions              = ch_versions                              // channel: [ versions.yml ]
 
