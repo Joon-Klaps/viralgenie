@@ -25,17 +25,20 @@ workflow FASTA_CONTIG_PRECLUST {
     if (!params.skip_kraken2){
         KRAKEN2_CONTIG ( ch_contigs, ch_kraken2_db, false, true )
         // combine classified & non classified reads into one channel which we merge later on
-        kraken       = KRAKEN2_CONTIG.out.classified_reads_fastq.join(KRAKEN2_CONTIG.out.unclassified_reads_fastq, by: [0], remainder: true)
+        kraken       = KRAKEN2_CONTIG.out.classified_reads_assignment
         ch_versions  = ch_versions.mix( KRAKEN2_CONTIG.out.versions.first() )
     }
 
-    classifications = kaiju.join(kraken, remainder:true) // channel: [ val(meta), [ kaiju ] , [ classified ], [ unclassified ] ]
-    classifications.view()
+    classifications = kaiju.join(kraken, remainder:true)
 
     if (!(params.skip_kaiju || params.skip_kraken2)){
         KAIJU_MERGEOUTPUTS ( classifications, ch_kaiju_db )
         classifications = KAIJU_MERGEOUTPUTS.out.merged
         ch_versions     = ch_versions.mix( KAIJU_MERGEOUTPUTS.out.versions.first() )
+    } else if (!params.skip_kaiju){
+        classifications = kaiju
+    } else if (!params.skip_kraken2){
+        classifications = kraken
     }
 
     classifications = classifications.map{ meta, txt -> [meta + [single_end:meta.og_single_end], txt] }

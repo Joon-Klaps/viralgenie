@@ -22,19 +22,8 @@ workflow FASTA_CONTIG_CLUST {
         blast_db,
         blast_db_fasta
     )
-    ch_versions   = ch_versions.mix(FASTA_BLAST_EXTRACT.out.versions)
-    no_blast_hits = FASTA_BLAST_EXTRACT.out.no_blast_hits
-
-    // precluster our reference hits and contigs using kraken & Kaiju to delineate contigs at a species level
-    if (!params.skip_precluster) {
-        FASTA_CONTIG_PRECLUST (
-            fasta,
-            kaiju_db,
-            kraken2_db
-        )
-        ch_versions = ch_versions.mix(FASTA_CONTIG_PRECLUST.out.versions)
-        fasta_fastq = FASTA_CONTIG_PRECLUST.out.classifications
-    }
+    ch_versions       = ch_versions.mix(FASTA_BLAST_EXTRACT.out.versions)
+    no_blast_hits     = FASTA_BLAST_EXTRACT.out.no_blast_hits
     fasta_ref_contigs = FASTA_BLAST_EXTRACT.out.fasta_ref_contigs
 
     // Combine with reads if vrhyme is used
@@ -42,6 +31,17 @@ workflow FASTA_CONTIG_CLUST {
         .join(fasta_fastq, by: [0])
         .map{meta, contigs_joined, contigs, reads -> [meta, contigs_joined, reads]}
         .set{ch_contigs_reads}
+
+    // precluster our reference hits and contigs using kraken & Kaiju to delineate contigs at a species level
+    if (!params.skip_precluster) {
+        FASTA_CONTIG_PRECLUST (
+            fasta_ref_contigs,
+            kaiju_db,
+            kraken2_db
+        )
+        ch_versions = ch_versions.mix(FASTA_CONTIG_PRECLUST.out.versions)
+        fasta_fastq = FASTA_CONTIG_PRECLUST.out.classifications
+    }
 
     // cluster our reference hits and contigs should make this a subworkflow
     FASTA_FASTQ_CLUST (

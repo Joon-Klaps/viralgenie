@@ -63,15 +63,7 @@ workflow FASTA_FASTQ_CLUST {
         ch_clusters = MMSEQS_CREATETSV.out.tsv
     }
     else if (cluster_method == "vrhyme") {
-
-        GUNZIP_CONTIGS (ch_fasta)
-        ch_versions = ch_versions.mix(GUNZIP_CONTIGS.out.versions.first())
-
-        fasta_fastq
-            .join(GUNZIP_CONTIGS.out.gunzip, by: [0])
-            .map{ meta, fasta, fastq, gunzip -> [meta, gunzip, fastq] }
-            .set{ch_gunzip_fastq}
-        VRHYME_VRHYME (ch_gunzip_fastq)
+        VRHYME_VRHYME (fasta_fastq)
         ch_clusters = VRHYME_VRHYME.out.membership
         ch_versions = ch_versions.mix(VRHYME_VRHYME.out.versions.first())
     }

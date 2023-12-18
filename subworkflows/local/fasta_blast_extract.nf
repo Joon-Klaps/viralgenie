@@ -1,8 +1,8 @@
-include { BLAST_BLASTN      } from '../../modules/nf-core/blast/blastn/main'
-include { BLAST_FILTER      } from '../../modules/local/blast_filter'
-include { GUNZIP            } from '../../modules/nf-core/gunzip/main'
-include { SEQKIT_GREP       } from '../../modules/nf-core/seqkit/grep/main'
-include { CAT_CAT           } from '../../modules/nf-core/cat/cat/main'
+include { BLAST_BLASTN          } from '../../modules/nf-core/blast/blastn/main'
+include { BLAST_FILTER          } from '../../modules/local/blast_filter'
+include { GUNZIP                } from '../../modules/nf-core/gunzip/main'
+include { SEQKIT_GREP           } from '../../modules/nf-core/seqkit/grep/main'
+include { CAT_CAT as CAT_ADDREF } from '../../modules/nf-core/cat/cat/main'
 
 workflow FASTA_BLAST_EXTRACT {
 
@@ -88,10 +88,10 @@ workflow FASTA_BLAST_EXTRACT {
         .groupTuple(size :2, remainder: false) // group and throw away those that don't fit
         .set {ch_reference_contigs_comb}
 
-    CAT_CAT(ch_reference_contigs_comb)
+    CAT_ADDREF(ch_reference_contigs_comb)
 
     emit:
-    fasta_ref_contigs = CAT_CAT.out.file_out     // channel: [ val(meta), [ bam ] ]
+    fasta_ref_contigs = CAT_ADDREF.out.file_out  // channel: [ val(meta), [ bam ] ]
     no_blast_hits     = ch_no_blast_hits         // channel: [ val(meta), [ bai ] ]
 
     versions          = ch_versions              // channel: [ versions.yml ]
