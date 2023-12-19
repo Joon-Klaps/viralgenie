@@ -84,8 +84,6 @@ workflow FASTA_CONTIG_CLUST {
             return [new_meta, seq_centroids, seq_members]
         }
         .set{seq_centroids_members}
-    
-    seq_centroids_members.view()
 
     emit:
     clusters              = FASTA_FASTQ_CLUST.out.clusters            // channel: [ [ meta ], [ clusters ] ]

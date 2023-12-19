@@ -1,8 +1,5 @@
 include { BLAST_BLASTN          } from '../../modules/nf-core/blast/blastn/main'
 include { BLAST_FILTER          } from '../../modules/local/blast_filter'
-include { GUNZIP                } from '../../modules/nf-core/gunzip/main'
-include { SEQKIT_GREP           } from '../../modules/nf-core/seqkit/grep/main'
-include { CAT_CAT as CAT_ADDREF } from '../../modules/nf-core/cat/cat/main'
 
 workflow FASTA_BLAST_REFSEL {
 
@@ -61,39 +58,20 @@ workflow FASTA_BLAST_REFSEL {
         .set { ch_no_blast_hits }
 
     // Filter out false positve hits that based on query length, alignment length, identity, e-score & bit-score
+    ch_blast_txt
+        .hits
+        .join(fasta, by:[0], remainder:false)
+        .set{ hits_contigs }
+
     BLAST_FILTER (
-        ch_blast_txt.hits
+        hits_contigs, 
+        blast_db_fasta
     )
     ch_versions = ch_versions.mix(BLAST_FILTER.out.versions.first())
 
-    // give the references a meta again so it can be used in seqkit
-    blast_db_fasta
-        .combine(BLAST_FILTER.out.hits)
-        .map{ meta_blast, db_fasta, meta_filter, filter -> [meta_filter, db_fasta]
-        }
-        .set{ch_blast_db_fasta}
-
-    ch_hits = BLAST_FILTER.out.hits.map{it -> it[1]}
-
-    // isolate the hits from the database to a fasta file
-    SEQKIT_GREP (ch_blast_db_fasta, ch_hits)
-    ch_versions = ch_versions.mix(SEQKIT_GREP.out.versions.first())
-
-    GUNZIP(SEQKIT_GREP.out.filter)
-    ch_versions = ch_versions.mix(GUNZIP.out.versions.first())
-
-    // put reference hits and contigs together
-    fasta
-        .mix(GUNZIP.out.gunzip)
-        .groupTuple(size :2, remainder: false) // group and throw away those that don't fit
-        .set {ch_reference_contigs_comb}
-
-    CAT_ADDREF(ch_reference_contigs_comb)
-
     emit:
-    fasta_ref_contigs = CAT_ADDREF.out.file_out  // channel: [ val(meta), [ bam ] ]
-    no_blast_hits     = ch_no_blast_hits         // channel: [ val(meta), [ bai ] ]
-
-    versions          = ch_versions              // channel: [ versions.yml ]
+    fasta_ref_contigs = BLAST_FILTER.out.sequence  // channel: [ val(meta), [ fasta ] ]
+    no_blast_hits     = ch_no_blast_hits           // channel: [ val(meta), [ mqc ] ]
+    versions          = ch_versions                // channel: [ versions.yml ]
 }
 
