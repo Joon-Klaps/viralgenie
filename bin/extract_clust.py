@@ -61,7 +61,7 @@ class Cluster:
                 for member in self.members:
                     file.write(f"{member}\n")
             else:
-                file.write(f"\n")
+                file.write(f"")
 
     def _save_cluster_centroid(self, prefix):
         """

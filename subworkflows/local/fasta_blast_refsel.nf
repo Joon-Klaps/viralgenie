@@ -4,7 +4,7 @@ include { GUNZIP                } from '../../modules/nf-core/gunzip/main'
 include { SEQKIT_GREP           } from '../../modules/nf-core/seqkit/grep/main'
 include { CAT_CAT as CAT_ADDREF } from '../../modules/nf-core/cat/cat/main'
 
-workflow FASTA_BLAST_EXTRACT {
+workflow FASTA_BLAST_REFSEL {
 
     take:
     fasta          // channel: [ val(meta), path(fasta)]
