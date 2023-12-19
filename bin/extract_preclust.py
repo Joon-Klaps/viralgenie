@@ -88,7 +88,7 @@ def write_json(groups, file_out_prefix):
     with open(f"{file_out_prefix}.json", "w") as f_out:
         # Construct the JSON string manually
         json_str = "{\n"
-        json_str += f'\t"ntaxa": {groups.size()},\n'
+        json_str += f'\t"ntaxa": {len(groups)},\n'
         json_str = json_str.rstrip(",\n") + "\n}"
         f_out.write(json_str)
 
@@ -124,6 +124,7 @@ def main(argv=None):
     groups = create_groups(args.classifications)
 
     extract_sequences(groups, args.sequences, args.file_out_prefix)
+    write_json(groups, args.file_out_prefix)
 
     return 0
 

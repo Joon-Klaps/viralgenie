@@ -1,6 +1,7 @@
 //
 // This file holds several functions common to the multiple workflows in the nf-core/viralrecon pipeline
 //
+import groovy.json.JsonSlurper
 
 class WorkflowCommons {
 

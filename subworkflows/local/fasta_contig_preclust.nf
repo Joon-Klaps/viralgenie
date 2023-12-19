@@ -54,11 +54,6 @@ workflow FASTA_CONTIG_PRECLUST {
     EXTRACT_PRECLUSTER
         .out
         .sequences
-        .view()
-
-    EXTRACT_PRECLUSTER
-        .out
-        .sequences
         .map { meta, fastas, json ->
             json = WorkflowCommons.getMapFromJson(json)
             return [meta + json, fastas]                                                        // json contains ntaxa

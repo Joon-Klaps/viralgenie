@@ -2,6 +2,7 @@ include { FASTA_BLAST_EXTRACT     } from '../../subworkflows/local/fasta_blast_e
 include { FASTA_FASTQ_CLUST       } from '../../subworkflows/local/fasta_fastq_clust'
 include { FASTA_CONTIG_PRECLUST   } from '../../subworkflows/local/fasta_contig_preclust'
 include { CLUST_SEQ_EXTRACT       } from '../../subworkflows/local/clust_seq_extract'
+include { EXTRACT_CLUSTER         } from '../../modules/local/extract_cluster/main'
 
 workflow FASTA_CONTIG_CLUST {
 
@@ -51,16 +52,29 @@ workflow FASTA_CONTIG_CLUST {
     ch_versions = ch_versions.mix(FASTA_FASTQ_CLUST.out.versions)
 
     // Join cluster files with contigs & group based on number of preclusters (ntaxa)
+    fasta_ref_contigs
+        .map{ meta, fasta -> [meta.sample, meta, fasta] }                       // add sample for join
+        .set{sample_fasta_ref_contigs}
+
     FASTA_FASTQ_CLUST
         .out
         .clusters
-        .map{ meta, clusters -> tuple( groupKey(meta, meta.ntaxa), clusters ) } // group by ntaxa
+        .map{ meta, clusters ->
+            tuple( groupKey(meta.sample, meta.ntaxa), meta, clusters )         // Set groupkey by sample and ntaxa
+            }
         .groupTuple(remainder: true)
-        .join(ch_contigs_reads)
-        .map{ meta, clusters, contigs, reads -> [meta, clusters, contigs] }     // get rid of reads
+        .join(sample_fasta_ref_contigs, by: [0])                               // join with contigs
+        .map{ sample, meta_clust, clusters, meta_contig, contigs ->
+             [meta_contig, clusters, contigs]                                  // get rid of meta_clust & sample
+        }
         .set{ch_clusters_contigs}
 
-    ch_clusters_contigs.view()
+    ch_clusters_contigs.view{it -> "ch_clusters_contigs: $it"}
+
+    EXTRACT_CLUSTER (
+        ch_clusters_contigs,
+        params.cluster_method
+    )
     // CLUST_SEQ_EXTRACT(
     //     ch_clusters_contigs,
     //     params.cluster_method
