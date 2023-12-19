@@ -4,8 +4,8 @@ process EXTRACT_CLUSTER {
 
     conda "conda-forge::python=3.8.3"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/python:3.8.3' :
-        'biocontainers/python:3.8.3' }"
+        'https://depot.galaxyproject.org/singularity/biopython:1.78':
+        'biocontainers/biopython:1.78' }"
 
     input:
     tuple val(meta), path(clusters), path(seq)
@@ -35,6 +35,24 @@ process EXTRACT_CLUSTER {
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         python: \$(python --version | sed 's/Python //g')
+        biopython: \$(pip show biopython | grep Version | sed 's/Version: //g')
     END_VERSIONS
     """
+
+    stub:
+    def prefix = task.ext.prefix ?: "${meta.id}"
+    def args = task.ext.args ?: ''
+    """
+    touch ${prefix}_cl0_members.fa
+    touch ${prefix}_cl0_centroid.fa
+    touch ${prefix}_summary_mqc.tsv
+    touch ${prefix}_clusters.tsv
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        python: \$(python --version | sed 's/Python //g')
+        biopython: \$(pip show biopython | grep Version | sed 's/Version: //g')
+    END_VERSIONS
+    """
+
 }

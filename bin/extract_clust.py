@@ -11,6 +11,8 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
+from Bio import SeqIO
+
 logger = logging.getLogger()
 
 
@@ -66,20 +68,44 @@ class Cluster:
         with open(f"{prefix}_{self.cluster_id}_cluster.json", "w") as file:
             json.dump(self, file, default=lambda o: o.__dict__, sort_keys=True, indent=4)
 
+    def _save_centroid_fasta(self, sequences, prefix):
+        """
+        Extract the sequences from the input file based on the groups.
+        """
+        sequence_dict = SeqIO.to_dict(SeqIO.parse(sequences, "fasta"))
+        with open(f"{prefix}_{self.cluster_id}_centroid.fa", "w") as file:
+            centroid_id = self.centroid.split(" ")[0]
+            if centroid_id in sequence_dict:
+                SeqIO.write(sequence_dict[centroid_id], file, "fasta")
+
+    def _save_members_fasta(self, sequences, prefix):
+        """
+        Extract the sequences from the input file based on the groups.
+        """
+        sequence_dict = SeqIO.to_dict(SeqIO.parse(sequences, "fasta"))
+        with open(f"{prefix}_{self.cluster_id}_members.fa", "w") as file:
+            if self.members:
+                for member in self.members:
+                    seq_name = member.split(" ")[0]
+                    if seq_name in sequence_dict:
+                        SeqIO.write(sequence_dict[seq_name], file, "fasta")
+            else:
+                file.write(f"\n")
+
     def _to_line(self, prefix):
         return "\t".join(
             [str(prefix), str(self.cluster_id), str(self.centroid), str(self.cluster_size), ",".join(self.members)]
         )
 
 
-def parse_clusters_chdit(file_in):
+def parse_clusters_chdit(file_in, clusters_in):
     """
     Extract sequence names from cdhit's cluster files.
     """
-    clusters = []
     with open(file_in, "r") as file:
         lines = file.readlines()
 
+    clusters = clusters_in
     current_cluster_id = None
     current_members = []
     current_centroid = None
@@ -112,14 +138,16 @@ def parse_clusters_chdit(file_in):
         cluster = Cluster(current_cluster_id, current_centroid, current_members)
         clusters.append(cluster)
 
-    return clusters
+    return clusters.copy()
 
 
-def parse_clusters_mmseqs(file_in):
+def parse_clusters_mmseqs(file_in, clusters_in):
     """
     Extract sequence names from mmseqs createtsv output.
     """
-    clusters = {}  # Dictionary to store clusters {cluster_id: Cluster}
+
+    # Dictionary to store clusters {cluster_id: Cluster}
+    clusters = {cl.cluster_id: cl for cl in clusters_in} if clusters_in else {}
 
     with open(file_in, "rt") as file:
         for line in file:
@@ -138,11 +166,12 @@ def parse_clusters_mmseqs(file_in):
     return list(clusters.values())
 
 
-def parse_clusters_vsearch(file_in):
+def parse_clusters_vsearch(file_in, clusters_in):
     """
     Extract sequence names from vsearch gzipped cluster files.
     """
-    clusters = {}  # Dictionary to store clusters {cluster_id: Cluster}
+    # Dictionary to store clusters {cluster_id: Cluster}
+    clusters = {cl.cluster_id: cl for cl in clusters_in} if clusters_in else {}
 
     with gzip.open(file_in, "rt") as file:
         for line in file:
@@ -213,10 +242,12 @@ def get_first_not_match(regex_pattern, data_list):
     return data_list[0]
 
 
-def print_clusters(clusters, prefix):
+def write_clusters(clusters, sequences, prefix):
     for cluster in clusters:
         cluster._save_cluster_members(prefix)
         cluster._save_cluster_centroid(prefix)
+        cluster._save_centroid_fasta(sequences, prefix)
+        cluster._save_members_fasta(sequences, prefix)
         cluster._save_cluster_json(prefix)
 
     write_clusters_to_tsv(clusters, prefix)
@@ -274,11 +305,12 @@ def parse_args(argv=None):
         epilog="Example: python extract_cluster.py [cdhitest|vsearch] --clusters in.clstr1 in.clstr2 ... --seq in.seq prefix",
     )
     parser.add_argument(
-        "option",
-        metavar="OPTION",
+        "-m",
+        "--method",
+        metavar="CLUSTER METHOD",
         type=str,
         choices=("cdhitest", "vsearch", "mmseqs-linclust", "mmseqs-cluster", "mash", "vrhyme"),
-        help="Used cluster algorithm. Choose between cdhitest, vsearch, mmseqs-linclust, mmseqs-cluster, sourmash and vrhyme. ",
+        help="Cluster algorithm used to generate cluster files.",
     )
     parser.add_argument(
         "-c",
@@ -296,14 +328,15 @@ def parse_args(argv=None):
         help="cluster file from chdit, vsearch, mmseqs_createtsv containing cluster information.",
     )
     parser.add_argument(
-        "file_out_prefix",
-        metavar="FILE_OUT_PREFIX",
+        "-p" "--prefix",
+        dest="prefix",
+        metavar="PREFIX",
         type=str,
         help="Output file prefix",
     )
 
     parser.add_argument(
-        "-p",
+        "-r",
         "--pattern",
         metavar="PATTERN",
         type=str,
@@ -324,33 +357,34 @@ def main(argv=None):
     """Coordinate argument parsing and program execution."""
     args = parse_args(argv)
     logging.basicConfig(level=args.log_level, format="[%(levelname)s] %(message)s")
-    for cluster_file in args.clusters:
-        if not cluster_file.is_file():
-            logger.error(f"The given input file {cluster_file} was not found!")
-            sys.exit(2)
+
     if not args.seq.is_file():
         logger.error(f"The given input file {args.seq} was not found!")
         sys.exit(2)
 
     cluster_list = []
     for cluster_file in args.clusters:
-        if args.option == "cdhitest":
-            cluster_list += parse_clusters_chdit(cluster_file)
-        elif args.option == "vsearch":
-            cluster_list += parse_clusters_vsearch(cluster_file)
-        elif args.option == "mmseqs-linclust" or args.option == "mmseqs-cluster":
-            cluster_list += parse_clusters_mmseqs(cluster_file)
-        elif args.option == "vrhyme":
-            cluster_list += parse_clusters_vrhyme(cluster_file, args.pattern)
-        elif args.option == "mash":
-            cluster_list += parse_clusters_vrhyme(cluster_file, args.pattern, False)
+        if not cluster_file.is_file():
+            logger.error(f"The given input file {cluster_file} was not found!")
+            sys.exit(2)
+        if args.method == "cdhitest":
+            cluster_list = parse_clusters_chdit(cluster_file)
+        elif args.method == "vsearch":
+            cluster_list = parse_clusters_vsearch(cluster_file)
+        elif args.method == "mmseqs-linclust" or args.method == "mmseqs-cluster":
+            cluster_list = parse_clusters_mmseqs(cluster_file)
+        elif args.method == "vrhyme":
+            # vrhyme doens't select centroids so we provide pattern to give preference to non matching sequences
+            cluster_list = parse_clusters_vrhyme(cluster_file, args.pattern)
+        elif args.method == "mash":
+            cluster_list = parse_clusters_vrhyme(cluster_file, args.pattern, False)
         else:
-            logger.error(f"Option {args.option} is not supported!")
+            logger.error(f"Option {args.method} is not supported!")
             sys.exit(2)
 
     filtered_clusters = filter_clusters(cluster_list, args.pattern)
 
-    print_clusters(filtered_clusters, args.file_out_prefix)
+    write_clusters(filtered_clusters, args.seq, args.prefix)
 
     return 0
 
