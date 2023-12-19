@@ -29,6 +29,9 @@ workflow FASTA_FASTQ_CLUST {
         ch_versions = ch_versions.mix(VSEARCH_CLUSTER.out.versions.first())
     }
     else if (cluster_method == "cdhitest") {
+        if (params.identity_threshold < 0.80 ) {
+            log.warn "cdhitest identity threshold is set to ${params.identity_threshold}, which is below the minimum threshold of 0.80.\n AUTOFIX: Defaulting to 0.80"
+        }
         CDHIT_CDHITEST(ch_fasta)
 
         ch_clusters = CDHIT_CDHITEST.out.clusters

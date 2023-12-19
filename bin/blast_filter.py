@@ -142,7 +142,7 @@ def extract_contigs_hits(df, contigs, references, prefix):
         ref_records = SeqIO.to_dict(SeqIO.parse(references, "fasta"))
     except ValueError as e:
         logger.warning(
-            "Indexing the reference pool file causes an error: %s \n Make sure all fasta headers are unique and it is in fasta format! \n FIX: Taking last occurence of duplicates to continue analysis",
+            "Indexing the reference pool file causes an error: %s \n Make sure all fasta headers are unique and it is in fasta format! \n AUTOFIX: Taking last occurence of duplicates to continue analysis",
             e,
         )
         ref_records = to_dict_remove_dups(SeqIO.parse(references, "fasta"))
