@@ -31,11 +31,17 @@ class Cluster:
         else:
             self.cluster_size = 0
 
-    def set_centroid(self, centroid):
+    def _set_centroid(self, centroid):
         """
         Set the centroid sequence for the cluster.
         """
         self.centroid = centroid
+
+    def _set_cluster_id(self, id):
+        """
+        Set the centroid sequence for the cluster.
+        """
+        self.cluster_id = id
 
     def __iter__(self):
         yield "cluster_id", self.row
@@ -98,14 +104,14 @@ class Cluster:
         )
 
 
-def parse_clusters_chdit(file_in, clusters_in):
+def parse_clusters_chdit(file_in):
     """
     Extract sequence names from cdhit's cluster files.
     """
     with open(file_in, "r") as file:
         lines = file.readlines()
 
-    clusters = clusters_in
+    clusters = []
     current_cluster_id = None
     current_members = []
     current_centroid = None
@@ -141,13 +147,13 @@ def parse_clusters_chdit(file_in, clusters_in):
     return clusters.copy()
 
 
-def parse_clusters_mmseqs(file_in, clusters_in):
+def parse_clusters_mmseqs(file_in):
     """
     Extract sequence names from mmseqs createtsv output.
     """
 
     # Dictionary to store clusters {cluster_id: Cluster}
-    clusters = {cl.cluster_id: cl for cl in clusters_in} if clusters_in else {}
+    clusters = {}
 
     with open(file_in, "rt") as file:
         for line in file:
@@ -166,12 +172,12 @@ def parse_clusters_mmseqs(file_in, clusters_in):
     return list(clusters.values())
 
 
-def parse_clusters_vsearch(file_in, clusters_in):
+def parse_clusters_vsearch(file_in):
     """
     Extract sequence names from vsearch gzipped cluster files.
     """
     # Dictionary to store clusters {cluster_id: Cluster}
-    clusters = {cl.cluster_id: cl for cl in clusters_in} if clusters_in else {}
+    clusters = {}
 
     with gzip.open(file_in, "rt") as file:
         for line in file:
@@ -191,7 +197,7 @@ def parse_clusters_vsearch(file_in, clusters_in):
 
             # Set the centroid of the corresponding cluster
             if line.startswith("S\t"):
-                clusters[cluster_id].set_centroid(member_name)
+                clusters[cluster_id]._set_centroid(member_name)
 
             # Append the member to the corresponding cluster
             elif line.startswith("H\t"):
@@ -264,6 +270,14 @@ def write_clusters_to_tsv(clusters, prefix):
         for cluster in clusters:
             file.write(cluster._to_line(prefix))
             file.write("\n")
+
+
+def update_cluster_ids(clusters):
+    updated_clusters = []
+    for idx, cluster in enumerate(clusters):
+        cluster._set_cluster_id(f"cl{idx}")
+        updated_clusters.append(cluster)
+    return updated_clusters
 
 
 def write_clusters_summary(clusters, prefix):
@@ -368,21 +382,25 @@ def main(argv=None):
             logger.error(f"The given input file {cluster_file} was not found!")
             sys.exit(2)
         if args.method == "cdhitest":
-            cluster_list = parse_clusters_chdit(cluster_file)
+            cluster_list += parse_clusters_chdit(cluster_file)
         elif args.method == "vsearch":
-            cluster_list = parse_clusters_vsearch(cluster_file)
+            cluster_list += parse_clusters_vsearch(cluster_file)
         elif args.method == "mmseqs-linclust" or args.method == "mmseqs-cluster":
-            cluster_list = parse_clusters_mmseqs(cluster_file)
+            cluster_list += parse_clusters_mmseqs(cluster_file)
         elif args.method == "vrhyme":
             # vrhyme doens't select centroids so we provide pattern to give preference to non matching sequences
-            cluster_list = parse_clusters_vrhyme(cluster_file, args.pattern)
+            cluster_list += parse_clusters_vrhyme(cluster_file, args.pattern)
         elif args.method == "mash":
-            cluster_list = parse_clusters_vrhyme(cluster_file, args.pattern, False)
+            cluster_list += parse_clusters_vrhyme(cluster_file, args.pattern, False)
         else:
             logger.error(f"Option {args.method} is not supported!")
             sys.exit(2)
 
-    filtered_clusters = filter_clusters(cluster_list, args.pattern)
+    # redefine cluster ids
+    clusters_renamed = update_cluster_ids(cluster_list)
+
+    # Remove clusters with no members and external reference
+    filtered_clusters = filter_clusters(clusters_renamed, args.pattern)
 
     write_clusters(filtered_clusters, args.seq, args.prefix)
 
