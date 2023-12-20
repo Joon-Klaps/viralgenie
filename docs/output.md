@@ -1,4 +1,4 @@
-# nf-core/viralgenie: Output
+# Joon-Klaps/viralgenie: Output
 
 ## Introduction
 

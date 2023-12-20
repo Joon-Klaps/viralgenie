@@ -3,6 +3,7 @@
 //
 
 import org.yaml.snakeyaml.Yaml
+import groovy.json.JsonOutput
 
 class NfcoreTemplate {
 
@@ -223,6 +224,21 @@ class NfcoreTemplate {
     }
 
     //
+    // Dump pipeline parameters in a json file
+    //
+    public static void dump_parameters(workflow, params) {
+        def output_d = new File("${params.outdir}/pipeline_info/")
+        if (!output_d.exists()) {
+            output_d.mkdirs()
+        }
+
+        def timestamp  = new java.util.Date().format( 'yyyy-MM-dd_HH-mm-ss')
+        def output_pf  = new File(output_d, "params_${timestamp}.json")
+        def jsonStr    = JsonOutput.toJson(params)
+        output_pf.text = JsonOutput.prettyPrint(jsonStr)
+    }
+
+    //
     // Print pipeline summary on completion
     //
     public static void summary(workflow, params, log) {
@@ -323,11 +339,6 @@ class NfcoreTemplate {
         String.format(
             """\n
             ${dashedLine(monochrome_logs)}
-                                                    ${colors.green},--.${colors.black}/${colors.green},-.${colors.reset}
-            ${colors.blue}        ___     __   __   __   ___     ${colors.green}/,-._.--~\'${colors.reset}
-            ${colors.blue}  |\\ | |__  __ /  ` /  \\ |__) |__         ${colors.yellow}}  {${colors.reset}
-            ${colors.blue}  | \\| |       \\__, \\__/ |  \\ |___     ${colors.green}\\`-._,-`-,${colors.reset}
-                                                    ${colors.green}`._,._,\'${colors.reset}
             ${colors.purple}  ${workflow.manifest.name} ${workflow_version}${colors.reset}
             ${dashedLine(monochrome_logs)}
             """.stripIndent()

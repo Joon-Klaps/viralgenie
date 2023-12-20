@@ -2,6 +2,7 @@
     "name": "nfcore",
     "image": "nfcore/gitpod:latest",
     "remoteUser": "gitpod",
+    "runArgs": ["--privileged"],
 
     // Configure tool-specific properties.
     "customizations": {
@@ -21,7 +22,16 @@
             },
 
             // Add the IDs of extensions you want installed when the container is created.
-            "extensions": ["ms-python.python", "ms-python.vscode-pylance", "nf-core.nf-core-extensionpack"]
+            "extensions": [
+                "ms-python.python",
+                "ms-python.vscode-pylance",
+                "nf-core.nf-core-extensionpack",
+                "GitHub.copilot",
+                "xuedao.super-themes",
+                "streetsidesoftware.code-spell-checker"
+            ]
         }
-    }
+    },
+
+    "postCreateCommand": "pre-commit install --install-hooks && nextflow self-update"
 }

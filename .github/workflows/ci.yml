@@ -35,9 +35,211 @@ jobs:
         with:
           version: "${{ matrix.NXF_VER }}"
 
-      - name: Run pipeline with test data
+      - name: Run pipeline with small test data
         # TODO nf-core: You can customise CI pipeline run tests as required
         # For example: adding multiple test runs with different parameters
         # Remember that you can parallelise this by using strategy.matrix
         run: |
-          nextflow run ${GITHUB_WORKSPACE} -profile test,docker --outdir ./results
+          nextflow run ${GITHUB_WORKSPACE} -profile test,docker --outdir ./results --max_cpus 2 --max_memory 4GB
+
+  test_full:
+    name: Run complete pipeline with more test data
+    # Only run on push if this is the nf-core dev branch (merged PRs)
+    if: "${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'nf-core/viralgenie') }}"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        NXF_VER:
+          - "23.04.0"
+          - "latest-everything"
+    steps:
+      - name: Check out pipeline code
+        uses: actions/checkout@v3
+
+      - name: Install Nextflow
+        uses: nf-core/setup-nextflow@v1
+        with:
+          version: "${{ matrix.NXF_VER }}"
+
+      - name: Run complete pipeline with more test data
+        run: |
+          nextflow run ${GITHUB_WORKSPACE} -profile test_full,docker --outdir ./results --max_cpus 4 --max_memory 15GB
+
+  test_umi:
+    name: Run pipeline with test umi data
+    # Only run on push if this is the nf-core dev branch (merged PRs)
+    if: "${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'nf-core/viralgenie') }}"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        NXF_VER:
+          - "23.04.0"
+          - "latest-everything"
+    steps:
+      - name: Check out pipeline code
+        uses: actions/checkout@v3
+
+      - name: Install Nextflow
+        uses: nf-core/setup-nextflow@v1
+        with:
+          version: "${{ matrix.NXF_VER }}"
+
+      - name: Run pipeline with umi test data
+        run: |
+          nextflow run ${GITHUB_WORKSPACE} -profile test_umi,docker --outdir ./results --max_cpus 2 --max_memory 4GB
+
+  test_fail_mapped:
+    name: Run pipeline with test bad mapping constrained reference
+    # Only run on push if this is the nf-core dev branch (merged PRs)
+    if: "${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'nf-core/viralgenie') }}"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        NXF_VER:
+          - "23.04.0"
+          - "latest-everything"
+    steps:
+      - name: Check out pipeline code
+        uses: actions/checkout@v3
+
+      - name: Install Nextflow
+        uses: nf-core/setup-nextflow@v1
+        with:
+          version: "${{ matrix.NXF_VER }}"
+
+      - name: Run pipeline with umi test data
+        run: |
+          nextflow run ${GITHUB_WORKSPACE} -profile test_fail_mapped,docker --outdir ./results --max_cpus 2 --max_memory 4GB
+
+  test_fail_db:
+    name: Run pipeline with test bad database for identifying potential references
+    # Only run on push if this is the nf-core dev branch (merged PRs)
+    if: "${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'nf-core/viralgenie') }}"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        NXF_VER:
+          - "23.04.0"
+          - "latest-everything"
+    steps:
+      - name: Check out pipeline code
+        uses: actions/checkout@v3
+
+      - name: Install Nextflow
+        uses: nf-core/setup-nextflow@v1
+        with:
+          version: "${{ matrix.NXF_VER }}"
+
+      - name: Run pipeline with test data of a bad reference database
+        run: |
+          nextflow run ${GITHUB_WORKSPACE} -profile test_fail_db,docker --outdir ./results --max_cpus 2 --max_memory 4GB
+
+  test_vsearch:
+    name: Run pipeline with test data and cluster using vsearch
+    # Only run on push if this is the nf-core dev branch (merged PRs)
+    if: "${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'nf-core/viralgenie') }}"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        NXF_VER:
+          - "latest-everything"
+    steps:
+      - name: Check out pipeline code
+        uses: actions/checkout@v3
+
+      - name: Install Nextflow
+        uses: nf-core/setup-nextflow@v1
+        with:
+          version: "${{ matrix.NXF_VER }}"
+
+      - name: Run pipeline with test data and cluster using vsearch
+        run: |
+          nextflow run ${GITHUB_WORKSPACE} -profile test,docker --cluster_method vsearch --skip_iterative_refinement --skip_variant_calling --outdir ./results --max_cpus 2 --max_memory 4GB
+
+  test_mmseqs:
+    name: Run pipeline with test data and cluster using mmseqs-cluster
+    # Only run on push if this is the nf-core dev branch (merged PRs)
+    if: "${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'nf-core/viralgenie') }}"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        NXF_VER:
+          - "latest-everything"
+    steps:
+      - name: Check out pipeline code
+        uses: actions/checkout@v3
+
+      - name: Install Nextflow
+        uses: nf-core/setup-nextflow@v1
+        with:
+          version: "${{ matrix.NXF_VER }}"
+
+      - name: Run pipeline with umi test data
+        run: |
+          nextflow run ${GITHUB_WORKSPACE} -profile test,docker --cluster_method mmseqs-cluster --skip_iterative_refinement --skip_variant_calling --outdir ./results --max_cpus 4 --max_memory 15GB
+
+  test_mash:
+    name: Run pipeline with test data and cluster using mash
+    # Only run on push if this is the nf-core dev branch (merged PRs)
+    if: "${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'nf-core/viralgenie') }}"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        NXF_VER:
+          - "latest-everything"
+    steps:
+      - name: Check out pipeline code
+        uses: actions/checkout@v3
+
+      - name: Install Nextflow
+        uses: nf-core/setup-nextflow@v1
+        with:
+          version: "${{ matrix.NXF_VER }}"
+
+      - name: Run pipeline with umi test data
+        run: |
+          nextflow run ${GITHUB_WORKSPACE} -profile test,docker --cluster_method mash --skip_iterative_refinement --skip_variant_calling --outdir ./results --max_cpus 2 --max_memory 4GB
+
+  test_vrhyme:
+    name: Run pipeline with test data and cluster using vrhyme
+    # Only run on push if this is the nf-core dev branch (merged PRs)
+    if: "${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'nf-core/viralgenie') }}"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        NXF_VER:
+          - "latest-everything"
+    steps:
+      - name: Check out pipeline code
+        uses: actions/checkout@v3
+
+      - name: Install Nextflow
+        uses: nf-core/setup-nextflow@v1
+        with:
+          version: "${{ matrix.NXF_VER }}"
+
+      - name: Run pipeline with test data and cluster using vrhyme
+        run: |
+          nextflow run ${GITHUB_WORKSPACE} -profile test,docker --cluster_method vrhyme --skip_iterative_refinement --skip_variant_calling --outdir ./results --max_cpus 2 --max_memory 4GB
+
+  test_cdhit:
+    name: Run pipeline with test data and cluster using cdhit
+    # Only run on push if this is the nf-core dev branch (merged PRs)
+    if: "${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'nf-core/viralgenie') }}"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        NXF_VER:
+          - "latest-everything"
+    steps:
+      - name: Check out pipeline code
+        uses: actions/checkout@v3
+
+      - name: Install Nextflow
+        uses: nf-core/setup-nextflow@v1
+        with:
+          version: "${{ matrix.NXF_VER }}"
+
+      - name: Run pipeline with test data and cluster using cdhitest
+        run: |
+          nextflow run ${GITHUB_WORKSPACE} -profile test,docker --cluster_method cdhitest --skip_iterative_refinement --skip_variant_calling --outdir ./results --max_cpus 2 --max_memory 4GB
