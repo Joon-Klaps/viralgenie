@@ -168,11 +168,6 @@
                         "installed_by": ["modules"],
                         "patch": "modules/nf-core/mash/dist/mash-dist.diff"
                     },
-                    "mashtree": {
-                        "branch": "master",
-                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
-                        "installed_by": ["modules"]
-                    },
                     "megahit": {
                         "branch": "master",
                         "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
@@ -258,11 +253,6 @@
                         "branch": "master",
                         "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
                         "installed_by": ["bam_stats_samtools", "modules"]
-                    },
-                    "seqkit/grep": {
-                        "branch": "master",
-                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
-                        "installed_by": ["modules"]
                     },
                     "spades": {
                         "branch": "master",
