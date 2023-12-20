@@ -1,7 +1,7 @@
-include { MAFFT       } from '../../modules/nf-core/mafft/main'
-include { MUSCLE      } from '../../modules/nf-core/muscle/main'
-include { CAT_CAT     } from '../../modules/nf-core/cat/cat/main'
-include { EMBOSS_CONS } from '../../modules/nf-core/emboss/cons/main'
+include { MAFFT                  } from '../../modules/nf-core/mafft/main'
+include { MUSCLE                 } from '../../modules/nf-core/muscle/main'
+include { CAT_CAT as CAT_CLUSTER } from '../../modules/nf-core/cat/cat/main'
+include { EMBOSS_CONS            } from '../../modules/nf-core/emboss/cons/main'
 
 workflow ALIGN_COLLAPSE_CONTIGS {
 
@@ -11,9 +11,9 @@ workflow ALIGN_COLLAPSE_CONTIGS {
 
     main:
 
-    ch_sequences = ch_references_members.map{ it -> [it[0], [it[1], it[2]]] }
+    ch_sequences = ch_references_members.map{ meta, references, members -> [meta, [references, members]] }
 
-    CAT_CAT(ch_sequences)
+    CAT_CLUSTER(ch_sequences)
 
     if (aligner == "mafft") {
         ch_references      = ch_references_members.map{ meta,centroid,members -> [meta, centroid] }
@@ -34,9 +34,9 @@ workflow ALIGN_COLLAPSE_CONTIGS {
 
     if (aligner == "muscle") {
 
-        MUSCLE( CAT_CAT.out.file_out)
+        MUSCLE( CAT_CLUSTER.out.file_out)
 
-        ch_versions = CAT_CAT.out.versions.first()
+        ch_versions = CAT_CLUSTER.out.versions.first()
         ch_align    = MUSLCE.out.aligned_fasta
         ch_versions = ch_versions.mix(MUSCLE.out.versions.first())
     }
@@ -47,7 +47,7 @@ workflow ALIGN_COLLAPSE_CONTIGS {
     emit:
     consensus       = EMBOSS_CONS.out.consensus // channel: [ val(meta), [ fasta ] ]
     aligned_fasta   = ch_align                  // channel: [ val(meta), [ fasta ] ]
-    unaligned_fasta = CAT_CAT.out.file_out      // channel: [ val(meta), [ fasta ] ]
+    unaligned_fasta = CAT_CLUSTER.out.file_out      // channel: [ val(meta), [ fasta ] ]
     versions        = ch_versions               // channel: [ versions.yml ]
 }
 

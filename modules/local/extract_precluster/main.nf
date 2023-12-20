@@ -11,8 +11,8 @@ process EXTRACT_PRECLUSTER {
     tuple val(meta), path(classifications), path(sequence)
 
     output:
-    tuple val(meta), path("*.fa") , emit: sequences
-    path "versions.yml"           , emit: versions
+    tuple val(meta), path("*.fa"), path("*.json") , emit: sequences
+    path "versions.yml"                           , emit: versions
     when:
     task.ext.when == null || task.ext.when
 

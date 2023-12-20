@@ -76,6 +76,23 @@ def create_groups(file):
     return groups
 
 
+def write_json(groups, file_out_prefix):
+    """
+    Write the groups to a json file.
+
+    Args:
+        groups (dict): A dictionary where the keys are taxids and the values are lists of sequence names.
+            The 'U' key represents unclassified sequences.
+        file_out_prefix (str): The prefix of the output file.
+    """
+    with open(f"{file_out_prefix}.json", "w") as f_out:
+        # Construct the JSON string manually
+        json_str = "{\n"
+        json_str += f'\t"ntaxa": {len(groups)},\n'
+        json_str = json_str.rstrip(",\n") + "\n}"
+        f_out.write(json_str)
+
+
 def extract_sequences(groups, sequences, file_out_prefix):
     """
     Extract the sequences from the input file based on the groups.
@@ -86,11 +103,12 @@ def extract_sequences(groups, sequences, file_out_prefix):
         sequences (str): The path to the input sequence file.
         file_out_prefix (str): The prefix of the output file.
     """
+    sequence_dict = SeqIO.to_dict(SeqIO.parse(sequences, "fasta"))
     for taxid, seq_names in groups.items():
         with open(f"{file_out_prefix}_taxid{taxid}.fa", "w") as f_out:
-            for record in SeqIO.parse(sequences, "fasta"):
-                if record.id in seq_names:
-                    SeqIO.write(record, f_out, "fasta")
+            for seq_name in seq_names:
+                if seq_name in sequence_dict:
+                    SeqIO.write(sequence_dict[seq_name], f_out, "fasta")
 
 
 def main(argv=None):
@@ -107,6 +125,7 @@ def main(argv=None):
     groups = create_groups(args.classifications)
 
     extract_sequences(groups, args.sequences, args.file_out_prefix)
+    write_json(groups, args.file_out_prefix)
 
     return 0
 
