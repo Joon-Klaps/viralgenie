@@ -27,7 +27,7 @@ workflow UNPACK_DB  {
     ch_db = ch_db.mix(db.other, ch_untar, ch_gunzip)
 
     emit:
-    db = ch_db                  // channel: [ db ]
+    db       = ch_db            // channel: [ db ]
     versions = ch_versions      // channel: [ versions.yml ]
 }
 

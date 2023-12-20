@@ -93,7 +93,8 @@
                     "cdhit/cdhitest": {
                         "branch": "master",
                         "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
-                        "installed_by": ["modules"]
+                        "installed_by": ["modules"],
+                        "patch": "modules/nf-core/cdhit/cdhitest/cdhit-cdhitest.diff"
                     },
                     "checkv/downloaddatabase": {
                         "branch": "master",
@@ -153,7 +154,8 @@
                     "kraken2/kraken2": {
                         "branch": "master",
                         "git_sha": "d6549f46c3c1c3fe3def110f3d18059a68a65cc6",
-                        "installed_by": ["modules"]
+                        "installed_by": ["modules"],
+                        "patch": "modules/nf-core/kraken2/kraken2/kraken2-kraken2.diff"
                     },
                     "mafft": {
                         "branch": "master",
@@ -165,11 +167,6 @@
                         "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
                         "installed_by": ["modules"],
                         "patch": "modules/nf-core/mash/dist/mash-dist.diff"
-                    },
-                    "mashtree": {
-                        "branch": "master",
-                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
-                        "installed_by": ["modules"]
                     },
                     "megahit": {
                         "branch": "master",
@@ -256,11 +253,6 @@
                         "branch": "master",
                         "git_sha": "a64788f5ad388f1d2ac5bd5f1f3f8fc81476148c",
                         "installed_by": ["bam_stats_samtools", "modules"]
-                    },
-                    "seqkit/grep": {
-                        "branch": "master",
-                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
-                        "installed_by": ["modules"]
                     },
                     "spades": {
                         "branch": "master",

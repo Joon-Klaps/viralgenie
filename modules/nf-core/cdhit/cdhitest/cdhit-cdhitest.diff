@@ -1,0 +1,14 @@
+Changes in module 'nf-core/cdhit/cdhitest'
+--- modules/nf-core/cdhit/cdhitest/main.nf
++++ modules/nf-core/cdhit/cdhitest/main.nf
+@@ -33,7 +33,7 @@
+     cd-hit-est \\
+         $args \\
+         -i ${sequences} \\
+-        -o ${meta.id}.${suffix} \\
++        -o ${prefix}.${suffix} \\
+         -M $avail_mem \\
+         -T $task.cpus
+ 
+
+************************************************************

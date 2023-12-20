@@ -2,7 +2,7 @@ include { CHECKV_ENDTOEND                 } from '../../modules/nf-core/checkv/e
 include { CAT_CAT as CAT_CAT_QC           } from '../../modules/nf-core/cat/cat/main'
 include { QUAST  as QUAST_QC              } from '../../modules/nf-core/quast/main'
 include { BLAST_BLASTN as BLAST_BLASTN_QC } from '../../modules/nf-core/blast/blastn/main'
-include { MAFFT as MAFFT_PREPARE_QC       } from '../../modules/nf-core/mafft/main'
+include { MAFFT as MAFFT_ITERATIONS       } from '../../modules/nf-core/mafft/main'
 include { MAFFT as MAFFT_QC               } from '../../modules/nf-core/mafft/main'
 
 workflow CONSENSUS_QC  {
@@ -57,7 +57,7 @@ workflow CONSENSUS_QC  {
             }
             .set{ch_genome_collapsed_branch}
 
-        MAFFT_PREPARE_QC (
+        MAFFT_ITERATIONS (
             ch_genome_collapsed_branch.pass,
             [[:],[]],
             [[:],[]],
@@ -65,12 +65,12 @@ workflow CONSENSUS_QC  {
             [[:],[]],
             [[:],[]]
         )
-        ch_versions = ch_versions.mix(MAFFT_PREPARE_QC.out.versions)
+        ch_versions = ch_versions.mix(MAFFT_ITERATIONS.out.versions)
 
         // Mix single sequences with the (multiple) aligned ones
         ch_genome_collapsed_branch
             .fail
-            .mix(MAFFT_PREPARE_QC.out.fas)
+            .mix(MAFFT_ITERATIONS.out.fas)
             .map{ meta, genome -> [meta.id, meta, genome] }
             .set{ch_genome_collapsed_mod}
 

@@ -21,7 +21,6 @@ workflow FASTQ_KRAKEN_KAIJU {
 
     // Kraken
     if (!params.skip_kraken2){
-        // decompress kraken2_db if needed
         KRAKEN2_KRAKEN2 ( reads, kraken2_db, params.kraken2_save_reads, params.kraken2_save_readclassification )
         ch_raw_classifications = ch_raw_classifications.mix(KRAKEN2_KRAKEN2.out.classified_reads_assignment)
         ch_multiqc_files       = ch_multiqc_files.mix( KRAKEN2_KRAKEN2.out.report )
@@ -29,7 +28,6 @@ workflow FASTQ_KRAKEN_KAIJU {
 
         // Bracken: get more accurate estimates of abundance
         if (!params.skip_bracken){
-            // decompress bracken_db if needed
             BRACKEN_BRACKEN (KRAKEN2_KRAKEN2.out.report, bracken_db )
             ch_versions   = ch_versions.mix( BRACKEN_BRACKEN.out.versions.first() )
         }
@@ -37,7 +35,6 @@ workflow FASTQ_KRAKEN_KAIJU {
 
     // Kaiju
     if (!params.skip_kaiju){
-        // decompress kaiju_db if needed
         KAIJU_KAIJU(reads, kaiju_db)
         ch_versions = ch_versions.mix( KAIJU_KAIJU.out.versions.first() )
 
