@@ -34,7 +34,7 @@ jobs:
           - "ivar"
     steps:
       - name: Check out pipeline code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Nextflow
         uses: nf-core/setup-nextflow@v1
@@ -60,7 +60,7 @@ jobs:
           - "latest-everything"
     steps:
       - name: Check out pipeline code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Nextflow
         uses: nf-core/setup-nextflow@v1
@@ -83,7 +83,7 @@ jobs:
           - "latest-everything"
     steps:
       - name: Check out pipeline code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Nextflow
         uses: nf-core/setup-nextflow@v1
@@ -106,7 +106,7 @@ jobs:
           - "latest-everything"
     steps:
       - name: Check out pipeline code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Nextflow
         uses: nf-core/setup-nextflow@v1
@@ -129,7 +129,7 @@ jobs:
           - "latest-everything"
     steps:
       - name: Check out pipeline code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Nextflow
         uses: nf-core/setup-nextflow@v1
@@ -158,7 +158,7 @@ jobs:
           - "cdhitest"
     steps:
       - name: Check out pipeline code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Nextflow
         uses: nf-core/setup-nextflow@v1
