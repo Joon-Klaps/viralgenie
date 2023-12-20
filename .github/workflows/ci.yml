@@ -42,8 +42,11 @@ jobs:
           version: "${{ matrix.NXF_VER }}"
 
       - name: Run pipeline with small test data with variant caller ${{ matrix.VARIANT_CALLER }} and consensus caller ${{ matrix.CONSENSUS_CALLER }}
+        env:
+          VARIANT_CALLER: ${{ matrix.VARIANT_CALLER }}
+          CONSENSUS_CALLER: ${{ matrix.CONSENSUS_CALLER }}
         run: |
-          nextflow run ${GITHUB_WORKSPACE} -profile test,docker --variant_caller ${matrix.VARIANT_CALLER} --consensus_caller ${matrix.CONSENSUS_CALLER} --outdir ./results --max_cpus 2 --max_memory 4GB
+          nextflow run ${GITHUB_WORKSPACE} -profile test,docker --variant_caller ${VARIANT_CALLER} --consensus_caller ${CONSENSUS_CALLER} --outdir ./results --max_cpus 2 --max_memory 4GB
 
   test-full:
     name: Run complete pipeline with more test data
@@ -164,5 +167,7 @@ jobs:
           version: "${{ matrix.NXF_VER }}"
 
       - name: Run pipeline with test data and cluster using ${{ matrix.CLUSTER_METHOD }}
+        env:
+          CLUSTER_METHOD: ${{ matrix.CLUSTER_METHOD }}
         run: |
-          nextflow run ${GITHUB_WORKSPACE} -profile test,docker --cluster_method ${matrix.CLUSTER_METHOD} --skip_iterative_refinement --skip_variant_calling --outdir ./results --max_cpus 4 --max_memory 15GB
+          nextflow run ${GITHUB_WORKSPACE} -profile test,docker --cluster_method ${CLUSTER_METHOD} --skip_iterative_refinement --skip_variant_calling --outdir ./results --max_cpus 4 --max_memory 15GB
