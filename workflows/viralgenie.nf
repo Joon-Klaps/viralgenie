@@ -17,7 +17,7 @@ def summary_params = paramsSummaryMap(workflow)
 def assemblers = params.assemblers ? params.assemblers.split(',').collect{ it.trim().toLowerCase() } : []
 
 def createFileChannel(param) {
-    return param ? Channel.fromPath(param, checkIfExists: true) : []
+    return param ? Channel.fromPath(param, checkIfExists: true).collect() : []
 }
 
 def createChannel(dbPath, dbName, skipFlag) {
