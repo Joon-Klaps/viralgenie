@@ -49,7 +49,7 @@ workflow FASTQ_KRAKEN_HOST_REMOVE {
         .unclassified_reads_fastq
         .join(KRAKEN2_HOST_REMOVE.out.report)
         .map{ meta, fastq, tsv -> [meta,fastq, getReadsAfterHostRemove(tsv)] }
-        .branch { meta, fastq,n_reads ->
+        .branch { meta, fastq, n_reads ->
             pass: n_reads > min_reads
                 return [meta, fastq]
             fail: n_reads <= min_reads
@@ -57,7 +57,7 @@ workflow FASTQ_KRAKEN_HOST_REMOVE {
             }
         .set { ch_reads_hostremoved}
 
-    / fastqc
+    // fastqc
     if (!skip_fastqc) {
         FASTQC_HOST (
             ch_reads_hostremoved.pass
