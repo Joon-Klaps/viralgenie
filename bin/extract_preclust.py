@@ -72,6 +72,8 @@ def create_groups(file):
                     groups[taxid] = []
                 groups[taxid].append(seq_name)
             elif classified == "U":
+                if "U" not in groups:
+                    groups["U"] = []
                 groups["U"].append(seq_name)
     return groups
 
