@@ -81,6 +81,7 @@ workflow PREPROCESSING_ILLUMINA {
             ch_kraken2_host_db,
             params.host_k2_library,
             params.skip_host_fastqc,
+            params.min_trimmed_reads,
         )
 
         ch_reads_hostremoved   = FASTQ_KRAKEN_HOST_REMOVE.out.reads_hostremoved
