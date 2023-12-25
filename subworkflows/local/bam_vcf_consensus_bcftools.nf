@@ -24,12 +24,16 @@ workflow BAM_VCF_CONSENSUS_BCFTOOLS {
     )
     ch_versions = ch_versions.mix(TABIX_TABIX.out.versions.first())
 
+    bam
+    .join(vcf, by: [0])
+    .join(fasta, by: [0])
+    .set{bam_vcf_fasta}
+
     //
     // Create BED file with consensus regions to mask (regions to remove)
     //
     MAKE_BED_MASK (
-        bam.join(vcf, by: [0]),
-        fasta,
+        bam_vcf_fasta,
         get_stats
     )
     ch_versions = ch_versions.mix(MAKE_BED_MASK.out.versions.first())
@@ -42,12 +46,16 @@ workflow BAM_VCF_CONSENSUS_BCFTOOLS {
     )
     ch_versions = ch_versions.mix(BEDTOOLS_MERGE.out.versions.first())
 
+    BEDTOOLS_MERGE
+        .out
+        .bed
+        .join(fasta, by: [0])
+
     //
     // Mask regions in consensus with BEDTools
     //
     BEDTOOLS_MASKFASTA (
-        BEDTOOLS_MERGE.out.bed,
-        fasta.map{it[1]}
+
     )
     ch_versions = ch_versions.mix(BEDTOOLS_MASKFASTA.out.versions.first())
 

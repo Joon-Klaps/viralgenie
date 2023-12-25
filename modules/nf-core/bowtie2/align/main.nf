@@ -8,8 +8,7 @@ process BOWTIE2_ALIGN {
         'biocontainers/mulled-v2-ac74a7f02cebcfcc07d8e8d1d750af9c83b4d45a:f70b31a2db15c023d641c32f433fb02cd04df5a6-0' }"
 
     input:
-    tuple val(meta) , path(reads)
-    tuple val(meta2), path(index)
+    tuple val(meta) , path(reads), path(index)
     val   save_unaligned
     val   sort_bam
 

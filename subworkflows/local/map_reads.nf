@@ -23,10 +23,8 @@ workflow MAP_READS  {
         ch_versions = ch_versions.mix(BWAMEM2_INDEX.out.versions.first())
 
         reads_index = reads.join(BWAMEM2_INDEX.out.index, by: [0])
-        reads_up    = reads_index.map{meta, reads, index -> [ meta, reads ]}
-        index       = reads_index.map{meta, reads, index -> [ meta, index ]}
 
-        BWAMEM2_MEM ( reads_up, index, false )
+        BWAMEM2_MEM ( reads_index, false )
         ch_versions = ch_versions.mix(BWAMEM2_MEM.out.versions.first())
         //no mqc for bwamem2
 
@@ -37,10 +35,8 @@ workflow MAP_READS  {
         ch_versions = ch_versions.mix(BOWTIE2_BUILD.out.versions.first())
 
         reads_index = reads.join(BOWTIE2_BUILD.out.index, by: [0])
-        reads_up    = reads_index.map{meta, reads, index -> [ meta, reads ]}
-        index       = reads_index.map{meta, reads, index -> [ meta, index ]}
 
-        BOWTIE2_ALIGN ( reads_up, index, false, false)
+        BOWTIE2_ALIGN ( reads_index, false, false)
         ch_versions = ch_versions.mix(BOWTIE2_ALIGN.out.versions.first())
 
         ch_bam      = BOWTIE2_ALIGN.out.aligned

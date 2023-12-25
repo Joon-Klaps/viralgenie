@@ -9,8 +9,7 @@ process MAKE_BED_MASK {
         'biocontainers/mulled-v2-1a35167f7a491c7086c13835aaa74b39f1f43979:6b5cffa1187cfccf2dc983ed3b5359d49b999eb0-0' }"
 
     input:
-    tuple val(meta), path(bam), path(vcf)
-    tuple val(meta2), path(fasta)
+    tuple val(meta), path(bam), path(vcf), path(fasta)
     val save_mpileup
 
     output:

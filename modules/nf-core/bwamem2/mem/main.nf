@@ -8,8 +8,7 @@ process BWAMEM2_MEM {
         'biocontainers/mulled-v2-e5d375990341c5aef3c9aff74f96f66f65375ef6:2cdf6bf1e92acbeb9b2834b1c58754167173a410-0' }"
 
     input:
-    tuple val(meta), path(reads)
-    tuple val(meta2), path(index)
+    tuple val(meta), path(reads), path(index)
     val   sort_bam
 
     output:
