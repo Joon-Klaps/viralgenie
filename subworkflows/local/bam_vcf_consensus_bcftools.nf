@@ -6,7 +6,7 @@ include { TABIX_TABIX         } from '../../modules/nf-core/tabix/tabix/main'
 include { BEDTOOLS_MERGE      } from '../../modules/nf-core/bedtools/merge/main'
 include { BEDTOOLS_MASKFASTA  } from '../../modules/nf-core/bedtools/maskfasta/main'
 include { BCFTOOLS_CONSENSUS  } from '../../modules/nf-core/bcftools/consensus/main'
-include { MAKE_BED_MASK       } from '../../modules/local/make_bed_mask'
+include { MAKE_BED_MASK       } from '../../modules/local/make_bed_mask/main'
 
 workflow BAM_VCF_CONSENSUS_BCFTOOLS {
     take:
@@ -50,12 +50,13 @@ workflow BAM_VCF_CONSENSUS_BCFTOOLS {
         .out
         .bed
         .join(fasta, by: [0])
+        .set{bed_fasta}
 
     //
     // Mask regions in consensus with BEDTools
     //
     BEDTOOLS_MASKFASTA (
-
+        bed_fasta
     )
     ch_versions = ch_versions.mix(BEDTOOLS_MASKFASTA.out.versions.first())
 
