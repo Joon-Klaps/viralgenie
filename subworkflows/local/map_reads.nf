@@ -18,11 +18,11 @@ workflow MAP_READS  {
     reads       = reference_reads.map{meta, fasta,fastq -> [ meta, fastq ]}
     reference   = reference_reads.map{meta, fasta,fastq -> [ meta, fasta ]}
 
-
     if ( mapper == 'bwamem2' ) {
         BWAMEM2_INDEX ( reference )
         ch_versions = ch_versions.mix(BWAMEM2_INDEX.out.versions.first())
 
+        reads_index = reads.join(BWAMEM2_INDEX.out.index, by: [0])
         reads_up    = reads_index.map{meta, reads, index -> [ meta, reads ]}
         index       = reads_index.map{meta, reads, index -> [ meta, index ]}
 
