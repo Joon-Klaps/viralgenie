@@ -361,58 +361,61 @@ workflow VIRALGENIE {
             }
         .set{ch_consensus_results_reads}
 
-    if (params.mapping_sequence ) {
-        ch_mapping_sequence = Channel.fromPath(params.mapping_sequence)
+    if (params.mapping_sequences ) {
+         // Importing samplesheet
+        ch_mapping_sequences = Channel.fromSamplesheet('mapping_sequences')
+        ch_mapping_sequences.view()
 
-        //get header names of sequences
-        ch_mapping_sequence
-            .splitFasta(record: [id: true])
-            .set {seq_names}
 
-        //split up multifasta
-        ch_mapping_sequence
-            .splitFasta(file : true, by:1)
-            .merge(seq_names)
-            .set{ch_map_seq_anno}
+        // //get header names of sequences
+        // ch_mapping_sequences
+        //     .splitFasta(record: [id: true])
+        //     .set {seq_names}
 
-        //combine with all input samples & rename the meta.id
-        // TODO: consider adding another column to the samplesheet with the mapping sequence
-        ch_host_trim_reads
-            .combine( ch_map_seq_anno )
-            .map
-                {
-                    meta, reads, seq, name ->
-                    sample = meta.id
-                    id = "${sample}_${name.id}"
-                    new_meta = meta + [
-                        id: id,
-                        sample: sample,
-                        cluster_id: "${name.id}",
-                        step: "constrain",
-                        constrain: true,
-                        reads: reads,
-                        iteration: 'variant-calling',
-                        previous_step: 'constrain'
-                        ]
-                    return [new_meta, seq]
-                }
-            .set{ch_map_seq_anno_combined}
+        // //split up multifasta
+        // ch_mapping_sequences
+        //     .splitFasta(file : true, by:1)
+        //     .merge(seq_names)
+        //     .set{ch_map_seq_anno}
 
-        // For QC we keep original sequence to compare to
-        ch_unaligned_raw_contigs = ch_unaligned_raw_contigs.mix(ch_map_seq_anno_combined)
+        // //combine with all input samples & rename the meta.id
+        // // TODO: consider adding another column to the samplesheet with the mapping sequence
+        // ch_host_trim_reads
+        //     .combine( ch_map_seq_anno )
+        //     .map
+        //         {
+        //             meta, reads, seq, name ->
+        //             sample = meta.id
+        //             id = "${sample}_${name.id}"
+        //             new_meta = meta + [
+        //                 id: id,
+        //                 sample: sample,
+        //                 cluster_id: "${name.id}",
+        //                 step: "constrain",
+        //                 constrain: true,
+        //                 reads: reads,
+        //                 iteration: 'variant-calling',
+        //                 previous_step: 'constrain'
+        //                 ]
+        //             return [new_meta, seq]
+        //         }
+        //     .set{ch_map_seq_anno_combined}
 
-        //rename fasta headers
-        RENAME_FASTA_HEADER_CONSTRAIN (ch_map_seq_anno_combined,[])
-        ch_versions = ch_versions.mix(RENAME_FASTA_HEADER_CONSTRAIN.out.versions)
+        // // For QC we keep original sequence to compare to
+        // ch_unaligned_raw_contigs = ch_unaligned_raw_contigs.mix(ch_map_seq_anno_combined)
 
-        RENAME_FASTA_HEADER_CONSTRAIN
-            .out
-            .fasta
-            .map{ meta, fasta -> [meta, fasta, meta.reads] }
-            .set{constrain_consensus_reads}
+        // //rename fasta headers
+        // RENAME_FASTA_HEADER_CONSTRAIN (ch_map_seq_anno_combined,[])
+        // ch_versions = ch_versions.mix(RENAME_FASTA_HEADER_CONSTRAIN.out.versions)
 
-        //Add to the consensus channel, the mapping sequences will now always be mapped against
-        ch_consensus_results_reads = ch_consensus_results_reads.mix(constrain_consensus_reads)
+        // RENAME_FASTA_HEADER_CONSTRAIN
+        //     .out
+        //     .fasta
+        //     .map{ meta, fasta -> [meta, fasta, meta.reads] }
+        //     .set{constrain_consensus_reads}
+
+        // //Add to the consensus channel, the mapping sequences will now always be mapped against
+        // ch_consensus_results_reads = ch_consensus_results_reads.mix(constrain_consensus_reads)
     }
 
     // After consensus sequences have been made, we still have to map against it and call variants

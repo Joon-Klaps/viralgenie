@@ -1,8 +1,8 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema",
-    "$id": "https://raw.githubusercontent.com/Joon-Klaps/viralgenie/dev/assets/schema_mapping_sequence.json",
-    "title": "Joon-Klaps/viralgenie pipeline - params.mapping_sequence schema",
-    "description": "Schema for the file provided with params.mapping_sequence",
+    "$id": "https://raw.githubusercontent.com/Joon-Klaps/viralgenie/dev/assets/schema_mapping_sequences.json",
+    "title": "Joon-Klaps/viralgenie pipeline - params.mapping_sequences schema",
+    "description": "Schema for the file provided with params.mapping_sequences",
     "type": "array",
     "items": {
         "type": "object",
@@ -10,40 +10,33 @@
             "id": {
                 "type": "string",
                 "pattern": "^[A-z0-9\\-\\.]+$",
-                "errorMessage": "Sequence ID must be provided and cannot contain spaces or special characters",
+                "errorMessage": "Sequence ID must be provided and cannot contain spaces or special characters with the exception of '-' and '.'",
                 "meta": ["id"]
             },
             "sequence": {
-
-            }
-            "single_end": {
-                "type": "boolean",
-                "errorMessage": "Single end must be a boolean value (true/false)",
-                "meta": ["single_end"]
-            },
-            "fastq_1": {
                 "type": "string",
-                "pattern": "^\\S+\\.f(ast)?q\\.gz$",
+                "pattern": "^\\S+\\.f(ast)?(n)?a$",
                 "format": "file-path",
                 "exists": true,
-                "errorMessage": "FastQ file for reads 1 must be provided, cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'"
+                "errorMessage": "Fasta file for mapping must be provided, cannot contain spaces and must have extension '.fa', '.fasta' or '.fna' (unzipped)"
             },
-            "fastq_2": {
-                "errorMessage": "FastQ file for reads 2 cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'",
-                "anyOf": [
-                    {
-                        "type": "string",
-                        "format": "file-path",
-                        "exists": true,
-                        "pattern": "^\\S+\\.f(ast)?q\\.gz$"
-                    },
-                    {
-                        "type": "string",
-                        "maxLength": 0
-                    }
-                ]
+            "species": {
+                "type": "string",
+                "pattern": "^[A-z0-9\\-\\.]+$",
+                "errorMessage": "Species cannot contain spaces or special characters with the exception of '-' and '.'",
+                "meta": ["species"]
+            },
+            "segment": {
+                "type": "string",
+                "pattern": "^[A-z0-9\\-\\.]+$",
+                "errorMessage": "Segment cannot contain spaces or special characters with the exception of '-' and '.'",
+                "meta": ["segment"]
+            },
+            "definition": {
+                "type": "string",
+                "meta": ["definition"]
             }
         },
-        "required": ["sample", "fastq_1"]
+        "required": ["id", "sequence"]
     }
 }
