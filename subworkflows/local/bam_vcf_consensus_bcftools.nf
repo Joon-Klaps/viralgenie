@@ -56,8 +56,7 @@ workflow BAM_VCF_CONSENSUS_BCFTOOLS {
     // Mask regions in consensus with BEDTools
     //
     BEDTOOLS_MASKFASTA (
-        bed_fasta,
-        get_stats
+        bed_fasta
     )
     ch_versions = ch_versions.mix(BEDTOOLS_MASKFASTA.out.versions.first())
 

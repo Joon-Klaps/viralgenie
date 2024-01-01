@@ -43,7 +43,8 @@
                     "bedtools/maskfasta": {
                         "branch": "master",
                         "git_sha": "3b248b84694d1939ac4bb33df84bf6233a34d668",
-                        "installed_by": ["modules"]
+                        "installed_by": ["modules"],
+                        "patch": "modules/nf-core/bedtools/maskfasta/bedtools-maskfasta.diff"
                     },
                     "bedtools/merge": {
                         "branch": "master",
