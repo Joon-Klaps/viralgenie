@@ -1,0 +1,8 @@
+name: make_bed_mask
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - conda-forge::python=3.9.5
+  - bioconda::samtools=1.14

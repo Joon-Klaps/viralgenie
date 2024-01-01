@@ -8,8 +8,7 @@ process BEDTOOLS_MASKFASTA {
         'biocontainers/bedtools:2.31.1--hf5e1c6e_0' }"
 
     input:
-    tuple val(meta), path(bed)
-    path  fasta
+    tuple val(meta), path(bed), path(fasta)
 
     output:
     tuple val(meta), path("*.fa"), emit: fasta

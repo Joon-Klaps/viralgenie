@@ -2,7 +2,7 @@ process EXTRACT_CLUSTER {
     tag "${meta.id}"
     label 'process_single'
 
-    conda "conda-forge::python=3.8.3"
+    conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/biopython:1.78':
         'biocontainers/biopython:1.78' }"
