@@ -53,7 +53,7 @@ workflow FASTQ_KRAKEN_HOST_REMOVE {
             pass: n_reads > min_reads
                 return [meta, fastq]
             fail: n_reads <= min_reads
-                return [meta, fastq, n_reads]
+                return [meta, n_reads]
             }
         .set { ch_reads_hostremoved}
 
@@ -68,8 +68,9 @@ workflow FASTQ_KRAKEN_HOST_REMOVE {
     }
 
     emit:
-    reads_hostremoved = ch_reads_hostremoved.pass       // channel: [ [ meta ], [ fastq ] ]
-    mqc               = ch_multiqc_files                // channel: [ multiqc_files ]
-    versions          = ch_versions                     // channel: [ versions.yml ]
+    reads_hostremoved       = ch_reads_hostremoved.pass       // channel: [ [ meta ], [ fastq ] ]
+    reads_hostremoved_fail  = ch_reads_hostremoved.fail       // channel: [ [ meta ], [ n_reads ] ]
+    mqc                     = ch_multiqc_files                // channel: [ multiqc_files ]
+    versions                = ch_versions                     // channel: [ versions.yml ]
 }
 

@@ -178,6 +178,7 @@ workflow VIRALGENIE {
     ch_host_trim_reads      = PREPROCESSING_ILLUMINA.out.reads
     ch_decomplex_trim_reads = PREPROCESSING_ILLUMINA.out.reads_decomplexified
     ch_multiqc_files        = ch_multiqc_files.mix(PREPROCESSING_ILLUMINA.out.mqc.collect{it[1]}.ifEmpty([]))
+    ch_multiqc_files        = ch_multiqc_files.mix(PREPROCESSING_ILLUMINA.out.low_reads_mqc.ifEmpty([]))
     ch_versions             = ch_versions.mix(PREPROCESSING_ILLUMINA.out.versions)
 
     // Determining metagenomic diversity
