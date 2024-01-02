@@ -1,0 +1,7 @@
+name: extract_cluster
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - conda-forge::biopython=1.78

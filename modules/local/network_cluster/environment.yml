@@ -1,4 +1,4 @@
-name: quast
+name: network_cluster
 channels:
   - conda-forge
   - bioconda

@@ -1,13 +1,13 @@
 //
 // Create contigs using
 //
-include { SPADES                 } from '../../modules/nf-core/spades/main'
-include { QUAST as QUAST_SPADES  } from '../../modules/nf-core/quast/main'
-include { TRINITY                } from '../../modules/nf-core/trinity/main'
-include { QUAST as QUAST_TRINITY } from '../../modules/nf-core/quast/main'
-include { MEGAHIT                } from '../../modules/nf-core/megahit/main'
-include { QUAST as QUAST_MEGAHIT } from '../../modules/nf-core/quast/main'
-include { CAT_CAT                } from '../../modules/nf-core/cat/cat/main'
+include { SPADES                    } from '../../modules/nf-core/spades/main'
+include { QUAST as QUAST_SPADES     } from '../../modules/nf-core/quast/main'
+include { TRINITY                   } from '../../modules/nf-core/trinity/main'
+include { QUAST as QUAST_TRINITY    } from '../../modules/nf-core/quast/main'
+include { MEGAHIT                   } from '../../modules/nf-core/megahit/main'
+include { QUAST as QUAST_MEGAHIT    } from '../../modules/nf-core/quast/main'
+include { CAT_CAT as CAT_ASSEMBLERS } from '../../modules/nf-core/cat/cat/main'
 
 workflow FASTQ_SPADES_TRINITY_MEGAHIT  {
 
@@ -90,15 +90,15 @@ workflow FASTQ_SPADES_TRINITY_MEGAHIT  {
         .groupTuple(remainder: true)
         .set{ch_scaffolds_combined}
 
-    CAT_CAT(ch_scaffolds_combined)
-    ch_versions = CAT_CAT.out.versions.first()
+    CAT_ASSEMBLERS(ch_scaffolds_combined)
+    ch_versions = CAT_ASSEMBLERS.out.versions.first()
 
 
 
     emit:
-    scaffolds            = CAT_CAT.out.file_out      // channel: [ val(meta), [ scaffolds] ]
-    mqc                  = ch_multiqc                // channel: [ val(meta), [ mqc ] ]
-    versions             = ch_versions               // channel: [ versions.yml ]
+    scaffolds            = CAT_ASSEMBLERS.out.file_out      // channel: [ val(meta), [ scaffolds] ]
+    mqc                  = ch_multiqc                       // channel: [ val(meta), [ mqc ] ]
+    versions             = ch_versions                      // channel: [ versions.yml ]
     // there are not any MQC files available for spades, trinity and megahit
 }
 

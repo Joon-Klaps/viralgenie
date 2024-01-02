@@ -17,7 +17,7 @@ def summary_params = paramsSummaryMap(workflow)
 def assemblers = params.assemblers ? params.assemblers.split(',').collect{ it.trim().toLowerCase() } : []
 
 def createFileChannel(param) {
-    return param ? Channel.fromPath(param, checkIfExists: true) : []
+    return param ? Channel.fromPath(param, checkIfExists: true).collect() : []
 }
 
 def createChannel(dbPath, dbName, skipFlag) {
@@ -32,24 +32,25 @@ log.info logo + paramsSummaryLog(workflow) + citation
 def checkPathParamList = [
     params.input, params.multiqc_config, params.adapter_fasta, params.contaminants,
     params.spades_yml,params.spades_hmm
-    ]
+]
 for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
 
 
 // Check mandatory parameters
-if (params.input) { ch_input = file(params.input)} else { exit 1, 'Input samplesheet not specified!'}
+if (params.input            ) { ch_input = file(params.input)                                      } else { exit 1, 'Input samplesheet not specified!'                              }
 
+// Optional parameters
 ch_adapter_fasta = createFileChannel(params.adapter_fasta)
 ch_metadata      = createFileChannel(params.metadata)
 ch_contaminants  = createFileChannel(params.contaminants)
 ch_spades_yml    = createFileChannel(params.spades_yml)
 ch_spades_hmm    = createFileChannel(params.spades_hmm)
-ch_ref_pool      = !params.skip_polishing  || !params.skip_consensus_qc          ? createChannel(params.reference_pool, "blast", true)              : Channel.empty()
-ch_kraken2_db    = !params.skip_metagenomic_diversity ? createChannel(params.kraken2_db, "kraken2", !params.skip_kraken2) : Channel.empty()
-ch_kaiju_db      = !params.skip_metagenomic_diversity ? createChannel(params.kaiju_db, "kaiju", !params.skip_kaiju)       : Channel.empty()
-ch_checkv_db     = !params.skip_consensus_qc                                     ? createChannel(params.checkv_db, "checkv", !params.skip_checkv)    : Channel.empty()
-ch_bracken_db    = !params.skip_metagenomic_diversity                            ? createChannel(params.bracken_db, "bracken", !params.skip_bracken) : Channel.empty()
-ch_k2_host       = !params.skip_hostremoval                                      ? createChannel(params.host_k2_db, "k2_host", true)                : Channel.empty()
+ch_ref_pool      = !params.skip_polishing  || !params.skip_consensus_qc          ? createChannel( params.reference_pool, "blast", true )               : Channel.empty()
+ch_kraken2_db    = !params.skip_precluster || !params.skip_metagenomic_diversity ? createChannel( params.kraken2_db, "kraken2", !params.skip_kraken2 ) : Channel.empty()
+ch_kaiju_db      = !params.skip_precluster || !params.skip_metagenomic_diversity ? createChannel( params.kaiju_db, "kaiju", !params.skip_kaiju )       : Channel.empty()
+ch_checkv_db     = !params.skip_consensus_qc                                     ? createChannel( params.checkv_db, "checkv", !params.skip_checkv )    : Channel.empty()
+ch_bracken_db    = !params.skip_metagenomic_diversity                            ? createChannel( params.bracken_db, "bracken", !params.skip_bracken ) : Channel.empty()
+ch_k2_host       = !params.skip_hostremoval                                      ? createChannel( params.host_k2_db, "k2_host", true )                 : Channel.empty()
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -82,7 +83,7 @@ include { FASTQ_KRAKEN_KAIJU              } from '../subworkflows/local/fastq_kr
 include { FASTQ_SPADES_TRINITY_MEGAHIT    } from '../subworkflows/local/fastq_spades_trinity_megahit'
 
 // Consensus polishing of genome
-include { FASTA_BLAST_CLUST               } from '../subworkflows/local/fasta_blast_clust'
+include { FASTA_CONTIG_CLUST              } from '../subworkflows/local/fasta_contig_clust'
 include { BLAST_MAKEBLASTDB               } from '../modules/nf-core/blast/makeblastdb/main'
 include { ALIGN_COLLAPSE_CONTIGS          } from '../subworkflows/local/align_collapse_contigs'
 include { UNPACK_DB                       } from '../subworkflows/local/unpack_db'
@@ -118,11 +119,11 @@ workflow VIRALGENIE {
     ch_multiqc_files = Channel.empty()
 
     // Importing samplesheet
-    ch_samplesheet = Channel.fromSamplesheet(
+    ch_reads = Channel.fromSamplesheet(
         'input'
         ).map{
             meta, read1, read2 ->
-            [meta , [read1, read2]]
+            [meta + [sample: meta.id] , [read1, read2]]
             }
 
     // Prepare Databases
@@ -151,7 +152,8 @@ workflow VIRALGENIE {
             }
             .set{ch_db}
         ch_versions         = ch_versions.mix(UNPACK_DB.out.versions)
-        // transfer to value channels so processes are not just done once
+
+// transfer to value channels so processes are not just done once
         ch_ref_pool         = ch_db.blast.collect{it[1]}.ifEmpty([]).map{it -> [[id: 'blast'], it]}
         ch_kraken2_db       = ch_db.kraken2.collect().ifEmpty([])
         ch_kaiju_db         = ch_db.kaiju.collect().ifEmpty([])
@@ -169,13 +171,14 @@ workflow VIRALGENIE {
 
     // preprocessing illumina reads
     PREPROCESSING_ILLUMINA (
-        ch_samplesheet,
+        ch_reads,
         ch_k2_host,
         ch_adapter_fasta,
         ch_contaminants)
     ch_host_trim_reads      = PREPROCESSING_ILLUMINA.out.reads
     ch_decomplex_trim_reads = PREPROCESSING_ILLUMINA.out.reads_decomplexified
     ch_multiqc_files        = ch_multiqc_files.mix(PREPROCESSING_ILLUMINA.out.mqc.collect{it[1]}.ifEmpty([]))
+    ch_multiqc_files        = ch_multiqc_files.mix(PREPROCESSING_ILLUMINA.out.low_reads_mqc.ifEmpty([]))
     ch_versions             = ch_versions.mix(PREPROCESSING_ILLUMINA.out.versions)
 
     // Determining metagenomic diversity
@@ -191,13 +194,13 @@ workflow VIRALGENIE {
     }
 
     // Assembly
+    ch_unaligned_raw_contigs   = Channel.empty()
     // Channel for consensus sequences that have been generated across different iteration
     ch_consensus               = Channel.empty()
     // Channel for consensus sequences that have been generated at the LAST iteration
     ch_consensus_results_reads = Channel.empty()
+    // Channel for summary table of cluseters to include in mqc report
     ch_clusters_summary        = Channel.empty()
-    ch_clusters_tsv            = Channel.empty()
-    ch_unaligned_raw_contigs   = Channel.empty()
 
     if (!params.skip_assembly) {
         // run different assemblers and combine contigs
@@ -252,16 +255,17 @@ workflow VIRALGENIE {
                 .join(ch_host_trim_reads, by: [0], remainder: false)
                 .set{ch_contigs_reads}
 
-            FASTA_BLAST_CLUST (
+            FASTA_CONTIG_CLUST (
                 ch_contigs_reads,
                 ch_blast_db,
                 ch_ref_pool,
-                params.cluster_method
+                ch_kraken2_db,
+                ch_kaiju_db
                 )
-            ch_versions = ch_versions.mix(FASTA_BLAST_CLUST.out.versions)
+            ch_versions = ch_versions.mix(FASTA_CONTIG_CLUST.out.versions)
 
             // Split up clusters into singletons and clusters of multiple contigs
-            FASTA_BLAST_CLUST
+            FASTA_CONTIG_CLUST
                 .out
                 .centroids_members
                 .map { meta, centroids, members ->
@@ -270,15 +274,14 @@ workflow VIRALGENIE {
                 .branch { meta, centroids, members ->
                     singletons: meta.cluster_size == 0
                         return [ meta + [step:"singleton"], centroids ]
-                    multiple: meta.cluster_size > 0
+                    multiple: meta.cluster_size >   0
                         return [ meta + [step:"consensus"], centroids, members ]
                 }
                 .set{ch_centroids_members}
 
-            ch_clusters_summary    = FASTA_BLAST_CLUST.out.clusters_summary.collect{it[1]}.ifEmpty([])
-            ch_clusters_tsv        = FASTA_BLAST_CLUST.out.clusters_tsv.collect{it[1]}.ifEmpty([])
+            ch_clusters_summary    = FASTA_CONTIG_CLUST.out.clusters_summary.collect{it[1]}.ifEmpty([])
 
-            ch_multiqc_files       =  ch_multiqc_files.mix(FASTA_BLAST_CLUST.out.no_blast_hits_mqc.ifEmpty([]))
+            ch_multiqc_files       =  ch_multiqc_files.mix(FASTA_CONTIG_CLUST.out.no_blast_hits_mqc.ifEmpty([]))
 
             // Align clustered contigs & collapse into a single consensus per cluster
             ALIGN_COLLAPSE_CONTIGS (

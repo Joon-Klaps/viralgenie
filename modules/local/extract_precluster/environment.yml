@@ -1,7 +1,7 @@
-name: seqkit_grep
+name: extract_precluster
 channels:
   - conda-forge
   - bioconda
   - defaults
 dependencies:
-  - bioconda::seqkit=2.4.0
+  - conda-forge::biopython=1.78

@@ -3,11 +3,12 @@
 """Provide a command line tool to filter blast results."""
 
 import argparse
-import re
 import logging
 import sys
-import pandas as pd
 from pathlib import Path
+
+import pandas as pd
+from Bio import SeqIO
 
 logger = logging.getLogger()
 
@@ -20,15 +21,33 @@ def parse_args(argv=None):
     )
 
     parser.add_argument(
-        "file_in",
-        metavar="FILE_IN",
+        "-i",
+        "--blast",
+        metavar="BLAST FILE",
         type=Path,
-        help="cluster file from chdit or vsearch containing cluster information.",
+        help="Blast result file in specific out format.",
     )
 
     parser.add_argument(
-        "file_out_prefix",
-        metavar="FILE_OUT_PREFIX",
+        "-c",
+        "--contigs",
+        metavar="CONTIG FILE",
+        type=Path,
+        help="Contig sequence file that was blasted",
+    )
+
+    parser.add_argument(
+        "-r",
+        "--references",
+        metavar="REFERENCE FILE",
+        type=Path,
+        help="Contig sequence file that was blasted",
+    )
+
+    parser.add_argument(
+        "-p",
+        "--prefix",
+        metavar="PREFIX",
         type=str,
         help="Output file prefix",
     )
@@ -82,15 +101,8 @@ def filter(df, escore, bitscore, percent_alignment):
     return df
 
 
-def main(argv=None):
-    """Coordinate argument parsing and program execution."""
-    args = parse_args(argv)
-    logging.basicConfig(level=args.log_level, format="[%(levelname)s] %(message)s")
-    if not args.file_in.is_file():
-        logger.error(f"The given input file {args.file_in} was not found!")
-        sys.exit(2)
-
-    df = pd.read_csv(args.file_in, sep="\t", header=None)
+def read_blast(blast):
+    df = pd.read_csv(blast, sep="\t", header=None)
     df.columns = [
         "query",
         "subject",
@@ -106,11 +118,76 @@ def main(argv=None):
         "evalue",
         "bitscore",
     ]
+    return df
+
+
+def to_dict_remove_dups(sequences):
+    return {record.id: record for record in sequences}
+
+
+def extract_contigs_hits(df, contigs, references, prefix):
+    """
+    Extracts contigs hits from a DataFrame and writes them to a FASTA file.
+
+    Args:
+        df (pandas.DataFrame): DataFrame containing the hits information.
+        contigs (str): Path to the contigs file.
+        references (str): Path to the references file in FASTA format.
+        prefix (str): Prefix for the output file.
+
+    Returns:
+        None
+    """
+    try:
+        ref_records = SeqIO.to_dict(SeqIO.parse(references, "fasta"))
+    except ValueError as e:
+        logger.warning(
+            "Indexing the reference pool file causes an error: %s \n Make sure all fasta headers are unique and it is in fasta format! \n AUTOFIX: Taking last occurence of duplicates to continue analysis",
+            e,
+        )
+        ref_records = to_dict_remove_dups(SeqIO.parse(references, "fasta"))
+    with open(contigs, "r") as contigs_file:
+        contig_content = contigs_file.read()
+    with open(f"{prefix}_withref.fa", "w") as f:
+        f.write(contig_content)
+        for hit in df["subject"].unique():
+            hit_name = hit.split(" ")[0]
+            if hit_name in ref_records:
+                SeqIO.write(ref_records[hit_name], f, "fasta")
+
+
+def write_hits(df, contigs, references, prefix):
+    # Extract contigs & blast hits and write to fasta file
+    extract_contigs_hits(df, contigs, references, prefix)
+
+    # Write filtered hits to file
+    df.to_csv(prefix + ".filter.tsv", sep="\t", index=False)
+
+    # Write unique hits to file
+    unique_hits = df["subject"].unique()
+    unique_series = pd.Series(unique_hits)
+    unique_series.to_csv(prefix + ".filter.hits.txt", sep="\t", index=False, header=False)
+
+
+def main(argv=None):
+    """Coordinate argument parsing and program execution."""
+    args = parse_args(argv)
+    logging.basicConfig(level=args.log_level, format="[%(levelname)s] %(message)s")
+    if not args.blast.is_file():
+        logger.error(f"The given input file {args.blast} was not found!")
+        sys.exit(2)
+    if not args.references.is_file():
+        logger.error(f"The given input file {args.references} was not found!")
+        sys.exit(2)
+    if not args.contigs.is_file():
+        logger.error(f"The given input file {args.contigs} was not found!")
+        sys.exit(2)
+
+    df = read_blast(args.blast)
 
     df_filter = filter(df, args.escore, args.bitscore, args.percent_alignment)
 
-    df_filter.to_csv(args.file_out_prefix + ".filter.tsv", sep="\t", index=False)
-    df_filter["subject"].to_csv(args.file_out_prefix + ".filter.hits.txt", sep="\t", index=False, header=False)
+    write_hits(df_filter, args.contigs, args.references, args.prefix)
 
 
 if __name__ == "__main__":

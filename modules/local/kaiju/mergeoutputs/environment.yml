@@ -1,7 +1,7 @@
-name: mashtree
+name: kaiju_mergeoutputs
 channels:
   - conda-forge
   - bioconda
   - defaults
 dependencies:
-  - bioconda::mashtree=1.2.0
+  - bioconda::kaiju=1.8.2

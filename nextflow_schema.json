@@ -508,6 +508,11 @@
                     "description": "Set of fasta sequences used as potential references for the contigs",
                     "fa_icon": "fas fa-database"
                 },
+                "skip_precluster": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward",
+                    "description": "Skip the preclustering of assemblies to facilitate downstream processing of assemblies"
+                },
                 "cluster_method": {
                     "type": "string",
                     "default": "cdhitest",

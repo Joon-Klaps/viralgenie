@@ -15,21 +15,6 @@ logger = logging.getLogger()
 
 
 def parse_args(argv=None):
-    """
-    Define and immediately parse command line arguments.
-
-    :param argv: List of command line arguments (default: None)
-    :return: Parsed command line arguments
-    """
-    parser = argparse.ArgumentParser(
-        description="Provide a command line tool to combine individual log & summary files which we will pass down to multiqc subsequently.",
-        epilog="Example: python create_multiqc_custom_tables.py --clusters_summary file1,file2,file3,... ",
-    )
-
-    # Rest of the code...
-
-
-def parse_args(argv=None):
     """Define and immediately parse command line arguments."""
     parser = argparse.ArgumentParser(
         description="Provide a command line tool to combine individual log & summary files which we will pass down to multiqc subsequently.",
@@ -505,6 +490,7 @@ def main(argv=None):
     logging.basicConfig(level=args.log_level, format="[%(levelname)s] %(message)s")
 
     # Cluster summaries
+    # TODO: Combine the clusters from multiple files if they had undergone preclustering
     if args.clusters_summary:
         cluster_header = get_header(args.comment_dir, "clusters_summary_mqc.txt")
         handle_tables(args.clusters_summary, cluster_header, "summary_clusters_mqc.tsv")

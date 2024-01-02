@@ -1,6 +1,7 @@
 //
 // This file holds several functions common to the multiple workflows in the nf-core/viralrecon pipeline
 //
+import groovy.json.JsonSlurper
 
 class WorkflowCommons {
 
@@ -56,5 +57,13 @@ class WorkflowCommons {
             if (matcher) num_vars = matcher[0][1].toInteger()
         }
         return num_vars
+    }
+
+    //
+    // Function to get a Map from a JSON file
+    //
+    public static Map getMapFromJson(json_file) {
+        def Map json = (Map) new JsonSlurper().parse(json_file)
+        return json
     }
 }

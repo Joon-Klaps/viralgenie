@@ -8,6 +8,8 @@ export_plots: true
 max_table_rows: 100000
 
 report_section_order:
+  samples_low_reads:
+    order: 997
   samples_without_contigs:
     order: 998
   samples_without_blast_hits:

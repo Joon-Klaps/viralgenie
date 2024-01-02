@@ -29,6 +29,9 @@ workflow FASTA_FASTQ_CLUST {
         ch_versions = ch_versions.mix(VSEARCH_CLUSTER.out.versions.first())
     }
     else if (cluster_method == "cdhitest") {
+        if (params.identity_threshold < 0.80 ) {
+            log.warn "cdhitest identity threshold is set to ${params.identity_threshold}, which is below the minimum threshold of 0.80.\n AUTOFIX: Defaulting to 0.80"
+        }
         CDHIT_CDHITEST(ch_fasta)
 
         ch_clusters = CDHIT_CDHITEST.out.clusters
@@ -63,15 +66,7 @@ workflow FASTA_FASTQ_CLUST {
         ch_clusters = MMSEQS_CREATETSV.out.tsv
     }
     else if (cluster_method == "vrhyme") {
-
-        GUNZIP_CONTIGS (ch_fasta)
-        ch_versions = ch_versions.mix(GUNZIP_CONTIGS.out.versions.first())
-
-        fasta_fastq
-            .join(GUNZIP_CONTIGS.out.gunzip, by: [0])
-            .map{ meta, fasta, fastq, gunzip -> [meta, gunzip, fastq] }
-            .set{ch_gunzip_fastq}
-        VRHYME_VRHYME (ch_gunzip_fastq)
+        VRHYME_VRHYME (fasta_fastq)
         ch_clusters = VRHYME_VRHYME.out.membership
         ch_versions = ch_versions.mix(VRHYME_VRHYME.out.versions.first())
     }
