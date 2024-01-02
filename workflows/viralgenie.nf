@@ -365,60 +365,43 @@ workflow VIRALGENIE {
         .set{ch_consensus_results_reads}
 
     if (params.mapping_sequences ) {
-         // Importing samplesheet
+        // Importing samplesheet
         ch_mapping_sequences = Channel.fromSamplesheet('mapping_sequences')
-        ch_mapping_sequences.view()
 
+        ch_decomplex_trim_reads
+            .combine( ch_mapping_sequences )
+            .map
+                {
+                    meta, reads, meta_mapping, sequence_mapping ->
+                    id = "${meta.sample}_${meta_mapping.id}-CONSTRAIN"
+                    new_meta = meta + meta_mapping + [
+                        id: id,
+                        cluster_id: "${meta_mapping.id}",
+                        step: "constrain",
+                        constrain: true,
+                        reads: reads,
+                        iteration: 'variant-calling',
+                        previous_step: 'constrain'
+                        ]
+                    return [new_meta, sequence_mapping]
+                }
+            .set{ch_map_seq_anno_combined}
 
-        // //get header names of sequences
-        // ch_mapping_sequences
-        //     .splitFasta(record: [id: true])
-        //     .set {seq_names}
+        // For QC we keep original sequence to compare to
+        ch_unaligned_raw_contigs = ch_unaligned_raw_contigs.mix(ch_map_seq_anno_combined)
 
-        // //split up multifasta
-        // ch_mapping_sequences
-        //     .splitFasta(file : true, by:1)
-        //     .merge(seq_names)
-        //     .set{ch_map_seq_anno}
+        //rename fasta headers
+        RENAME_FASTA_HEADER_CONSTRAIN (ch_map_seq_anno_combined,[])
+        ch_versions = ch_versions.mix(RENAME_FASTA_HEADER_CONSTRAIN.out.versions)
 
-        // //combine with all input samples & rename the meta.id
-        // // TODO: consider adding another column to the samplesheet with the mapping sequence
-        // ch_host_trim_reads
-        //     .combine( ch_map_seq_anno )
-        //     .map
-        //         {
-        //             meta, reads, seq, name ->
-        //             sample = meta.id
-        //             id = "${sample}_${name.id}"
-        //             new_meta = meta + [
-        //                 id: id,
-        //                 sample: sample,
-        //                 cluster_id: "${name.id}",
-        //                 step: "constrain",
-        //                 constrain: true,
-        //                 reads: reads,
-        //                 iteration: 'variant-calling',
-        //                 previous_step: 'constrain'
-        //                 ]
-        //             return [new_meta, seq]
-        //         }
-        //     .set{ch_map_seq_anno_combined}
+        RENAME_FASTA_HEADER_CONSTRAIN
+            .out
+            .fasta
+            .map{ meta, fasta -> [meta, fasta, meta.reads] }
+            .set{constrain_consensus_reads}
 
-        // // For QC we keep original sequence to compare to
-        // ch_unaligned_raw_contigs = ch_unaligned_raw_contigs.mix(ch_map_seq_anno_combined)
-
-        // //rename fasta headers
-        // RENAME_FASTA_HEADER_CONSTRAIN (ch_map_seq_anno_combined,[])
-        // ch_versions = ch_versions.mix(RENAME_FASTA_HEADER_CONSTRAIN.out.versions)
-
-        // RENAME_FASTA_HEADER_CONSTRAIN
-        //     .out
-        //     .fasta
-        //     .map{ meta, fasta -> [meta, fasta, meta.reads] }
-        //     .set{constrain_consensus_reads}
-
-        // //Add to the consensus channel, the mapping sequences will now always be mapped against
-        // ch_consensus_results_reads = ch_consensus_results_reads.mix(constrain_consensus_reads)
+        //Add to the consensus channel, the mapping sequences will now always be mapped against
+        ch_consensus_results_reads = ch_consensus_results_reads.mix(constrain_consensus_reads)
     }
 
     // After consensus sequences have been made, we still have to map against it and call variants
@@ -481,21 +464,21 @@ workflow VIRALGENIE {
 
     // Prepare MULTIQC custom tables
     CREATE_MULTIQC_TABLES (
-            ch_clusters_summary,
-            ch_metadata,
-            ch_checkv_summary,
-            ch_quast_summary,
-            ch_blast_summary,
+            ch_clusters_summary.ifEmpty([]),
+            ch_metadata.ifEmpty([]),
+            ch_checkv_summary.ifEmpty([]),
+            ch_quast_summary.ifEmpty([]),
+            ch_blast_summary.ifEmpty([]),
             multiqc_data,
-            ch_multiqc_comment_headers,
-            ch_multiqc_custom_table_headers
+            ch_multiqc_comment_headers.ifEmpty([]),
+            ch_multiqc_custom_table_headers.ifEmpty([])
             )
     ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.summary_clusters_mqc.ifEmpty([]))
     ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.sample_metadata_mqc.ifEmpty([]))
     ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.contigs_overview_mqc.ifEmpty([]))
-    ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.summary_checkv_mqc.ifEmpty([]))
-    ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.summary_blast_mqc.ifEmpty([]))
-    ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.summary_quast_mqc.ifEmpty([]))
+    // ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.summary_checkv_mqc.ifEmpty([]))
+    // ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.summary_blast_mqc.ifEmpty([]))
+    // ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.summary_quast_mqc.ifEmpty([]))
     ch_versions      = ch_versions.mix(CREATE_MULTIQC_TABLES.out.versions)
 
     CUSTOM_DUMPSOFTWAREVERSIONS (

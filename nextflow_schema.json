@@ -406,7 +406,8 @@
                     "type": "string",
                     "fa_icon": "fas fa-database",
                     "format": "path",
-                    "description": "Location of bracken database"
+                    "description": "Location of bracken database",
+                    "default": "https://genome-idx.s3.amazonaws.com/kraken/k2_viral_20230314.tar.gz"
                 },
                 "skip_kaiju": {
                     "type": "boolean",
@@ -415,7 +416,7 @@
                 },
                 "kaiju_db": {
                     "type": "string",
-                    "default": "https://kaiju.binf.ku.dk/database/kaiju_db_rvdb_2022-04-07.tgz",
+                    "default": "https://kaiju-idx.s3.eu-central-1.amazonaws.com/2023/kaiju_db_rvdb_2023-05-26.tgz",
                     "format": "path",
                     "fa_icon": "fas fa-database",
                     "description": "Location of Kaiju database"
@@ -515,20 +516,20 @@
                 },
                 "cluster_method": {
                     "type": "string",
-                    "default": "cdhitest",
+                    "default": "mash",
                     "description": "Cluster algorithm used for contigs",
                     "enum": ["cdhitest", "vsearch", "mmseqs-linclust", "mmseqs-cluster", "vrhyme", "mash", "diamond"],
                     "fa_icon": "fas fa-bezier-curve"
                 },
                 "identity_threshold": {
                     "type": "number",
-                    "default": 0.9,
+                    "default": 0.6,
                     "description": "Identity threshold value used in clustering algorithms",
                     "fa_icon": "fas fa-list-ol"
                 },
                 "min_contig_size": {
                     "type": "integer",
-                    "default": 200,
+                    "default": 500,
                     "description": "Minimum allowed contig size",
                     "help_text": "Setting this to a low value will result in a large number of questionable contigs and an increase in computation time ",
                     "fa_icon": "fas fa-compress-alt"
@@ -624,7 +625,8 @@
                 "get_intermediate_stats": {
                     "type": "boolean",
                     "fa_icon": "fas fa-info",
-                    "description": "calculate summary statistics during iterations"
+                    "description": "calculate summary statistics during iterations",
+                    "default": true
                 }
             }
         },
@@ -649,7 +651,9 @@
                 "mapping_sequences": {
                     "type": "string",
                     "description": "Sequence to use as a mapping reference instead of the de novo contigs or scaffolds",
-                    "fa_icon": "far fa-file-alt"
+                    "fa_icon": "far fa-file-alt",
+                    "help_text": "",
+                    "schema": "assets/schema_mapping_sequence.json"
                 },
                 "deduplicate": {
                     "type": "boolean",
@@ -684,7 +688,6 @@
                 },
                 "ivar_header": {
                     "type": "string",
-                    "default": "https://raw.githubusercontent.com/Joon-Klaps/viralgenie/dev/assets/multiqc_comment_headers/ivar_variants_header_mqc.txt",
                     "hidden": true,
                     "fa_icon": "fas fa-heading"
                 }

@@ -21,20 +21,45 @@
                 "errorMessage": "Fasta file for mapping must be provided, cannot contain spaces and must have extension '.fa', '.fasta' or '.fna' (unzipped)"
             },
             "species": {
-                "type": "string",
-                "pattern": "^[A-z0-9\\-\\.]+$",
                 "errorMessage": "Species cannot contain spaces or special characters with the exception of '-' and '.'",
-                "meta": ["species"]
+                "meta": ["species"],
+                "anyOf": [
+                    {
+                        "type": "string",
+                        "pattern": "^[A-z0-9\\-\\.]+$"
+                    },
+                    {
+                        "type": "string",
+                        "maxLength": 0
+                    }
+                ]
             },
             "segment": {
-                "type": "string",
-                "pattern": "^[A-z0-9\\-\\.]+$",
                 "errorMessage": "Segment cannot contain spaces or special characters with the exception of '-' and '.'",
-                "meta": ["segment"]
+                "meta": ["segment"],
+                "anyOf": [
+                    {
+                        "type": "string",
+                        "pattern": "^[A-z0-9\\-\\.]+$"
+                    },
+                    {
+                        "type": "string",
+                        "maxLength": 0
+                    }
+                ]
             },
             "definition": {
-                "type": "string",
-                "meta": ["definition"]
+                "errorMessage": "Give a definition of the sequence for metadata annotation purposes only",
+                "meta": ["definition"],
+                "anyOf": [
+                    {
+                        "type": "string"
+                    },
+                    {
+                        "type": "string",
+                        "maxLength": 0
+                    }
+                ]
             }
         },
         "required": ["id", "sequence"]

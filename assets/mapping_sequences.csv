@@ -1,0 +1,3 @@
+id,species,segment,definition,sequence
+MN908947,SARS-COV-2,Wuhan-hu-1,Original Wuhan strain sequenced in 2019,https://raw.githubusercontent.com/Joon-Klaps/nextclade_data/old_datasets/data/nextstrain/sars-cov-2/MN908947/reference.fasta
+BA2,,,,https://github.com/Joon-Klaps/nextclade_data/raw/old_datasets/data/nextstrain/sars-cov-2/BA.2/reference.fasta
