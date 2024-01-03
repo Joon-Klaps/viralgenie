@@ -1,7 +1,7 @@
 process CREATE_MULTIQC_TABLES {
     label 'process_single'
 
-    conda "bioconda:bioframe==0.5.1"
+    conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/bioframe:0.5.1--pyhdfd78af_0':
         'biocontainers/bioframe:0.5.1--pyhdfd78af_0' }"

@@ -476,6 +476,23 @@ def handle_dataframe(df, prefix, column_to_split, header=False, output=False):
     return result_df
 
 
+def filter_constrain(df, column, value):
+    """
+    Filter a dataframe based on a column and a regex value.
+
+    Args:
+        df (pandas.DataFrame): The dataframe to be filtered.
+        column (str): The column to filter on.
+        regex_value (str): The regex value to filter on.
+
+    Returns:
+        pandas.DataFrame, pandas.DataFrame: The filtered dataframe with the regex value and the filtered dataframe without the regex value.
+    """
+    df_with_value = df[df[column].str.contains(value)]
+    df_without_value = df[~df[column].str.contains(value)]
+    return df_without_value, df_with_value
+
+
 def main(argv=None):
     """
     Main function for creating custom tables for MultiQC.
@@ -591,7 +608,6 @@ def main(argv=None):
         mqc_contigs_sel[["sample name", "cluster", "step"]] = mqc_contigs_sel["index"].str.split("_", n=3, expand=True)
 
         # Reorder the columns
-
         final_columns = (
             ["index", "sample name", "cluster", "step"]
             + [column for column in mqc_contigs_sel.columns if "blast" in column]
@@ -603,7 +619,11 @@ def main(argv=None):
         remaining_columns = mqc_contigs_sel.columns.difference(final_columns, sort=False).tolist()
         mqc_contigs_sel = mqc_contigs_sel[final_columns + remaining_columns]
 
-        write_dataframe(mqc_contigs_sel, "contigs_overview_mqc.tsv", header_clusters_overview)
+        contigs_mqc, constrains_mqc = filter_constrain(mqc_contigs_sel, "cluster", "-CONSTRAIN")
+
+        # Write the final dataframe to a file
+        write_dataframe(contigs_mqc, "contigs_overview_mqc.tsv", header_clusters_overview)
+
     return 0
 
 
