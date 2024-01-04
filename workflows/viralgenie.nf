@@ -366,10 +366,18 @@ workflow VIRALGENIE {
 
     if (params.mapping_sequences ) {
         // Importing samplesheet
-        ch_mapping_sequences = Channel.fromSamplesheet('mapping_sequences')
+        Channel.fromSamplesheet('mapping_sequences')
+            .map{ meta, sequence ->
+                samples = meta.samples ? meta.samples.split(";") : null     // split up samples
+                [meta, samples, sequence]
+            }
+            .transpose(remainder:true)                                      // Unnest
+            .set{ch_mapping_sequences}
+
+        ch_mapping_sequences.view()
 
         ch_decomplex_trim_reads
-            .combine( ch_mapping_sequences )
+            .combine( ch_mapping_sequences ) // TODO Filter
             .map
                 {
                     meta, reads, meta_mapping, sequence_mapping ->
