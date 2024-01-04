@@ -368,19 +368,18 @@ workflow VIRALGENIE {
         // Importing samplesheet
         Channel.fromSamplesheet('mapping_sequences')
             .map{ meta, sequence ->
-                samples = meta.samples ? meta.samples.split(";") : null     // split up samples
+                samples = meta.samples == null ? meta.samples: tuple(meta.samples.split(";"))  // Split up samples if meta.samples is not null
                 [meta, samples, sequence]
             }
-            .transpose(remainder:true)                                      // Unnest
+            .transpose(remainder:true)                                                         // Unnest
             .set{ch_mapping_sequences}
-
-        ch_mapping_sequences.view()
 
         ch_decomplex_trim_reads
             .combine( ch_mapping_sequences ) // TODO Filter
+            .filter{ meta_reads, fastq, meta_mapping, mapping_samples, sequence -> mapping_samples == null || mapping_samples == meta_reads.sample}
             .map
                 {
-                    meta, reads, meta_mapping, sequence_mapping ->
+                    meta, reads, meta_mapping, samples, sequence_mapping ->
                     id = "${meta.sample}_${meta_mapping.id}-CONSTRAIN"
                     new_meta = meta + meta_mapping + [
                         id: id,
@@ -394,6 +393,8 @@ workflow VIRALGENIE {
                     return [new_meta, sequence_mapping]
                 }
             .set{ch_map_seq_anno_combined}
+
+        ch_map_seq_anno_combined.view{"FILTERED: ${it}"}
 
         // For QC we keep original sequence to compare to
         ch_unaligned_raw_contigs = ch_unaligned_raw_contigs.mix(ch_map_seq_anno_combined)
