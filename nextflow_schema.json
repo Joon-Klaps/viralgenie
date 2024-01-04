@@ -648,7 +648,7 @@
                     "description": "Define which mapping tool needs to be used when mapping reads to reference",
                     "enum": ["bwamem2", "bowtie2"]
                 },
-                "mapping_sequences": {
+                "mapping_constrains": {
                     "type": "string",
                     "description": "Sequence to use as a mapping reference instead of the de novo contigs or scaffolds",
                     "fa_icon": "far fa-file-alt",

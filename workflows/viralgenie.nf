@@ -99,7 +99,7 @@ include { CHECKV_DOWNLOADDATABASE         } from '../modules/nf-core/checkv/down
 include { CONSENSUS_QC                    } from '../subworkflows/local/consensus_qc'
 
 // Report generation
-include { CREATE_MULTIQC_TABLES           } from '../modules/local/create_multiqc_tables'
+include { CUSTOM_MULTIQC_TABLES           } from '../modules/local/custom_multiqc_tables'
 include { MULTIQC as MULTIQC_DATAPREP     } from '../modules/nf-core/multiqc/main'
 include { MULTIQC as MULTIQC_REPORT       } from '../modules/nf-core/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS     } from '../modules/nf-core/custom/dumpsoftwareversions/main'
@@ -364,18 +364,18 @@ workflow VIRALGENIE {
             }
         .set{ch_consensus_results_reads}
 
-    if (params.mapping_sequences ) {
+    if (params.mapping_constrains ) {
         // Importing samplesheet
-        Channel.fromSamplesheet('mapping_sequences')
+        Channel.fromSamplesheet('mapping_constrains')
             .map{ meta, sequence ->
                 samples = meta.samples == null ? meta.samples: tuple(meta.samples.split(";"))  // Split up samples if meta.samples is not null
                 [meta, samples, sequence]
             }
             .transpose(remainder:true)                                                         // Unnest
-            .set{ch_mapping_sequences}
+            .set{ch_mapping_constrains}
 
         ch_decomplex_trim_reads
-            .combine( ch_mapping_sequences ) // TODO Filter
+            .combine( ch_mapping_constrains ) // TODO Filter
             .filter{ meta_reads, fastq, meta_mapping, mapping_samples, sequence -> mapping_samples == null || mapping_samples == meta_reads.sample}
             .map
                 {
@@ -393,8 +393,6 @@ workflow VIRALGENIE {
                     return [new_meta, sequence_mapping]
                 }
             .set{ch_map_seq_anno_combined}
-
-        ch_map_seq_anno_combined.view{"FILTERED: ${it}"}
 
         // For QC we keep original sequence to compare to
         ch_unaligned_raw_contigs = ch_unaligned_raw_contigs.mix(ch_map_seq_anno_combined)
@@ -472,7 +470,7 @@ workflow VIRALGENIE {
     multiqc_data = MULTIQC_DATAPREP.out.data.ifEmpty([])
 
     // Prepare MULTIQC custom tables
-    CREATE_MULTIQC_TABLES (
+    CUSTOM_MULTIQC_TABLES (
             ch_clusters_summary.ifEmpty([]),
             ch_metadata.ifEmpty([]),
             ch_checkv_summary.ifEmpty([]),
@@ -482,13 +480,14 @@ workflow VIRALGENIE {
             ch_multiqc_comment_headers.ifEmpty([]),
             ch_multiqc_custom_table_headers.ifEmpty([])
             )
-    ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.summary_clusters_mqc.ifEmpty([]))
-    ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.sample_metadata_mqc.ifEmpty([]))
-    ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.contigs_overview_mqc.ifEmpty([]))
-    // ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.summary_checkv_mqc.ifEmpty([]))
-    // ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.summary_blast_mqc.ifEmpty([]))
-    // ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.summary_quast_mqc.ifEmpty([]))
-    ch_versions      = ch_versions.mix(CREATE_MULTIQC_TABLES.out.versions)
+    ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_MULTIQC_TABLES.out.summary_clusters_mqc.ifEmpty([]))
+    ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_MULTIQC_TABLES.out.sample_metadata_mqc.ifEmpty([]))
+    ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_MULTIQC_TABLES.out.contigs_overview_mqc.ifEmpty([]))
+    ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_MULTIQC_TABLES.out.mapping_constrains_mqc.ifEmpty([]))
+    // ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_MULTIQC_TABLES.out.summary_checkv_mqc.ifEmpty([]))
+    // ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_MULTIQC_TABLES.out.summary_blast_mqc.ifEmpty([]))
+    // ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_MULTIQC_TABLES.out.summary_quast_mqc.ifEmpty([]))
+    ch_versions      = ch_versions.mix(CUSTOM_MULTIQC_TABLES.out.versions)
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')

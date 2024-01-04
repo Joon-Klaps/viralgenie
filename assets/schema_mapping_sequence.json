@@ -1,8 +1,8 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema",
-    "$id": "https://raw.githubusercontent.com/Joon-Klaps/viralgenie/dev/assets/schema_mapping_sequences.json",
-    "title": "Joon-Klaps/viralgenie pipeline - params.mapping_sequences schema",
-    "description": "Schema for the file provided with params.mapping_sequences",
+    "$id": "https://raw.githubusercontent.com/Joon-Klaps/viralgenie/dev/assets/schema_mapping_constrains.json",
+    "title": "Joon-Klaps/viralgenie pipeline - params.mapping_constrains schema",
+    "description": "Schema for the file provided with params.mapping_constrains",
     "type": "array",
     "items": {
         "type": "object",

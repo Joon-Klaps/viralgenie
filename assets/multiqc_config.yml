@@ -189,6 +189,8 @@ table_columns_visible:
     Largest contig: True
     Total length: False
 
+skip_versions_section: true
+
 # TODO
 # TRIED Give them all negative numbers so all columns from sample metadata are displayed first
 # table_columns_placement:

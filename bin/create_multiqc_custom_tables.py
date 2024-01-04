@@ -18,7 +18,7 @@ def parse_args(argv=None):
     """Define and immediately parse command line arguments."""
     parser = argparse.ArgumentParser(
         description="Provide a command line tool to combine individual log & summary files which we will pass down to multiqc subsequently.",
-        epilog="Example: python create_multiqc_custom_tables.py --clusters_summary file1,file2,file3,... ",
+        epilog="Example: python custom_multiqc_tables.py --clusters_summary file1,file2,file3,... ",
     )
 
     parser.add_argument(
@@ -40,6 +40,13 @@ def parse_args(argv=None):
         "--sample_metadata",
         metavar="SAMPLE METADATA",
         help="Sample metadata file",
+        type=Path,
+    )
+
+    parser.add_argument(
+        "--mapping_constrains",
+        metavar="MAPPING CONSTRAINS",
+        help="Mapping constrains file containing information on the sequences that need to be used for mapping against the samples, supported formats: '.csv', '.tsv', '.yaml', '.yml'",
         type=Path,
     )
 
@@ -268,9 +275,9 @@ def filter_and_rename_columns(df, columns_of_interest):
     return df
 
 
-def read_dataframe_from_file(file):
+def read_dataframe_from_tsv(file):
     """
-    Read a dataframe from a file.
+    Read a dataframe from a tsv file.
 
     Args:
         file (str): The path to the file.
@@ -280,6 +287,37 @@ def read_dataframe_from_file(file):
     """
     with open(file, "r") as table:
         df = pd.read_csv(table, sep="\t")
+    return df
+
+
+def read_dataframe_from_csv(file):
+    """
+    Read a dataframe from a csv file.
+
+    Args:
+        file (str): The path to the file.
+
+    Returns:
+        pandas.DataFrame: The dataframe read from the file.
+    """
+    with open(file, "r") as table:
+        df = pd.read_csv(table)
+    return df
+
+
+def read_dataframe_from_yaml(file):
+    """
+    Read a dataframe from a YAML file.
+
+    Args:
+        file (str): The path to the file.
+
+    Returns:
+        pandas.DataFrame: The dataframe read from the file.
+    """
+    with open(file, "r") as yaml_file:
+        data = yaml.safe_load(yaml_file)
+        df = pd.DataFrame(data)
     return df
 
 
@@ -372,7 +410,7 @@ def read_data(directory, files_of_interest, process_dataframe):
     multiqc_samples_df = pd.DataFrame()
 
     for file in sample_files:
-        df = read_dataframe_from_file(file)
+        df = read_dataframe_from_tsv(file)
         df = process_dataframe(df)
         multiqc_samples_df = join_dataframes(multiqc_samples_df, df)
 
@@ -398,7 +436,6 @@ def get_header(comment_dir, header_file_name):
     return header
 
 
-# Function to split column dynamically
 def dynamic_split(row, delimiter="_"):
     """
     Splits a string into multiple parts based on the specified delimiter.
@@ -488,8 +525,12 @@ def filter_constrain(df, column, value):
     Returns:
         pandas.DataFrame, pandas.DataFrame: The filtered dataframe with the regex value and the filtered dataframe without the regex value.
     """
+    # Filter
     df_with_value = df[df[column].str.contains(value)]
     df_without_value = df[~df[column].str.contains(value)]
+    # Remove from column
+    df_with_value[column] = df_with_value[column].str.replace(value, "")
+    df_with_value["index"] = df_with_value["index"].str.replace(value, "")
     return df_without_value, df_with_value
 
 
@@ -568,7 +609,6 @@ def main(argv=None):
         # Check if the given files exist
         check_file_exists(args.multiqc_dir)
 
-        header_clusters_overview = get_header(args.comment_dir, "contig_overview_mqc.txt")
         files_of_interest, columns_of_interest = get_files_and_columns_of_interest(args.table_headers)
 
         # Read the multiqc data yml files
@@ -621,7 +661,13 @@ def main(argv=None):
 
         contigs_mqc, constrains_mqc = filter_constrain(mqc_contigs_sel, "cluster", "-CONSTRAIN")
 
+        # Seperate table for mapping constrains
+        if not constrains_mqc.empty:
+            header_mapping_seq = get_header(args.comment_dir, "mapping_constrains_mqc.txt")
+            write_dataframe(constrains_mqc, "mapping_constrains_mqc.tsv", header_mapping_seq)
+
         # Write the final dataframe to a file
+        header_clusters_overview = get_header(args.comment_dir, "contig_overview_mqc.txt")
         write_dataframe(contigs_mqc, "contigs_overview_mqc.tsv", header_clusters_overview)
 
     return 0
