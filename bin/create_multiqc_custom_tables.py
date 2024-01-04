@@ -586,7 +586,7 @@ def filter_constrain(df, column, value):
     return df_without_value, df_with_value
 
 
-def create_constrain_summary(df, constrain_sheet):
+def create_constrain_summary(df, constrain_sheet, dic_columns):
     # read in metadata table
     constrain_meta = handle_tables([constrain_sheet])
 
@@ -594,6 +594,14 @@ def create_constrain_summary(df, constrain_sheet):
     df_constrain = df.merge(constrain_meta, how="left", left_on="cluster", right_on="id")
 
     # Filter only for columns of interest
+    # Some columns were already renamed, so we get the new values of them.
+    keys_to_extract = [
+        "median_coverage",
+        "reads_mapped",
+        "reads_mapped_percent",
+    ]
+    # dic_columns =
+
     columns_of_interest = [
         "sample name",
         "species",
@@ -602,6 +610,8 @@ def create_constrain_summary(df, constrain_sheet):
         "cluster",
         "reads_mapped",
         "reads_mapped_percent",
+        "qlen",  # length of the query sequence will have to be renamed
+        "number of SNPs",
     ]
 
     # Reformat dataframe to long based on following:
