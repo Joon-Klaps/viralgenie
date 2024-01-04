@@ -49,12 +49,14 @@
                 ]
             },
             "segment": {
-                "errorMessage": "Segment cannot contain spaces or special characters with the exception of '-' and '.'",
+                "errorMessage": "Segment cannot contain spaces or special characters with the exception of '-' and '.'. Segment is unique in combination with species",
                 "meta": ["segment"],
                 "anyOf": [
                     {
                         "type": "string",
-                        "pattern": "^[A-z0-9\\-\\.]+$"
+                        "pattern": "^[A-z0-9\\-\\.]+$",
+                        "dependentRequired": ["species"],
+                        "unique": ["species"]
                     },
                     {
                         "type": "string",

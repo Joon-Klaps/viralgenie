@@ -21,6 +21,17 @@ def parse_args(argv=None):
         epilog="Example: python custom_multiqc_tables.py --clusters_summary file1,file2,file3,... ",
     )
 
+    def file_choices(choices, fname):
+        fname_path = Path(fname)
+        if not fname_path.is_file():
+            logger.error(f"File '{fname}' does not exist")
+            sys.exit(2)
+        ext = fname_path.suffix[1:]
+        if ext not in choices:
+            logger.error(f"File '{fname}' doesn't end with one of {choices}")
+            sys.exit(2)
+        return fname_path
+
     parser.add_argument(
         "--clusters_summary",
         metavar="CLUSTER SUMMARY FILES",
@@ -39,15 +50,15 @@ def parse_args(argv=None):
     parser.add_argument(
         "--sample_metadata",
         metavar="SAMPLE METADATA",
-        help="Sample metadata file",
-        type=Path,
+        help="Sample metadata file containing information on the samples, supported formats: '.csv', '.tsv'",
+        type=lambda s: file_choices(("csv", "tsv"), s),
     )
 
     parser.add_argument(
         "--mapping_constrains",
         metavar="MAPPING CONSTRAINS",
         help="Mapping constrains file containing information on the sequences that need to be used for mapping against the samples, supported formats: '.csv', '.tsv', '.yaml', '.yml'",
-        type=Path,
+        type=lambda s: file_choices(("csv", "tsv", "yaml", "yml"), s),
     )
 
     parser.add_argument(
@@ -163,7 +174,7 @@ def concat_table_files(table_files, **kwargs):
     Returns:
         pandas.DataFrame: The concatenated dataframe.
     """
-    df = pd.concat([pd.read_csv(file, sep="\t", **kwargs) for file in table_files if check_file_exists(file)])
+    df = pd.concat([read_file_to_dataframe(file, **kwargs) for file in table_files if check_file_exists(file)])
     return df
 
 
@@ -219,7 +230,7 @@ def get_files_and_columns_of_interest(table_headers):
         table_headers (str): Path to the table headers file
 
     Returns:
-        tuple: A tuple containing the files of interest and the columns of interest
+        tuple: A tuple containing the files of interest (list) and the columns of interest (dic, old_colname:new_colname)
     """
     if table_headers:
         check_file_exists(table_headers)
@@ -267,15 +278,36 @@ def write_dataframe(df, file, comment):
 def filter_and_rename_columns(df, columns_of_interest):
     """
     Filter for columns of interest and rename those we can
+
+    Args:
+        df (pandas.DataFrame): The input DataFrame.
+        columns_of_interest (dict): A dictionary mapping column names of interest to their desired new names.
+
+    Returns:
+        pandas.DataFrame: The filtered DataFrame with renamed columns.
     """
     if columns_of_interest:
-        columns_available = {key: value for key, value in columns_of_interest.items() if key in df.columns}
-        df = df[columns_available.keys()]
-        df = df.rename(columns=columns_available, inplace=False)
-    return df
+        renamed_columns = {}
+        df_columns = df.columns.tolist()
+
+        for key, value in columns_of_interest.items():
+            if key in df_columns:  # Check for an exact match first
+                renamed_columns[key] = value
+            else:  # If no exact match, try approximate match
+                matches = [col for col in df_columns if key in col]
+                if matches:
+                    matched_column = matches[0]
+                    renamed_columns[matched_column] = value
+
+        # Filtering and renaming columns
+        filtered_df = df[list(renamed_columns.keys())]
+        filtered_df = filtered_df.rename(columns=renamed_columns, inplace=False)
+        return filtered_df
+    else:
+        return df
 
 
-def read_dataframe_from_tsv(file):
+def read_dataframe_from_tsv(file, **kwargs):
     """
     Read a dataframe from a tsv file.
 
@@ -286,11 +318,11 @@ def read_dataframe_from_tsv(file):
         pandas.DataFrame: The dataframe read from the file.
     """
     with open(file, "r") as table:
-        df = pd.read_csv(table, sep="\t")
+        df = pd.read_csv(table, sep="\t", **kwargs)
     return df
 
 
-def read_dataframe_from_csv(file):
+def read_dataframe_from_csv(file, **kwargs):
     """
     Read a dataframe from a csv file.
 
@@ -301,11 +333,11 @@ def read_dataframe_from_csv(file):
         pandas.DataFrame: The dataframe read from the file.
     """
     with open(file, "r") as table:
-        df = pd.read_csv(table)
+        df = pd.read_csv(table, **kwargs)
     return df
 
 
-def read_dataframe_from_yaml(file):
+def read_dataframe_from_yaml(file, **kwargs):
     """
     Read a dataframe from a YAML file.
 
@@ -316,8 +348,28 @@ def read_dataframe_from_yaml(file):
         pandas.DataFrame: The dataframe read from the file.
     """
     with open(file, "r") as yaml_file:
-        data = yaml.safe_load(yaml_file)
+        data = yaml.safe_load(yaml_file, **kwargs)
         df = pd.DataFrame(data)
+    return df
+
+
+def read_file_to_dataframe(file, **kwargs):
+    """
+    Read a dataframe from a file.
+
+    Args:
+        file (str): The path to the file.
+
+    Returns:
+        pandas.DataFrame: The dataframe read from the file.
+    """
+    file_path = Path(file)
+    if file_path.suffix in [".tsv", ".txt"]:  # mqc calls tsv's txts
+        df = read_dataframe_from_tsv(file_path, **kwargs)
+    elif file_path.suffix == ".csv":
+        df = read_dataframe_from_csv(file_path, **kwargs)
+    elif file_path.suffix in [".yaml", ".yml"]:
+        df = read_dataframe_from_yaml(file_path, **kwargs)
     return df
 
 
@@ -534,6 +586,34 @@ def filter_constrain(df, column, value):
     return df_without_value, df_with_value
 
 
+def create_constrain_summary(df, constrain_sheet):
+    # read in metadata table
+    constrain_meta = handle_tables([constrain_sheet])
+
+    # merge tables based on id for constrain_meta & cluster for df
+    df_constrain = df.merge(constrain_meta, how="left", left_on="cluster", right_on="id")
+
+    # Filter only for columns of interest
+    columns_of_interest = [
+        "sample name",
+        "species",
+        "segment",
+        "definition",
+        "cluster",
+        "reads_mapped",
+        "reads_mapped_percent",
+    ]
+
+    # Reformat dataframe to long based on following:
+    #   Species & Segment
+    #   Species
+    #   ID (Cluster)
+
+    # Convert dataframe to wide
+
+    return df_constrain
+
+
 def main(argv=None):
     """
     Main function for creating custom tables for MultiQC.
@@ -604,14 +684,14 @@ def main(argv=None):
         blast_df["species"] = blast_df["subject"].str.split("|").str[-1]
         blast_df = blast_df[["species"] + blast_df.columns.difference(["species"], sort=False).tolist()]
         blast_df = handle_dataframe(blast_df, "blast", "query", blast_header, "summary_blast_mqc.tsv")
-    # Multiqc output yml files
+    # Multiqc output txt files
     if args.multiqc_dir:
         # Check if the given files exist
         check_file_exists(args.multiqc_dir)
 
         files_of_interest, columns_of_interest = get_files_and_columns_of_interest(args.table_headers)
 
-        # Read the multiqc data yml files
+        # Read the multiqc data txt files
         multiqc_contigs_df = read_data(args.multiqc_dir, files_of_interest, process_multiqc_dataframe)
 
         # If we are empty, just quit
@@ -665,6 +745,7 @@ def main(argv=None):
         if not constrains_mqc.empty:
             header_mapping_seq = get_header(args.comment_dir, "mapping_constrains_mqc.txt")
             write_dataframe(constrains_mqc, "mapping_constrains_mqc.tsv", header_mapping_seq)
+            # add mapping summary to sample overview table in ... wide format with species & segment combination
 
         # Write the final dataframe to a file
         header_clusters_overview = get_header(args.comment_dir, "contig_overview_mqc.txt")
