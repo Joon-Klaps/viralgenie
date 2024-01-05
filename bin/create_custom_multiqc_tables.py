@@ -605,32 +605,68 @@ def create_constrain_summary(df, constrain_sheet, dic_columns):
         "max_coverage",
     ]
     columns_of_interest = [dic_columns[key] for key in keys_to_extract if key in dic_columns.keys()]
-    columns_of_interest = columns_of_interest + [
+    columns_of_interest = [
+        "sample name",
         "species",
         "segment",
         "cluster",
+        "definition",
         "qlen",  # length of the query sequence will have to be renamed
-    ]
+    ] + columns_of_interest
 
     df_columns = df_constrain.columns.tolist()
 
-    # for name in columns_of_interest:
-    #     if name in df_columns:  # Check for an exact match first
-    #         renamed_columns[key] = value
-    #     else:  # If no exact match, try approximate match
-    #         matches = [col for col in df_columns if key in col]
-    #         if matches:
-    #             matched_column = matches[0]
-    #             renamed_columns[matched_column] = value
+    present_columns = []
+    for name in columns_of_interest:
+        if name in df_columns:  # Check for an exact match first
+            present_columns.append(name)
+        else:  # If no exact match, try approximate match
+            matches = [col for col in df_columns if name in col]
+            if matches:
+                matched_column = matches[0]
+                present_columns.append(matched_column)
+
+    df_constrain = df_constrain[present_columns]
+    if df_constrain.empty:
+        return df_constrain
+
+    if "qlen" in df_constrain.columns:
+        df_constrain.rename(columns={"qlen": "consensus length"}, inplace=True)
 
     # Reformat dataframe to long based on following:
     #   Species & Segment
     #   Species
     #   ID (Cluster)
+    df_constrain["idgroup"] = df_constrain.apply(
+        lambda row: f"{row['species']} ({row['segment']})"
+        if "segment" in df_constrain.columns and pd.notnull(row["species"]) and pd.notnull(row["segment"])
+        else row["species"]
+        if "species" in df_constrain.columns and pd.notnull(row["species"])
+        else row["cluster"],
+        axis=1,
+    )
+    df_constrain.rename(columns={"cluster": "Constrain id"}, inplace=True)
 
-    # Convert dataframe to wide
+    # Remove columns that are not needed anymore
+    if "species" in df_constrain.columns:
+        df_constrain.drop(columns=["species"], inplace=True)
+    if "segment" in df_constrain.columns:
+        df_constrain.drop(columns=["segment"], inplace=True)
 
-    return df_constrain
+    write_dataframe(df_constrain, "tmp.tsv", ["#", "#MEH"])
+
+    # Convert dataframe to long and then extra wide
+    df_long = df_constrain.melt(id_vars=["idgroup", "sample name"], var_name="variable", value_name="Value")
+    # Remove rows with NaN values & duplicates
+    df_long = df_long.dropna()
+    df_long = df_long.drop_duplicates()
+    df_long["grouped variable"] = df_long["idgroup"] + " - " + df_long["variable"]
+    df_long.drop(columns=["idgroup", "variable"], inplace=True)
+    # Convert to wide format
+    df_wide = df_long.pivot(index=["sample name"], columns="grouped variable", values="Value")
+    df_wide.reset_index(inplace=True)
+
+    return df_wide
 
 
 def main(argv=None):
@@ -758,6 +794,9 @@ def main(argv=None):
         remaining_columns = mqc_contigs_sel.columns.difference(final_columns, sort=False).tolist()
         mqc_contigs_sel = mqc_contigs_sel[final_columns + remaining_columns]
 
+        write_dataframe(mqc_contigs_sel, "rmme.tsv", ["header_clusters_overview"])
+
+        # split up denovo constructs and mapping (-CONSTRAIN) results
         contigs_mqc, constrains_mqc = filter_constrain(mqc_contigs_sel, "cluster", "-CONSTRAIN")
 
         # Seperate table for mapping constrains
@@ -765,6 +804,12 @@ def main(argv=None):
             header_mapping_seq = get_header(args.comment_dir, "mapping_constrains_mqc.txt")
             write_dataframe(constrains_mqc, "mapping_constrains_mqc.tsv", header_mapping_seq)
             # add mapping summary to sample overview table in ... wide format with species & segment combination
+            constrains_summary_mqc = create_constrain_summary(
+                constrains_mqc, args.mapping_constrains, columns_of_interest
+            )
+            if not constrains_mqc.empty:
+                header_mapping_summary = get_header(args.comment_dir, "mapping_constrains_summary_mqc.txt")
+                write_dataframe(constrains_summary_mqc, "mapping_constrains_summary_mqc.tsv", header_mapping_summary)
 
         # Write the final dataframe to a file
         header_clusters_overview = get_header(args.comment_dir, "contig_overview_mqc.txt")

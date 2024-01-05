@@ -263,3 +263,4 @@ extra_fn_clean_exts:
   - "_megahit"
   - "_trinity"
   - ".filtered"
+  - ".norm"
