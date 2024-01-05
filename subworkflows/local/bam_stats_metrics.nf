@@ -33,6 +33,7 @@ workflow BAM_STATS_METRICS {
     MOSDEPTH(ch_sort_bam_bai_bed, reference)
     ch_versions  = ch_versions.mix(MOSDEPTH.out.versions)
     ch_multiqc   = ch_multiqc.mix(MOSDEPTH.out.global_txt)
+    ch_multiqc   = ch_multiqc.mix(MOSDEPTH.out.summary_txt)
 
     BAM_STATS_SAMTOOLS ( ch_sort_bam_bai, reference )
     ch_versions  = ch_versions.mix(BAM_STATS_SAMTOOLS.out.versions)
