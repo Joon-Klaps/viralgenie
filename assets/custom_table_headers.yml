@@ -89,3 +89,6 @@ general_stats:
   - 50_x_pc: "mosdepth 50X coverage"
   - 5_x_pc: "mosdepth 5X coverage"
   - median_coverage: "mosdepth Median coverage"
+  - mean_coverage: "mosdepth Mean coverage"
+  - min_coverage: "mosdepth Min coverage"
+  - max_coverage: "mosdepth Max coverage"

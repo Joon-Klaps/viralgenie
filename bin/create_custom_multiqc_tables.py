@@ -594,25 +594,34 @@ def create_constrain_summary(df, constrain_sheet, dic_columns):
     df_constrain = df.merge(constrain_meta, how="left", left_on="cluster", right_on="id")
 
     # Filter only for columns of interest
-    # Some columns were already renamed, so we get the new values of them.
+    # Some columns were already renamed, so we get the new values of them based on the original naming of mqc
     keys_to_extract = [
-        "median_coverage",
         "reads_mapped",
         "reads_mapped_percent",
+        "number_of_SNPs",
+        "10_x_pc",
+        "median_coverage",
+        "min_coverage",
+        "max_coverage",
     ]
-    # dic_columns =
-
-    columns_of_interest = [
-        "sample name",
+    columns_of_interest = [dic_columns[key] for key in keys_to_extract if key in dic_columns.keys()]
+    columns_of_interest = columns_of_interest + [
         "species",
         "segment",
-        "definition",
         "cluster",
-        "reads_mapped",
-        "reads_mapped_percent",
         "qlen",  # length of the query sequence will have to be renamed
-        "number of SNPs",
     ]
+
+    df_columns = df_constrain.columns.tolist()
+
+    # for name in columns_of_interest:
+    #     if name in df_columns:  # Check for an exact match first
+    #         renamed_columns[key] = value
+    #     else:  # If no exact match, try approximate match
+    #         matches = [col for col in df_columns if key in col]
+    #         if matches:
+    #             matched_column = matches[0]
+    #             renamed_columns[matched_column] = value
 
     # Reformat dataframe to long based on following:
     #   Species & Segment
