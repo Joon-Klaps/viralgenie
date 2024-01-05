@@ -40,17 +40,18 @@ for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true
 if (params.input            ) { ch_input = file(params.input)                                      } else { exit 1, 'Input samplesheet not specified!'                              }
 
 // Optional parameters
-ch_adapter_fasta = createFileChannel(params.adapter_fasta)
-ch_metadata      = createFileChannel(params.metadata)
-ch_contaminants  = createFileChannel(params.contaminants)
-ch_spades_yml    = createFileChannel(params.spades_yml)
-ch_spades_hmm    = createFileChannel(params.spades_hmm)
-ch_ref_pool      = !params.skip_polishing  || !params.skip_consensus_qc          ? createChannel( params.reference_pool, "blast", true )               : Channel.empty()
-ch_kraken2_db    = !params.skip_precluster || !params.skip_metagenomic_diversity ? createChannel( params.kraken2_db, "kraken2", !params.skip_kraken2 ) : Channel.empty()
-ch_kaiju_db      = !params.skip_precluster || !params.skip_metagenomic_diversity ? createChannel( params.kaiju_db, "kaiju", !params.skip_kaiju )       : Channel.empty()
-ch_checkv_db     = !params.skip_consensus_qc                                     ? createChannel( params.checkv_db, "checkv", !params.skip_checkv )    : Channel.empty()
-ch_bracken_db    = !params.skip_metagenomic_diversity                            ? createChannel( params.bracken_db, "bracken", !params.skip_bracken ) : Channel.empty()
-ch_k2_host       = !params.skip_hostremoval                                      ? createChannel( params.host_k2_db, "k2_host", true )                 : Channel.empty()
+ch_adapter_fasta  = createFileChannel(params.adapter_fasta)
+ch_metadata       = createFileChannel(params.metadata)
+ch_contaminants   = createFileChannel(params.contaminants)
+ch_spades_yml     = createFileChannel(params.spades_yml)
+ch_spades_hmm     = createFileChannel(params.spades_hmm)
+ch_constrain_meta = createFileChannel(params.mapping_constrains)
+ch_ref_pool       = !params.skip_polishing  || !params.skip_consensus_qc          ? createChannel( params.reference_pool, "blast", true )               : Channel.empty()
+ch_kraken2_db     = !params.skip_precluster || !params.skip_metagenomic_diversity ? createChannel( params.kraken2_db, "kraken2", !params.skip_kraken2 ) : Channel.empty()
+ch_kaiju_db       = !params.skip_precluster || !params.skip_metagenomic_diversity ? createChannel( params.kaiju_db, "kaiju", !params.skip_kaiju )       : Channel.empty()
+ch_checkv_db      = !params.skip_consensus_qc                                     ? createChannel( params.checkv_db, "checkv", !params.skip_checkv )    : Channel.empty()
+ch_bracken_db     = !params.skip_metagenomic_diversity                            ? createChannel( params.bracken_db, "bracken", !params.skip_bracken ) : Channel.empty()
+ch_k2_host        = !params.skip_hostremoval                                      ? createChannel( params.host_k2_db, "k2_host", true )                 : Channel.empty()
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -476,6 +477,7 @@ workflow VIRALGENIE {
             ch_checkv_summary.ifEmpty([]),
             ch_quast_summary.ifEmpty([]),
             ch_blast_summary.ifEmpty([]),
+            ch_constrain_meta,
             multiqc_data,
             ch_multiqc_comment_headers.ifEmpty([]),
             ch_multiqc_custom_table_headers.ifEmpty([])

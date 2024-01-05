@@ -1,6 +1,6 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema",
-    "$id": "https://raw.githubusercontent.com/Joon-Klaps/viralgenie/dev/assets/schema_mapping_constrains.json",
+    "$id": "https://raw.githubusercontent.com/Joon-Klaps/viralgenie/dev/assets/schemas/mapping_constrains.json",
     "title": "Joon-Klaps/viralgenie pipeline - params.mapping_constrains schema",
     "description": "Schema for the file provided with params.mapping_constrains",
     "type": "array",
