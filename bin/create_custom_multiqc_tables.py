@@ -634,11 +634,12 @@ def create_constrain_summary(df, constrain_sheet, file_columns):
                 present_columns.append(matched_column)
 
     df_constrain = df_constrain[present_columns]
+
     if df_constrain.empty:
         return df_constrain
 
-    if "qlen" in df_constrain.columns:
-        df_constrain.rename(columns={"qlen": "consensus length"}, inplace=True)
+    if "(blast) qlen" in df_constrain.columns:
+        df_constrain.rename(columns={"(blast) qlen": "consensus length"}, inplace=True)
 
     # Reformat dataframe to long based on following:
     #   Species & Segment
@@ -659,8 +660,6 @@ def create_constrain_summary(df, constrain_sheet, file_columns):
         df_constrain.drop(columns=["species"], inplace=True)
     if "segment" in df_constrain.columns:
         df_constrain.drop(columns=["segment"], inplace=True)
-
-    write_dataframe(df_constrain, "tmp.tsv", ["#", "#MEH"])
 
     # Convert dataframe to long and then extra wide
     df_long = df_constrain.melt(id_vars=["idgroup", "sample name"], var_name="variable", value_name="Value")

@@ -11,7 +11,7 @@ workflow UNPACK_DB  {
 
     db_in
     .branch { meta, db ->
-        tar: db.name.endsWith('.tar.gz') || db.name.endsWith('.tgz')
+        tar: db.name.endsWith('.tar.gz') || db.name.endsWith('.tgz') || db.name.endsWith('.tar')
         gzip: db.name.endsWith('.gz')
         other: true
     }
