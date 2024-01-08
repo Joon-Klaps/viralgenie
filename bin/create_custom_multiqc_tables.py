@@ -138,13 +138,13 @@ def check_file_exists(file, throw_error=True):
     """
     if not Path(file).exists():
         if throw_error:
-            logger.error(f"The given input file {file} was not found!")
+            logger.error("The given input file %s was not found!", file)
             sys.exit(2)
         else:
-            logger.warning(f"The given input file {file} was not found!")
+            logger.warning("The given input file %s was not found!", file)
             return False
     elif not os.stat(file).st_size > 0:
-        logger.warning(f"The given input file {file} is empty, it will not be used!")
+        logger.warning("The given input file %s is empty, it will not be used!", file)
         return False
     return True
 
@@ -434,8 +434,8 @@ def filter_files_of_interest(multiqc_data, files_of_interest):
     """
     file_list = [file for file in multiqc_data if files_of_interest in file.stem]
     if len(file_list) > 1:
-        logger.warning(f"Multiple files of interest were found: {file_list} for {files_of_interest}")
-        logger.warning(f"Taking the first one: {file_list[0]}")
+        logger.warning("Multiple files of interest were found: %s for %s", file_list, files_of_interest)
+        logger.warning("Taking the first one: %s", file_list[0])
         return file_list[0]
     if len(file_list) == 0:
         return []
@@ -457,14 +457,14 @@ def read_data(directory, file_columns, process_dataframe):
     multiqc_data = [file for file in directory.glob("multiqc_*.txt")]
 
     multiqc_samples_df = pd.DataFrame()
-    for file_name, sub_dic_list in file_columns.items():
+    for file_name, sub_dic in file_columns.items():
         files_of_interest = filter_files_of_interest(multiqc_data, file_name)
         if not files_of_interest:
-            logger.warning(f"No files of interest were found for {file_name} in {directory}")
+            logger.warning("No files of interest were found for %s in %s", file_name, directory)
             continue
         df = read_dataframe_from_tsv(files_of_interest)
         df = process_dataframe(df)
-        df = filter_and_rename_columns(df, sub_dic_list)
+        df = filter_and_rename_columns(df, sub_dic)
         multiqc_samples_df = join_dataframes(multiqc_samples_df, df)
 
     return multiqc_samples_df
