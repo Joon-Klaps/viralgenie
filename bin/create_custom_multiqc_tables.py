@@ -197,31 +197,6 @@ def read_in_quast(table_files):
     return df
 
 
-def get_columns_of_interest(header_multiqc):
-    """
-    Flatten, and make dic with old name and new name
-    New name contains the tool and the annotation of the column specified in suppl file
-
-    Args:
-        header_multiqc (dict): A dictionary containing the header information from MultiQC report.
-
-    Returns:
-        dict: A dictionary mapping the old column names to the new column names.
-    """
-    columns_of_interest = {}
-    for bigkey, element in header_multiqc.items():
-        if bigkey == "general_stats":
-            bigkey = "multiqc"
-        if isinstance(element, list):
-            for item in element:
-                if isinstance(item, dict):
-                    for key, value in item.items():
-                        columns_of_interest.update({key: f"({bigkey}) {value}"})
-                else:
-                    columns_of_interest.update({item: f"({bigkey}) {item.replace('_',' ')}"})
-    return columns_of_interest
-
-
 def get_files_and_columns_of_interest(table_headers):
     """
     Get the files of interest and the columns of interest from the table headers file
@@ -232,14 +207,27 @@ def get_files_and_columns_of_interest(table_headers):
     Returns:
         tuple: A tuple containing the files of interest (list) and the columns of interest (dic, old_colname:new_colname)
     """
+    file_columns = {}
     if table_headers:
         check_file_exists(table_headers)
         # Read the yaml column annotation file for the different tables
         with open(table_headers, "r") as f:
             header_multiqc = yaml.safe_load(f)
-        files_of_interest = list(header_multiqc.keys())
+            for bigkey, element in header_multiqc.items():
+                if bigkey == "general_stats":
+                    newnamekey = "multiqc"
+                else:
+                    newnamekey = bigkey
+                columns_of_interest = {}
+                if isinstance(element, list):
+                    for item in element:
+                        if isinstance(item, dict):
+                            for key, value in item.items():
+                                columns_of_interest.update({key: f"({newnamekey}) {value}"})
+                        else:
+                            columns_of_interest.update({item: f"({newnamekey}) {item.replace('_',' ')}"})
+                file_columns.update({bigkey: columns_of_interest})
 
-        columns_of_interest = get_columns_of_interest(header_multiqc)
     else:
         # Files of interest contigs:
         files_of_interest = [
@@ -250,9 +238,9 @@ def get_files_and_columns_of_interest(table_headers):
             "ivar_variants",
             "bcftools_stats",
         ]
-        columns_of_interest = {}
+        file_columns = {file: {} for file in files_of_interest}
 
-    return files_of_interest, columns_of_interest
+    return file_columns
 
 
 def write_dataframe(df, file, comment):
@@ -404,7 +392,10 @@ def process_multiqc_dataframe(df):
     Returns:
         pandas.DataFrame: The processed MultiQC dataframe.
     """
-    df[df.columns[0]] = df[df.columns[0]].str.split(".").str[0]
+    # check if '.' are present in the first columns
+    if "." in df[df.columns[0]].iloc[0]:
+        # split the first column by '.' and take the first part
+        df[df.columns[0]] = df[df.columns[0]].str.split(".").str[0]
     df.set_index(df.columns[0], inplace=True)
     return df
 
@@ -441,10 +432,17 @@ def filter_files_of_interest(multiqc_data, files_of_interest):
     Returns:
         list: Filtered list of file paths.
     """
-    return [file for file in multiqc_data if any(x in file.stem for x in files_of_interest)]
+    file_list = [file for file in multiqc_data if files_of_interest in file.stem]
+    if len(file_list) > 1:
+        logger.warning(f"Multiple files of interest were found: {file_list} for {files_of_interest}")
+        logger.warning(f"Taking the first one: {file_list[0]}")
+        return file_list[0]
+    if len(file_list) == 0:
+        return []
+    return file_list[0]
 
 
-def read_data(directory, files_of_interest, process_dataframe):
+def read_data(directory, file_columns, process_dataframe):
     """
     This function reads data from multiple files and processes it.
 
@@ -457,13 +455,16 @@ def read_data(directory, files_of_interest, process_dataframe):
     A dataframe that contains the processed data from all the files of interest.
     """
     multiqc_data = [file for file in directory.glob("multiqc_*.txt")]
-    sample_files = filter_files_of_interest(multiqc_data, files_of_interest)
 
     multiqc_samples_df = pd.DataFrame()
-
-    for file in sample_files:
-        df = read_dataframe_from_tsv(file)
+    for file_name, sub_dic_list in file_columns.items():
+        files_of_interest = filter_files_of_interest(multiqc_data, file_name)
+        if not files_of_interest:
+            logger.warning(f"No files of interest were found for {file_name} in {directory}")
+            continue
+        df = read_dataframe_from_tsv(files_of_interest)
         df = process_dataframe(df)
+        df = filter_and_rename_columns(df, sub_dic_list)
         multiqc_samples_df = join_dataframes(multiqc_samples_df, df)
 
     return multiqc_samples_df
@@ -581,12 +582,12 @@ def filter_constrain(df, column, value):
     df_with_value = df[df[column].str.contains(value)]
     df_without_value = df[~df[column].str.contains(value)]
     # Remove from column
-    df_with_value[column] = df_with_value[column].str.replace(value, "")
-    df_with_value["index"] = df_with_value["index"].str.replace(value, "")
+    df_with_value.loc[:, column] = df_with_value[column].str.replace(value, "")
+    df_with_value.loc[:, "index"] = df_with_value["index"].str.replace(value, "")
     return df_without_value, df_with_value
 
 
-def create_constrain_summary(df, constrain_sheet, dic_columns):
+def create_constrain_summary(df, constrain_sheet, file_columns):
     # read in metadata table
     constrain_meta = handle_tables([constrain_sheet])
 
@@ -595,6 +596,7 @@ def create_constrain_summary(df, constrain_sheet, dic_columns):
 
     # Filter only for columns of interest
     # Some columns were already renamed, so we get the new values of them based on the original naming of mqc
+    dic_columns = {sub_key: sub_value for sub_dict in file_columns.values() for sub_key, sub_value in sub_dict.items()}
     keys_to_extract = [
         "reads_mapped",
         "reads_mapped_percent",
@@ -605,6 +607,11 @@ def create_constrain_summary(df, constrain_sheet, dic_columns):
         "max_coverage",
     ]
     columns_of_interest = [dic_columns[key] for key in keys_to_extract if key in dic_columns.keys()]
+
+    if not columns_of_interest:
+        logger.warning("No columns of interest were found to create the constrain summary table!")
+        return pd.DataFrame()
+
     columns_of_interest = [
         "sample name",
         "species",
@@ -682,18 +689,17 @@ def main(argv=None):
     args = parse_args(argv)
     logging.basicConfig(level=args.log_level, format="[%(levelname)s] %(message)s")
 
-    # Cluster summaries
-    # TODO: Combine the clusters from multiple files if they had undergone preclustering
+    # General stats - Cluster summaries
     if args.clusters_summary:
         cluster_header = get_header(args.comment_dir, "clusters_summary_mqc.txt")
         handle_tables(args.clusters_summary, cluster_header, "summary_clusters_mqc.tsv")
 
-    # Sample metadata
+    # General Stats - Sample metadata
     if args.sample_metadata:
         sample_header = get_header(args.comment_dir, "sample_metadata_mqc.txt")
         handle_tables([args.sample_metadata], sample_header, "sample_metadata_mqc.tsv")
 
-    # Checkv summary
+    # CLuster table - Checkv summary
     checkv_df = handle_tables(args.checkv_files)
     checkv_header = []
     if args.save_intermediate:
@@ -701,7 +707,7 @@ def main(argv=None):
     if not checkv_df.empty:
         checkv_df = handle_dataframe(checkv_df, "checkv", "contig_id", checkv_header, "summary_checkv_mqc.tsv")
 
-    # Quast summary
+    # CLuster table - Quast summary
     quast_df = read_in_quast(args.quast_files)
     quast_header = []
     if args.save_intermediate:
@@ -711,7 +717,7 @@ def main(argv=None):
         # Most of the columns are not good for a single contig evaluation
         quast_df = quast_df[["(quast) # N's per 100 kbp"]]
 
-    # Blast summary
+    # CLuster table - Blast summary
     blast_df = handle_tables(args.blast_files, header=None)
     blast_header = []
     if args.save_intermediate:
@@ -739,26 +745,26 @@ def main(argv=None):
         blast_df["species"] = blast_df["subject"].str.split("|").str[-1]
         blast_df = blast_df[["species"] + blast_df.columns.difference(["species"], sort=False).tolist()]
         blast_df = handle_dataframe(blast_df, "blast", "query", blast_header, "summary_blast_mqc.tsv")
-    # Multiqc output txt files
+
+    # CLuster table -  Multiqc output txt files
     if args.multiqc_dir:
         # Check if the given files exist
         check_file_exists(args.multiqc_dir)
 
-        files_of_interest, columns_of_interest = get_files_and_columns_of_interest(args.table_headers)
+        # Extract files & columns specified by the user through the table headers file
+        file_columns = get_files_and_columns_of_interest(args.table_headers)
 
-        # Read the multiqc data txt files
-        multiqc_contigs_df = read_data(args.multiqc_dir, files_of_interest, process_multiqc_dataframe)
+        # Read the multiqc data txt files & select & rename
+        multiqc_contigs_df = read_data(args.multiqc_dir, file_columns, process_multiqc_dataframe)
 
         # If we are empty, just quit
         if multiqc_contigs_df.empty:
-            logger.warning("No data was found to create the contig overview table!")
+            logger.warning("No data was found from MULTIQC to create the contig overview table!")
             return 0
 
         # Write the complete dataframe to a file
         if args.save_intermediate:
             write_dataframe(multiqc_contigs_df.reset_index(inplace=False), "contigs_intermediate.tsv", [])
-
-        multiqc_contigs_df = filter_and_rename_columns(multiqc_contigs_df, columns_of_interest)
 
         # Join with the custom contig tables
         multiqc_contigs_df = multiqc_contigs_df.join(checkv_df, how="outer")
@@ -766,10 +772,9 @@ def main(argv=None):
         multiqc_contigs_df = multiqc_contigs_df.join(blast_df, how="outer")
 
         # adding a tag saying that contig faild qc check
-        failed_contigs = ["failed_mapped", "failed_contig_quality"]
+        failed_contigs = {"failed_mapped": {}, "failed_contig_quality": {}}
         failed_contig_df = read_data(args.multiqc_dir, failed_contigs, process_failed_contig_dataframe)
         if not failed_contig_df.empty:
-            print(failed_contig_df)
             multiqc_contigs_df["Contig failed QC check"] = multiqc_contigs_df.index.isin(failed_contig_df)
 
         # If we are empty, just quit
@@ -794,8 +799,6 @@ def main(argv=None):
         remaining_columns = mqc_contigs_sel.columns.difference(final_columns, sort=False).tolist()
         mqc_contigs_sel = mqc_contigs_sel[final_columns + remaining_columns]
 
-        write_dataframe(mqc_contigs_sel, "rmme.tsv", ["header_clusters_overview"])
-
         # split up denovo constructs and mapping (-CONSTRAIN) results
         contigs_mqc, constrains_mqc = filter_constrain(mqc_contigs_sel, "cluster", "-CONSTRAIN")
 
@@ -804,10 +807,8 @@ def main(argv=None):
             header_mapping_seq = get_header(args.comment_dir, "mapping_constrains_mqc.txt")
             write_dataframe(constrains_mqc, "mapping_constrains_mqc.tsv", header_mapping_seq)
             # add mapping summary to sample overview table in ... wide format with species & segment combination
-            constrains_summary_mqc = create_constrain_summary(
-                constrains_mqc, args.mapping_constrains, columns_of_interest
-            )
-            if not constrains_mqc.empty:
+            constrains_summary_mqc = create_constrain_summary(constrains_mqc, args.mapping_constrains, file_columns)
+            if not constrains_summary_mqc.empty:
                 header_mapping_summary = get_header(args.comment_dir, "mapping_constrains_summary_mqc.txt")
                 write_dataframe(constrains_summary_mqc, "mapping_constrains_summary_mqc.tsv", header_mapping_summary)
 
