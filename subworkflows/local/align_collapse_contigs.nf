@@ -1,7 +1,7 @@
-include { MAFFT                  } from '../../modules/nf-core/mafft/main'
-include { MUSCLE                 } from '../../modules/nf-core/muscle/main'
-include { CAT_CAT as CAT_CLUSTER } from '../../modules/nf-core/cat/cat/main'
-include { EMBOSS_CONS            } from '../../modules/nf-core/emboss/cons/main'
+include { CAT_CAT as CAT_CLUSTER                   } from '../../modules/nf-core/cat/cat/main'
+include { MINIMAP2_INDEX as MINIMAP2_CONTIG_INDEX  } from '../../modules/nf-core/minimap2/index/main'
+include { MINIMAP2_ALIGN as MINIMAP2_CONTIG_ALIGN  } from '../../modules/nf-core/minimap2/align/main'
+include { IVAR_CONSENSUS as IVAR_CONTIG_CONSENSUS  } from '../../modules/nf-core/ivar/consensus/main'
 
 workflow ALIGN_COLLAPSE_CONTIGS {
 
@@ -10,44 +10,67 @@ workflow ALIGN_COLLAPSE_CONTIGS {
     aligner
 
     main:
+    ch_versions = Channel.empty()
+
 
     ch_sequences = ch_references_members.map{ meta, references, members -> [meta, [references, members]] }
 
     CAT_CLUSTER(ch_sequences)
+    // TODO:
+    // if external_reference is false, we need to include the reference when mapping towards the reference (i.e. the reference is also a member)
+    // if external_reference is true, we need to exclude the reference when mapping towards the reference
+    // We align contigs to the reference using minimap2
+    // Call consensus using IVAR_consensus with low treshholds (eg. 1) (needs only 1 coverage)
+    // If there are gaps in the consensus we populate it with the reference sequence.
 
-    if (aligner == "mafft") {
-        ch_references      = ch_references_members.map{ meta,centroid,members -> [meta, centroid] }
-        ch_members         = ch_references_members.map{ meta,centroid,members -> [meta, members] }
+    ch_references = ch_references_members.map{ meta, references, members -> [meta, references] }
 
-        MAFFT (
-            ch_references,
-            ch_members,
-            [[:],[]],
-            [[:],[]],
-            [[:],[]],
-            [[:],[]]
-            )
+    MINIMAP2_CONTIG_INDEX(ch_references)
+    ch_versions = ch_versions.mix(MINIMAP2_CONTIG_INDEX.out.versions.first())
 
-        ch_align    = MAFFT.out.fas
-        ch_versions = MAFFT.out.versions.first()
-    }
+    MINIMAP2_CONTIG_INDEX
+        .out
+        .index
+        .join( ch_references_members, by: [0] )
+        .join( CAT_CLUSTER.out.file_out, by: [0] )
+        .branch{ meta, index, references, members, comb ->
+            external: meta.external_reference
+                return [meta, index, members]
+            internal: true
+                return [meta, index, comb]
+        }
+        .set{ ch_splitup }
 
-    if (aligner == "muscle") {
+    ch_index_contigs = ch_splitup.external.mix(ch_splitup.internal)
+    ch_index_contigs.view()
 
-        MUSCLE( CAT_CLUSTER.out.file_out)
+    ch_index = ch_index_contigs.map{ meta, index, contigs -> [meta, index] }
+    ch_contigs = ch_index_contigs.map{ meta, index, contigs -> [meta, contigs] }
 
-        ch_versions = CAT_CLUSTER.out.versions.first()
-        ch_align    = MUSLCE.out.aligned_fasta
-        ch_versions = ch_versions.mix(MUSCLE.out.versions.first())
-    }
+    MINIMAP2_CONTIG_ALIGN(ch_contigs, ch_index, true, false, false )
 
-    EMBOSS_CONS ( ch_align )
-    ch_versions = ch_versions.mix(EMBOSS_CONS.out.versions.first())
+    ch_references_members
+        .join( MINIMAP2_CONTIG_ALIGN.out.bam, by: [0] )
+        .map{ meta, references, members, bam -> [meta, references, bam] }
+        .set{ ch_references_bam }
+
+    ivar_bam   = ch_references_bam.map{ meta, references, bam -> [meta, bam] }
+    ivar_fasta = ch_references_bam.map{ meta, references, bam -> [references] }
+    IVAR_CONTIG_CONSENSUS(
+        ivar_bam,
+        ivar_fasta,
+        true
+    )
+
+
+
+
 
     emit:
-    consensus       = EMBOSS_CONS.out.consensus // channel: [ val(meta), [ fasta ] ]
-    aligned_fasta   = ch_align                  // channel: [ val(meta), [ fasta ] ]
-    unaligned_fasta = CAT_CLUSTER.out.file_out      // channel: [ val(meta), [ fasta ] ]
+    // consensus       = EMBOSS_CONS.out.consensus // channel: [ val(meta), [ fasta ] ]
+    consensus       = ch_references // channel: [ val(meta), [ fasta ] ]
+    // aligned_fasta   = ch_align                  // channel: [ val(meta), [ fasta ] ]
+    unaligned_fasta = CAT_CLUSTER.out.file_out  // channel: [ val(meta), [ fasta ] ]
     versions        = ch_versions               // channel: [ versions.yml ]
 }
 
