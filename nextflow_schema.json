@@ -256,6 +256,11 @@
                     "description": "Prefix of all output files followed by [date]_[pipelineversion]_[runName]",
                     "fa_icon": "fab fa-autoprefixer",
                     "help_text": "Use '--global_prefix' to not have metadata embedded."
+                },
+                "global_prefix": {
+                    "type": "string",
+                    "fa_icon": "fab fa-autoprefixer",
+                    "description": "Global prefix set if you don't want metadata embedded in the prefix"
                 }
             }
         },
