@@ -34,6 +34,11 @@ if (params.validate_params) {
 
 WorkflowMain.initialise(workflow, params, log)
 
+if (!params.global_prefix) {
+    trace_date       = new java.util.Date().format( 'yyyyMMdd')
+    params.global_prefix = "${params.prefix}_${trace_date}_${workflow.manifest.version}_${workflow.runName}"
+}
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     NAMED WORKFLOW FOR PIPELINE
