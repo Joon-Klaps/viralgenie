@@ -62,7 +62,15 @@ workflow ALIGN_COLLAPSE_CONTIGS {
         true
     )
 
+    // If external, there possibly regions that require patching
+    IVAR_CONTIG_CONSENSUS.out.fasta
+        .branch{ meta, fasta ->
+            external: meta.external_reference
+            internal: true
+        }
+        .set{ ch_consensus }
 
+    // CUSTOM_SCRIPT()
 
 
 
