@@ -304,6 +304,16 @@
                     "fa_icon": "fas fa-forward",
                     "description": "Skip read trimming"
                 },
+                "fastp_deduplicate": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-filter",
+                    "description": "Use Fastp's deduplicate option"
+                },
+                "fastp_dedup_accuracy": {
+                    "type": "number",
+                    "fa_icon": "fas fa-filter",
+                    "description": "Define the accuracy used for hashes while deduplicating with faspt"
+                },
                 "adapter_fasta": {
                     "type": "string",
                     "description": "Fasta file of adapters",
