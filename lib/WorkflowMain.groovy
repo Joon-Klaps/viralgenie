@@ -20,6 +20,17 @@ class WorkflowMain {
             "  https://github.com/${workflow.manifest.name}/blob/master/CITATIONS.md"
     }
 
+    //
+    // Define a global prefix
+    //
+    public static String getGlobalPrefix(workflow,params) {
+        def date_stamp = new java.util.Date().format( 'yyyyMMdd')
+        if (params.prefix) {
+            return "${params.prefix}_something_${workflow.manifest.version}_${workflow.runName}"
+        }
+        return null
+    }
+
 
     //
     // Validate parameters and print summary to screen
