@@ -250,6 +250,17 @@
                     "description": "Validation of parameters in lenient more.",
                     "hidden": true,
                     "help_text": "Allows string values that are parseable as numbers or booleans. For further information see [JSONSchema docs](https://github.com/everit-org/json-schema#lenient-mode)."
+                },
+                "prefix": {
+                    "type": "string",
+                    "description": "Prefix of all output files followed by [date]_[pipelineversion]_[runName]",
+                    "fa_icon": "fab fa-autoprefixer",
+                    "help_text": "Use '--global_prefix' to not have metadata embedded."
+                },
+                "global_prefix": {
+                    "type": "string",
+                    "fa_icon": "fab fa-autoprefixer",
+                    "description": "Global prefix set if you don't want metadata embedded in the prefix"
                 }
             }
         },
@@ -292,6 +303,16 @@
                     "type": "boolean",
                     "fa_icon": "fas fa-forward",
                     "description": "Skip read trimming"
+                },
+                "fastp_deduplicate": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-filter",
+                    "description": "Use Fastp's deduplicate option"
+                },
+                "fastp_dedup_accuracy": {
+                    "type": "number",
+                    "fa_icon": "fas fa-filter",
+                    "description": "Define the accuracy used for hashes while deduplicating with faspt"
                 },
                 "adapter_fasta": {
                     "type": "string",
