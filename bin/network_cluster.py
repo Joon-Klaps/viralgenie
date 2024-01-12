@@ -41,6 +41,7 @@ def parse_args(argv=None):
         "--cluster-algorithm",
         metavar="CLUSTER-ALGORITHM",
         type=str,
+        default="connected_components",
         help="Algorithm to use for clustering.",
     )
 

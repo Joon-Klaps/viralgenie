@@ -84,7 +84,7 @@ workflow FASTA_FASTQ_CLUST {
     // Calculate clusters for distance based methods (mash)
     if (cluster_method in ["mash"] ) {
         // Calculate clusters using leidenalg
-        NETWORK_CLUSTER(ch_dist, cluster_method)
+        NETWORK_CLUSTER(ch_dist, cluster_method, params.network_clustering)
         ch_clusters = NETWORK_CLUSTER.out.clusters
         ch_versions = ch_versions.mix(NETWORK_CLUSTER.out.versions.first())
     }

@@ -2,6 +2,7 @@ include { CAT_CAT as CAT_CLUSTER                   } from '../../modules/nf-core
 include { MINIMAP2_INDEX as MINIMAP2_CONTIG_INDEX  } from '../../modules/nf-core/minimap2/index/main'
 include { MINIMAP2_ALIGN as MINIMAP2_CONTIG_ALIGN  } from '../../modules/nf-core/minimap2/align/main'
 include { IVAR_CONSENSUS as IVAR_CONTIG_CONSENSUS  } from '../../modules/nf-core/ivar/consensus/main'
+include { ANNOTATE_WITH_REFERENCE                  } from '../../modules/local/annotate_with_reference/main'
 
 workflow ALIGN_COLLAPSE_CONTIGS {
 
@@ -42,7 +43,6 @@ workflow ALIGN_COLLAPSE_CONTIGS {
         .set{ ch_splitup }
 
     ch_index_contigs = ch_splitup.external.mix(ch_splitup.internal)
-    ch_index_contigs.view()
 
     ch_index = ch_index_contigs.map{ meta, index, contigs -> [meta, index] }
     ch_contigs = ch_index_contigs.map{ meta, index, contigs -> [meta, contigs] }
@@ -70,7 +70,15 @@ workflow ALIGN_COLLAPSE_CONTIGS {
         }
         .set{ ch_consensus }
 
-    // CUSTOM_SCRIPT()
+    // Combine input for custom annotation script.
+    ch_references_bam
+        .join( ch_consensus.external, by: [0] )
+        .join( IVAR_CONTIG_CONSENSUS.out.mpileup, by:[0])
+        .map{ meta, references, bam, consensus, mpileup -> [meta, references, consensus, mpileup] }
+        .set{ ch_ref_cons_mpileup }
+
+    // Custom script that replaces region in consensus with orignally 0 coverage with regions from the reference.
+    ANNOTATE_WITH_REFERENCE( ch_ref_cons_mpileup )
 
 
 
