@@ -22,7 +22,7 @@ workflow ALIGN_COLLAPSE_CONTIGS {
     // if external_reference is true, we need to exclude the reference when mapping towards the reference
     // We align contigs to the reference using minimap2
     // Call consensus using IVAR_consensus with low treshholds (eg. 1) (needs only 1 coverage)
-    // If there are gaps in the consensus we populate it with the reference sequence.
+    // If there are ambigous bases in the consensus due to low coverage we populate it with the reference sequence.
 
     ch_references = ch_references_members.map{ meta, references, members -> [meta, references] }
 
@@ -48,6 +48,7 @@ workflow ALIGN_COLLAPSE_CONTIGS {
     ch_contigs = ch_index_contigs.map{ meta, index, contigs -> [meta, contigs] }
 
     MINIMAP2_CONTIG_ALIGN(ch_contigs, ch_index, true, false, false )
+    ch_versions = ch_versions.mix(MINIMAP2_CONTIG_ALIGN.out.versions.first())
 
     ch_references_members
         .join( MINIMAP2_CONTIG_ALIGN.out.bam, by: [0] )
@@ -61,6 +62,7 @@ workflow ALIGN_COLLAPSE_CONTIGS {
         ivar_fasta,
         true
     )
+    ch_versions= ch_versions.mix(IVAR_CONTIG_CONSENSUS.out.versions.first())
 
     // If external, there possibly regions that require patching
     IVAR_CONTIG_CONSENSUS.out.fasta
@@ -79,6 +81,7 @@ workflow ALIGN_COLLAPSE_CONTIGS {
 
     // Custom script that replaces region in consensus with orignally 0 coverage with regions from the reference.
     ANNOTATE_WITH_REFERENCE( ch_ref_cons_mpileup )
+    ch_versions = ch_versions.mix(ANNOTATE_WITH_REFERENCE.out.versions.first())
 
 
 

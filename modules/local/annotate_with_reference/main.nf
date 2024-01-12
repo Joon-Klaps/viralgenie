@@ -11,7 +11,7 @@ process ANNOTATE_WITH_REFERENCE {
     tuple val(meta), path(reference), path(consensus), path(mpileup)
 
     output:
-    tuple val(meta), path("*.fa")  , emit: sequence
+    tuple val(meta), path("*.fasta")  , emit: sequence
     path "versions.yml"            , emit: versions
 
     when:
