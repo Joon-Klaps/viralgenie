@@ -83,13 +83,14 @@ workflow ALIGN_COLLAPSE_CONTIGS {
     ANNOTATE_WITH_REFERENCE( ch_ref_cons_mpileup )
     ch_versions = ch_versions.mix(ANNOTATE_WITH_REFERENCE.out.versions.first())
 
+    consensus_patched = mix(ch_consensus.internal, ANNOTATE_WITH_REFERENCE.out.sequence )
+
 
 
     emit:
-    // consensus       = EMBOSS_CONS.out.consensus // channel: [ val(meta), [ fasta ] ]
-    consensus       = ch_references // channel: [ val(meta), [ fasta ] ]
-    // aligned_fasta   = ch_align                  // channel: [ val(meta), [ fasta ] ]
-    unaligned_fasta = CAT_CLUSTER.out.file_out  // channel: [ val(meta), [ fasta ] ]
-    versions        = ch_versions               // channel: [ versions.yml ]
+    consensus       = consensus_patched                 // channel: [ val(meta), [ fasta ] ]
+    aligned_txt     = ANNOTATE_WITH_REFERENCE.out.txt   // channel: [ val(meta), [ txt ] ]
+    unaligned_fasta = CAT_CLUSTER.out.file_out          // channel: [ val(meta), [ fasta ] ]
+    versions        = ch_versions                       // channel: [ versions.yml ]
 }
 
