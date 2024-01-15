@@ -93,7 +93,9 @@ def annotate_ambiguous(reference, consensus, regions, args):
         logger.info("> Lengths are the same, using fast replacement")
         seq = fast_replacement(reference, consensus, regions)
     else:
-        logger.info("> Lengths are NOT the same, using alignment replacement")
+        logger.info(
+            f"> Lengths are NOT the same  {args.reference}: {len(reference)} vs. {args.consensus}: {len(consensus)}, using alignment replacement"
+        )
         seq = alignment_replacement(reference, consensus, regions)
 
     return SeqRecord(seq=Seq(seq), id=ID, description=DESCRIPTION)
@@ -235,7 +237,7 @@ def main(argv=None):
 
     # Annotate the consensus sequence with the reference sequence defined by low_coverage positions
     if len(low_coverage) > 0:
-        logger.info("Low coverage regions found.\n")
+        logger.info("Low coverage regions found.")
         consensus_hybrid = annotate_ambiguous(reference, consensus, low_coverage, args)
     else:
         logger.info("No low coverage regions found. Writing out consensus sequence as is.")
