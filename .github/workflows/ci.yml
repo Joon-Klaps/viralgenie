@@ -136,7 +136,7 @@ jobs:
         with:
           version: "${{ matrix.NXF_VER }}"
 
-      - name: Run pipeline with umi test data
+      - name: Run pipeline without config and only default options
         run: |
           nextflow run ${GITHUB_WORKSPACE} -profile docker --input ./assets/samplesheet.csv --outdir ./results --max_cpus 2 --max_memory 4GB
 
