@@ -479,7 +479,7 @@ workflow VIRALGENIE {
     // Prepare MULTIQC custom tables
     CUSTOM_MULTIQC_TABLES (
             ch_clusters_summary.ifEmpty([]),
-            ch_metadata.ifEmpty([]),
+            ch_metadata,
             ch_checkv_summary.ifEmpty([]),
             ch_quast_summary.ifEmpty([]),
             ch_blast_summary.ifEmpty([]),
