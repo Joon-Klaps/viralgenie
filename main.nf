@@ -35,12 +35,8 @@ if (params.validate_params) {
 WorkflowMain.initialise(workflow, params, log)
 
 if (!params.global_prefix) {
-    trace_date       = new java.util.Date().format( 'yyyyMMdd')
-    params.global_prefix = "${params.prefix}_${trace_date}_${workflow.manifest.version}_${workflow.runName}"
+    params.global_prefix = WorkflowMain.getGlobalPrefix(workflow,params)
 }
-// params.global_prefix = WorkflowMain.getGlobalPrefix(workflow,params)
-
-// println(params.global_prefix)
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
