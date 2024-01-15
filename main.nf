@@ -22,7 +22,7 @@ include { validateParameters; paramsHelp } from 'plugin/nf-validation'
 if (params.help) {
     def logo = NfcoreTemplate.logo(workflow, params.monochrome_logs)
     def citation = '\n' + WorkflowMain.citation(workflow) + '\n'
-    def String command = "nextflow run ${workflow.manifest.name} --input samplesheet.csv -profile docker"
+    def String command = "nextflow run ${workflow.manifest.name} --input samplesheet.csv --outdir dir -profile docker"
     log.info logo + paramsHelp(command) + citation + NfcoreTemplate.dashedLine(params.monochrome_logs)
     System.exit(0)
 }
@@ -33,6 +33,14 @@ if (params.validate_params) {
 }
 
 WorkflowMain.initialise(workflow, params, log)
+
+if (!params.global_prefix) {
+    trace_date       = new java.util.Date().format( 'yyyyMMdd')
+    params.global_prefix = "${params.prefix}_${trace_date}_${workflow.manifest.version}_${workflow.runName}"
+}
+// params.global_prefix = WorkflowMain.getGlobalPrefix(workflow,params)
+
+// println(params.global_prefix)
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
