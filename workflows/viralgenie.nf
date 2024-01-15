@@ -171,16 +171,22 @@ workflow VIRALGENIE {
     }
 
     // preprocessing illumina reads
-    PREPROCESSING_ILLUMINA (
-        ch_reads,
-        ch_k2_host,
-        ch_adapter_fasta,
-        ch_contaminants)
-    ch_host_trim_reads      = PREPROCESSING_ILLUMINA.out.reads
-    ch_decomplex_trim_reads = PREPROCESSING_ILLUMINA.out.reads_decomplexified
-    ch_multiqc_files        = ch_multiqc_files.mix(PREPROCESSING_ILLUMINA.out.mqc.collect{it[1]}.ifEmpty([]))
-    ch_multiqc_files        = ch_multiqc_files.mix(PREPROCESSING_ILLUMINA.out.low_reads_mqc.ifEmpty([]))
-    ch_versions             = ch_versions.mix(PREPROCESSING_ILLUMINA.out.versions)
+    if (!params.skip_preprocessing){
+        PREPROCESSING_ILLUMINA (
+                ch_reads,
+                ch_k2_host,
+                ch_adapter_fasta,
+                ch_contaminants)
+            ch_host_trim_reads      = PREPROCESSING_ILLUMINA.out.reads
+            ch_decomplex_trim_reads = PREPROCESSING_ILLUMINA.out.reads_decomplexified
+            ch_multiqc_files        = ch_multiqc_files.mix(PREPROCESSING_ILLUMINA.out.mqc.collect{it[1]}.ifEmpty([]))
+            ch_multiqc_files        = ch_multiqc_files.mix(PREPROCESSING_ILLUMINA.out.low_reads_mqc.ifEmpty([]))
+            ch_versions             = ch_versions.mix(PREPROCESSING_ILLUMINA.out.versions)
+    } else {
+        ch_host_trim_reads      = ch_reads
+        ch_decomplex_trim_reads = ch_reads
+    }
+
 
     // Determining metagenomic diversity
     if (!params.skip_metagenomic_diversity) {
@@ -365,7 +371,7 @@ workflow VIRALGENIE {
             }
         .set{ch_consensus_results_reads}
 
-    if (params.mapping_constrains ) {
+    if (params.mapping_constrains && !params.skip_variant_calling ) {
         // Importing samplesheet
         Channel.fromSamplesheet('mapping_constrains')
             .map{ meta, sequence ->

@@ -270,6 +270,11 @@
             "description": "Options related to the trimming, low complexity and host removal steps of the reads",
             "default": "",
             "properties": {
+                "skip_preprocessing": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward",
+                    "description": "Skip read preprocessing (trimming, complexity filtering, host-removal)"
+                },
                 "skip_fastqc": {
                     "type": "boolean",
                     "fa_icon": "fas fa-forward",
@@ -673,7 +678,6 @@
                     "type": "string",
                     "description": "Sequence to use as a mapping reference instead of the de novo contigs or scaffolds",
                     "fa_icon": "far fa-file-alt",
-                    "help_text": "",
                     "schema": "assets/schemas/mapping_constrains.json"
                 },
                 "deduplicate": {
