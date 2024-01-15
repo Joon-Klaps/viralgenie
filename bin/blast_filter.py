@@ -108,6 +108,7 @@ def read_blast(blast):
         "subject",
         "pident",
         "qlen",
+        "slen",
         "length",
         "mismatch",
         "gapopen",

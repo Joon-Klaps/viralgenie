@@ -578,9 +578,13 @@ def filter_constrain(df, column, value):
     Returns:
         pandas.DataFrame, pandas.DataFrame: The filtered dataframe with the regex value and the filtered dataframe without the regex value.
     """
+    # Find rows with the regex value
+    locations = df[column].str.contains(value)
+    locations += df["step"].str.contains("constrain")
+
     # Filter
-    df_with_value = df[df[column].str.contains(value)]
-    df_without_value = df[~df[column].str.contains(value)]
+    df_with_value = df[locations]
+    df_without_value = df[~locations]
     # Remove from column
     df_with_value.loc[:, column] = df_with_value[column].str.replace(value, "")
     df_with_value.loc[:, "index"] = df_with_value["index"].str.replace(value, "")
@@ -588,11 +592,6 @@ def filter_constrain(df, column, value):
 
 
 def create_constrain_summary(df, constrain_sheet, file_columns):
-    # read in metadata table
-    constrain_meta = handle_tables([constrain_sheet])
-
-    # merge tables based on id for constrain_meta & cluster for df
-    df_constrain = df.merge(constrain_meta, how="left", left_on="cluster", right_on="id")
 
     # Filter only for columns of interest
     # Some columns were already renamed, so we get the new values of them based on the original naming of mqc
@@ -728,6 +727,7 @@ def main(argv=None):
             "subject",
             "pident",
             "qlen",
+            "slen",
             "length",
             "mismatch",
             "gapopen",
@@ -804,7 +804,12 @@ def main(argv=None):
         # Seperate table for mapping constrains
         if not constrains_mqc.empty:
             header_mapping_seq = get_header(args.comment_dir, "mapping_constrains_mqc.txt")
+
+            # Add constrain metadata to the mapping constrain table
+            constrain_meta = handle_tables([constrain_sheet])
+            constrains_mqc = constrains_mqc.merge(constrain_meta, how="left", left_on="cluster", right_on="id")
             write_dataframe(constrains_mqc, "mapping_constrains_mqc.tsv", header_mapping_seq)
+
             # add mapping summary to sample overview table in ... wide format with species & segment combination
             constrains_summary_mqc = create_constrain_summary(constrains_mqc, args.mapping_constrains, file_columns)
             if not constrains_summary_mqc.empty:
