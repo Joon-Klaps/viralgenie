@@ -460,7 +460,7 @@ def read_data(directory, file_columns, process_dataframe):
     for file_name, sub_dic in file_columns.items():
         files_of_interest = filter_files_of_interest(multiqc_data, file_name)
         if not files_of_interest:
-            logger.warning("No files of interest were found for %s in %s", file_name, directory)
+            logger.info("No files of interest were found for %s in %s", file_name, directory)
             continue
         df = read_dataframe_from_tsv(files_of_interest)
         df = process_dataframe(df)
@@ -590,8 +590,35 @@ def filter_constrain(df, column, value):
     df_with_value.loc[:, "index"] = df_with_value["index"].str.replace(value, "")
     return df_without_value, df_with_value
 
+def drop_columns(df, columns):
+    """
+    Try to drop columns from a dataframe and return the dataframe.
 
-def create_constrain_summary(df, constrain_sheet, file_columns):
+    Args:
+        df (pandas.DataFrame): The dataframe to drop columns from.
+        columns (list): The list of columns to drop.
+
+    Returns:
+        pandas.DataFrame: The dataframe with the dropped columns.
+    """
+    result = df.drop(columns=[column for column in columns if column in df.columns])
+    return result.copy()
+
+def reorder_columns(df, columns):
+    """
+    Try to reorder columns in a dataframe and return the dataframe.
+
+    Args:
+        df (pandas.DataFrame): The dataframe to reorder columns in.
+        columns (list): The list of columns to reorder.
+
+    Returns:
+        pandas.DataFrame: The dataframe with the reordered columns.
+    """
+    df = df[[column for column in columns if column in df.columns] + df.columns.difference(columns, sort=False).tolist()]
+    return df
+
+def create_constrain_summary(df_constrain, file_columns):
 
     # Filter only for columns of interest
     # Some columns were already renamed, so we get the new values of them based on the original naming of mqc
@@ -638,13 +665,13 @@ def create_constrain_summary(df, constrain_sheet, file_columns):
         return df_constrain
 
     if "(blast) qlen" in df_constrain.columns:
-        df_constrain.rename(columns={"(blast) qlen": "consensus length"}, inplace=True)
+        df_constrain = df_constrain.rename(columns={"(blast) qlen": "consensus length"})
 
     # Reformat dataframe to long based on following:
     #   Species & Segment
     #   Species
     #   ID (Cluster)
-    df_constrain["idgroup"] = df_constrain.apply(
+    df_constrain.loc[:,"idgroup"] = df_constrain.apply(
         lambda row: f"{row['species']} ({row['segment']})"
         if "segment" in df_constrain.columns and pd.notnull(row["species"]) and pd.notnull(row["segment"])
         else row["species"]
@@ -652,13 +679,10 @@ def create_constrain_summary(df, constrain_sheet, file_columns):
         else row["cluster"],
         axis=1,
     )
-    df_constrain.rename(columns={"cluster": "Constrain id"}, inplace=True)
+    df_constrain = df_constrain.rename(columns={"cluster": "Constrain id"})
 
     # Remove columns that are not needed anymore
-    if "species" in df_constrain.columns:
-        df_constrain.drop(columns=["species"], inplace=True)
-    if "segment" in df_constrain.columns:
-        df_constrain.drop(columns=["segment"], inplace=True)
+    df_constrain = drop_columns(df_constrain, ["species", "segment"])
 
     # Convert dataframe to long and then extra wide
     df_long = df_constrain.melt(id_vars=["idgroup", "sample name"], var_name="variable", value_name="Value")
@@ -741,7 +765,7 @@ def main(argv=None):
         # Filter on best hit per contig and keep only the best hit
         blast_df = blast_df.sort_values("bitscore", ascending=False).drop_duplicates("query")
         # Extract the species name from the subject column
-        blast_df["species"] = blast_df["subject"].str.split("|").str[-1]
+        blast_df["species"] = blast_df["subject"].str.split("-").str[-1]
         blast_df = blast_df[["species"] + blast_df.columns.difference(["species"], sort=False).tolist()]
         blast_df = handle_dataframe(blast_df, "blast", "query", blast_header, "summary_blast_mqc.tsv")
 
@@ -794,9 +818,7 @@ def main(argv=None):
             + [column for column in mqc_contigs_sel.columns if "QC check" in column]
             + [column for column in mqc_contigs_sel.columns if "quast" in column]
         )
-
-        remaining_columns = mqc_contigs_sel.columns.difference(final_columns, sort=False).tolist()
-        mqc_contigs_sel = mqc_contigs_sel[final_columns + remaining_columns]
+        mqc_contigs_sel = reorder_columns(mqc_contigs_sel, final_columns)
 
         # split up denovo constructs and mapping (-CONSTRAIN) results
         contigs_mqc, constrains_mqc = filter_constrain(mqc_contigs_sel, "cluster", "-CONSTRAIN")
@@ -806,12 +828,15 @@ def main(argv=None):
             header_mapping_seq = get_header(args.comment_dir, "mapping_constrains_mqc.txt")
 
             # Add constrain metadata to the mapping constrain table
-            constrain_meta = handle_tables([constrain_sheet])
+            constrain_meta = handle_tables([args.mapping_constrains])
+            # drop unwanted columns & reorder
+            constrain_meta = drop_columns(constrain_meta, ["sequence", "samples"])
             constrains_mqc = constrains_mqc.merge(constrain_meta, how="left", left_on="cluster", right_on="id")
+            constrains_mqc = reorder_columns(constrains_mqc, ["index", "sample name", "cluster", "step", "species", "segment", "definition"])
             write_dataframe(constrains_mqc, "mapping_constrains_mqc.tsv", header_mapping_seq)
 
             # add mapping summary to sample overview table in ... wide format with species & segment combination
-            constrains_summary_mqc = create_constrain_summary(constrains_mqc, args.mapping_constrains, file_columns)
+            constrains_summary_mqc = create_constrain_summary(constrains_mqc, file_columns)
             if not constrains_summary_mqc.empty:
                 header_mapping_summary = get_header(args.comment_dir, "mapping_constrains_summary_mqc.txt")
                 write_dataframe(constrains_summary_mqc, "mapping_constrains_summary_mqc.tsv", header_mapping_summary)
