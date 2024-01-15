@@ -138,7 +138,7 @@ jobs:
 
       - name: Run pipeline with umi test data
         run: |
-          nextflow run ${GITHUB_WORKSPACE} -profile docker --input ./assets/samplesheets/samplesheet.csv --outdir ./results --max_cpus 2 --max_memory 4GB
+          nextflow run ${GITHUB_WORKSPACE} -profile docker --input ./assets/samplesheet.csv --outdir ./results --max_cpus 2 --max_memory 4GB
 
   test-fail-mapped:
     name: Run pipeline with test bad mapping constrained reference
