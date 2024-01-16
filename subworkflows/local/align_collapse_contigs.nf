@@ -78,14 +78,19 @@ workflow ALIGN_COLLAPSE_CONTIGS {
         .join( IVAR_CONTIG_CONSENSUS.out.mpileup, by:[0])
         .map{ meta, references, bam, consensus, mpileup -> [meta, references, consensus, mpileup] }
         .set{ ch_ref_cons_mpileup }
+    
 
     // Custom script that replaces region in consensus with orignally 0 coverage with regions from the reference.
     ANNOTATE_WITH_REFERENCE( ch_ref_cons_mpileup )
     ch_versions = ch_versions.mix(ANNOTATE_WITH_REFERENCE.out.versions.first())
 
-    consensus_patched = mix(ch_consensus.internal, ANNOTATE_WITH_REFERENCE.out.sequence )
+    ANNOTATE_WITH_REFERENCE
+        .out
+        .sequence
+        .mix( ch_consensus.internal )
+        .set{ consensus_patched }
 
-
+    consensus_patched.view()
 
     emit:
     consensus       = consensus_patched                 // channel: [ val(meta), [ fasta ] ]
