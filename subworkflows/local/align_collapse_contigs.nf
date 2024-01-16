@@ -90,8 +90,6 @@ workflow ALIGN_COLLAPSE_CONTIGS {
         .mix( ch_consensus.internal )
         .set{ consensus_patched }
 
-    consensus_patched.view()
-
     emit:
     consensus       = consensus_patched                 // channel: [ val(meta), [ fasta ] ]
     aligned_txt     = ANNOTATE_WITH_REFERENCE.out.txt   // channel: [ val(meta), [ txt ] ]
