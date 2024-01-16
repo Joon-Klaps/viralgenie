@@ -45,12 +45,12 @@ ch_metadata      = createFileChannel(params.metadata)
 ch_contaminants  = createFileChannel(params.contaminants)
 ch_spades_yml    = createFileChannel(params.spades_yml)
 ch_spades_hmm    = createFileChannel(params.spades_hmm)
-ch_ref_pool      = !params.skip_polishing  || !params.skip_consensus_qc          ? createChannel( params.reference_pool, "blast", true )               : Channel.empty()
-ch_kraken2_db    = !params.skip_precluster || !params.skip_metagenomic_diversity ? createChannel( params.kraken2_db, "kraken2", !params.skip_kraken2 ) : Channel.empty()
-ch_kaiju_db      = !params.skip_precluster || !params.skip_metagenomic_diversity ? createChannel( params.kaiju_db, "kaiju", !params.skip_kaiju )       : Channel.empty()
-ch_checkv_db     = !params.skip_consensus_qc                                     ? createChannel( params.checkv_db, "checkv", !params.skip_checkv )    : Channel.empty()
-ch_bracken_db    = !params.skip_metagenomic_diversity                            ? createChannel( params.bracken_db, "bracken", !params.skip_bracken ) : Channel.empty()
-ch_k2_host       = !params.skip_hostremoval                                      ? createChannel( params.host_k2_db, "k2_host", true )                 : Channel.empty()
+ch_ref_pool      = (!params.skip_assembly && !params.skip_polishing) || (!params.skip_consensus_qc && !params.skip_blast_qc)           ? createChannel( params.reference_pool, "blast", true )                   : Channel.empty()
+ch_kraken2_db    = (!params.skip_assembly && !params.skip_polishing && !params.skip_precluster) || !params.skip_metagenomic_diversity  ? createChannel( params.kraken2_db, "kraken2", !params.skip_kraken2 )     : Channel.empty()
+ch_kaiju_db      = (!params.skip_assembly && !params.skip_polishing && !params.skip_precluster) || !params.skip_metagenomic_diversity  ? createChannel( params.kaiju_db, "kaiju", !params.skip_kaiju )           : Channel.empty()
+ch_checkv_db     = !params.skip_consensus_qc                                                                                           ? createChannel( params.checkv_db, "checkv", !params.skip_checkv )        : Channel.empty()
+ch_bracken_db    = !params.skip_metagenomic_diversity                                                                                  ? createChannel( params.bracken_db, "bracken", !params.skip_bracken )     : Channel.empty()
+ch_k2_host       = !params.skip_preprocessing                                                                                          ? createChannel( params.host_k2_db, "k2_host", !params.skip_hostremoval ) : Channel.empty()
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -128,8 +128,8 @@ workflow VIRALGENIE {
 
     // Prepare Databases
     ch_db = Channel.empty()
-    if (!params.skip_polishing || !params.skip_consensus_qc || !params.skip_metagenomic_diversity || !params.skip_hostremoval){
-
+    if ((!params.skip_assembly && !params.skip_polishing) || !params.skip_consensus_qc || !params.skip_metagenomic_diversity || (!params.skip_preprocessing && !params.skip_hostremoval)){
+        
         ch_db_raw = ch_db.mix(ch_ref_pool,ch_kraken2_db, ch_kaiju_db, ch_checkv_db, ch_bracken_db, ch_k2_host)
         UNPACK_DB (ch_db_raw)
 
@@ -163,23 +163,29 @@ workflow VIRALGENIE {
     }
 
     // Prepare blast DB
-    if (!params.skip_polishing || !params.skip_consensus_qc){
+    ch_blast_db = Channel.empty()
+    if ((!params.skip_assembly && !params.skip_polishing) || !params.skip_consensus_qc){
         BLAST_MAKEBLASTDB ( ch_ref_pool )
         ch_blast_db  = BLAST_MAKEBLASTDB.out.db
         ch_versions  = ch_versions.mix(BLAST_MAKEBLASTDB.out.versions)
     }
-
+    
+    ch_host_trim_reads      = Channel.empty()
+    ch_decomplex_trim_reads = Channel.empty()
     // preprocessing illumina reads
-    PREPROCESSING_ILLUMINA (
-        ch_reads,
-        ch_k2_host,
-        ch_adapter_fasta,
-        ch_contaminants)
-    ch_host_trim_reads      = PREPROCESSING_ILLUMINA.out.reads
-    ch_decomplex_trim_reads = PREPROCESSING_ILLUMINA.out.reads_decomplexified
-    ch_multiqc_files        = ch_multiqc_files.mix(PREPROCESSING_ILLUMINA.out.mqc.collect{it[1]}.ifEmpty([]))
-    ch_multiqc_files        = ch_multiqc_files.mix(PREPROCESSING_ILLUMINA.out.low_reads_mqc.ifEmpty([]))
-    ch_versions             = ch_versions.mix(PREPROCESSING_ILLUMINA.out.versions)
+    if (!params.skip_preprocessing){
+        PREPROCESSING_ILLUMINA (
+            ch_reads,
+            ch_k2_host,
+            ch_adapter_fasta,
+            ch_contaminants)
+        ch_host_trim_reads      = PREPROCESSING_ILLUMINA.out.reads
+        ch_decomplex_trim_reads = PREPROCESSING_ILLUMINA.out.reads_decomplexified
+        ch_multiqc_files        = ch_multiqc_files.mix(PREPROCESSING_ILLUMINA.out.mqc.collect{it[1]}.ifEmpty([]))
+        ch_multiqc_files        = ch_multiqc_files.mix(PREPROCESSING_ILLUMINA.out.low_reads_mqc.ifEmpty([]))
+        ch_versions             = ch_versions.mix(PREPROCESSING_ILLUMINA.out.versions)
+    }
+    
 
     // Determining metagenomic diversity
     if (!params.skip_metagenomic_diversity) {
@@ -444,7 +450,7 @@ workflow VIRALGENIE {
     ch_quast_summary  = Channel.empty()
     ch_blast_summary  = Channel.empty()
 
-    if ( !params.skip_consensus_qc || (params.skip_assembly && params.skip_variant_calling) ) {
+    if ( !params.skip_consensus_qc || (!params.skip_assembly && !params.skip_variant_calling) ) {
         if (!params.skip_checkv && !ch_checkv_db ) {
             ch_checkv_db = CHECKV_DOWNLOADDATABASE().checkv_db
         }

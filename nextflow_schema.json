@@ -271,6 +271,11 @@
             "description": "Options related to the trimming, low complexity and host removal steps of the reads",
             "default": "",
             "properties": {
+                "skip_preprocessing": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward",
+                    "description": "Skip read preprocessing and use input reads for downstream analysis"
+                },
                 "skip_fastqc": {
                     "type": "boolean",
                     "fa_icon": "fas fa-forward",
