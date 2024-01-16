@@ -7,11 +7,11 @@ process CUSTOM_MULTIQC_TABLES {
         'biocontainers/bioframe:0.5.1--pyhdfd78af_0' }"
 
     input:
-    path clusters_summary_files, stageAs: "?/*"
+    path clusters_summary_files
     path sample_metadata
     path checkv_files, stageAs: "?/*"
-    path quast_files, stageAs: "?/*"
-    path blast_files, stageAs: "?/*"
+    path quast_files
+    path blast_files
     path mapping_constrains
     path multiqc_dir
     path comment_headers

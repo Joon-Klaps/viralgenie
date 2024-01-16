@@ -6,6 +6,7 @@ import argparse
 import logging
 import os
 import sys
+import re
 from pathlib import Path
 
 import pandas as pd
@@ -120,7 +121,7 @@ def parse_args(argv=None):
         "--log-level",
         help="The desired log level (default WARNING).",
         choices=("CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"),
-        default="WARNING",
+        default="INFO",
     )
     return parser.parse_args(argv)
 
@@ -385,6 +386,7 @@ def join_dataframes(df1, df2):
 def process_multiqc_dataframe(df):
     """
     Process the MultiQC dataframe by splitting the values in the first column by "." and setting it as the index.
+    This function is required to handle the output files form quast & checkv to bring them to the same standard as MultiQC.
 
     Args:
         df (pandas.DataFrame): The MultiQC dataframe to be processed.
@@ -393,7 +395,8 @@ def process_multiqc_dataframe(df):
         pandas.DataFrame: The processed MultiQC dataframe.
     """
     # check if '.' are present in the first columns
-    if "." in df[df.columns[0]].iloc[0]:
+    first_element = df[df.columns[0]].iloc[0]
+    if "." in first_element and not re.search(r'\.\d', first_element):
         # split the first column by '.' and take the first part
         df[df.columns[0]] = df[df.columns[0]].str.split(".").str[0]
     df.set_index(df.columns[0], inplace=True)
@@ -454,6 +457,7 @@ def read_data(directory, file_columns, process_dataframe):
     Returns:
     A dataframe that contains the processed data from all the files of interest.
     """
+    logger.info("Reading data from %s", directory)
     multiqc_data = [file for file in directory.glob("multiqc_*.txt")]
 
     multiqc_samples_df = pd.DataFrame()
@@ -543,6 +547,7 @@ def handle_dataframe(df, prefix, column_to_split, header=False, output=False):
     """
     result_df = pd.DataFrame()
     if not df.empty:
+        logger.info("Handling dataframe: %s", prefix)
         df = df.add_prefix(f"({prefix}) ")
 
         # Apply the dynamic split function to each row in the column
@@ -579,8 +584,7 @@ def filter_constrain(df, column, value):
         pandas.DataFrame, pandas.DataFrame: The filtered dataframe with the regex value and the filtered dataframe without the regex value.
     """
     # Find rows with the regex value
-    locations = df[column].str.contains(value)
-    locations += df["step"].str.contains("constrain")
+    locations = (df[column].str.contains(value) | df["step"].str.contains("constrain"))
 
     # Filter
     df_with_value = df[locations]
@@ -786,15 +790,17 @@ def main(argv=None):
             return 0
 
         # Write the complete dataframe to a file
-        if args.save_intermediate:
-            write_dataframe(multiqc_contigs_df.reset_index(inplace=False), "contigs_intermediate.tsv", [])
+        logger.info("Writing intermediate file: contigs_intermediate.tsv")
+        write_dataframe(multiqc_contigs_df.reset_index(inplace=False), "contigs_intermediate.tsv", [])
 
         # Join with the custom contig tables
+        logger.info("Joining dataframes")
         multiqc_contigs_df = multiqc_contigs_df.join(checkv_df, how="outer")
         multiqc_contigs_df = multiqc_contigs_df.join(quast_df, how="outer")
         multiqc_contigs_df = multiqc_contigs_df.join(blast_df, how="outer")
 
         # adding a tag saying that contig faild qc check
+        logger.info("Adding failed contig QC check")
         failed_contigs = {"failed_mapped": {}, "failed_contig_quality": {}}
         failed_contig_df = read_data(args.multiqc_dir, failed_contigs, process_failed_contig_dataframe)
         if not failed_contig_df.empty:
@@ -806,11 +812,13 @@ def main(argv=None):
             return 0
 
         # Keep only those rows we can split up in sample, cluster, step
+        logger.info("Splitting up the index column in sample name, cluster, step")
         mqc_contigs_sel = multiqc_contigs_df.reset_index().rename(columns={multiqc_contigs_df.index.name: "index"})
         mqc_contigs_sel = mqc_contigs_sel[mqc_contigs_sel["index"].str.contains("_", na=False)]
         mqc_contigs_sel[["sample name", "cluster", "step"]] = mqc_contigs_sel["index"].str.split("_", n=3, expand=True)
 
         # Reorder the columns
+        logger.info("Reordering columns")
         final_columns = (
             ["index", "sample name", "cluster", "step"]
             + [column for column in mqc_contigs_sel.columns if "blast" in column]
@@ -821,7 +829,13 @@ def main(argv=None):
         mqc_contigs_sel = reorder_columns(mqc_contigs_sel, final_columns)
 
         # split up denovo constructs and mapping (-CONSTRAIN) results
+        logger.info("Splitting up denovo constructs and mapping (-CONSTRAIN) results")
         contigs_mqc, constrains_mqc = filter_constrain(mqc_contigs_sel, "cluster", "-CONSTRAIN")
+
+        # Write the final dataframe to a file
+        logger.info("Writing Denovo constructs table file: contigs_overview_mqc.tsv")
+        header_clusters_overview = get_header(args.comment_dir, "contig_overview_mqc.txt")
+        write_dataframe(contigs_mqc, "contigs_overview_mqc.tsv", header_clusters_overview)
 
         # Seperate table for mapping constrains
         if not constrains_mqc.empty:
@@ -833,17 +847,15 @@ def main(argv=None):
             constrain_meta = drop_columns(constrain_meta, ["sequence", "samples"])
             constrains_mqc = constrains_mqc.merge(constrain_meta, how="left", left_on="cluster", right_on="id")
             constrains_mqc = reorder_columns(constrains_mqc, ["index", "sample name", "cluster", "step", "species", "segment", "definition"])
+            logger.info("Writing mapping long table: mapping_constrains_mqc.tsv")
             write_dataframe(constrains_mqc, "mapping_constrains_mqc.tsv", header_mapping_seq)
 
             # add mapping summary to sample overview table in ... wide format with species & segment combination
+            logger.info("Creating mapping constrain summary (wide) table")
             constrains_summary_mqc = create_constrain_summary(constrains_mqc, file_columns)
             if not constrains_summary_mqc.empty:
                 header_mapping_summary = get_header(args.comment_dir, "mapping_constrains_summary_mqc.txt")
                 write_dataframe(constrains_summary_mqc, "mapping_constrains_summary_mqc.tsv", header_mapping_summary)
-
-        # Write the final dataframe to a file
-        header_clusters_overview = get_header(args.comment_dir, "contig_overview_mqc.txt")
-        write_dataframe(contigs_mqc, "contigs_overview_mqc.tsv", header_clusters_overview)
 
     return 0
 
