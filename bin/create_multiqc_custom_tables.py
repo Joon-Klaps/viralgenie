@@ -831,36 +831,10 @@ def main(argv=None):
         )
         mqc_contigs_sel = reorder_columns(mqc_contigs_sel, final_columns)
 
-        # split up denovo constructs and mapping (-CONSTRAIN) results
-        logger.info("Splitting up denovo constructs and mapping (-CONSTRAIN) results")
-        contigs_mqc, constrains_mqc = filter_constrain(mqc_contigs_sel, "cluster", "-CONSTRAIN")
-
         # Write the final dataframe to a file
         logger.info("Writing Denovo constructs table file: contigs_overview_mqc.tsv")
         header_clusters_overview = get_header(args.comment_dir, "contig_overview_mqc.txt")
-        write_dataframe(contigs_mqc, "contigs_overview_mqc.tsv", header_clusters_overview)
-
-        # Seperate table for mapping constrains
-        if not constrains_mqc.empty:
-            header_mapping_seq = get_header(args.comment_dir, "mapping_constrains_mqc.txt")
-
-            # Add constrain metadata to the mapping constrain table
-            constrain_meta = handle_tables([args.mapping_constrains])
-            # drop unwanted columns & reorder
-            constrain_meta = drop_columns(constrain_meta, ["sequence", "samples"])
-            constrains_mqc = constrains_mqc.merge(constrain_meta, how="left", left_on="cluster", right_on="id")
-            constrains_mqc = reorder_columns(
-                constrains_mqc, ["index", "sample name", "cluster", "step", "species", "segment", "definition"]
-            )
-            logger.info("Writing mapping long table: mapping_constrains_mqc.tsv")
-            write_dataframe(constrains_mqc, "mapping_constrains_mqc.tsv", header_mapping_seq)
-
-            # add mapping summary to sample overview table in ... wide format with species & segment combination
-            logger.info("Creating mapping constrain summary (wide) table")
-            constrains_summary_mqc = create_constrain_summary(constrains_mqc, file_columns)
-            if not constrains_summary_mqc.empty:
-                header_mapping_summary = get_header(args.comment_dir, "mapping_constrains_summary_mqc.txt")
-                write_dataframe(constrains_summary_mqc, "mapping_constrains_summary_mqc.tsv", header_mapping_summary)
+        write_dataframe(mqc_contigs_sel, "contigs_overview_mqc.tsv", header_clusters_overview)
 
     return 0
 

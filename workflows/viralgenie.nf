@@ -478,11 +478,11 @@ workflow VIRALGENIE {
 
     // Prepare MULTIQC custom tables
     CREATE_MULTIQC_TABLES (
-            ch_clusters_summary,
+            ch_clusters_summary.ifEmpty([]),
             ch_metadata,
-            ch_checkv_summary,
-            ch_quast_summary,
-            ch_blast_summary,
+            ch_checkv_summary.ifEmpty([]),
+            ch_quast_summary.ifEmpty([]),
+            ch_blast_summary.ifEmpty([]),
             multiqc_data,
             ch_multiqc_comment_headers,
             ch_multiqc_custom_table_headers
