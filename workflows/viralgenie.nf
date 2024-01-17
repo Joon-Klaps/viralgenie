@@ -129,7 +129,7 @@ workflow VIRALGENIE {
     // Prepare Databases
     ch_db = Channel.empty()
     if ((!params.skip_assembly && !params.skip_polishing) || !params.skip_consensus_qc || !params.skip_metagenomic_diversity || (!params.skip_preprocessing && !params.skip_hostremoval)){
-        
+
         ch_db_raw = ch_db.mix(ch_ref_pool,ch_kraken2_db, ch_kaiju_db, ch_checkv_db, ch_bracken_db, ch_k2_host)
         UNPACK_DB (ch_db_raw)
 
@@ -169,7 +169,7 @@ workflow VIRALGENIE {
         ch_blast_db  = BLAST_MAKEBLASTDB.out.db
         ch_versions  = ch_versions.mix(BLAST_MAKEBLASTDB.out.versions)
     }
-    
+
     ch_host_trim_reads      = Channel.empty()
     ch_decomplex_trim_reads = Channel.empty()
     // preprocessing illumina reads
@@ -185,7 +185,7 @@ workflow VIRALGENIE {
         ch_multiqc_files        = ch_multiqc_files.mix(PREPROCESSING_ILLUMINA.out.low_reads_mqc.ifEmpty([]))
         ch_versions             = ch_versions.mix(PREPROCESSING_ILLUMINA.out.versions)
     }
-    
+
 
     // Determining metagenomic diversity
     if (!params.skip_metagenomic_diversity) {
@@ -451,8 +451,10 @@ workflow VIRALGENIE {
     ch_blast_summary  = Channel.empty()
 
     if ( !params.skip_consensus_qc || (!params.skip_assembly && !params.skip_variant_calling) ) {
-        if (!params.skip_checkv && !ch_checkv_db ) {
-            ch_checkv_db = CHECKV_DOWNLOADDATABASE().checkv_db
+
+        if (!params.skip_checkv && ch_checkv_db != [] ) {
+            CHECKV_DOWNLOADDATABASE()
+            ch_checkv_db = CHECKV_DOWNLOADDATABASE.out.checkv_db
         }
 
         CONSENSUS_QC(
