@@ -19,10 +19,10 @@ repos:
     hooks:
       - id: remove-crlf
 
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: "v3.1.0"
-    hooks:
-      - id: prettier
+  # - repo: https://github.com/pre-commit/mirrors-prettier
+  #   rev: "v3.1.0"
+  #   hooks:
+  #     - id: prettier
 
   - repo: https://github.com/hadialqattan/pycln
     rev: v2.1.2 # Possible releases: https://github.com/hadialqattan/pycln/releases

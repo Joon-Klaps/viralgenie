@@ -3,12 +3,13 @@
 """Cluster based on a the created network generated from tools"""
 
 import argparse
-import igraph as ig
-import pandas as pd
-import leidenalg as la
 import logging
 import sys
 from pathlib import Path
+
+import igraph as ig
+import leidenalg as la
+import pandas as pd
 
 logger = logging.getLogger()
 
@@ -33,6 +34,15 @@ def parse_args(argv=None):
         metavar="METHOD",
         type=str,
         help="Comparison method containing the necessary information for creating a network.",
+    )
+
+    parser.add_argument(
+        "-a",
+        "--cluster-algorithm",
+        metavar="CLUSTER-ALGORITHM",
+        type=str,
+        default="connected_components",
+        help="Algorithm to use for clustering.",
     )
 
     parser.add_argument(
@@ -115,15 +125,19 @@ def filter_network(network, threshold):
     return filtered_network
 
 
-def cluster_network(network):
+def cluster_network(network, method):
     """
     Cluster the network based on the given score
     """
-    # Partition the network
-    partitions = la.find_partition(
-        network, partition_type=la.ModularityVertexPartition, n_iterations=-1, seed=42, weights="weight"
-    )
-
+    if method == "leiden":
+        # Partition the network
+        partitions = la.find_partition(
+            network, partition_type=la.ModularityVertexPartition, n_iterations=-1, seed=42, weights="weight"
+        )
+    elif method == "connected_components":
+        partitions = network.components(mode="weak")
+    else:
+        raise ValueError(f"Method '{method}' not found.")
     # extract the names of the vertices
     vertices_names = [[network.vs[index]["name"] for index in cluster] for cluster in partitions]
 
@@ -167,7 +181,7 @@ def main(argv=None):
     # args.score is ANI, mash calculates distances, so we need to invert the score
     network_filtered = filter_network(network, 1 - args.score)
 
-    clusters, vertices_names = cluster_network(network_filtered)
+    clusters, vertices_names = cluster_network(network_filtered, args.cluster_algorithm)
 
     to_tsv(vertices_names, args.prefix)
 

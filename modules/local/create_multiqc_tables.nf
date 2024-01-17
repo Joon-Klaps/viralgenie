@@ -30,14 +30,14 @@ process CREATE_MULTIQC_TABLES {
 
     script:
     def args = task.ext.args ?: ''
-    def clusters_summary_files = clusters_summary_files ? "--clusters_summary ${clusters_summary_files.join(' ')}" : ''
-    def sample_metadata        = sample_metadata        ? "--sample_metadata ${sample_metadata}"                   : ''
-    def checkv_files           = checkv_files           ? "--checkv_files ${checkv_files.join(' ')}"               : ''
-    def quast_files            = quast_files            ? "--quast_files ${quast_files.join(' ')}"                 : ''
-    def blast_files            = blast_files            ? "--blast_files ${blast_files.join(' ')}"                 : ''
-    def multiqc_dir            = multiqc_dir            ? "--multiqc_dir ${multiqc_dir}"                           : ''
-    def comment_headers        = comment_headers        ? "--comment_dir ${comment_headers}"                       : ''
-    def custom_table_headers   = custom_table_headers   ? "--table_headers ${custom_table_headers}"                : ''
+    def clusters_summary_files = clusters_summary_files ? "--clusters_summary ${clusters_summary_files}" : ''
+    def sample_metadata        = sample_metadata        ? "--sample_metadata ${sample_metadata}"         : ''
+    def checkv_files           = checkv_files           ? "--checkv_files ${checkv_files}"               : ''
+    def quast_files            = quast_files            ? "--quast_files ${quast_files}"                 : ''
+    def blast_files            = blast_files            ? "--blast_files ${blast_files}"                 : ''
+    def multiqc_dir            = multiqc_dir            ? "--multiqc_dir ${multiqc_dir}"                 : ''
+    def comment_headers        = comment_headers        ? "--comment_dir ${comment_headers}"             : ''
+    def custom_table_headers   = custom_table_headers   ? "--table_headers ${custom_table_headers}"      : ''
 
     """
     create_multiqc_custom_tables.py\\
