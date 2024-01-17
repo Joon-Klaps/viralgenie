@@ -164,12 +164,13 @@ workflow VIRALGENIE {
     }
 
     // Prepare blast DB
+    ch_blast_db = Channel.empty()
     if ((!params.skip_assembly && !params.skip_polishing) || !params.skip_consensus_qc){
        // see issue #56
         SEQKIT_REPLACE (ch_ref_pool_raw)
         ch_versions = ch_versions.mix(SEQKIT_REPLACE.out.versions)
-        ch_ref_pool = SEQKIT_REPLACE.out.fa
-        
+        ch_ref_pool = SEQKIT_REPLACE.out.fastx
+
         BLAST_MAKEBLASTDB ( ch_ref_pool )
         ch_blast_db  = BLAST_MAKEBLASTDB.out.db
         ch_versions  = ch_versions.mix(BLAST_MAKEBLASTDB.out.versions)
