@@ -1,0 +1,14 @@
+Changes in module 'nf-core/kaiju/kaiju2table'
+--- modules/nf-core/kaiju/kaiju2table/main.nf
++++ modules/nf-core/kaiju/kaiju2table/main.nf
+@@ -24,7 +24,7 @@
+     def prefix = task.ext.prefix ?: "${meta.id}"
+     """
+     dbnodes=`find -L ${db} -name "*nodes.dmp"`
+-    dbname=`find -L ${db} -name "*.fmi" -not -name "._*"`
++    dbname=`find -L ${db} -name "*names.dmp"`
+     kaiju2table   $args \\
+         -t \$dbnodes \\
+         -n \$dbname \\
+
+************************************************************

@@ -24,7 +24,7 @@ process KAIJU_KAIJU2TABLE {
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
     dbnodes=`find -L ${db} -name "*nodes.dmp"`
-    dbname=`find -L ${db} -name "*.fmi" -not -name "._*"`
+    dbname=`find -L ${db} -name "*names.dmp"`
     kaiju2table   $args \\
         -t \$dbnodes \\
         -n \$dbname \\
