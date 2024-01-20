@@ -31,8 +31,8 @@ process IVAR_VARIANTS {
     """
     samtools \\
         mpileup \\
-        $args2 \\
         --reference $fasta \\
+        $args2 \\
         $bam \\
         $mpileup \\
         | ivar \\

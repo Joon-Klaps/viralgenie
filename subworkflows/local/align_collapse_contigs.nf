@@ -17,6 +17,7 @@ workflow ALIGN_COLLAPSE_CONTIGS {
     ch_sequences = ch_references_members.map{ meta, references, members -> [meta, [references, members]] }
 
     CAT_CLUSTER(ch_sequences)
+    ch_versions = ch_versions.mix(CAT_CLUSTER.out.versions.first())
     // TODO:
     // if external_reference is false, we need to include the reference when mapping towards the reference (i.e. the reference is also a member)
     // if external_reference is true, we need to exclude the reference when mapping towards the reference
@@ -78,7 +79,7 @@ workflow ALIGN_COLLAPSE_CONTIGS {
         .join( IVAR_CONTIG_CONSENSUS.out.mpileup, by:[0])
         .map{ meta, references, bam, consensus, mpileup -> [meta, references, consensus, mpileup] }
         .set{ ch_ref_cons_mpileup }
-    
+
 
     // Custom script that replaces region in consensus with orignally 0 coverage with regions from the reference.
     ANNOTATE_WITH_REFERENCE( ch_ref_cons_mpileup )

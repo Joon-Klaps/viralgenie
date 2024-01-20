@@ -1,0 +1,15 @@
+Changes in module 'nf-core/ivar/variants'
+--- modules/nf-core/ivar/variants/main.nf
++++ modules/nf-core/ivar/variants/main.nf
+@@ -31,8 +31,8 @@
+     """
+     samtools \\
+         mpileup \\
++        --reference $fasta \\
+         $args2 \\
+-        --reference $fasta \\
+         $bam \\
+         $mpileup \\
+         | ivar \\
+
+************************************************************
