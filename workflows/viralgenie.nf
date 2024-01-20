@@ -85,6 +85,7 @@ include { FASTQ_SPADES_TRINITY_MEGAHIT    } from '../subworkflows/local/fastq_sp
 // Consensus polishing of genome
 include { FASTA_CONTIG_CLUST              } from '../subworkflows/local/fasta_contig_clust'
 include { BLAST_MAKEBLASTDB               } from '../modules/nf-core/blast/makeblastdb/main'
+include { SEQKIT_REPLACE                  } from '../modules/nf-core/seqkit/replace/main'
 include { ALIGN_COLLAPSE_CONTIGS          } from '../subworkflows/local/align_collapse_contigs'
 include { UNPACK_DB                       } from '../subworkflows/local/unpack_db'
 include { FASTQ_FASTA_ITERATIVE_CONSENSUS } from '../subworkflows/local/fastq_fasta_iterative_consensus'
@@ -154,7 +155,7 @@ workflow VIRALGENIE {
         ch_versions         = ch_versions.mix(UNPACK_DB.out.versions)
 
 // transfer to value channels so processes are not just done once
-        ch_ref_pool         = ch_db.blast.collect{it[1]}.ifEmpty([]).map{it -> [[id: 'blast'], it]}
+        ch_ref_pool_raw     = ch_db.blast.collect{it[1]}.ifEmpty([]).map{it -> [[id: 'blast'], it]}
         ch_kraken2_db       = ch_db.kraken2.collect().ifEmpty([])
         ch_kaiju_db         = ch_db.kaiju.collect().ifEmpty([])
         ch_checkv_db        = ch_db.checkv.collect().ifEmpty([])
@@ -165,6 +166,11 @@ workflow VIRALGENIE {
     // Prepare blast DB
     ch_blast_db = Channel.empty()
     if ((!params.skip_assembly && !params.skip_polishing) || !params.skip_consensus_qc){
+       // see issue #56
+        SEQKIT_REPLACE (ch_ref_pool_raw)
+        ch_versions = ch_versions.mix(SEQKIT_REPLACE.out.versions)
+        ch_ref_pool = SEQKIT_REPLACE.out.fastx
+
         BLAST_MAKEBLASTDB ( ch_ref_pool )
         ch_blast_db  = BLAST_MAKEBLASTDB.out.db
         ch_versions  = ch_versions.mix(BLAST_MAKEBLASTDB.out.versions)

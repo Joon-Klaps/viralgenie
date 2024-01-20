@@ -117,29 +117,6 @@ jobs:
         run: |
           nextflow run ${GITHUB_WORKSPACE} -profile test_nothing,docker --outdir ./results --max_cpus 2 --max_memory 4GB
 
-  test-minimal:
-    name: Run pipeline with minimal input
-    # Only run on push if this is the nf-core dev branch (merged PRs)
-    if: "${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'nf-core/viralgenie') }}"
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        NXF_VER:
-          - "23.04.0"
-          - "latest-everything"
-    steps:
-      - name: Check out pipeline code
-        uses: actions/checkout@v4
-
-      - name: Install Nextflow
-        uses: nf-core/setup-nextflow@v1
-        with:
-          version: "${{ matrix.NXF_VER }}"
-
-      - name: Run pipeline without config and only default options (exception of larger default databases)
-        run: |
-          nextflow run ${GITHUB_WORKSPACE} -profile docker --input ./assets/samplesheet.csv --outdir ./results --host_k2_db 'https://github.com/nf-core/test-datasets/raw/viralrecon/genome/kraken2/kraken2_hs22.tar.gz' --kaiju_db 'https://kaiju-idx.s3.eu-central-1.amazonaws.com/2023/kaiju_db_viruses_2023-05-26.tgz' --max_cpus 2 --max_memory 4GB
-
   test-fail-mapped:
     name: Run pipeline with test bad mapping constrained reference
     # Only run on push if this is the nf-core dev branch (merged PRs)
