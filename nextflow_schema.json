@@ -580,23 +580,6 @@
                     "default": 50000,
                     "fa_icon": "fas fa-expand-alt"
                 },
-                "skip_consensus_calling_contigs": {
-                    "type": "boolean",
-                    "description": "Skip the consensus construction of  multiple contigs, instead use only the representative",
-                    "fa_icon": "fas fa-forward"
-                },
-                "contig_align_method": {
-                    "type": "string",
-                    "default": "mafft",
-                    "description": "Method for alignment of cluster of contigs",
-                    "enum": ["mafft", "muscle"],
-                    "fa_icon": "fas fa-align-center"
-                },
-                "skip_consensus_calling_reads": {
-                    "type": "boolean",
-                    "description": "Skip further polishing of consensus by mapping reads",
-                    "fa_icon": "fas fa-forward"
-                },
                 "skip_singleton_filtering": {
                     "type": "boolean",
                     "description": "Skip the filtering of contigs that did not cluster together with other contigs",
