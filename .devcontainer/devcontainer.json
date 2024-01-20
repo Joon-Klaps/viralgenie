@@ -18,7 +18,7 @@
                 "python.linting.flake8Path": "/opt/conda/bin/flake8",
                 "python.linting.pycodestylePath": "/opt/conda/bin/pycodestyle",
                 "python.linting.pydocstylePath": "/opt/conda/bin/pydocstyle",
-                "python.linting.pylintPath": "/opt/conda/bin/pylint",
+                "python.linting.pylintPath": "/opt/conda/bin/pylint"
             },
 
             // Add the IDs of extensions you want installed when the container is created.
@@ -28,10 +28,10 @@
                 "nf-core.nf-core-extensionpack",
                 "GitHub.copilot",
                 "xuedao.super-themes",
-                "streetsidesoftware.code-spell-checker",
-            ],
-        },
+                "streetsidesoftware.code-spell-checker"
+            ]
+        }
     },
 
-    "postCreateCommand": "pre-commit install --install-hooks && nextflow self-update",
+    "postCreateCommand": "pre-commit install --install-hooks && nextflow self-update"
 }
