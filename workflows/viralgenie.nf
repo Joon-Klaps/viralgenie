@@ -175,8 +175,8 @@ workflow VIRALGENIE {
         ch_versions  = ch_versions.mix(BLAST_MAKEBLASTDB.out.versions)
     }
 
-    ch_host_trim_reads      = Channel.empty()
-    ch_decomplex_trim_reads = Channel.empty()
+    ch_host_trim_reads      = ch_reads
+    ch_decomplex_trim_reads = ch_reads
     // preprocessing illumina reads
     if (!params.skip_preprocessing){
         PREPROCESSING_ILLUMINA (
