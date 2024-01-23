@@ -96,7 +96,6 @@ include { RENAME_FASTA_HEADER as RENAME_FASTA_HEADER_CONSTRAIN } from '../module
 include { FASTQ_FASTA_MAP_CONSENSUS                            } from '../subworkflows/local/fastq_fasta_map_consensus'
 
 // QC consensus
-include { CHECKV_DOWNLOADDATABASE         } from '../modules/nf-core/checkv/downloaddatabase/main'
 include { CONSENSUS_QC                    } from '../subworkflows/local/consensus_qc'
 
 // Report generation
@@ -158,9 +157,9 @@ workflow VIRALGENIE {
         ch_ref_pool_raw     = ch_db.blast.collect{it[1]}.ifEmpty([]).map{it -> [[id: 'blast'], it]}
         ch_kraken2_db       = ch_db.kraken2.collect().ifEmpty([])
         ch_kaiju_db         = ch_db.kaiju.collect().ifEmpty([])
-        ch_checkv_db        = ch_db.checkv.collect().ifEmpty([])
+        ch_checkv_db        = ch_db.checkv.collect().ifEmpty(null)
         ch_bracken_db       = ch_db.bracken.collect().ifEmpty([])
-        ch_k2_host          = ch_db.k2_host.collect().ifEmpty([])
+        ch_k2_host          = ch_db.k2_host.collect().ifEmpty(null)
     }
 
     // Prepare blast DB
@@ -457,11 +456,6 @@ workflow VIRALGENIE {
     ch_blast_summary  = Channel.empty()
 
     if ( !params.skip_consensus_qc || (!params.skip_assembly && !params.skip_variant_calling) ) {
-
-        if (!params.skip_checkv && ch_checkv_db != [] ) {
-            CHECKV_DOWNLOADDATABASE()
-            ch_checkv_db = CHECKV_DOWNLOADDATABASE.out.checkv_db
-        }
 
         CONSENSUS_QC(
             ch_consensus,
