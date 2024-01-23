@@ -1,8 +1,9 @@
-include { CAT_CAT as CAT_CLUSTER                   } from '../../modules/nf-core/cat/cat/main'
-include { MINIMAP2_INDEX as MINIMAP2_CONTIG_INDEX  } from '../../modules/nf-core/minimap2/index/main'
-include { MINIMAP2_ALIGN as MINIMAP2_CONTIG_ALIGN  } from '../../modules/nf-core/minimap2/align/main'
-include { IVAR_CONSENSUS as IVAR_CONTIG_CONSENSUS  } from '../../modules/nf-core/ivar/consensus/main'
-include { ANNOTATE_WITH_REFERENCE                  } from '../../modules/local/annotate_with_reference/main'
+include { CAT_CAT as CAT_CLUSTER                                      } from '../../modules/nf-core/cat/cat/main'
+include { MINIMAP2_INDEX as MINIMAP2_CONTIG_INDEX                     } from '../../modules/nf-core/minimap2/index/main'
+include { MINIMAP2_ALIGN as MINIMAP2_CONTIG_ALIGN                     } from '../../modules/nf-core/minimap2/align/main'
+include { IVAR_CONSENSUS as IVAR_CONTIG_CONSENSUS                     } from '../../modules/nf-core/ivar/consensus/main'
+include { RENAME_FASTA_HEADER as RENAME_FASTA_HEADER_CONTIG_CONSENSUS } from '../../modules/local/rename_fasta_header'
+include { ANNOTATE_WITH_REFERENCE                                     } from '../../modules/local/annotate_with_reference/main'
 
 workflow ALIGN_COLLAPSE_CONTIGS {
 
@@ -64,8 +65,11 @@ workflow ALIGN_COLLAPSE_CONTIGS {
     )
     ch_versions= ch_versions.mix(IVAR_CONTIG_CONSENSUS.out.versions.first())
 
+    RENAME_FASTA_HEADER_CONTIG_CONSENSUS( IVAR_CONTIG_CONSENSUS.out.fasta, "ivar" )
+    ch_versions = ch_versions.mix(RENAME_FASTA_HEADER_CONTIG_CONSENSUS.out.versions.first())
+
     // If external, there possibly regions that require patching
-    IVAR_CONTIG_CONSENSUS.out.fasta
+    RENAME_FASTA_HEADER_CONTIG_CONSENSUS.out.fasta
         .branch{ meta, fasta ->
             external: meta.external_reference
             internal: true
@@ -78,7 +82,7 @@ workflow ALIGN_COLLAPSE_CONTIGS {
         .join( IVAR_CONTIG_CONSENSUS.out.mpileup, by:[0])
         .map{ meta, references, bam, consensus, mpileup -> [meta, references, consensus, mpileup] }
         .set{ ch_ref_cons_mpileup }
-    
+
 
     // Custom script that replaces region in consensus with orignally 0 coverage with regions from the reference.
     ANNOTATE_WITH_REFERENCE( ch_ref_cons_mpileup )
