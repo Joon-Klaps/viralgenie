@@ -82,17 +82,17 @@ module_order:
       name: "SAMPLE: Kaiju (Diversity)"
   - "quast":
       name: "SAMPLE: Quast (Spades)"
-      anchor: "quast"
+      anchor: "quast_spades"
       path_filters:
         - "*_spades.tsv"
   - "quast":
       name: "SAMPLE: Quast (Megahit)"
-      anchor: "quast"
+      anchor: "quast_megahit"
       path_filters:
         - "*_megahit.tsv"
   - "quast":
       name: "SAMPLE: Quast (Trinity)"
-      anchor: "quast"
+      anchor: "quast_trinity"
       path_filters:
         - "*_trinity.tsv"
   - "samtools":
@@ -142,6 +142,15 @@ table_columns_name:
     L50: "L50 (Trinity)"
     Largest contig: "Largest contig (Trinity)"
     Total length: "Total length (Trinity)"
+  "SAMPLE: Kraken2 (Host-removal)":
+    pct_top_n: "% reads of top 5 host/contaminants"
+    pct_unclassified: "% non-host reads"
+  "SAMPLE: Kraken2 (Diversity)":
+    pct_top_n: "% reads top 5 Species (Kraken2)"
+  "SAMPLE: KAIJU (Diversity)":
+    "% Assigned": "% Reads assigned (Kaiju)"
+    assigned: "M reads assigned (Kaiju)"
+    "% Unclassified": "% Reads unassigned (Kaiju)"
 
 # Summary table visible columns
 table_columns_visible:
@@ -163,7 +172,6 @@ table_columns_visible:
     percent_gc: True
     percent_duplicates: True
     percent_fails: True
-  "SAMPLE: Kraken2 (Host-removal)": True
   "CLUSTER: Samtools Stats": False
   "CLUSTER: Bcftools: Stats": False
   "CLUSTER: Picard: Mark Duplicates": False
@@ -188,51 +196,6 @@ table_columns_visible:
     L50: False
     Largest contig: True
     Total length: False
-
-# TODO
-# TRIED Give them all negative numbers so all columns from sample metadata are displayed first
-# table_columns_placement:
-#   "SAMPLE: FastQC (pre-Trimming)":
-#     total_sequences: 500
-#     avg_sequence_length: 501
-#     percent_gc: 502
-#     percent_duplicates: 503
-#     percent_fails: 504
-#   "SAMPLE: FastQC (post-Trimming)":
-#     total_sequences: 505
-#     avg_sequence_length: 506
-#     percent_gc: 507
-#     percent_duplicates: 508
-#     percent_fails: 508
-#   "SAMPLE: FastQC (post-Host-removal)":
-#     total_sequences: 509
-#     avg_sequence_length: 509
-#     percent_gc: 509
-#     percent_duplicates: 509
-#     percent_fails: 509
-#   "SAMPLE: BBDuk":
-#     Total Removed bases percent: 510
-#     Total Removed reads percent: 510
-#     Total Removed reads: 510
-#   "SAMPLE: Quast (Spades)":
-#     N50: 511
-#     L50: 512
-#     Largest contig: 513
-#     Total length: 514
-#   "SAMPLE: Quast (Megahit)":
-#     N50: 515
-#     L50: 516
-#     Largest contig: 517
-#     Total length: 518
-#   "SAMPLE: Quast (Trinity)":
-#     N50: 519
-#     L50: 520
-#     Largest contig: 521
-#     Total length: 522
-#   "Custom content: clusters_summary":
-#     "# Clusters": 523
-#     "Average cluster size": 523
-#     "Number of singletons": 523
 
 section_comments:
   general_stats: "By default, all read count columns are displayed as millions (M) of reads."

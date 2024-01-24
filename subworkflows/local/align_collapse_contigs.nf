@@ -66,7 +66,7 @@ workflow ALIGN_COLLAPSE_CONTIGS {
     )
     ch_versions= ch_versions.mix(IVAR_CONTIG_CONSENSUS.out.versions.first())
 
-    RENAME_FASTA_HEADER_CONTIG_CONSENSUS( IVAR_CONTIG_CONSENSUS.out.fasta, "ivar" )
+    RENAME_FASTA_HEADER_CONTIG_CONSENSUS( IVAR_CONTIG_CONSENSUS.out.fasta, "consensus" )
     ch_versions = ch_versions.mix(RENAME_FASTA_HEADER_CONTIG_CONSENSUS.out.versions.first())
 
     // If external, there possibly regions that require patching
