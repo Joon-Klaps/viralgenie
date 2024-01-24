@@ -82,17 +82,17 @@ module_order:
       name: "SAMPLE: Kaiju (Diversity)"
   - "quast":
       name: "SAMPLE: Quast (Spades)"
-      anchor: "quast"
+      anchor: "quast_spades"
       path_filters:
         - "*_spades.tsv"
   - "quast":
       name: "SAMPLE: Quast (Megahit)"
-      anchor: "quast"
+      anchor: "quast_megahit"
       path_filters:
         - "*_megahit.tsv"
   - "quast":
       name: "SAMPLE: Quast (Trinity)"
-      anchor: "quast"
+      anchor: "quast_trinity"
       path_filters:
         - "*_trinity.tsv"
   - "samtools":
