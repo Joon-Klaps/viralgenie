@@ -19,6 +19,7 @@ class BlastConstants:
     COLUMNS = [
         "query",
         "subject",
+        "subject title",
         "pident",
         "qlen",
         "length",
@@ -786,26 +787,34 @@ def main(argv=None):
     if args.save_intermediate:
         blast_header = get_header(args.comment_dir, "blast_mqc.txt")
     if not blast_df.empty:
-        # Read the blast summary file
-        blast_columns = [
-            "query",
-            "subject",
-            "subject title",
-            "pident",
-            "qlen",
-            "length",
-            "mismatch",
-            "gapopen",
-            "qstart",
-            "qend",
-            "sstart",
-            "send",
-            "evalue",
-            "bitscore",
-        ]
+        blast_df.columns = BlastConstants.COLUMNS
         # Filter on best hit per contig and keep only the best hit
         blast_df = blast_df.sort_values("bitscore", ascending=False).drop_duplicates("query")
-        # Extract the species name from the subject column
+        blast_df = handle_dataframe(blast_df, "blast", "query", blast_header, "summary_blast_mqc.tsv")
+
+    # CLuster table - Blast summary
+    annotation_df = handle_tables(args.annotation_files, header=None)
+    if not annotation_df.empty:
+        annotation_df.columns = BlastConstants.COLUMNS
+        # Filter on best hit per contig and keep only the best hit
+        annotation_df = annotation_df.sort_values("bitscore", ascending=False).drop_duplicates("query")
+        df = pd.DataFrame(data)
+
+        # # Define a more flexible regular expression pattern
+        # pattern = r'(?P<key>\w+):"(?P<value>[^"]+)"'
+
+        # # Extract all key-value pairs into separate columns
+        # df_extracted = df['fasta_header'].str.extractall(pattern).unstack()
+
+        # # Rename the columns for better readability
+        # df_extracted.columns = [f"{col[0]}_{col[1]}" for col in df_extracted.columns]
+
+        # # Concatenate the original DataFrame with the extracted columns
+        # df = pd.concat([df, df_extracted], axis=1)
+
+        # # Drop the original 'fasta_header' column if needed
+        # # df = df.drop(columns=['fasta_header'])
+        # annotation_df =
         blast_df["species"] = blast_df["subject"].str.split("-").str[-1]
         blast_df = blast_df[["species"] + blast_df.columns.difference(["species"], sort=False).tolist()]
         blast_df = handle_dataframe(blast_df, "blast", "query", blast_header, "summary_blast_mqc.tsv")
