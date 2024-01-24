@@ -45,7 +45,7 @@ ch_metadata      = createFileChannel(params.metadata)
 ch_contaminants  = createFileChannel(params.contaminants)
 ch_spades_yml    = createFileChannel(params.spades_yml)
 ch_spades_hmm    = createFileChannel(params.spades_hmm)
-ch_ref_pool      = (!params.skip_assembly && !params.skip_polishing) || (!params.skip_consensus_qc && !params.skip_blast_qc)           ? createChannel( params.reference_pool, "blast", true )                        : Channel.empty()
+ch_ref_pool      = (!params.skip_assembly && !params.skip_polishing) || (!params.skip_consensus_qc && !params.skip_blast_qc)           ? createChannel( params.reference_pool, "reference", true )                    : Channel.empty()
 ch_kraken2_db    = (!params.skip_assembly && !params.skip_polishing && !params.skip_precluster) || !params.skip_metagenomic_diversity  ? createChannel( params.kraken2_db, "kraken2", !params.skip_kraken2 )          : Channel.empty()
 ch_kaiju_db      = (!params.skip_assembly && !params.skip_polishing && !params.skip_precluster) || !params.skip_metagenomic_diversity  ? createChannel( params.kaiju_db, "kaiju", !params.skip_kaiju )                : Channel.empty()
 ch_checkv_db     = !params.skip_consensus_qc                                                                                           ? createChannel( params.checkv_db, "checkv", !params.skip_checkv )             : Channel.empty()
@@ -157,28 +157,46 @@ workflow VIRALGENIE {
         ch_versions         = ch_versions.mix(UNPACK_DB.out.versions)
 
 // transfer to value channels so processes are not just done once
-        ch_ref_pool_raw     = ch_db.reference.collect{it[1]}.ifEmpty([]).map{it -> [[id: 'reference_pool'], it]}
+        ch_ref_pool_raw     = ch_db.reference.collect{it[1]}.ifEmpty([]).map{it -> [[id: 'reference'], it]}
         ch_kraken2_db       = ch_db.kraken2.collect().ifEmpty([])
         ch_kaiju_db         = ch_db.kaiju.collect().ifEmpty([])
         ch_checkv_db        = ch_db.checkv.collect().ifEmpty([])
         ch_bracken_db       = ch_db.bracken.collect().ifEmpty([])
         ch_k2_host          = ch_db.k2_host.collect().ifEmpty([])
-        ch_annotation_db    = ch_db.annotation.collect(it[1]).ifEmpty([]).map{it -> [[id: 'annotation'], it]}
+        ch_annotation_db    = ch_db.annotation.collect{it[1]}.ifEmpty([]).map{it -> [[id: 'annotation'], it]}
     }
 
     // Prepare blast DB
-    ch_blast_refdb = Channel.empty()
+    ch_ref_pool     = Channel.empty()
+    ch_blast_refdb  = Channel.empty()
+    ch_blast_annodb = Channel.empty()
     if ( !params.skip_consensus_qc ){
+        ch_blastdb_in = Channel.empty()
         if ((!params.skip_assembly && !params.skip_polishing) ) {
             // see issue #56
             SEQKIT_REPLACE (ch_ref_pool_raw)
-            ch_versions = ch_versions.mix(SEQKIT_REPLACE.out.versions)
-            ch_ref_pool = SEQKIT_REPLACE.out.fastx
+            ch_versions   = ch_versions.mix(SEQKIT_REPLACE.out.versions)
+            ch_ref_pool   = SEQKIT_REPLACE.out.fastx
+            ch_blastdb_in = ch_blastdb_in.mix(ch_ref_pool)
         }
 
+        if ( !params.skip_annotation){
+            ch_blastdb_in = ch_blastdb_in.mix(ch_annotation_db)
+        }
 
         BLAST_MAKEBLASTDB ( ch_ref_pool )
-        ch_blast_refdb  = BLAST_MAKEBLASTDB.out.db
+        BLAST_MAKEBLASTDB
+            .out
+            .db
+            .branch { meta, db ->
+                reference: meta.id == 'reference'
+                    return [ meta, db ]
+                annotation: meta.id == 'annotation'
+                    return [ meta, db ]
+            }.
+            set{ch_blastdb_out}
+        ch_blast_refdb  = ch_blastdb_out.reference.collect{it[1]}.ifEmpty([]).map{it -> [[id: 'reference'], it]}
+        ch_blast_annodb = ch_blastdb_out.annotation.collect{it[1]}.ifEmpty([]).map{it -> [[id: 'annotation'], it]}
         ch_versions  = ch_versions.mix(BLAST_MAKEBLASTDB.out.versions)
     }
 
@@ -469,11 +487,6 @@ workflow VIRALGENIE {
             ch_checkv_db,
             ch_blast_refdb,
             ch_annotation_db,
-            params.skip_checkv,
-            params.skip_quast,
-            params.skip_blast_qc,
-            params.skip_alignment_qc,
-            params.skip_annotation,
             )
         ch_versions       = ch_versions.mix(CONSENSUS_QC.out.versions)
         ch_multiqc_files  = ch_multiqc_files.mix(CONSENSUS_QC.out.mqc.collect{it[1]}.ifEmpty([]))

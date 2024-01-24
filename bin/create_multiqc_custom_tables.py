@@ -15,6 +15,24 @@ import yaml
 logger = logging.getLogger()
 
 
+class BlastConstants:
+    COLUMNS = [
+        "query",
+        "subject",
+        "pident",
+        "qlen",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+    ]
+
+
 def parse_args(argv=None):
     """Define and immediately parse command line arguments."""
     parser = argparse.ArgumentParser(
@@ -82,6 +100,14 @@ def parse_args(argv=None):
         metavar="BLAST FILES",
         nargs="+",
         help="Blast files for each contig, having the standard outfmt 6",
+        type=Path,
+    )
+
+    parser.add_argument(
+        "--annotation_files",
+        metavar="Annotation FILES",
+        nargs="+",
+        help="Blast files for each contig to the annotation database, having the standard outfmt 6",
         type=Path,
     )
 
@@ -761,7 +787,7 @@ def main(argv=None):
         blast_header = get_header(args.comment_dir, "blast_mqc.txt")
     if not blast_df.empty:
         # Read the blast summary file
-        blast_df.columns = [
+        blast_columns = [
             "query",
             "subject",
             "subject title",

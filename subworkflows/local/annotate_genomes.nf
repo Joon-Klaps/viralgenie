@@ -1,23 +1,16 @@
-// TODO nf-core: If in doubt look at other nf-core/subworkflows to see how we are doing things! :)
-//               https://github.com/nf-core/modules/tree/master/subworkflows
-//               You can also ask for help via your pull request or on the #subworkflows channel on the nf-core Slack workspace:
-//               https://nf-co.re/join
-// TODO nf-core: A subworkflow SHOULD import at least two modules
 
 include { BLAST_BLASTN      as BLASTN_ANNOTATION      } from '../../../modules/nf-core/blast/blastn/main'
 
-workflow ANNOTATE_CONTIGS {
+workflow ANNOTATE_GENOMES {
 
     take:
-    contigs,
+    genomes,
     annotation_db
 
     main:
 
-    ch_versions = Channel.empty()
+    BLASTN_ANNOTATION( genomes, annotation_db )
 
-    MAKEBLASTDB_ANNOTATION( annotation_db )
-    ch_versions = ch_versions.mix(SAMTOOLS_SORT.out.versions.first())
 
     SAMTOOLS_INDEX ( SAMTOOLS_SORT.out.bam )
     ch_versions = ch_versions.mix(SAMTOOLS_INDEX.out.versions.first())
