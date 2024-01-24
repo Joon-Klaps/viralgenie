@@ -764,6 +764,7 @@ def main(argv=None):
         blast_df.columns = [
             "query",
             "subject",
+            "subject title",
             "pident",
             "qlen",
             "length",
