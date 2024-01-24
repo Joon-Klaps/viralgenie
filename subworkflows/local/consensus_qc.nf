@@ -1,3 +1,4 @@
+include { CHECKV_DOWNLOADDATABASE         } from '../../modules/nf-core/checkv/downloaddatabase/main'
 include { CHECKV_ENDTOEND                 } from '../../modules/nf-core/checkv/endtoend/main'
 include { CAT_CAT as CAT_CAT_QC           } from '../../modules/nf-core/cat/cat/main'
 include { QUAST  as QUAST_QC              } from '../../modules/nf-core/quast/main'
@@ -40,6 +41,11 @@ workflow CONSENSUS_QC  {
     }
 
     if ( !skip_checkv ) {
+        if ( !params.checkv_db ) {
+            CHECKV_DOWNLOADDATABASE()
+            checkv_db = CHECKV_DOWNLOADDATABASE.out.checkv_db
+        }
+
         // uses HMM and AA alignment to deterimine completeness
         CHECKV_ENDTOEND ( ch_genome_collapsed, checkv_db )
         checkv_summary = CHECKV_ENDTOEND.out.quality_summary
