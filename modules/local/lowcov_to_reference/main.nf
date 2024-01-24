@@ -1,4 +1,4 @@
-process ANNOTATE_WITH_REFERENCE {
+process LOWCOV_TO_REFERENCE {
     tag "$meta.id"
     label 'process_single'
 
@@ -22,7 +22,7 @@ process ANNOTATE_WITH_REFERENCE {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    annotate_with_reference.py \\
+    lowcov_to_reference.py \\
         $args \\
         --reference ${reference} \\
         --consensus ${consensus} \\

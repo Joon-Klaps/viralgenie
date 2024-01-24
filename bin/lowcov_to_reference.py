@@ -19,7 +19,7 @@ def parse_args(argv=None):
     """Define and immediately parse command line arguments."""
     parser = argparse.ArgumentParser(
         description="Provide a command line tool to annotate the regions with 0 coverage with the reference sequence.",
-        epilog="Example: python annotate_with_reference.py --reference reference.fasta --consensus consensus.fasta --mpileup mpileup.txt --prefix prefix",
+        epilog="Example: python lowcov_to_reference.py --reference reference.fasta --consensus consensus.fasta --mpileup mpileup.txt --prefix prefix",
     )
 
     parser.add_argument(

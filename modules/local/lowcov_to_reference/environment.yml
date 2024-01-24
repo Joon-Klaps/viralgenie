@@ -1,4 +1,4 @@
-name: annotate_with_reference
+name: lowcov_to_reference
 channels:
   - conda-forge
   - bioconda

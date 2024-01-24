@@ -294,10 +294,9 @@ workflow VIRALGENIE {
 
             ch_multiqc_files       =  ch_multiqc_files.mix(FASTA_CONTIG_CLUST.out.no_blast_hits_mqc.ifEmpty([]))
 
-            // Align clustered contigs & collapse into a single consensus per cluster
+            // map clustered contigs & create a single consensus per cluster
             ALIGN_COLLAPSE_CONTIGS (
-                ch_centroids_members.multiple,
-                params.contig_align_method
+                ch_centroids_members.multiple
                 )
             ch_versions = ch_versions.mix(ALIGN_COLLAPSE_CONTIGS.out.versions)
 

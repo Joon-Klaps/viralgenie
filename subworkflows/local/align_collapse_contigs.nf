@@ -3,13 +3,12 @@ include { MINIMAP2_INDEX as MINIMAP2_CONTIG_INDEX                     } from '..
 include { MINIMAP2_ALIGN as MINIMAP2_CONTIG_ALIGN                     } from '../../modules/nf-core/minimap2/align/main'
 include { IVAR_CONSENSUS as IVAR_CONTIG_CONSENSUS                     } from '../../modules/nf-core/ivar/consensus/main'
 include { RENAME_FASTA_HEADER as RENAME_FASTA_HEADER_CONTIG_CONSENSUS } from '../../modules/local/rename_fasta_header'
-include { ANNOTATE_WITH_REFERENCE                                     } from '../../modules/local/annotate_with_reference/main'
+include { LOWCOV_TO_REFERENCE                                     } from '../../modules/local/lowcov_to_reference/main'
 
 workflow ALIGN_COLLAPSE_CONTIGS {
 
     take:
     ch_references_members
-    aligner
 
     main:
     ch_versions = Channel.empty()
@@ -86,10 +85,10 @@ workflow ALIGN_COLLAPSE_CONTIGS {
 
 
     // Custom script that replaces region in consensus with orignally 0 coverage with regions from the reference.
-    ANNOTATE_WITH_REFERENCE( ch_ref_cons_mpileup )
-    ch_versions = ch_versions.mix(ANNOTATE_WITH_REFERENCE.out.versions.first())
+    LOWCOV_TO_REFERENCE( ch_ref_cons_mpileup )
+    ch_versions = ch_versions.mix(LOWCOV_TO_REFERENCE.out.versions.first())
 
-    ANNOTATE_WITH_REFERENCE
+    LOWCOV_TO_REFERENCE
         .out
         .sequence
         .mix( ch_consensus.internal )
@@ -97,7 +96,7 @@ workflow ALIGN_COLLAPSE_CONTIGS {
 
     emit:
     consensus       = consensus_patched                 // channel: [ val(meta), [ fasta ] ]
-    aligned_txt     = ANNOTATE_WITH_REFERENCE.out.txt   // channel: [ val(meta), [ txt ] ]
+    aligned_txt     = LOWCOV_TO_REFERENCE.out.txt   // channel: [ val(meta), [ txt ] ]
     unaligned_fasta = CAT_CLUSTER.out.file_out          // channel: [ val(meta), [ fasta ] ]
     versions        = ch_versions                       // channel: [ versions.yml ]
 }
