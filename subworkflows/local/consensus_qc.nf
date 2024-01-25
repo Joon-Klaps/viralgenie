@@ -2,7 +2,7 @@ include { CHECKV_DOWNLOADDATABASE           } from '../../modules/nf-core/checkv
 include { CHECKV_ENDTOEND                   } from '../../modules/nf-core/checkv/endtoend/main'
 include { CAT_CAT as CAT_CAT_QC             } from '../../modules/nf-core/cat/cat/main'
 include { QUAST  as QUAST_QC                } from '../../modules/nf-core/quast/main'
-include { BLAST_BLASTN as BLAST_BLASTN_QC   } from '../../modules/nf-core/blast/blastn/main'
+include { BLAST_BLASTN as BLASTN_QC         } from '../../modules/nf-core/blast/blastn/main'
 include { BLAST_BLASTN as BLASTN_ANNOTATION } from '../../modules/nf-core/blast/blastn/main'
 include { MAFFT as MAFFT_ITERATIONS         } from '../../modules/nf-core/mafft/main'
 include { MAFFT as MAFFT_QC                 } from '../../modules/nf-core/mafft/main'
@@ -23,7 +23,7 @@ workflow CONSENSUS_QC  {
     blast_txt        = Channel.empty()
     checkv_summary   = Channel.empty()
     quast_summary    = Channel.empty()
-    annotations_txt  = Channel.empty()
+    annotation_txt  = Channel.empty()
 
     if ( !params.skip_checkv || !params.skip_alignment_qc) {
         ch_genome
@@ -31,7 +31,9 @@ workflow CONSENSUS_QC  {
             .groupTuple()
             .set{ch_genome_grouped}
 
-        CAT_CAT_QC(ch_genome_grouped)
+        CAT_CAT_QC(
+            ch_genome_grouped
+        )
 
         CAT_CAT_QC
             .out
@@ -47,7 +49,10 @@ workflow CONSENSUS_QC  {
         }
 
         // uses HMM and AA alignment to deterimine completeness
-        CHECKV_ENDTOEND ( ch_genome_collapsed, checkv_db )
+        CHECKV_ENDTOEND (
+            ch_genome_collapsed,
+            checkv_db
+        )
         checkv_summary = CHECKV_ENDTOEND.out.quality_summary
         ch_versions    = ch_versions.mix(CHECKV_ENDTOEND.out.versions)
     }
@@ -122,19 +127,22 @@ workflow CONSENSUS_QC  {
 
     if ( !params.skip_blast_qc ){
         // Identify closest reference from the database
-        BLAST_BLASTN_QC (
+        BLASTN_QC (
             ch_genome,
             refpool_db
         )
-        blast_txt   = BLAST_BLASTN_QC.out.txt
-        ch_versions = ch_versions.mix(BLAST_BLASTN_QC.out.versions)
+        blast_txt   = BLASTN_QC.out.txt
+        ch_versions = ch_versions.mix(BLASTN_QC.out.versions)
     }
 
     if ( !params.skip_annotation){
         // Blast to annotation db
-        BLASTN_ANNOTATION( genomes, annotation_db )
-        annotations_txt = ANNOTATE_GENOMES.out.txt
-        ch_versions = ch_versions.mix(ANNOTATE_GENOMES.out.versions)
+        BLASTN_ANNOTATION(
+            ch_genome,
+            annotation_db
+        )
+        annotation_txt = BLASTN_ANNOTATION.out.txt
+        ch_versions = ch_versions.mix(BLASTN_ANNOTATION.out.versions)
     }
 
 
@@ -142,7 +150,7 @@ workflow CONSENSUS_QC  {
     blast_txt       = blast_txt         // channel: [ val(meta), [ txt ] ]
     checkv_summary  = checkv_summary    // channel: [ val(meta), [ tsv ] ]
     quast_summary   = quast_summary     // channel: [ val(meta), [ tsv ] ]
-    annotations_txt = annotations_txt   // channel: [ val(meta), [ txt ] ]
+    annotation_txt  = annotation_txt   // channel: [ val(meta), [ txt ] ]
     mqc             = ch_multiqc_files  // channel: [ tsv ]
     versions        = ch_versions       // channel: [ versions.yml ]
 }

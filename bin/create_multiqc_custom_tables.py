@@ -3,6 +3,7 @@
 """Provide a command line tool to extract sequence names from cdhit's cluster files."""
 
 import argparse
+import csv
 import logging
 import os
 import re
@@ -283,7 +284,7 @@ def write_dataframe(df, file, comment):
     Returns:
         None
     """
-    df_tsv = df.to_csv(sep="\t", index=False)
+    df_tsv = df.to_csv(sep="\t", index=False, quoting=csv.QUOTE_NONNUMERIC)
     with open(file, "w") as f:
         if comment:
             f.write("\n".join(comment))
@@ -535,6 +536,15 @@ def dynamic_split(row, delimiter="_"):
     return parts
 
 
+def parse_annotation_data(annotation_str):
+    annotation_dict = {}
+    pattern = r'(?P<key>\w+):"(?P<value>[^"]+)"'
+    matches = re.findall(pattern, annotation_str)
+    for key, value in matches:
+        annotation_dict[key] = value
+    return annotation_dict
+
+
 def handle_tables(table_files, header_name=False, output=False, **kwargs):
     """
     Handle multiple table files and perform concatenation and writing to output file if specified.
@@ -594,7 +604,7 @@ def handle_dataframe(df, prefix, column_to_split, header=False, output=False):
         result_df = df
     if output:
         write_dataframe(result_df, output, header)
-    result_df.drop(columns=["sample", "cluster", "step"], inplace=True)
+    result_df.drop(columns=["sample", "cluster", "step", f"({prefix}) {column_to_split}"], inplace=True)
     return result_df
 
 
@@ -798,26 +808,17 @@ def main(argv=None):
         annotation_df.columns = BlastConstants.COLUMNS
         # Filter on best hit per contig and keep only the best hit
         annotation_df = annotation_df.sort_values("bitscore", ascending=False).drop_duplicates("query")
-        df = pd.DataFrame(data)
 
-        # # Define a more flexible regular expression pattern
-        # pattern = r'(?P<key>\w+):"(?P<value>[^"]+)"'
+        # Extract all key-value pairs into separate columns
+        df_extracted = annotation_df["subject title"].apply(parse_annotation_data).apply(pd.Series)
 
-        # # Extract all key-value pairs into separate columns
-        # df_extracted = df['fasta_header'].str.extractall(pattern).unstack()
+        # Concatenate the original DataFrame with the extracted columns
+        annotation_df = pd.concat([annotation_df, df_extracted], axis=1)
 
-        # # Rename the columns for better readability
-        # df_extracted.columns = [f"{col[0]}_{col[1]}" for col in df_extracted.columns]
-
-        # # Concatenate the original DataFrame with the extracted columns
-        # df = pd.concat([df, df_extracted], axis=1)
-
-        # # Drop the original 'fasta_header' column if needed
-        # # df = df.drop(columns=['fasta_header'])
-        # annotation_df =
-        blast_df["species"] = blast_df["subject"].str.split("-").str[-1]
-        blast_df = blast_df[["species"] + blast_df.columns.difference(["species"], sort=False).tolist()]
-        blast_df = handle_dataframe(blast_df, "blast", "query", blast_header, "summary_blast_mqc.tsv")
+        # Remove the blast columns (but not query), we only want annotation data (but not genome_name)
+        annotation_df = drop_columns(annotation_df, BlastConstants.COLUMNS[1:])
+        annotation_df = handle_dataframe(annotation_df, "annotation", "query", blast_header, "summary_anno_mqc.tsv")
+        annotation_df["(annotation) taxon_id"] = annotation_df["(annotation) taxon_id"].astype(str)
 
     # CLuster table -  Multiqc output txt files
     if args.multiqc_dir:
@@ -844,6 +845,7 @@ def main(argv=None):
         multiqc_contigs_df = multiqc_contigs_df.join(checkv_df, how="outer")
         multiqc_contigs_df = multiqc_contigs_df.join(quast_df, how="outer")
         multiqc_contigs_df = multiqc_contigs_df.join(blast_df, how="outer")
+        multiqc_contigs_df = multiqc_contigs_df.join(annotation_df, how="outer")
 
         # adding a tag saying that contig faild qc check
         logger.info("Adding failed contig QC check")
@@ -867,6 +869,7 @@ def main(argv=None):
         logger.info("Reordering columns")
         final_columns = (
             ["index", "sample name", "cluster", "step"]
+            + [column for column in mqc_contigs_sel.columns if "annotation" in column]
             + [column for column in mqc_contigs_sel.columns if "blast" in column]
             + [column for column in mqc_contigs_sel.columns if "checkv" in column]
             + [column for column in mqc_contigs_sel.columns if "QC check" in column]

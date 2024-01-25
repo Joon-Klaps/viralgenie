@@ -60,7 +60,7 @@ workflow FASTQ_KRAKEN_KAIJU {
     }
 
     /*
-        Remove taxonomy level annotations from the Krona text files
+        Remove taxonomy level annotation from the Krona text files
     */
     KRONA_CLEANUP( ch_krona_text )
     ch_cleaned_krona_text = KRONA_CLEANUP.out.txt

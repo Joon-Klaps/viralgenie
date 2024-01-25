@@ -131,7 +131,7 @@ workflow VIRALGENIE {
     ch_db = Channel.empty()
     if ((!params.skip_assembly && !params.skip_polishing) || !params.skip_consensus_qc || !params.skip_metagenomic_diversity || (!params.skip_preprocessing && !params.skip_hostremoval)){
 
-        ch_db_raw = ch_db.mix(ch_ref_pool,ch_kraken2_db, ch_kaiju_db, ch_checkv_db, ch_bracken_db, ch_k2_host)
+        ch_db_raw = ch_db.mix(ch_ref_pool,ch_kraken2_db, ch_kaiju_db, ch_checkv_db, ch_bracken_db, ch_k2_host, ch_annotation_db)
         UNPACK_DB (ch_db_raw)
 
         UNPACK_DB
@@ -151,12 +151,13 @@ workflow VIRALGENIE {
                 kaiju: meta.id == 'kaiju'
                     return [ unpacked ]
                 annotation: meta.id == 'annotation'
-                    return [ unpacked ]
+                    return [ meta, unpacked ]
             }
             .set{ch_db}
         ch_versions         = ch_versions.mix(UNPACK_DB.out.versions)
 
-// transfer to value channels so processes are not just done once
+        // transfer to value channels so processes are not just done once
+        // '.collect()' is necessary to transform to list so cartesian products are made downstream
         ch_ref_pool_raw     = ch_db.reference.collect{it[1]}.ifEmpty([]).map{it -> [[id: 'reference'], it]}
         ch_kraken2_db       = ch_db.kraken2.collect().ifEmpty([])
         ch_kaiju_db         = ch_db.kaiju.collect().ifEmpty([])
@@ -184,7 +185,7 @@ workflow VIRALGENIE {
             ch_blastdb_in = ch_blastdb_in.mix(ch_annotation_db)
         }
 
-        BLAST_MAKEBLASTDB ( ch_ref_pool )
+        BLAST_MAKEBLASTDB ( ch_blastdb_in )
         BLAST_MAKEBLASTDB
             .out
             .db
@@ -197,7 +198,7 @@ workflow VIRALGENIE {
             set{ch_blastdb_out}
         ch_blast_refdb  = ch_blastdb_out.reference.collect{it[1]}.ifEmpty([]).map{it -> [[id: 'reference'], it]}
         ch_blast_annodb = ch_blastdb_out.annotation.collect{it[1]}.ifEmpty([]).map{it -> [[id: 'annotation'], it]}
-        ch_versions  = ch_versions.mix(BLAST_MAKEBLASTDB.out.versions)
+        ch_versions     = ch_versions.mix(BLAST_MAKEBLASTDB.out.versions)
     }
 
     ch_host_trim_reads      = ch_reads
@@ -475,9 +476,10 @@ workflow VIRALGENIE {
 
     }
 
-    ch_checkv_summary = Channel.empty()
-    ch_quast_summary  = Channel.empty()
-    ch_blast_summary  = Channel.empty()
+    ch_checkv_summary     = Channel.empty()
+    ch_quast_summary      = Channel.empty()
+    ch_blast_summary      = Channel.empty()
+    ch_annotation_summary = Channel.empty()
 
     if ( !params.skip_consensus_qc || (!params.skip_assembly && !params.skip_variant_calling) ) {
 
@@ -486,13 +488,14 @@ workflow VIRALGENIE {
             ch_unaligned_raw_contigs,
             ch_checkv_db,
             ch_blast_refdb,
-            ch_annotation_db,
+            ch_blast_annodb,
             )
-        ch_versions       = ch_versions.mix(CONSENSUS_QC.out.versions)
-        ch_multiqc_files  = ch_multiqc_files.mix(CONSENSUS_QC.out.mqc.collect{it[1]}.ifEmpty([]))
-        ch_checkv_summary = CONSENSUS_QC.out.checkv_summary.collect{it[1]}.ifEmpty([])
-        ch_quast_summary  = CONSENSUS_QC.out.quast_summary.collect{it[1]}.ifEmpty([])
-        ch_blast_summary  = CONSENSUS_QC.out.blast_txt.collect{it[1]}.ifEmpty([])
+        ch_versions           = ch_versions.mix(CONSENSUS_QC.out.versions)
+        ch_multiqc_files      = ch_multiqc_files.mix(CONSENSUS_QC.out.mqc.collect{it[1]}.ifEmpty([]))
+        ch_checkv_summary     = CONSENSUS_QC.out.checkv_summary.collect{it[1]}.ifEmpty([])
+        ch_quast_summary      = CONSENSUS_QC.out.quast_summary.collect{it[1]}.ifEmpty([])
+        ch_blast_summary      = CONSENSUS_QC.out.blast_txt.collect{it[1]}.ifEmpty([])
+        ch_annotation_summary = CONSENSUS_QC.out.annotation_txt.collect{it[1]}.ifEmpty([])
 
     }
 
@@ -512,6 +515,7 @@ workflow VIRALGENIE {
             ch_checkv_summary.ifEmpty([]),
             ch_quast_summary.ifEmpty([]),
             ch_blast_summary.ifEmpty([]),
+            ch_annotation_summary.ifEmpty([]),
             multiqc_data,
             ch_multiqc_comment_headers,
             ch_multiqc_custom_table_headers
