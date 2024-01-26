@@ -717,11 +717,11 @@ def create_constrain_summary(df_constrain, file_columns):
     #   Species
     #   ID (Cluster)
     df_constrain.loc[:, "idgroup"] = df_constrain.apply(
-        lambda row: f"{row['species']} ({row['segment']})"
-        if "segment" in df_constrain.columns and pd.notnull(row["species"]) and pd.notnull(row["segment"])
-        else row["species"]
-        if "species" in df_constrain.columns and pd.notnull(row["species"])
-        else row["cluster"],
+        lambda row: (
+            f"{row['species']} ({row['segment']})"
+            if "segment" in df_constrain.columns and pd.notnull(row["species"]) and pd.notnull(row["segment"])
+            else row["species"] if "species" in df_constrain.columns and pd.notnull(row["species"]) else row["cluster"]
+        ),
         axis=1,
     )
     df_constrain = df_constrain.rename(columns={"cluster": "Constrain id"})
