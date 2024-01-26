@@ -7,13 +7,13 @@ Viralgenie uses a multitude of databases in order to analyse reads, contigs and 
 > [!NOTE]
 > Keep an eye out for [nf-core createtaxdb](https://nf-co.re/createtaxdb/) as it can be used for the main databases.
 
-## Kaiju
-
-<!-- TODO -->
-
 ## Reference pool
 
-<!-- TODO -->
+The reference pool dataset is used to identify potential references for scaffolding. It's a fasta file that will be used to make a blast database within the pipeline. The default database is the [clustered Reference Viral DataBase (C-RVDB)](https://rvdb.dbi.udel.edu/) a database that was build for enhancing virus detection using high-throughput/next-generation sequencing (HTS/NGS) technologies. An alternative reference pool is the [Virosaurus](https://viralzone.expasy.org/8676) database which is a manually curated database of viral genomes.
+
+Any nucleotide fasta file will do.
+
+Specify it with the parameter `--reference_pool`.
 
 ## Annotation sequences
 
@@ -69,9 +69,57 @@ with open("bv-brc-refvirus-anno.fasta", "w") as f:
         f.write(entry + "\n")
 ```
 
+<details markdown="1">
+<summary>Expected files in database directory</summary>
+
+- `bv-brc-refvirus-anno.fasta.gz`
+
+</details>
+
 This annotation database can then be specified using `--annotation_db`
 
+## Kaiju
+
+The kaiju database will be used to classify the reads and intermediate contigs in taxonomic groups. The default database is the RVDB-prot pre-built database from Kaiju.
+
+A number of Kaiju pre-built indexes for reference datasets are maintained by the the developers of Kaiju and made available on the [Kaiju website](https://bioinformatics-centre.github.io/kaiju/downloads.html).
+To build a kaiju database, you need three components: a FASTA file with the protein sequences, the NCBI taxonomy dump files, and you need to define the uppercase characters of the standard 20 amino acids you wish to include.
+
+> [!Warning]
+> The headers of the protein fasta file must be numeric NCBI taxon identifiers of the protein sequences.
+
+To download the NCBI taxonomy files, please run the following commands:
+
+```bash
+wget https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/new_taxdump/new_taxdump.zip
+unzip new_taxdump.zip
+```
+
+To build the database, run the following command (the contents of taxdump must be in the same location where you run the command):
+
+```bash
+kaiju-mkbwt -a ACDEFGHIKLMNPQRSTVWY -o proteins proteins.faa
+kaiju-mkfmi proteins
+```
+
+> [!Tip]
+> You can speed up database construction by supplying the threads parameter (`-t`).
+
+<details markdown="1">
+<summary>Expected files in database directory</summary>
+
+- `kaiju`
+  - `kaiju_db_*.fmi`
+  - `nodes.dmp`
+  - `names.dmp`
+
+</details>
+
+For the Kaiju database construction documentation, see [here](https://github.com/bioinformatics-centre/kaiju#custom-database).
+
 ## Kraken2 databases
+
+The Kraken2 database will be used to classify the reads and intermediate contigs in taxonomic groups.
 
 A number of database indexes have already been generated and maintained by [@BenLangmead Lab](https://github.com/BenLangmead), see [here](https://benlangmead.github.io/aws-indexes/k2). These databases can directly be used to run the workflow with Kraken2 as well as Bracken.
 
@@ -126,6 +174,36 @@ Set it with the variable `--host_k2_db`
 
 The metagenomic diveristy estimated with kraken2 is based on the viral refseq database which can cut short if you expect your the species within your sample to have a large amount of diversity eg below 80% ANI ([quasi-species](https://link.springer.com/chapter/10.1007/978-3-642-77011-1_1)). To resolve this it's better to create a database that contains a wider species diversity then only one genome per species. Databases that have this wider diversity is [Virosaurus](https://viralzone.expasy.org/8676) or the [RVDB](https://rvdb.dbi.udel.edu/home) which can increase the accuracy of kraken2. Add it as described above.
 
-Set ut with the variable kraken2_db `--kraken2_db`
+Set it with the variable `--kraken2_db`
 
 ### Bracken
+
+Bracken does not require an independent database but rather builds upon Kraken2 databases. [The pre-built Kraken2 databases hosted by Ben Langmead](https://benlangmead.github.io/aws-indexes/k2) already contain the required files to run Bracken.
+
+However, to build custom databases, you will need a Kraken2 database, the (average) read lengths (in bp) of your sequencing experiment, the K-mer size used to build the Kraken2 database, and Kraken2 available on your machine.
+
+```bash
+bracken-build -d <KRAKEN_DB_DIR> -k <KRAKEN_DB_KMER_LENGTH> -l <READLENGTH>
+```
+
+> [!Tip]
+> You can speed up database construction by supplying the threads parameter (`-t`).
+
+> [!Tip]
+> If you do not have Kraken2 in your `$PATH` you can point to the binary with `-x /<path>/<to>/kraken2`.
+
+<details markdown="1">
+<summary>Expected files in database directory</summary>
+
+- `bracken`
+  - `hash.k2d`
+  - `opts.k2d`
+  - `taxo.k2d`
+  - `database100mers.kmer_distrib`
+  - `database150mers.kmer_distrib`
+
+</details>
+
+You can follow Bracken [tutorial](https://ccb.jhu.edu/software/bracken/index.shtml?t=manual) for more information.
+
+Set it with the variable `--bracken_db`
