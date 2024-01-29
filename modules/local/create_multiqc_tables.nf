@@ -12,6 +12,7 @@ process CREATE_MULTIQC_TABLES {
     path checkv_files, stageAs: "?/*"
     path quast_files, stageAs: "?/*"
     path blast_files, stageAs: "?/*"
+    path anno_files, stageAs: "?/*"
     path multiqc_dir
     path comment_headers
     path custom_table_headers
@@ -23,6 +24,7 @@ process CREATE_MULTIQC_TABLES {
     path("summary_checkv_mqc.tsv")  , emit: summary_checkv_mqc  , optional: true
     path("summary_quast_mqc.tsv")   , emit: summary_quast_mqc   , optional: true
     path("summary_blast_mqc.tsv")   , emit: summary_blast_mqc   , optional: true
+    path("summary_anno_mqc.tsv")    , emit: summary_anno_mqc    , optional: true
     path "versions.yml"             , emit: versions
 
     when:
@@ -35,6 +37,7 @@ process CREATE_MULTIQC_TABLES {
     def checkv_files           = checkv_files           ? "--checkv_files ${checkv_files}"               : ''
     def quast_files            = quast_files            ? "--quast_files ${quast_files}"                 : ''
     def blast_files            = blast_files            ? "--blast_files ${blast_files}"                 : ''
+    def annotation_files       = anno_files             ? "--annotation_files ${anno_files}"             : ''
     def multiqc_dir            = multiqc_dir            ? "--multiqc_dir ${multiqc_dir}"                 : ''
     def comment_headers        = comment_headers        ? "--comment_dir ${comment_headers}"             : ''
     def custom_table_headers   = custom_table_headers   ? "--table_headers ${custom_table_headers}"      : ''
@@ -47,6 +50,7 @@ process CREATE_MULTIQC_TABLES {
         $checkv_files \\
         $quast_files \\
         $blast_files \\
+        $annotation_files \\
         $comment_headers \\
         $custom_table_headers \\
         $multiqc_dir

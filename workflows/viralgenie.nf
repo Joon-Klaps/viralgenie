@@ -45,12 +45,13 @@ ch_metadata      = createFileChannel(params.metadata)
 ch_contaminants  = createFileChannel(params.contaminants)
 ch_spades_yml    = createFileChannel(params.spades_yml)
 ch_spades_hmm    = createFileChannel(params.spades_hmm)
-ch_ref_pool      = (!params.skip_assembly && !params.skip_polishing) || (!params.skip_consensus_qc && !params.skip_blast_qc)           ? createChannel( params.reference_pool, "blast", true )                   : Channel.empty()
-ch_kraken2_db    = (!params.skip_assembly && !params.skip_polishing && !params.skip_precluster) || !params.skip_metagenomic_diversity  ? createChannel( params.kraken2_db, "kraken2", !params.skip_kraken2 )     : Channel.empty()
-ch_kaiju_db      = (!params.skip_assembly && !params.skip_polishing && !params.skip_precluster) || !params.skip_metagenomic_diversity  ? createChannel( params.kaiju_db, "kaiju", !params.skip_kaiju )           : Channel.empty()
-ch_checkv_db     = !params.skip_consensus_qc                                                                                           ? createChannel( params.checkv_db, "checkv", !params.skip_checkv )        : Channel.empty()
-ch_bracken_db    = !params.skip_metagenomic_diversity                                                                                  ? createChannel( params.bracken_db, "bracken", !params.skip_bracken )     : Channel.empty()
-ch_k2_host       = !params.skip_preprocessing                                                                                          ? createChannel( params.host_k2_db, "k2_host", !params.skip_hostremoval ) : Channel.empty()
+ch_ref_pool      = (!params.skip_assembly && !params.skip_polishing) || (!params.skip_consensus_qc && !params.skip_blast_qc)           ? createChannel( params.reference_pool, "reference", true )                    : Channel.empty()
+ch_kraken2_db    = (!params.skip_assembly && !params.skip_polishing && !params.skip_precluster) || !params.skip_metagenomic_diversity  ? createChannel( params.kraken2_db, "kraken2", !params.skip_kraken2 )          : Channel.empty()
+ch_kaiju_db      = (!params.skip_assembly && !params.skip_polishing && !params.skip_precluster) || !params.skip_metagenomic_diversity  ? createChannel( params.kaiju_db, "kaiju", !params.skip_kaiju )                : Channel.empty()
+ch_checkv_db     = !params.skip_consensus_qc                                                                                           ? createChannel( params.checkv_db, "checkv", !params.skip_checkv )             : Channel.empty()
+ch_bracken_db    = !params.skip_metagenomic_diversity                                                                                  ? createChannel( params.bracken_db, "bracken", !params.skip_bracken )          : Channel.empty()
+ch_k2_host       = !params.skip_preprocessing                                                                                          ? createChannel( params.host_k2_db, "k2_host", !params.skip_hostremoval )      : Channel.empty()
+ch_annotation_db = !params.skip_consensus_qc                                                                                           ? createChannel( params.annotation_db, "annotation", !params.skip_annotation ) : Channel.empty()
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -130,7 +131,7 @@ workflow VIRALGENIE {
     ch_db = Channel.empty()
     if ((!params.skip_assembly && !params.skip_polishing) || !params.skip_consensus_qc || !params.skip_metagenomic_diversity || (!params.skip_preprocessing && !params.skip_hostremoval)){
 
-        ch_db_raw = ch_db.mix(ch_ref_pool,ch_kraken2_db, ch_kaiju_db, ch_checkv_db, ch_bracken_db, ch_k2_host)
+        ch_db_raw = ch_db.mix(ch_ref_pool,ch_kraken2_db, ch_kaiju_db, ch_checkv_db, ch_bracken_db, ch_k2_host, ch_annotation_db)
         UNPACK_DB (ch_db_raw)
 
         UNPACK_DB
@@ -139,7 +140,7 @@ workflow VIRALGENIE {
             .branch { meta, unpacked ->
                 k2_host: meta.id == 'k2_host'
                     return [ unpacked ]
-                blast: meta.id == 'blast'
+                reference: meta.id == 'reference'
                     return [ meta, unpacked ]
                 checkv: meta.id == 'checkv'
                     return [ unpacked ]
@@ -149,30 +150,55 @@ workflow VIRALGENIE {
                     return [ unpacked ]
                 kaiju: meta.id == 'kaiju'
                     return [ unpacked ]
+                annotation: meta.id == 'annotation'
+                    return [ meta, unpacked ]
             }
             .set{ch_db}
         ch_versions         = ch_versions.mix(UNPACK_DB.out.versions)
 
-// transfer to value channels so processes are not just done once
-        ch_ref_pool_raw     = ch_db.blast.collect{it[1]}.ifEmpty([]).map{it -> [[id: 'blast'], it]}
+        // transfer to value channels so processes are not just done once
+        // '.collect()' is necessary to transform to list so cartesian products are made downstream
+        ch_ref_pool_raw     = ch_db.reference.collect{it[1]}.ifEmpty([]).map{it -> [[id: 'reference'], it]}
         ch_kraken2_db       = ch_db.kraken2.collect().ifEmpty([])
         ch_kaiju_db         = ch_db.kaiju.collect().ifEmpty([])
-        ch_checkv_db        = ch_db.checkv.collect().ifEmpty(null)
+        ch_checkv_db        = ch_db.checkv.collect().ifEmpty([])
         ch_bracken_db       = ch_db.bracken.collect().ifEmpty([])
-        ch_k2_host          = ch_db.k2_host.collect().ifEmpty(null)
+        ch_k2_host          = ch_db.k2_host.collect().ifEmpty([])
+        ch_annotation_db    = ch_db.annotation.collect{it[1]}.ifEmpty([]).map{it -> [[id: 'annotation'], it]}
     }
 
     // Prepare blast DB
-    ch_blast_db = Channel.empty()
-    if ((!params.skip_assembly && !params.skip_polishing) || !params.skip_consensus_qc){
-       // see issue #56
-        SEQKIT_REPLACE (ch_ref_pool_raw)
-        ch_versions = ch_versions.mix(SEQKIT_REPLACE.out.versions)
-        ch_ref_pool = SEQKIT_REPLACE.out.fastx
+    ch_ref_pool     = Channel.empty()
+    ch_blast_refdb  = Channel.empty()
+    ch_blast_annodb = Channel.empty()
+    if ( !params.skip_consensus_qc ){
+        ch_blastdb_in = Channel.empty()
+        if ((!params.skip_assembly && !params.skip_polishing) ) {
+            // see issue #56
+            SEQKIT_REPLACE (ch_ref_pool_raw)
+            ch_versions   = ch_versions.mix(SEQKIT_REPLACE.out.versions)
+            ch_ref_pool   = SEQKIT_REPLACE.out.fastx
+            ch_blastdb_in = ch_blastdb_in.mix(ch_ref_pool)
+        }
 
-        BLAST_MAKEBLASTDB ( ch_ref_pool )
-        ch_blast_db  = BLAST_MAKEBLASTDB.out.db
-        ch_versions  = ch_versions.mix(BLAST_MAKEBLASTDB.out.versions)
+        if ( !params.skip_annotation){
+            ch_blastdb_in = ch_blastdb_in.mix(ch_annotation_db)
+        }
+
+        BLAST_MAKEBLASTDB ( ch_blastdb_in )
+        BLAST_MAKEBLASTDB
+            .out
+            .db
+            .branch { meta, db ->
+                reference: meta.id == 'reference'
+                    return [ meta, db ]
+                annotation: meta.id == 'annotation'
+                    return [ meta, db ]
+            }.
+            set{ch_blastdb_out}
+        ch_blast_refdb  = ch_blastdb_out.reference.collect{it[1]}.ifEmpty([]).map{it -> [[id: 'reference'], it]}
+        ch_blast_annodb = ch_blastdb_out.annotation.collect{it[1]}.ifEmpty([]).map{it -> [[id: 'annotation'], it]}
+        ch_versions     = ch_versions.mix(BLAST_MAKEBLASTDB.out.versions)
     }
 
     ch_host_trim_reads      = ch_reads
@@ -268,7 +294,7 @@ workflow VIRALGENIE {
 
             FASTA_CONTIG_CLUST (
                 ch_contigs_reads,
-                ch_blast_db,
+                ch_blast_refdb,
                 ch_ref_pool,
                 ch_kraken2_db,
                 ch_kaiju_db
@@ -294,10 +320,9 @@ workflow VIRALGENIE {
 
             ch_multiqc_files       =  ch_multiqc_files.mix(FASTA_CONTIG_CLUST.out.no_blast_hits_mqc.ifEmpty([]))
 
-            // Align clustered contigs & collapse into a single consensus per cluster
+            // map clustered contigs & create a single consensus per cluster
             ALIGN_COLLAPSE_CONTIGS (
-                ch_centroids_members.multiple,
-                params.contig_align_method
+                ch_centroids_members.multiple
                 )
             ch_versions = ch_versions.mix(ALIGN_COLLAPSE_CONTIGS.out.versions)
 
@@ -451,9 +476,10 @@ workflow VIRALGENIE {
 
     }
 
-    ch_checkv_summary = Channel.empty()
-    ch_quast_summary  = Channel.empty()
-    ch_blast_summary  = Channel.empty()
+    ch_checkv_summary     = Channel.empty()
+    ch_quast_summary      = Channel.empty()
+    ch_blast_summary      = Channel.empty()
+    ch_annotation_summary = Channel.empty()
 
     if ( !params.skip_consensus_qc || (!params.skip_assembly && !params.skip_variant_calling) ) {
 
@@ -461,17 +487,15 @@ workflow VIRALGENIE {
             ch_consensus,
             ch_unaligned_raw_contigs,
             ch_checkv_db,
-            ch_blast_db,
-            params.skip_checkv,
-            params.skip_quast,
-            params.skip_blast_qc,
-            params.skip_alignment_qc
+            ch_blast_refdb,
+            ch_blast_annodb,
             )
-        ch_versions       = ch_versions.mix(CONSENSUS_QC.out.versions)
-        ch_multiqc_files  = ch_multiqc_files.mix(CONSENSUS_QC.out.mqc.collect{it[1]}.ifEmpty([]))
-        ch_checkv_summary = CONSENSUS_QC.out.checkv_summary.collect{it[1]}.ifEmpty([])
-        ch_quast_summary  = CONSENSUS_QC.out.quast_summary.collect{it[1]}.ifEmpty([])
-        ch_blast_summary  = CONSENSUS_QC.out.blast_txt.collect{it[1]}.ifEmpty([])
+        ch_versions           = ch_versions.mix(CONSENSUS_QC.out.versions)
+        ch_multiqc_files      = ch_multiqc_files.mix(CONSENSUS_QC.out.mqc.collect{it[1]}.ifEmpty([]))
+        ch_checkv_summary     = CONSENSUS_QC.out.checkv_summary.collect{it[1]}.ifEmpty([])
+        ch_quast_summary      = CONSENSUS_QC.out.quast_summary.collect{it[1]}.ifEmpty([])
+        ch_blast_summary      = CONSENSUS_QC.out.blast_txt.collect{it[1]}.ifEmpty([])
+        ch_annotation_summary = CONSENSUS_QC.out.annotation_txt.collect{it[1]}.ifEmpty([])
 
     }
 
@@ -491,6 +515,7 @@ workflow VIRALGENIE {
             ch_checkv_summary.ifEmpty([]),
             ch_quast_summary.ifEmpty([]),
             ch_blast_summary.ifEmpty([]),
+            ch_annotation_summary.ifEmpty([]),
             multiqc_data,
             ch_multiqc_comment_headers,
             ch_multiqc_custom_table_headers

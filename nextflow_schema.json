@@ -733,6 +733,18 @@
                     "description": "Reference database used by checkv for consensus quality control",
                     "help_text": "If not given, the most recent one is downloaded."
                 },
+                "skip_annotation": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward",
+                    "description": "Skip the annotation of the consensus constructs"
+                },
+                "annotation_db": {
+                    "type": "string",
+                    "default": "${projectDir}/assets/bv-brc-refvirus-anno.fasta.gz",
+                    "fa_icon": "fas fa-database",
+                    "description": "Database used for annotation of the cosensus constructs",
+                    "help_text": "The metada fields are stored in the fasta comment as `key1:\"value1\"|key2:\"value2\"|...` see docs/databases.md for more information."
+                },
                 "skip_quast": {
                     "type": "boolean",
                     "description": "Skip the use of QUAST for quality check",

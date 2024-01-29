@@ -3,6 +3,7 @@
 """Provide a command line tool to extract sequence names from cdhit's cluster files."""
 
 import argparse
+import csv
 import logging
 import os
 import re
@@ -13,6 +14,25 @@ import pandas as pd
 import yaml
 
 logger = logging.getLogger()
+
+
+class BlastConstants:
+    COLUMNS = [
+        "query",
+        "subject",
+        "subject title",
+        "pident",
+        "qlen",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+    ]
 
 
 def parse_args(argv=None):
@@ -82,6 +102,14 @@ def parse_args(argv=None):
         metavar="BLAST FILES",
         nargs="+",
         help="Blast files for each contig, having the standard outfmt 6",
+        type=Path,
+    )
+
+    parser.add_argument(
+        "--annotation_files",
+        metavar="Annotation FILES",
+        nargs="+",
+        help="Blast files for each contig to the annotation database, having the standard outfmt 6",
         type=Path,
     )
 
@@ -256,7 +284,7 @@ def write_dataframe(df, file, comment):
     Returns:
         None
     """
-    df_tsv = df.to_csv(sep="\t", index=False)
+    df_tsv = df.to_csv(sep="\t", index=False, quoting=csv.QUOTE_NONNUMERIC)
     with open(file, "w") as f:
         if comment:
             f.write("\n".join(comment))
@@ -508,6 +536,15 @@ def dynamic_split(row, delimiter="_"):
     return parts
 
 
+def parse_annotation_data(annotation_str):
+    annotation_dict = {}
+    pattern = r'(?P<key>\w+):"(?P<value>[^"]+)"'
+    matches = re.findall(pattern, annotation_str)
+    for key, value in matches:
+        annotation_dict[key] = value
+    return annotation_dict
+
+
 def handle_tables(table_files, header_name=False, output=False, **kwargs):
     """
     Handle multiple table files and perform concatenation and writing to output file if specified.
@@ -567,7 +604,7 @@ def handle_dataframe(df, prefix, column_to_split, header=False, output=False):
         result_df = df
     if output:
         write_dataframe(result_df, output, header)
-    result_df.drop(columns=["sample", "cluster", "step"], inplace=True)
+    result_df.drop(columns=["sample", "cluster", "step", f"({prefix}) {column_to_split}"], inplace=True)
     return result_df
 
 
@@ -680,11 +717,11 @@ def create_constrain_summary(df_constrain, file_columns):
     #   Species
     #   ID (Cluster)
     df_constrain.loc[:, "idgroup"] = df_constrain.apply(
-        lambda row: f"{row['species']} ({row['segment']})"
-        if "segment" in df_constrain.columns and pd.notnull(row["species"]) and pd.notnull(row["segment"])
-        else row["species"]
-        if "species" in df_constrain.columns and pd.notnull(row["species"])
-        else row["cluster"],
+        lambda row: (
+            f"{row['species']} ({row['segment']})"
+            if "segment" in df_constrain.columns and pd.notnull(row["species"]) and pd.notnull(row["segment"])
+            else row["species"] if "species" in df_constrain.columns and pd.notnull(row["species"]) else row["cluster"]
+        ),
         axis=1,
     )
     df_constrain = df_constrain.rename(columns={"cluster": "Constrain id"})
@@ -760,29 +797,28 @@ def main(argv=None):
     if args.save_intermediate:
         blast_header = get_header(args.comment_dir, "blast_mqc.txt")
     if not blast_df.empty:
-        # Read the blast summary file
-        blast_df.columns = [
-            "query",
-            "subject",
-            "subject title",
-            "pident",
-            "qlen",
-            "length",
-            "mismatch",
-            "gapopen",
-            "qstart",
-            "qend",
-            "sstart",
-            "send",
-            "evalue",
-            "bitscore",
-        ]
+        blast_df.columns = BlastConstants.COLUMNS
         # Filter on best hit per contig and keep only the best hit
         blast_df = blast_df.sort_values("bitscore", ascending=False).drop_duplicates("query")
-        # Extract the species name from the subject column
-        blast_df["species"] = blast_df["subject"].str.split("-").str[-1]
-        blast_df = blast_df[["species"] + blast_df.columns.difference(["species"], sort=False).tolist()]
         blast_df = handle_dataframe(blast_df, "blast", "query", blast_header, "summary_blast_mqc.tsv")
+
+    # CLuster table - Blast summary
+    annotation_df = handle_tables(args.annotation_files, header=None)
+    if not annotation_df.empty:
+        annotation_df.columns = BlastConstants.COLUMNS
+        # Filter on best hit per contig and keep only the best hit
+        annotation_df = annotation_df.sort_values("bitscore", ascending=False).drop_duplicates("query")
+
+        # Extract all key-value pairs into separate columns
+        df_extracted = annotation_df["subject title"].apply(parse_annotation_data).apply(pd.Series)
+
+        # Concatenate the original DataFrame with the extracted columns
+        annotation_df = pd.concat([annotation_df, df_extracted], axis=1)
+
+        # Remove the blast columns (but not query), we only want annotation data (but not genome_name)
+        annotation_df = drop_columns(annotation_df, BlastConstants.COLUMNS[1:])
+        annotation_df = handle_dataframe(annotation_df, "annotation", "query", blast_header, "summary_anno_mqc.tsv")
+        annotation_df["(annotation) taxon_id"] = annotation_df["(annotation) taxon_id"].astype(str)
 
     # CLuster table -  Multiqc output txt files
     if args.multiqc_dir:
@@ -809,6 +845,7 @@ def main(argv=None):
         multiqc_contigs_df = multiqc_contigs_df.join(checkv_df, how="outer")
         multiqc_contigs_df = multiqc_contigs_df.join(quast_df, how="outer")
         multiqc_contigs_df = multiqc_contigs_df.join(blast_df, how="outer")
+        multiqc_contigs_df = multiqc_contigs_df.join(annotation_df, how="outer")
 
         # adding a tag saying that contig faild qc check
         logger.info("Adding failed contig QC check")
@@ -832,6 +869,7 @@ def main(argv=None):
         logger.info("Reordering columns")
         final_columns = (
             ["index", "sample name", "cluster", "step"]
+            + [column for column in mqc_contigs_sel.columns if "annotation" in column]
             + [column for column in mqc_contigs_sel.columns if "blast" in column]
             + [column for column in mqc_contigs_sel.columns if "checkv" in column]
             + [column for column in mqc_contigs_sel.columns if "QC check" in column]
