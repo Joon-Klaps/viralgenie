@@ -745,7 +745,14 @@ def main(argv=None):
     if not quast_df.empty:
         quast_df = handle_dataframe(quast_df, "quast", "Assembly", quast_header, "summary_quast_mqc.tsv")
         # Most of the columns are not good for a single contig evaluation
-        quast_df = quast_df[["(quast) # N's per 100 kbp"]]
+        quast_df["(quast) # N's"] = (
+            pd.to_numeric(quast_df["(quast) # N's per 100 kbp"])
+            * pd.to_numeric(quast_df["(quast) Largest contig"])
+            / 100000
+        )
+        quast_df = quast_df.astype({"(quast) # N's": int})
+        quast_df["(quast) % N's"] = round(pd.to_numeric(quast_df["(quast) # N's per 100 kbp"]) / 1000, 2)
+        quast_df = quast_df[["(quast) # N's", "(quast) % N's", "(quast) # N's per 100 kbp"]]
 
     # CLuster table - Blast summary
     blast_df = handle_tables(args.blast_files, header=None)
@@ -757,6 +764,7 @@ def main(argv=None):
         blast_df.columns = [
             "query",
             "subject",
+            "subject title",
             "pident",
             "qlen",
             "length",

@@ -18,6 +18,7 @@ workflow ALIGN_COLLAPSE_CONTIGS {
     ch_sequences = ch_references_members.map{ meta, references, members -> [meta, [references, members]] }
 
     CAT_CLUSTER(ch_sequences)
+    ch_versions = ch_versions.mix(CAT_CLUSTER.out.versions.first())
     // TODO:
     // if external_reference is false, we need to include the reference when mapping towards the reference (i.e. the reference is also a member)
     // if external_reference is true, we need to exclude the reference when mapping towards the reference
@@ -65,7 +66,7 @@ workflow ALIGN_COLLAPSE_CONTIGS {
     )
     ch_versions= ch_versions.mix(IVAR_CONTIG_CONSENSUS.out.versions.first())
 
-    RENAME_FASTA_HEADER_CONTIG_CONSENSUS( IVAR_CONTIG_CONSENSUS.out.fasta, "ivar" )
+    RENAME_FASTA_HEADER_CONTIG_CONSENSUS( IVAR_CONTIG_CONSENSUS.out.fasta, "consensus" )
     ch_versions = ch_versions.mix(RENAME_FASTA_HEADER_CONTIG_CONSENSUS.out.versions.first())
 
     // If external, there possibly regions that require patching

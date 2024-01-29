@@ -69,7 +69,7 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
 
     // sort bam
     SAMTOOLS_SORT_DEDUPPED ( ch_dedup_bam )
-    ch_versions = ch_versions.mix(SAMTOOLS_SORT_DEDUPPED.out.versions.first())
+    ch_versions = ch_versions.mix(SAMTOOLS_SORT_DEDUPPED.out.versions)
     ch_dedup_bam_sort = SAMTOOLS_SORT_DEDUPPED.out.bam
 
     ch_dedup_bam_ref = ch_dedup_bam_sort.
@@ -93,7 +93,7 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
             variant_caller,
             get_stats
         )
-        ch_versions   = ch_versions.mix(BAM_CALL_VARIANTS.out.versions.first())
+        ch_versions   = ch_versions.mix(BAM_CALL_VARIANTS.out.versions)
         ch_multiqc    = ch_multiqc.mix(BAM_CALL_VARIANTS.out.mqc.collect{it[1]}.ifEmpty([]))
         ch_vcf_filter = BAM_CALL_VARIANTS.out.vcf_filter
         ch_vcf        = BAM_CALL_VARIANTS.out.vcf
@@ -109,7 +109,7 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
         consensus_caller,
         get_stats
     )
-    ch_versions = ch_versions.mix(BAM_CALL_CONSENSUS.out.versions.first())
+    ch_versions = ch_versions.mix(BAM_CALL_CONSENSUS.out.versions)
     consensus_all   = BAM_CALL_CONSENSUS.out.consensus
 
     FASTA_CONTIG_FILTERING (
@@ -119,6 +119,7 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
     )
 
     consensus_filtered = FASTA_CONTIG_FILTERING.out.contigs
+    ch_versions        = ch_versions.mix(FASTA_CONTIG_FILTERING.out.versions)
     ch_multiqc         = ch_multiqc.mix(FASTA_CONTIG_FILTERING.out.contig_qc_fail_mqc.collect().ifEmpty([]))
 
     consensus_reads    = consensus_filtered.join(reads_in, by: [0])

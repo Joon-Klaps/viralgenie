@@ -96,7 +96,6 @@ include { RENAME_FASTA_HEADER as RENAME_FASTA_HEADER_CONSTRAIN } from '../module
 include { FASTQ_FASTA_MAP_CONSENSUS                            } from '../subworkflows/local/fastq_fasta_map_consensus'
 
 // QC consensus
-include { CHECKV_DOWNLOADDATABASE         } from '../modules/nf-core/checkv/downloaddatabase/main'
 include { CONSENSUS_QC                    } from '../subworkflows/local/consensus_qc'
 
 // Report generation
@@ -158,9 +157,9 @@ workflow VIRALGENIE {
         ch_ref_pool_raw     = ch_db.blast.collect{it[1]}.ifEmpty([]).map{it -> [[id: 'blast'], it]}
         ch_kraken2_db       = ch_db.kraken2.collect().ifEmpty([])
         ch_kaiju_db         = ch_db.kaiju.collect().ifEmpty([])
-        ch_checkv_db        = ch_db.checkv.collect().ifEmpty([])
+        ch_checkv_db        = ch_db.checkv.collect().ifEmpty(null)
         ch_bracken_db       = ch_db.bracken.collect().ifEmpty([])
-        ch_k2_host          = ch_db.k2_host.collect().ifEmpty([])
+        ch_k2_host          = ch_db.k2_host.collect().ifEmpty(null)
     }
 
     // Prepare blast DB
@@ -176,8 +175,8 @@ workflow VIRALGENIE {
         ch_versions  = ch_versions.mix(BLAST_MAKEBLASTDB.out.versions)
     }
 
-    ch_host_trim_reads      = Channel.empty()
-    ch_decomplex_trim_reads = Channel.empty()
+    ch_host_trim_reads      = ch_reads
+    ch_decomplex_trim_reads = ch_reads
     // preprocessing illumina reads
     if (!params.skip_preprocessing){
         PREPROCESSING_ILLUMINA (
@@ -458,11 +457,6 @@ workflow VIRALGENIE {
 
     if ( !params.skip_consensus_qc || (!params.skip_assembly && !params.skip_variant_calling) ) {
 
-        if (!params.skip_checkv && ch_checkv_db != [] ) {
-            CHECKV_DOWNLOADDATABASE()
-            ch_checkv_db = CHECKV_DOWNLOADDATABASE.out.checkv_db
-        }
-
         CONSENSUS_QC(
             ch_consensus,
             ch_unaligned_raw_contigs,
@@ -504,9 +498,6 @@ workflow VIRALGENIE {
     ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.summary_clusters_mqc.ifEmpty([]))
     ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.sample_metadata_mqc.ifEmpty([]))
     ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.contigs_overview_mqc.ifEmpty([]))
-    ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.summary_checkv_mqc.ifEmpty([]))
-    ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.summary_blast_mqc.ifEmpty([]))
-    ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.summary_quast_mqc.ifEmpty([]))
     ch_versions      = ch_versions.mix(CREATE_MULTIQC_TABLES.out.versions)
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
