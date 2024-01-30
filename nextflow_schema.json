@@ -281,6 +281,17 @@
                     "fa_icon": "fas fa-forward",
                     "description": "Skip read quality statistics summary tool 'fastqc'"
                 },
+                "save_final_reads": {
+                    "type": "boolean",
+                    "default": true,
+                    "fa_icon": "fas fa-copy",
+                    "description": "Save reads after the final preprocessing step"
+                },
+                "save_intermediate_reads": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-copy",
+                    "description": "Save reads after every preprocessing step"
+                },
                 "with_umi": {
                     "type": "boolean",
                     "description": "With or without umi detection",
@@ -532,7 +543,7 @@
                 },
                 "reference_pool": {
                     "type": "string",
-                    "default": "https://rvdb.dbi.udel.edu/download/C-RVDBv26.0.fasta.gz",
+                    "default": "https://rvdb.dbi.udel.edu/download/C-RVDBvCurrent.fasta.gz",
                     "description": "Set of fasta sequences used as potential references for the contigs",
                     "fa_icon": "fas fa-database"
                 },
