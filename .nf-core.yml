@@ -22,3 +22,7 @@ lint:
   files_exist:
     - conf/test.config
     - conf/test_full.config
+template:
+  name: viralgenie
+  description: a bioinformatics best-practice analysis pipeline for reconstructing consensus genomes and to identify intra-host variants from metagenomic sequencing data or enriched based sequencing data like hybrid capture.
+  author: Joon-Klaps
