@@ -45,7 +45,8 @@ workflow CONSENSUS_QC  {
     if ( !params.skip_checkv ) {
         if ( !params.checkv_db ) {
             CHECKV_DOWNLOADDATABASE()
-            checkv_db = CHECKV_DOWNLOADDATABASE.out.checkv_db
+            checkv_db   = CHECKV_DOWNLOADDATABASE.out.checkv_db
+            ch_versions = ch_versions.mix(CHECKV_DOWNLOADDATABASE.out.versions)
         }
 
         // uses HMM and AA alignment to deterimine completeness

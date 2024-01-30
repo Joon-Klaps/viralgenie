@@ -79,7 +79,8 @@ workflow PREPROCESSING_ILLUMINA {
     if (!params.skip_complexity_filtering) {
         BBMAP_BBDUK ( ch_reads_trim, ch_contaminants )
         ch_reads_decomplexified = BBMAP_BBDUK.out.reads
-        ch_multiqc_files = ch_multiqc_files.mix(BBMAP_BBDUK.out.log)
+        ch_multiqc_files        = ch_multiqc_files.mix(BBMAP_BBDUK.out.log)
+        ch_versions             = ch_versions.mix(BBMAP_BBDUK.out.versions)
     } else {
         ch_reads_decomplexified = ch_reads_trim
     }

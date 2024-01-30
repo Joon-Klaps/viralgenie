@@ -8,7 +8,6 @@ include { MMSEQS_CREATETSV         } from '../../modules/nf-core/mmseqs/createts
 include { VRHYME_VRHYME            } from '../../modules/nf-core/vrhyme/vrhyme/main'
 include { MASH_DIST                } from '../../modules/nf-core/mash/dist/main'
 include { NETWORK_CLUSTER          } from '../../modules/local/network_cluster/main'
-include { GUNZIP as GUNZIP_CONTIGS } from '../../modules/nf-core/gunzip/main'
 
 workflow FASTA_FASTQ_CLUST {
 
