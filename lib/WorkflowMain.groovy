@@ -2,6 +2,8 @@
 // This file holds several functions specific to the main.nf workflow in the nf-core/viralgenie pipeline
 //
 
+import nextflow.Nextflow
+
 class WorkflowMain {
 
     //
@@ -18,40 +20,11 @@ class WorkflowMain {
             "  https://github.com/${workflow.manifest.name}/blob/master/CITATIONS.md"
     }
 
-    //
-    // Generate help string
-    //
-    public static String help(workflow, params, log) {
-        def command = "nextflow run ${workflow.manifest.name} --input samplesheet.csv --genome GRCh37 -profile docker"
-        def help_string = ''
-        help_string += NfcoreTemplate.logo(workflow, params.monochrome_logs)
-        help_string += NfcoreSchema.paramsHelp(workflow, params, command)
-        help_string += '\n' + citation(workflow) + '\n'
-        help_string += NfcoreTemplate.dashedLine(params.monochrome_logs)
-        return help_string
-    }
-
-    //
-    // Generate parameter summary log string
-    //
-    public static String paramsSummaryLog(workflow, params, log) {
-        def summary_log = ''
-        summary_log += NfcoreTemplate.logo(workflow, params.monochrome_logs)
-        summary_log += NfcoreSchema.paramsSummaryLog(workflow, params)
-        summary_log += '\n' + citation(workflow) + '\n'
-        summary_log += NfcoreTemplate.dashedLine(params.monochrome_logs)
-        return summary_log
-    }
 
     //
     // Validate parameters and print summary to screen
     //
-    public static void initialise(workflow, params, log) {
-        // Print help to screen if required
-        if (params.help) {
-            log.info help(workflow, params, log)
-            System.exit(0)
-        }
+    public static void initialise(workflow, params, log, args) {
 
         // Print workflow version and exit on --version
         if (params.version) {
@@ -60,16 +33,10 @@ class WorkflowMain {
             System.exit(0)
         }
 
-        // Print parameter summary log to screen
-        log.info paramsSummaryLog(workflow, params, log)
-
-        // Validate workflow parameters via the JSON schema
-        if (params.validate_params) {
-            NfcoreSchema.validateParameters(workflow, params, log)
-        }
-
         // Check that a -profile or Nextflow config has been provided to run the pipeline
         NfcoreTemplate.checkConfigProvided(workflow, log)
+        // Check that the profile doesn't contain spaces and doesn't end with a trailing comma
+        checkProfile(workflow.profile, args, log)
 
         // Check that conda channels are set-up correctly
         if (workflow.profile.tokenize(',').intersect(['conda', 'mamba']).size() >= 1) {
@@ -81,8 +48,7 @@ class WorkflowMain {
 
         // Check input has been provided
         if (!params.input) {
-            log.error "Please provide an input samplesheet to the pipeline e.g. '--input samplesheet.csv'"
-            System.exit(1)
+            Nextflow.error("Please provide an input samplesheet to the pipeline e.g. '--input samplesheet.csv'")
         }
     }
     //
@@ -95,5 +61,17 @@ class WorkflowMain {
             }
         }
         return null
+    }
+
+    //
+    // Exit pipeline if --profile contains spaces
+    //
+    private static void checkProfile(profile, args, log) {
+        if (profile.endsWith(',')) {
+            Nextflow.error "Profile cannot end with a trailing comma. Please remove the comma from the end of the profile string.\nHint: A common mistake is to provide multiple values to `-profile` separated by spaces. Please use commas to separate profiles instead,e.g., `-profile docker,test`."
+        }
+        if (args[0]) {
+            log.warn "nf-core pipelines do not accept positional arguments. The positional argument `${args[0]}` has been detected.\n      Hint: A common mistake is to provide multiple values to `-profile` separated by spaces. Please use commas to separate profiles instead,e.g., `-profile docker,test`."
+        }
     }
 }
