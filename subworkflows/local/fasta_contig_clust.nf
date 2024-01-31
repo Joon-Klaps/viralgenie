@@ -64,7 +64,7 @@ workflow FASTA_CONTIG_CLUST {
         .groupTuple(remainder: true)                                           // Has to be grouped to link different taxa preclusters to the same sample
         .join(sample_fasta_ref_contigs, by: [0])                               // join with contigs
         .map{ sample, meta_clust, clusters, meta_contig, contigs ->
-             [meta_contig, clusters, contigs]                                  // get rid of meta_clust & sample
+            [meta_contig, clusters, contigs]                                  // get rid of meta_clust & sample
         }
         .set{ch_clusters_contigs}
 
@@ -78,9 +78,9 @@ workflow FASTA_CONTIG_CLUST {
         .out
         .members_centroids
         .transpose()                                                            // wide to long
-        .map { meta, seq_members, seq_centroids, json_file -> 
-            json          = WorkflowCommons.getMapFromJson(json_file)           // convert cluster metadata to Map
-            new_meta      = meta + [ id: "${meta.sample}_${json.cluster_id}"] + json    // rename meta.id to include cluster number 
+        .map { meta, seq_members, seq_centroids, json_file ->
+            json          = WorkflowCommons.getMapFromJson(json_file)                   // convert cluster metadata to Map
+            new_meta      = meta + [ id: "${meta.sample}_${json.cluster_id}"] + json    // rename meta.id to include cluster number
             return [new_meta, seq_centroids, seq_members]
         }
         .set{seq_centroids_members}

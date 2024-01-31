@@ -31,11 +31,9 @@ workflow BAM_VARIANTS_IVAR {
     )
     ch_versions = ch_versions.mix(IVAR_VARIANTS.out.versions.first())
 
-    // Filter out samples with 0 variants, don't think I want this.
     IVAR_VARIANTS
         .out
         .tsv
-     //   .filter { meta, tsv -> WorkflowCommons.getNumLinesInFile(tsv) > 1 }
         .set { ch_ivar_tsv }
 
     //

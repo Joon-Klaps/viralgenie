@@ -78,7 +78,7 @@ nextflow_workflow {
             }
             workflow {
                 """
-                     input[0] = [ [ id:'test', single_end:false ], // meta map
+                    input[0] = [ [ id:'test', single_end:false ], // meta map
                                 file(params.test_data['homo_sapiens']['illumina']['test_paired_end_sorted_cram'], checkIfExists: true),
                                 file(params.test_data['homo_sapiens']['illumina']['test_paired_end_sorted_cram_crai'], checkIfExists: true)
                                 ]
