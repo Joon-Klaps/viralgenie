@@ -1,7 +1,7 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema",
-    "$id": "https://raw.githubusercontent.com/nf-core/viralgenie/master/assets/schema_input.json",
-    "title": "nf-core/viralgenie pipeline - params.input schema",
+    "$id": "https://raw.githubusercontent.com/Joon-Klaps/viralgenie/master/assets/schema_input.json",
+    "title": "Joon-Klaps/viralgenie pipeline - params.input schema",
     "description": "Schema for the file provided with params.input",
     "type": "array",
     "items": {
@@ -9,12 +9,20 @@
         "properties": {
             "sample": {
                 "type": "string",
-                "pattern": "^\\S+$",
-                "errorMessage": "Sample name must be provided and cannot contain spaces"
+                "pattern": "^[A-z0-9\\-]+$",
+                "errorMessage": "Sample name must be provided and cannot contain spaces or special characters",
+                "meta": ["id", "sample"]
+            },
+            "single_end": {
+                "type": "boolean",
+                "errorMessage": "Single end must be a boolean value (true/false)",
+                "meta": ["single_end"]
             },
             "fastq_1": {
                 "type": "string",
                 "pattern": "^\\S+\\.f(ast)?q\\.gz$",
+                "format": "file-path",
+                "exists": true,
                 "errorMessage": "FastQ file for reads 1 must be provided, cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'"
             },
             "fastq_2": {
@@ -22,6 +30,8 @@
                 "anyOf": [
                     {
                         "type": "string",
+                        "format": "file-path",
+                        "exists": true,
                         "pattern": "^\\S+\\.f(ast)?q\\.gz$"
                     },
                     {

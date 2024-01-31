@@ -1,0 +1,18 @@
+# id: 'clusters_summary'
+# section_name: 'SAMPLE: Clusters summary'
+# format: 'tsv'
+# description: 'Summary of clusters displaying the number of clusters average cluster size and number of singletons (clusters with only no members only a centroid).'
+# plot_type: 'generalstats'
+# headers:
+#    '# Clusters':
+#        id: 'n_clusters'
+#        description: 'Total number of clusters based on all contigs of sample'
+#        format: '{:.0f}'
+#    'Average cluster size':
+#        id: 'avg_size'
+#        description: 'Average number members (excl centroid) of the identified clusters'
+#        format: '{:.0f}'
+#    'Number of singletons':
+#        id: 'n_singletons'
+#        description: 'Total number of singleton clusters (clusters with only one member only a centroid) based on all contigs of sample'
+#        format: '{:.0f}'

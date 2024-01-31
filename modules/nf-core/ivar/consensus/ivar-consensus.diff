@@ -1,0 +1,13 @@
+Changes in module 'nf-core/ivar/consensus'
+--- modules/nf-core/ivar/consensus/main.nf
++++ modules/nf-core/ivar/consensus/main.nf
+@@ -41,6 +41,7 @@
+     cat <<-END_VERSIONS > versions.yml
+     "${task.process}":
+         ivar: \$(echo \$(ivar version 2>&1) | sed 's/^.*iVar version //; s/ .*\$//')
++        samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
+     END_VERSIONS
+     """
+ }
+
+************************************************************

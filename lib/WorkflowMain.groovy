@@ -1,5 +1,5 @@
 //
-// This file holds several functions specific to the main.nf workflow in the nf-core/viralgenie pipeline
+// This file holds several functions specific to the main.nf workflow in the Joon-Klaps/viralgenie pipeline
 //
 
 import nextflow.Nextflow
@@ -18,6 +18,17 @@ class WorkflowMain {
             "  https://doi.org/10.1038/s41587-020-0439-x\n\n" +
             "* Software dependencies\n" +
             "  https://github.com/${workflow.manifest.name}/blob/master/CITATIONS.md"
+    }
+
+    //
+    // Define a global prefix
+    //
+    public static String getGlobalPrefix(workflow,params) {
+        def date_stamp = new java.util.Date().format( 'yyyyMMdd')
+        if (params.prefix) {
+            return "${params.prefix}_something_${workflow.manifest.version}_${workflow.runName}"
+        }
+        return null
     }
 
 
@@ -50,17 +61,6 @@ class WorkflowMain {
         if (!params.input) {
             Nextflow.error("Please provide an input samplesheet to the pipeline e.g. '--input samplesheet.csv'")
         }
-    }
-    //
-    // Get attribute from genome config file e.g. fasta
-    //
-    public static Object getGenomeAttribute(params, attribute) {
-        if (params.genomes && params.genome && params.genomes.containsKey(params.genome)) {
-            if (params.genomes[ params.genome ].containsKey(attribute)) {
-                return params.genomes[ params.genome ][ attribute ]
-            }
-        }
-        return null
     }
 
     //

@@ -1,0 +1,21 @@
+Changes in module 'nf-core/mash/dist'
+--- modules/nf-core/mash/dist/main.nf
++++ modules/nf-core/mash/dist/main.nf
+@@ -9,7 +9,6 @@
+ 
+     input:
+     tuple val(meta), path(query)
+-    path reference
+ 
+     output:
+     tuple val(meta), path("*.txt"), emit: dist
+@@ -21,6 +20,7 @@
+     script:
+     def args = task.ext.args ?: ''
+     def prefix = task.ext.prefix ?: "${meta.id}"
++    def reference = query
+     """
+     mash \\
+         dist \\
+
+************************************************************
