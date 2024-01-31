@@ -28,21 +28,21 @@ Tools given for each step can change as benchmarking is in progress.
 
 1. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/))
 2. Performs optional read pre-processing
-   - Adapter trimming([`fastp`](https://github.com/OpenGene/fastp), [`Trimmomatic`](https://github.com/usadellab/Trimmomatic))
-   - Low complexity and quality filtering ([`bbduk`](https://jgi.doe.gov/data-and-tools/software-tools/bbtools/))
-   - Host-read removal ([`BowTie2`](http://bowtie-bio.sourceforge.net/bowtie2/))
+    - Adapter trimming([`fastp`](https://github.com/OpenGene/fastp), [`Trimmomatic`](https://github.com/usadellab/Trimmomatic))
+    - Low complexity and quality filtering ([`bbduk`](https://jgi.doe.gov/data-and-tools/software-tools/bbtools/))
+    - Host-read removal ([`BowTie2`](http://bowtie-bio.sourceforge.net/bowtie2/))
 3. Metagenomic diveristy mapping
-   - Performs taxonomic classification and/or profiling using one or more of:
-     - [`Kraken2`](https://ccb.jhu.edu/software/kraken2/)
-     - [`Kaiju`](https://kaiju.binf.ku.dk/)
-   - Perform optional post-processing ([`bracken`](https://ccb.jhu.edu/software/bracken/))
-   - Plotting Kraken2, Centrifuge, Kaiju and MALT results ([`Krona`](https://hpc.nih.gov/apps/kronatools.html))
+    - Performs taxonomic classification and/or profiling using one or more of:
+        - [`Kraken2`](https://ccb.jhu.edu/software/kraken2/)
+        - [`Kaiju`](https://kaiju.binf.ku.dk/)
+    - Perform optional post-processing ([`bracken`](https://ccb.jhu.edu/software/bracken/))
+    - Plotting Kraken2, Centrifuge, Kaiju and MALT results ([`Krona`](https://hpc.nih.gov/apps/kronatools.html))
 4. Denovo assembly ([`SPAdes`](http://cab.spbu.ru/software/spades/), [`TRINITY`](https://github.com/trinityrnaseq/trinityrnaseq), [`megahit`](https://github.com/voutcn/megahit)), combine contigs.
 5. Contig cluster annotation & binning ([`blastn`](https://blast.ncbi.nlm.nih.gov/Blast.cgi?PAGE_TYPE=BlastSearch))
 
-- Identify top 5 blast hits
-- Merge blast hit seqs and contigs into a single file & cluster ([`cdhit`](https://sites.google.com/view/cd-hit), [`vsearch`](https://github.com/torognes/vsearch/wiki/Clustering))
-- Filter for only contigs that correspond to the identified centroid
+-   Identify top 5 blast hits
+-   Merge blast hit seqs and contigs into a single file & cluster ([`cdhit`](https://sites.google.com/view/cd-hit), [`vsearch`](https://github.com/torognes/vsearch/wiki/Clustering))
+-   Filter for only contigs that correspond to the identified centroid
 
 6. Scaffolding of contigs ([`MAFFT`](https://mafft.cbrc.jp/alignment/server/), [`MUSCLE`](https://www.drive5.com/muscle/))
 7. Creation of hybrid supercontig by combining contigs and the reference.
@@ -79,8 +79,8 @@ viralgenie was originally written by joon.klaps@kuleuven.be.
 
 We thank the following people for their extensive assistance in the development of this pipeline:
 
-- [`Philippe Lemey`](https://github.com/plemey)
-- [`Liana Kafetzopoulou`](https://github.com/LianaKafetzopoulou)
+-   [`Philippe Lemey`](https://github.com/plemey)
+-   [`Liana Kafetzopoulou`](https://github.com/LianaKafetzopoulou)
 
 <!-- TODO nf-core: If applicable, make list of people who have also contributed -->
 
