@@ -1,24 +1,22 @@
-# ![Joon-Klaps/viralgenie](docs/images/nf-core-viralgenie_logo_light.png#gh-light-mode-only) ![Joon-Klaps/viralgenie](docs/images/nf-core-viralgenie_logo_dark.png#gh-dark-mode-only)
+<h1>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/nf-core-viralgenie_logo_dark.png">
+    <img alt="nf-core/viralgenie" src="docs/images/nf-core-viralgenie_logo_light.png">
+  </picture>
+</h1>
 
 <!--[![AWS CI](https://img.shields.io/badge/CI%20tests-full%20size-FF9900?labelColor=000000&logo=Amazon%20AWS)](https://nf-co.re/viralgenie/results)
 [![Cite with Zenodo](http://img.shields.io/badge/DOI-10.5281/zenodo.XXXXXXX-1073c8?labelColor=000000)](https://doi.org/10.5281/zenodo.XXXXXXX)
 -->
 
-[![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A523.04.0-23aa62.svg)](https://www.nextflow.io/)
-[![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/)
-[![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)
-[![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
+[![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A523.04.0-23aa62.svg)](https://www.nextflow.io/) [![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/) [![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/) [![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
 
 <!--
 [![Launch on Nextflow Tower](https://img.shields.io/badge/Launch%20%F0%9F%9A%80-Nextflow%20Tower-%234256e7)](https://tower.nf/launch?pipeline=https://github.com/Joon-Klaps/viralgenie)
 
 [![Get help on Slack](http://img.shields.io/badge/slack-nf--core%20%23viralgenie-4A154B?labelColor=000000&logo=slack)](https://nfcore.slack.com/channels/viralgenie)-->
 
-[![Follow on Twitter](http://img.shields.io/badge/twitter-%40nf__core-1DA1F2?labelColor=000000&logo=twitter)](https://twitter.com/nf_core)[![Follow on Mastodon](https://img.shields.io/badge/mastodon-nf__core-6364ff?labelColor=FFFFFF&logo=mastodon)](https://mstdn.science/@nf_core)[![Watch on YouTube](http://img.shields.io/badge/youtube-nf--core-FF0000?labelColor=000000&logo=youtube)](https://www.youtube.com/c/nf-core)
-
 ## Introduction
-
-<!-- TODO nf-core: Write a 1-2 sentence summary of what data the pipeline is for and what it does -->
 
 **Joon-Klaps/viralgenie** is a bioinformatics best-practice analysis pipeline for reconstructing consensus genomes and to identify intra-host variants from metagenomic sequencing data or enriched based sequencing data like hybrid capture.
 
@@ -30,21 +28,21 @@ Tools given for each step can change as benchmarking is in progress.
 
 1. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/))
 2. Performs optional read pre-processing
-   - Adapter trimming([`fastp`](https://github.com/OpenGene/fastp), [`Trimmomatic`](https://github.com/usadellab/Trimmomatic))
-   - Low complexity and quality filtering ([`bbduk`](https://jgi.doe.gov/data-and-tools/software-tools/bbtools/))
-   - Host-read removal ([`BowTie2`](http://bowtie-bio.sourceforge.net/bowtie2/))
+    - Adapter trimming([`fastp`](https://github.com/OpenGene/fastp), [`Trimmomatic`](https://github.com/usadellab/Trimmomatic))
+    - Low complexity and quality filtering ([`bbduk`](https://jgi.doe.gov/data-and-tools/software-tools/bbtools/))
+    - Host-read removal ([`BowTie2`](http://bowtie-bio.sourceforge.net/bowtie2/))
 3. Metagenomic diveristy mapping
-   - Performs taxonomic classification and/or profiling using one or more of:
-     - [`Kraken2`](https://ccb.jhu.edu/software/kraken2/)
-     - [`Kaiju`](https://kaiju.binf.ku.dk/)
-   - Perform optional post-processing ([`bracken`](https://ccb.jhu.edu/software/bracken/))
-   - Plotting Kraken2, Centrifuge, Kaiju and MALT results ([`Krona`](https://hpc.nih.gov/apps/kronatools.html))
+    - Performs taxonomic classification and/or profiling using one or more of:
+        - [`Kraken2`](https://ccb.jhu.edu/software/kraken2/)
+        - [`Kaiju`](https://kaiju.binf.ku.dk/)
+    - Perform optional post-processing ([`bracken`](https://ccb.jhu.edu/software/bracken/))
+    - Plotting Kraken2, Centrifuge, Kaiju and MALT results ([`Krona`](https://hpc.nih.gov/apps/kronatools.html))
 4. Denovo assembly ([`SPAdes`](http://cab.spbu.ru/software/spades/), [`TRINITY`](https://github.com/trinityrnaseq/trinityrnaseq), [`megahit`](https://github.com/voutcn/megahit)), combine contigs.
 5. Contig cluster annotation & binning ([`blastn`](https://blast.ncbi.nlm.nih.gov/Blast.cgi?PAGE_TYPE=BlastSearch))
 
-   - Identify top 5 blast hits
-   - Merge blast hit seqs and contigs into a single file & cluster ([`cdhit`](https://sites.google.com/view/cd-hit), [`vsearch`](https://github.com/torognes/vsearch/wiki/Clustering))
-   - Filter for only contigs that correspond to the identified centroid
+-   Identify top 5 blast hits
+-   Merge blast hit seqs and contigs into a single file & cluster ([`cdhit`](https://sites.google.com/view/cd-hit), [`vsearch`](https://github.com/torognes/vsearch/wiki/Clustering))
+-   Filter for only contigs that correspond to the identified centroid
 
 6. Scaffolding of contigs ([`MAFFT`](https://mafft.cbrc.jp/alignment/server/), [`MUSCLE`](https://www.drive5.com/muscle/))
 7. Creation of hybrid supercontig by combining contigs and the reference.
@@ -81,8 +79,8 @@ viralgenie was originally written by joon.klaps@kuleuven.be.
 
 We thank the following people for their extensive assistance in the development of this pipeline:
 
-- [`Philippe Lemey`](https://github.com/plemey)
-- [`Liana Kafetzopoulou`](https://github.com/LianaKafetzopoulou)
+-   [`Philippe Lemey`](https://github.com/plemey)
+-   [`Liana Kafetzopoulou`](https://github.com/LianaKafetzopoulou)
 
 <!-- TODO nf-core: If applicable, make list of people who have also contributed -->
 
@@ -97,6 +95,7 @@ For further information or help, don't hesitate to get in touch on the [Slack `#
 ## Citations
 
 <!-- TODO nf-core: Add citation for pipeline after first release. Uncomment lines below and update Zenodo doi and badge at the top of this file. -->
+
 <!-- If you use  Joon-Klaps/viralgenie for your analysis, please cite it using the following doi: [10.5281/zenodo.XXXXXX](https://doi.org/10.5281/zenodo.XXXXXX) -->
 
 <!-- TODO nf-core: Add bibliography of tools and data used in your pipeline -->

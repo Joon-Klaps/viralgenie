@@ -72,7 +72,7 @@ with open("bv-brc-refvirus-anno.fasta", "w") as f:
 <details markdown="1">
 <summary>Expected files in database directory</summary>
 
-- `bv-brc-refvirus-anno.fasta.gz`
+-   `bv-brc-refvirus-anno.fasta.gz`
 
 </details>
 
@@ -108,10 +108,10 @@ kaiju-mkfmi proteins
 <details markdown="1">
 <summary>Expected files in database directory</summary>
 
-- `kaiju`
-  - `kaiju_db_*.fmi`
-  - `nodes.dmp`
-  - `names.dmp`
+-   `kaiju`
+    -   `kaiju_db_*.fmi`
+    -   `nodes.dmp`
+    -   `names.dmp`
 
 </details>
 
@@ -151,10 +151,10 @@ You can then add the `<YOUR_DB_NAME>/` path to your nf-core/taxprofiler database
 <details markdown="1">
 <summary>Expected files in database directory</summary>
 
-- `kraken2`
-  - `opts.k2d`
-  - `hash.k2d`
-  - `taxo.k2d`
+-   `kraken2`
+    -   `opts.k2d`
+    -   `hash.k2d`
+    -   `taxo.k2d`
 
 </details>
 
@@ -195,12 +195,12 @@ bracken-build -d <KRAKEN_DB_DIR> -k <KRAKEN_DB_KMER_LENGTH> -l <READLENGTH>
 <details markdown="1">
 <summary>Expected files in database directory</summary>
 
-- `bracken`
-  - `hash.k2d`
-  - `opts.k2d`
-  - `taxo.k2d`
-  - `database100mers.kmer_distrib`
-  - `database150mers.kmer_distrib`
+-   `bracken`
+    -   `hash.k2d`
+    -   `opts.k2d`
+    -   `taxo.k2d`
+    -   `database100mers.kmer_distrib`
+    -   `database150mers.kmer_distrib`
 
 </details>
 
