@@ -31,7 +31,6 @@ class WorkflowMain {
         return null
     }
 
-
     //
     // Validate parameters and print summary to screen
     //
@@ -46,6 +45,7 @@ class WorkflowMain {
 
         // Check that a -profile or Nextflow config has been provided to run the pipeline
         NfcoreTemplate.checkConfigProvided(workflow, log)
+
         // Check that the profile doesn't contain spaces and doesn't end with a trailing comma
         checkProfile(workflow.profile, args, log)
 
