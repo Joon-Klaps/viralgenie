@@ -36,24 +36,24 @@ repos:
       - id: pycln
         args: [--config=pyproject.toml]
 
-  - repo: local
-    hooks:
-      - id: isort
-        name: iSort - Sorts imports.
-        description: Sorts your import for you.
-        entry: isort
-        language: python
-        types: [python]
-        require_serial: true
-        additional_dependencies:
-          - isort
+  # - repo: local
+  #   hooks:
+  #     - id: isort
+  #       name: iSort - Sorts imports.
+  #       description: Sorts your import for you.
+  #       entry: isort
+  #       language: python
+  #       types: [python]
+  #       require_serial: true
+  #       additional_dependencies:
+  #         - isort
 
-      - id: black
-        name: Black - Auto-formatter.
-        description: Black is the uncompromising Python code formatter. Writing to files.
-        entry: black
-        language: python
-        types: [python]
-        require_serial: true
-        additional_dependencies:
-          - black
+  #     - id: black
+  #       name: Black - Auto-formatter.
+  #       description: Black is the uncompromising Python code formatter. Writing to files.
+  #       entry: black
+  #       language: python
+  #       types: [python]
+  #       require_serial: true
+  #       additional_dependencies:
+  #         - black
