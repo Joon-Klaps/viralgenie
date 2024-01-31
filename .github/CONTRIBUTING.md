@@ -7,10 +7,10 @@ We try to manage the required tasks for nf-core/viralgenie using GitHub issues, 
 Please use the pre-filled template to save time.
 
 However, don't be put off by this template - other more general issues and suggestions are welcome!
-Contributions to the code are even more welcome ;)
+Contributions to the code are even more welcome ;
 
 :::info
-If you need help using or modifying nf-core/viralgenie then the best place to ask is on the nf-core Slack [#viralgenie](https://nfcore.slack.com/channels/viralgenie) channel ([join our Slack here](https://nf-co.re/join/slack)).
+If you need help using or modifying viralgenie then the best place to ask is on the nf-core Slack [Joon-Klaps](https://nfcore.slack.com/team/U043Y6FQR6J).
 :::
 
 ## Contribution workflow
