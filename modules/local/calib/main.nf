@@ -12,9 +12,9 @@ process CALIB {
     val(tag_length)
 
     output:
-    tuple val(meta), path("*.cluster"), emit: cluster
-    tuple val(meta), path("*.")       , emit: reads
-    path  "versions.yml"              , emit: versions
+    tuple val(meta), path("*.cluster")            , emit: cluster
+    tuple val(meta), path("*dedup{1,2}.fastq.gz") , emit: reads
+    path  "versions.yml"                          , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -29,16 +29,14 @@ process CALIB {
     output_prefix = meta.single_end ? "${prefix}_dedup." : "${prefix}_dedup1. ${prefix}_dedup2."
 
     """
-    calib \\
-        $args \\
-        -f ${reads[0]} \\
-        $second_read \\
+    calib $args \\
+        -f ${reads[0]} $second_read \\
         --threads $threads \\
         -l $tag_length \\
         -o ${prefix}.
 
-    calib_cons \\
-        $args2
+    calib_cons $args2 \\
+        --threads $threads \\
         -c ${prefix}.cluster \\
         -q $reads_joined \\
         -o $output_prefix

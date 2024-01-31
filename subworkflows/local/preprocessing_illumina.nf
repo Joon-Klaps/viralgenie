@@ -1,5 +1,6 @@
 // modules
 include { BBMAP_BBDUK                          } from '../../modules/nf-core/bbmap/bbduk/main'
+include { CALIB                                } from '../../modules/local/calib/main'
 include { FASTQ_FASTQC_UMITOOLS_TRIMMOMATIC    } from './fastq_fastqc_umitools_trimmomatic'
 include { FASTQ_FASTQC_UMITOOLS_FASTP          } from '../nf-core/fastq_fastqc_umitools_fastp/main'
 include { FASTQ_KRAKEN_HOST_REMOVE             } from './fastq_kraken_host_remove'
@@ -16,6 +17,17 @@ workflow PREPROCESSING_ILLUMINA {
     ch_versions         = Channel.empty()
     ch_multiqc_files    = Channel.empty()
     trim_read_count     = Channel.empty()
+
+    // deduplicate UMI's with CALIB
+
+    if (params.with_umi && !params.skip_calib) {
+        CALIB (
+            ch_reads,
+            params.umi_tag_length
+        )
+        ch_reads = CALIB.out.reads
+        ch_versions = ch_versions.mix(CALIB.out.versions)
+    }
 
     // QC & UMI & Trimming with fastp or trimmomatic
     if (params.trim_tool == 'trimmomatic') {
