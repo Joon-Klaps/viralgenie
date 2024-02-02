@@ -20,7 +20,7 @@ workflow MMSEQS_ANNOTATE {
     ch_versions = ch_versions.mix(MMSEQS_CREATEINDEX.out.versions.first())
 
     // search the genomes against the annotation db
-    MMSEQS_EASYSEARCH ( genomes, MMSEQS_CREATEINDEX.out.index )
+    MMSEQS_EASYSEARCH ( genomes, MMSEQS_CREATEINDEX.out.db_indexed )
     ch_versions = ch_versions.mix(MMSEQS_EASYSEARCH.out.versions.first())
 
     emit:
