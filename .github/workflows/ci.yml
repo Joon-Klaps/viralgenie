@@ -36,6 +36,15 @@ jobs:
       - name: Check out pipeline code
         uses: actions/checkout@v4
 
+      - name: Free some space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@v1.3.1
+
       - name: Install Nextflow
         uses: nf-core/setup-nextflow@v1
         with:
@@ -62,6 +71,15 @@ jobs:
       - name: Check out pipeline code
         uses: actions/checkout@v4
 
+      - name: Free some space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@v1.3.1
+
       - name: Install Nextflow
         uses: nf-core/setup-nextflow@v1
         with:
@@ -84,6 +102,15 @@ jobs:
     steps:
       - name: Check out pipeline code
         uses: actions/checkout@v4
+
+      - name: Free some space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@v1.3.1
 
       - name: Install Nextflow
         uses: nf-core/setup-nextflow@v1
@@ -108,6 +135,15 @@ jobs:
       - name: Check out pipeline code
         uses: actions/checkout@v4
 
+      - name: Free some space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@v1.3.1
+
       - name: Install Nextflow
         uses: nf-core/setup-nextflow@v1
         with:
@@ -131,6 +167,15 @@ jobs:
       - name: Check out pipeline code
         uses: actions/checkout@v4
 
+      - name: Free some space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@v1.3.1
+
       - name: Install Nextflow
         uses: nf-core/setup-nextflow@v1
         with:
@@ -153,6 +198,15 @@ jobs:
     steps:
       - name: Check out pipeline code
         uses: actions/checkout@v4
+
+      - name: Free some space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@v1.3.1
 
       - name: Install Nextflow
         uses: nf-core/setup-nextflow@v1
@@ -182,6 +236,15 @@ jobs:
     steps:
       - name: Check out pipeline code
         uses: actions/checkout@v4
+
+      - name: Free some space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@v1.3.1
 
       - name: Install Nextflow
         uses: nf-core/setup-nextflow@v1
