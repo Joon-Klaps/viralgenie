@@ -559,6 +559,13 @@
                     "enum": ["cdhitest", "vsearch", "mmseqs-linclust", "mmseqs-cluster", "vrhyme", "mash", "diamond"],
                     "fa_icon": "fas fa-bezier-curve"
                 },
+                "keep_unclassified": {
+                    "type": "boolean",
+                    "default": true,
+                    "fa_icon": "fas fa-filter",
+                    "description": "Keep the contigs that could not be classified with the taxonomic databases (`kaiju_db` & `kraken2_db`)",
+                    "help_text": "Within the preclustering step, all contigs will get a taxonomic classification using the provided databases for the metagenomic tools. In some cases, the number of unclassified contigs, can be very large if the database is restrictive. This will result in large clusters in downstream processing that can take up a lot of resources despite not being a priority in some analyses. So set it to `True` if you want to keep unclassified contigs and set it to `False` if you don't want to keep them. "
+                },
                 "network_clustering": {
                     "type": "string",
                     "default": "connected_components",
@@ -814,11 +821,5 @@
         {
             "$ref": "#/definitions/genome_qc"
         }
-    ],
-    "properties": {
-        "keep_unclassified": {
-            "type": "string",
-            "default": "true"
-        }
-    }
+    ]
 }
