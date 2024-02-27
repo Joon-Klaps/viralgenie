@@ -814,5 +814,11 @@
         {
             "$ref": "#/definitions/genome_qc"
         }
-    ]
+    ],
+    "properties": {
+        "keep_unclassified": {
+            "type": "string",
+            "default": "true"
+        }
+    }
 }
