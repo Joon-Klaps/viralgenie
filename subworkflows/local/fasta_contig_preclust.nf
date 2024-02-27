@@ -56,19 +56,19 @@ workflow FASTA_CONTIG_PRECLUST {
         .sequences
         .map { meta, fastas, json ->
             json = WorkflowCommons.getMapFromJson(json)
-            return [meta + json, fastas]                                                        // json contains ntaxa
+            return [meta + json, fastas]                                                                // json contains ntaxa
                 }
-        .transpose()                                                                            // wide to long
+        .transpose()                                                                                    // wide to long
         .map{ meta, fasta ->
-            def taxid = fasta.baseName.split("_taxid")[1]                                       // get taxid from fasta file name
-            return [meta.sample, meta + [id: "${meta.id}_taxid${taxid}"], fasta ]               // [meta.sample, meta, fasta]
+            def taxid = fasta.baseName.split("_taxid")[1]                                               // get taxid from fasta file name
+            return [meta.sample, meta + [id: "${meta.id}_taxid${taxid}", taxid: "${taxid}"], fasta ]    // [meta.sample, meta, fasta]
         }
-        .filter { meta, fasta ->
-            params.keep_unclassified || meta.taxid != "U"                                       // filter out unclassified
+        .filter { sample, meta, fasta ->
+            params.keep_unclassified || meta.taxid != "U"                                               // filter out unclassified
         }
-        .combine(reads, by:[0])                                                                 // reads -> [meta.sample, meta, reads]
-        .map{ sample, meta_contig, fasta, meta_reads, reads -> [meta_contig, fasta, reads] }    // select only meta of contigs
-        .map{ meta, fasta, reads -> [meta + [single_end:meta.og_single_end], fasta, reads]}     // set original single_end back
+        .combine(reads, by:[0])                                                                         // reads -> [meta.sample, meta, reads]
+        .map{ sample, meta_contig, fasta, meta_reads, reads -> [meta_contig, fasta, reads] }            // select only meta of contigs
+        .map{ meta, fasta, reads -> [meta + [single_end:meta.og_single_end], fasta, reads]}             // set original single_end back
         .set{sequences_reads}
 
     classifications = classifications.map{ meta, txt -> [meta + [single_end:meta.og_single_end], txt] }
