@@ -21,11 +21,13 @@ Identifying the species and the segment of the final genome construct is done ba
 
 In case you want to modify the default database see [here how to install the CLI](https://www.bv-brc.org/docs/cli_tutorial/cli_installation.html) and use the following scripts as a guideline to reconstruct the dataset.
 
+Here we select all viral genomes that are not lab reassortments and are reference genomes and add metadata attributes to the output.
+
 ```bash
-# download annotation metadata
-p3-all-genomes --eq superkingdom,Viruses --eq reference_genome,Reference --attr genome_id --attr species --attr segment --attr genome_name --attr genome_length --attr host_common_name --attr genbank_accessions --attr taxon_id   > refseq-virus-anno.txt
-# download genome data, done seperatly as it takes much longer to query
-p3-all-genomes --eq superkingdom,Viruses --eq reference_genome,Reference | p3-get-genome-contigs --attr sequence > refseq-virus.fasta
+# download annotation metadata +/- 5s
+p3-all-genomes --eq superkingdom,Viruses --eq reference_genome,Reference --ne host_common_name,'Lab reassortment' --attr genome_id,species,segment,genome_name,genome_length,host_common_name,genbank_accessions,taxon_id   > all-virus-anno.txt
+# download genome data, done seperatly as it takes much longer to query +/- 1 hour
+p3-all-genomes --eq superkingdom,Viruses --eq reference_genome,Reference --ne host_common_name,'Lab reassortment' | p3-get-genome-contigs --attr sequence > all-virus.fasta
 ```
 
 > [!NOTE]

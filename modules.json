@@ -212,11 +212,21 @@
                         "git_sha": "18a43d316b6fd683dc2346867b42882b99811cfd",
                         "installed_by": ["modules"]
                     },
+                    "mmseqs/createindex": {
+                        "branch": "master",
+                        "git_sha": "151460db852d636979d9ff3ee631e2268060d4c3",
+                        "installed_by": ["modules"]
+                    },
                     "mmseqs/createtsv": {
                         "branch": "master",
                         "git_sha": "151460db852d636979d9ff3ee631e2268060d4c3",
                         "installed_by": ["modules"],
                         "patch": "modules/nf-core/mmseqs/createtsv/mmseqs-createtsv.diff"
+                    },
+                    "mmseqs/easysearch": {
+                        "branch": "master",
+                        "git_sha": "151460db852d636979d9ff3ee631e2268060d4c3",
+                        "installed_by": ["modules"]
                     },
                     "mmseqs/linclust": {
                         "branch": "master",

@@ -184,9 +184,9 @@ workflow VIRALGENIE {
             ch_blastdb_in = ch_blastdb_in.mix(ch_ref_pool)
         }
 
-        if ( !params.skip_annotation){
-            ch_blastdb_in = ch_blastdb_in.mix(ch_annotation_db)
-        }
+        // if ( !params.skip_annotation){
+        //     ch_blastdb_in = ch_blastdb_in.mix(ch_annotation_db)
+        // }
 
         BLAST_MAKEBLASTDB ( ch_blastdb_in )
         BLAST_MAKEBLASTDB
@@ -195,12 +195,12 @@ workflow VIRALGENIE {
             .branch { meta, db ->
                 reference: meta.id == 'reference'
                     return [ meta, db ]
-                annotation: meta.id == 'annotation'
-                    return [ meta, db ]
+                // annotation: meta.id == 'annotation'
+                //     return [ meta, db ]
             }.
             set{ch_blastdb_out}
         ch_blast_refdb  = ch_blastdb_out.reference.collect{it[1]}.ifEmpty([]).map{it -> [[id: 'reference'], it]}
-        ch_blast_annodb = ch_blastdb_out.annotation.collect{it[1]}.ifEmpty([]).map{it -> [[id: 'annotation'], it]}
+        // ch_blast_annodb = ch_blastdb_out.annotation.collect{it[1]}.ifEmpty([]).map{it -> [[id: 'annotation'], it]}
         ch_versions     = ch_versions.mix(BLAST_MAKEBLASTDB.out.versions)
     }
 
@@ -491,7 +491,7 @@ workflow VIRALGENIE {
             ch_unaligned_raw_contigs,
             ch_checkv_db,
             ch_blast_refdb,
-            ch_blast_annodb,
+            ch_annotation_db,
             )
         ch_versions           = ch_versions.mix(CONSENSUS_QC.out.versions)
         ch_multiqc_files      = ch_multiqc_files.mix(CONSENSUS_QC.out.mqc.collect{it[1]}.ifEmpty([]))
