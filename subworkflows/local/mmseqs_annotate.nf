@@ -13,11 +13,11 @@ workflow MMSEQS_ANNOTATE {
 
     // create mmseqs annotation db
     MMSEQS_CREATEANNOTATIONDB ( db )
-    ch_versions = ch_versions.mix(MMSEQS_CREATEANNOTATIONDB.out.versions.first())
+    ch_versions = ch_versions.mix(MMSEQS_CREATEANNOTATIONDB.out.versions)
 
     // create mmseqs index for faster reuse of the db
     MMSEQS_CREATEINDEX ( MMSEQS_CREATEANNOTATIONDB.out.db )
-    ch_versions = ch_versions.mix(MMSEQS_CREATEINDEX.out.versions.first())
+    ch_versions = ch_versions.mix(MMSEQS_CREATEINDEX.out.versions)
 
     // search the genomes against the annotation db
     MMSEQS_EASYSEARCH ( genomes, MMSEQS_CREATEINDEX.out.db_indexed )

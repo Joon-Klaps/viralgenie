@@ -7,12 +7,12 @@ process CREATE_MULTIQC_TABLES {
         'biocontainers/bioframe:0.5.1--pyhdfd78af_0' }"
 
     input:
-    path clusters_summary_files, stageAs: "?/*"
+    path clusters_summary_files, stageAs: "?/cluster/*"
     path sample_metadata
-    path checkv_files, stageAs: "?/*"
-    path quast_files, stageAs: "?/*"
-    path blast_files, stageAs: "?/*"
-    path anno_files, stageAs: "?/*"
+    path checkv_files, stageAs: "?/checkv/*"
+    path quast_files, stageAs: "?/quast/*"
+    path blast_files, stageAs: "?/blast/*"
+    path anno_files, stageAs: "?/anno/*"
     path multiqc_dir
     path comment_headers
     path custom_table_headers
