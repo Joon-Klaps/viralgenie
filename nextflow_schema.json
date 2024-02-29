@@ -552,6 +552,21 @@
                     "fa_icon": "fas fa-forward",
                     "description": "Skip the preclustering of assemblies to facilitate downstream processing of assemblies"
                 },
+                "keep_unclassified": {
+                    "type": "boolean",
+                    "default": true,
+                    "fa_icon": "fas fa-filter",
+                    "description": "Keep the contigs that could not be classified with the taxonomic databases (`kaiju_db` & `kraken2_db`)",
+                    "help_text": "Within the preclustering step, all contigs will get a taxonomic classification using the provided databases for the metagenomic tools. In some cases, the number of unclassified contigs, can be very large if the database is restrictive. This will result in large clusters in downstream processing that can take up a lot of resources despite not being a priority in some analyses. So set it to `True` if you want to keep unclassified contigs and set it to `False` if you don't want to keep them. "
+                },
+                "taxon_merge_strategy": {
+                    "type": "string",
+                    "default": "lowest",
+                    "fa_icon": "far fa-object-ungroup",
+                    "description": "Taxon conflict resolution mode, must be 1 (Kaiju), 2 (Kraken),  lca, or lowest.",
+                    "help_text": "The option -c determines the method of resolving conflicts in the taxonomic assignment for a read.\nPossible values are '1', '2', 'lca', 'lowest':\n  '1' -> the taxon id from Kaiju is used.\n  '2' -> the taxon id from Kraken is used.\n  'lca' -> the least common ancestor of the two taxon ids from both input files is used.\n  'lowest' -> the lower rank of the two taxa is used if they are within the same lineage. Otherwise the LCA is used.",
+                    "enum": ["1", "2", "lca", "lowest"]
+                },
                 "cluster_method": {
                     "type": "string",
                     "default": "mash",
@@ -566,6 +581,11 @@
                     "description": "(only with mash) Algorithm to partition the network.",
                     "enum": ["connected_components", "leiden"],
                     "help_text": "Mash creates a distance matrix that gets translated into a network of connectected nodes where the edges represent the similarity. This network is then split up using the specified method.\n\n - [leiden](https://leidenalg.readthedocs.io/en/stable/intro.html) algorithm: a hierarchical clustering algorithm, that recursively merges communities into single nodes by greedily optimizing the modularity\n - [connected_components] algorithm: a clustering algorithm that defines the largest possible communities where each node within a subset is reachable from every other node in the same subset via any edge .\n"
+                },
+                "skip_hybrid_consensus": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward",
+                    "description": "Skip creation of the hybrid consensus, instead keep the scaffold with ambiguous bases if the depth of scaffolds is not high enough."
                 },
                 "identity_threshold": {
                     "type": "number",

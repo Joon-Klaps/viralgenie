@@ -59,7 +59,7 @@ module_order:
   - "fastqc":
       name: "SAMPLE: FastQC (post-Host-removal)"
       path_filters:
-        - "*_trim*fastqc.zip"
+        - "*_host*fastqc.zip"
   - "fastp":
       name: "SAMPLE: fastp"
   - "trimmomatic":

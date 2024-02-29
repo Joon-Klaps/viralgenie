@@ -84,19 +84,25 @@ workflow ALIGN_COLLAPSE_CONTIGS {
         .set{ ch_ref_cons_mpileup }
 
 
+    aligned_txt = Channel.empty()
     // Custom script that replaces region in consensus with orignally 0 coverage with regions from the reference.
-    LOWCOV_TO_REFERENCE( ch_ref_cons_mpileup )
-    ch_versions = ch_versions.mix(LOWCOV_TO_REFERENCE.out.versions.first())
+    if (!params.skip_hybrid_consensus) {
+        LOWCOV_TO_REFERENCE( ch_ref_cons_mpileup)
+        ch_versions = ch_versions.mix(LOWCOV_TO_REFERENCE.out.versions.first())
+        aligned_txt = LOWCOV_TO_REFERENCE.out.txt
 
-    LOWCOV_TO_REFERENCE
-        .out
-        .sequence
-        .mix( ch_consensus.internal )
-        .set{ consensus_patched }
+        LOWCOV_TO_REFERENCE
+            .out
+            .sequence
+            .mix( ch_consensus.internal )
+            .set{ consensus_patched }
+    } else {
+        consensus_patched = RENAME_FASTA_HEADER_CONTIG_CONSENSUS.out.fasta
+    }
 
     emit:
     consensus       = consensus_patched                 // channel: [ val(meta), [ fasta ] ]
-    aligned_txt     = LOWCOV_TO_REFERENCE.out.txt   // channel: [ val(meta), [ txt ] ]
+    aligned_txt     = aligned_txt                       // channel: [ val(meta), [ txt ] ]
     unaligned_fasta = CAT_CLUSTER.out.file_out          // channel: [ val(meta), [ fasta ] ]
     versions        = ch_versions                       // channel: [ versions.yml ]
 }
