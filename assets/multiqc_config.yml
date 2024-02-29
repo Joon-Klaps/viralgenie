@@ -172,7 +172,11 @@ table_columns_visible:
     percent_gc: True
     percent_duplicates: True
     percent_fails: True
-  "CLUSTER: Samtools Stats": False
+  "SAMPLE: fastp":
+    filtering_result_passed_filter_reads: False
+    after_filtering_q30_rate: True
+  "CLUSTER: Samtools Stats: stats": False
+  "CLUSTER: Samtools Stats: flagstat": False
   "CLUSTER: Bcftools: Stats": False
   "CLUSTER: Picard: Mark Duplicates": False
   "CLUSTER: UMI-tools": False
@@ -197,8 +201,10 @@ table_columns_visible:
     Largest contig: True
     Total length: False
 
-section_comments:
-  general_stats: "By default, all read count columns are displayed as millions (M) of reads."
+# Viral reads are not so big
+read_count_multiplier: 1
+read_count_prefix: ""
+read_count_desc: ""
 
 sp:
   fastp:
