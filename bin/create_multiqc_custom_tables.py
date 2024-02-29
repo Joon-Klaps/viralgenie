@@ -294,7 +294,8 @@ def write_dataframe(df, file, comment):
 
 def filter_and_rename_columns(df, columns_of_interest):
     """
-    Filter for columns of interest and rename those we can
+    Filter for columns of interest and rename those we can.
+    Filtering is done first on exact match and then on approximate match.
 
     Args:
         df (pandas.DataFrame): The input DataFrame.

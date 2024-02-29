@@ -75,7 +75,8 @@ workflow CONSENSUS_QC  {
             [[:],[]],
             [[:],[]],
             [[:],[]],
-            [[:],[]]
+            [[:],[]],
+            false
         )
         ch_versions = ch_versions.mix(MAFFT_ITERATIONS.out.versions)
 
@@ -111,6 +112,7 @@ workflow CONSENSUS_QC  {
             [[:],[]],
             [[:],[]],
             [[:],[]],
+            false
         )
         ch_versions = ch_versions.mix(MAFFT_QC.out.versions)
     }
