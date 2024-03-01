@@ -228,8 +228,8 @@ def main(argv=None):
     consensus = SeqIO.read(args.consensus, "fasta")
     logger.info("Reading consensus ...\n")
 
-    # Read in the mpileup file in a numpy array
-    mpileup = np.loadtxt(args.mpileup, dtype=str, delimiter="\t")
+    # Read in the mpileup file in a numpy array, Important to set the comments to None as '#' is used in the mpileup file
+    mpileup = np.loadtxt(args.mpileup, dtype=str, delimiter="\t", comments=None)
     logger.info("Reading mpileup ...\n")
 
     # Extract regions with coverage & subtract 1 for 0 index base
