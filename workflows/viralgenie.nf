@@ -577,6 +577,9 @@ workflow.onError {
         println("🛑 Default resources exceed availability 🛑 ")
         println("💡 See here on how to configure pipeline: https://nf-co.re/docs/usage/configuration#tuning-workflow-resources 💡")
     }
+    if (params.clean_output_on_error) {
+        file(params.outdir).deleteDir()
+    }
 }
 
 /*

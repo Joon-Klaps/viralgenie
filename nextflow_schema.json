@@ -214,6 +214,12 @@
                     "description": "Custom MultiQC yaml file containing HTML including a methods description.",
                     "fa_icon": "fas fa-cog"
                 },
+                "clean_output_on_error": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-trash-alt",
+                    "description": "Delete the output directory if the pipeline fails",
+                    "hidden": true
+                },
                 "custom_table_headers": {
                     "type": "string",
                     "default": "${projectDir}/assets/custom_table_headers.yml",
