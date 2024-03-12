@@ -30,11 +30,11 @@ repos:
       - id: editorconfig-checker
         alias: ec
 
-  # - repo: https://github.com/hadialqattan/pycln
-  #   rev: v2.1.2 # Possible releases: https://github.com/hadialqattan/pycln/releases
-  #   hooks:
-  #     - id: pycln
-  #       args: [--config=pyproject.toml]
+  - repo: https://github.com/hadialqattan/pycln
+    rev: v2.1.2 # Possible releases: https://github.com/hadialqattan/pycln/releases
+    hooks:
+      - id: pycln
+        args: [--config=pyproject.toml]
 
   # - repo: local
   #   hooks:

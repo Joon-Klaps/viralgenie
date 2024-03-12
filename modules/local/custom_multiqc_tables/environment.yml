@@ -1,7 +1,0 @@
-name: custom_multiqc_tables
-channels:
-  - conda-forge
-  - bioconda
-  - defaults
-dependencies:
-  - conda-forge::bioframe=0.4.1
