@@ -6,7 +6,7 @@ umitools:
   - max_umi_per_pos
   - mean_umi_per_pos
   - total_umis
-  - percent_passing_dedup: "% passing dedup"
+  - percent_passing_dedup
   - unique_umis
 picard_dups:
   - UNPAIRED_READS_EXAMINED: "unpaired reads examined"
@@ -21,26 +21,26 @@ picard_dups:
   - LIBRARY: "library"
 samtools_stats:
   - sequences
-  - reads_paired_percent: "reads paired %"
+  - reads_paired_percent
   - average_length
   - is_sorted
   - bases_mapped_(cigar)
-  - reads_QC_failed_percent: "reads QC failed %"
+  - reads_QC_failed_percent
   - reads_unmapped
-  - reads_unmapped_percent: "reads unmapped %"
-  - reads_properly_paired_percent: "reads properly paired %"
+  - reads_unmapped_percent
+  - reads_properly_paired_percent
   - average_quality
   - reads_paired
   - non-primary_alignments
   - supplementary_alignments
   - reads_mapped
-  - reads_mapped_percent: "reads mapped %"
+  - reads_mapped_percent
   - bases_trimmed
   - bases_duplicated
   - reads_properly_paired
   - outward_oriented_pairs
   - reads_duplicated
-  - reads_duplicated_percent: "reads duplicated %"
+  - reads_duplicated_percent
   - bases_mapped
   - insert_size_average
   - insert_size_standard_deviation
