@@ -9,10 +9,11 @@ process CUSTOM_MULTIQC_TABLES {
     input:
     path clusters_summary_files
     path sample_metadata
-    path checkv_files, stageAs: "?/*"
-    path quast_files
-    path blast_files
+    path checkv_files, stageAs: "?/checkv/*"
+    path quast_files, stageAs: "?/quast/*"
+    path blast_files, stageAs: "?/blast/*"
     path mapping_constrains
+    path annotation_files, stageAs: "?/annotation/*"
     path multiqc_dir
     path comment_headers
     path custom_table_headers
@@ -24,6 +25,7 @@ process CUSTOM_MULTIQC_TABLES {
     path("summary_checkv_mqc.tsv")            , emit: summary_checkv_mqc    , optional: true
     path("summary_quast_mqc.tsv")             , emit: summary_quast_mqc     , optional: true
     path("summary_blast_mqc.tsv")             , emit: summary_blast_mqc     , optional: true
+    path("summary_anno_mqc.tsv")              , emit: summary_anno_mqc      , optional: true
     path("mapping_constrains_mqc.tsv")        , emit: mapping_constrains_mqc, optional: true
     path("mapping_constrains_summary_mqc.tsv"), emit: constrains_summary_mqc, optional: true
     path "versions.yml"                       , emit: versions
@@ -38,6 +40,7 @@ process CUSTOM_MULTIQC_TABLES {
     def checkv_files           = checkv_files           ? "--checkv_files ${checkv_files.join(' ')}"               : ''
     def quast_files            = quast_files            ? "--quast_files ${quast_files.join(' ')}"                 : ''
     def blast_files            = blast_files            ? "--blast_files ${blast_files.join(' ')}"                 : ''
+    def annotation_files       = anno_files             ? "--annotation_files ${anno_files.join(' ')}"             : ''
     def mapping_constrains     = mapping_constrains     ? "--mapping_constrains ${mapping_constrains}"             : ''
     def multiqc_dir            = multiqc_dir            ? "--multiqc_dir ${multiqc_dir}"                           : ''
     def comment_headers        = comment_headers        ? "--comment_dir ${comment_headers}"                       : ''
@@ -52,6 +55,7 @@ process CUSTOM_MULTIQC_TABLES {
         $quast_files \\
         $blast_files \\
         $mapping_constrains \\
+        $annotation_files \\
         $comment_headers \\
         $custom_table_headers \\
         $multiqc_dir
