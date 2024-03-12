@@ -30,7 +30,7 @@ workflow PREPROCESSING_ILLUMINA {
             params.save_merged,
             params.min_trimmed_reads
             )
-        ch_versions = ch_versions.mix(FASTQ_FASTQC_UMITOOLS_TRIMMOMATIC.out.versions.first())
+        ch_versions = ch_versions.mix(FASTQ_FASTQC_UMITOOLS_TRIMMOMATIC.out.versions)
 
         ch_multiqc_files = ch_multiqc_files.mix(FASTQ_FASTQC_UMITOOLS_TRIMMOMATIC.out.fastqc_raw_zip)
         ch_multiqc_files = ch_multiqc_files.mix(FASTQ_FASTQC_UMITOOLS_TRIMMOMATIC.out.fastqc_trim_html)
@@ -55,7 +55,7 @@ workflow PREPROCESSING_ILLUMINA {
             params.min_trimmed_reads
             )
 
-        ch_versions = ch_versions.mix(FASTQ_FASTQC_UMITOOLS_FASTP.out.versions.first())
+        ch_versions = ch_versions.mix(FASTQ_FASTQC_UMITOOLS_FASTP.out.versions)
 
         ch_multiqc_files = ch_multiqc_files.mix(FASTQ_FASTQC_UMITOOLS_FASTP.out.fastqc_raw_zip)
         ch_multiqc_files = ch_multiqc_files.mix(FASTQ_FASTQC_UMITOOLS_FASTP.out.fastqc_trim_zip)
@@ -79,7 +79,8 @@ workflow PREPROCESSING_ILLUMINA {
     if (!params.skip_complexity_filtering) {
         BBMAP_BBDUK ( ch_reads_trim, ch_contaminants )
         ch_reads_decomplexified = BBMAP_BBDUK.out.reads
-        ch_multiqc_files = ch_multiqc_files.mix(BBMAP_BBDUK.out.log)
+        ch_multiqc_files        = ch_multiqc_files.mix(BBMAP_BBDUK.out.log)
+        ch_versions             = ch_versions.mix(BBMAP_BBDUK.out.versions)
     } else {
         ch_reads_decomplexified = ch_reads_trim
     }

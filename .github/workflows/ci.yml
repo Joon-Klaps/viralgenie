@@ -36,6 +36,15 @@ jobs:
       - name: Check out pipeline code
         uses: actions/checkout@v4
 
+      - name: Free some space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@v1.3.1
+
       - name: Install Nextflow
         uses: nf-core/setup-nextflow@v1
         with:
@@ -62,6 +71,15 @@ jobs:
       - name: Check out pipeline code
         uses: actions/checkout@v4
 
+      - name: Free some space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@v1.3.1
+
       - name: Install Nextflow
         uses: nf-core/setup-nextflow@v1
         with:
@@ -84,6 +102,15 @@ jobs:
     steps:
       - name: Check out pipeline code
         uses: actions/checkout@v4
+
+      - name: Free some space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@v1.3.1
 
       - name: Install Nextflow
         uses: nf-core/setup-nextflow@v1
@@ -108,6 +135,15 @@ jobs:
       - name: Check out pipeline code
         uses: actions/checkout@v4
 
+      - name: Free some space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@v1.3.1
+
       - name: Install Nextflow
         uses: nf-core/setup-nextflow@v1
         with:
@@ -116,29 +152,6 @@ jobs:
       - name: Run pipeline but skip all steps
         run: |
           nextflow run ${GITHUB_WORKSPACE} -profile test_nothing,docker --outdir ./results --max_cpus 2 --max_memory 4GB
-
-  test-minimal:
-    name: Run pipeline with minimal input
-    # Only run on push if this is the nf-core dev branch (merged PRs)
-    if: "${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'nf-core/viralgenie') }}"
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        NXF_VER:
-          - "23.04.0"
-          - "latest-everything"
-    steps:
-      - name: Check out pipeline code
-        uses: actions/checkout@v4
-
-      - name: Install Nextflow
-        uses: nf-core/setup-nextflow@v1
-        with:
-          version: "${{ matrix.NXF_VER }}"
-
-      - name: Run pipeline with umi test data
-        run: |
-          nextflow run ${GITHUB_WORKSPACE} -profile docker --input ./assets/samplesheets/samplesheet.csv --outdir ./results --max_cpus 2 --max_memory 4GB
 
   test-fail-mapped:
     name: Run pipeline with test bad mapping constrained reference
@@ -153,6 +166,15 @@ jobs:
     steps:
       - name: Check out pipeline code
         uses: actions/checkout@v4
+
+      - name: Free some space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@v1.3.1
 
       - name: Install Nextflow
         uses: nf-core/setup-nextflow@v1
@@ -176,6 +198,15 @@ jobs:
     steps:
       - name: Check out pipeline code
         uses: actions/checkout@v4
+
+      - name: Free some space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@v1.3.1
 
       - name: Install Nextflow
         uses: nf-core/setup-nextflow@v1
@@ -205,6 +236,15 @@ jobs:
     steps:
       - name: Check out pipeline code
         uses: actions/checkout@v4
+
+      - name: Free some space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@v1.3.1
 
       - name: Install Nextflow
         uses: nf-core/setup-nextflow@v1

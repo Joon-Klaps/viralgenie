@@ -21,7 +21,7 @@
                     "description": "Path to comma-separated file containing information about the samples in the experiment.",
                     "help_text": "You will need to create a design file with information about the samples in your experiment before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row. See [usage docs](https://nf-co.re/viralgenie/usage#samplesheet-input).",
                     "fa_icon": "fas fa-file-csv",
-                    "schema": "assets/schemas/input.json"
+                    "schema": "assets/schema_input.json"
                 },
                 "outdir": {
                     "type": "string",
@@ -41,11 +41,6 @@
                     "fa_icon": "fas fa-envelope",
                     "help_text": "Set this parameter to your e-mail address to get a summary e-mail with details of the run sent to you when the workflow exits. If set in your user config file (`~/.nextflow/config`) then you don't need to specify this on the command line for every run.",
                     "pattern": "^([a-zA-Z0-9_\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})$"
-                },
-                "multiqc_title": {
-                    "type": "string",
-                    "description": "MultiQC report title. Printed as page header, used for filename if not otherwise specified.",
-                    "fa_icon": "fas fa-file-signature"
                 }
             }
         },
@@ -195,6 +190,12 @@
                     "help_text": "Incoming hook URL for messaging service. Currently, MS Teams and Slack are supported.",
                     "hidden": true
                 },
+                "multiqc_title": {
+                    "type": "string",
+                    "description": "MultiQC report title. Printed as page header, used for filename if not otherwise specified.",
+                    "fa_icon": "fas fa-file-signature",
+                    "hidden": true
+                },
                 "multiqc_config": {
                     "type": "string",
                     "format": "file-path",
@@ -212,6 +213,12 @@
                     "type": "string",
                     "description": "Custom MultiQC yaml file containing HTML including a methods description.",
                     "fa_icon": "fas fa-cog"
+                },
+                "clean_output_on_error": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-trash-alt",
+                    "description": "Delete the output directory if the pipeline fails",
+                    "hidden": true
                 },
                 "custom_table_headers": {
                     "type": "string",
@@ -273,12 +280,23 @@
                 "skip_preprocessing": {
                     "type": "boolean",
                     "fa_icon": "fas fa-forward",
-                    "description": "Skip read preprocessing (trimming, complexity filtering, host-removal)"
+                    "description": "Skip read preprocessing and use input reads for downstream analysis"
                 },
                 "skip_fastqc": {
                     "type": "boolean",
                     "fa_icon": "fas fa-forward",
                     "description": "Skip read quality statistics summary tool 'fastqc'"
+                },
+                "save_final_reads": {
+                    "type": "boolean",
+                    "default": true,
+                    "fa_icon": "fas fa-copy",
+                    "description": "Save reads after the final preprocessing step"
+                },
+                "save_intermediate_reads": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-copy",
+                    "description": "Save reads after every preprocessing step"
                 },
                 "with_umi": {
                     "type": "boolean",
@@ -531,7 +549,7 @@
                 },
                 "reference_pool": {
                     "type": "string",
-                    "default": "https://rvdb.dbi.udel.edu/download/C-RVDBv26.0.fasta.gz",
+                    "default": "https://rvdb.dbi.udel.edu/download/C-RVDBvCurrent.fasta.gz",
                     "description": "Set of fasta sequences used as potential references for the contigs",
                     "fa_icon": "fas fa-database"
                 },
@@ -540,12 +558,40 @@
                     "fa_icon": "fas fa-forward",
                     "description": "Skip the preclustering of assemblies to facilitate downstream processing of assemblies"
                 },
+                "keep_unclassified": {
+                    "type": "boolean",
+                    "default": true,
+                    "fa_icon": "fas fa-filter",
+                    "description": "Keep the contigs that could not be classified with the taxonomic databases (`kaiju_db` & `kraken2_db`)",
+                    "help_text": "Within the preclustering step, all contigs will get a taxonomic classification using the provided databases for the metagenomic tools. In some cases, the number of unclassified contigs, can be very large if the database is restrictive. This will result in large clusters in downstream processing that can take up a lot of resources despite not being a priority in some analyses. So set it to `True` if you want to keep unclassified contigs and set it to `False` if you don't want to keep them. "
+                },
+                "taxon_merge_strategy": {
+                    "type": "string",
+                    "default": "lowest",
+                    "fa_icon": "far fa-object-ungroup",
+                    "description": "Taxon conflict resolution mode, must be 1 (Kaiju), 2 (Kraken),  lca, or lowest.",
+                    "help_text": "The option -c determines the method of resolving conflicts in the taxonomic assignment for a read.\nPossible values are '1', '2', 'lca', 'lowest':\n  '1' -> the taxon id from Kaiju is used.\n  '2' -> the taxon id from Kraken is used.\n  'lca' -> the least common ancestor of the two taxon ids from both input files is used.\n  'lowest' -> the lower rank of the two taxa is used if they are within the same lineage. Otherwise the LCA is used.",
+                    "enum": ["1", "2", "lca", "lowest"]
+                },
                 "cluster_method": {
                     "type": "string",
                     "default": "mash",
                     "description": "Cluster algorithm used for contigs",
                     "enum": ["cdhitest", "vsearch", "mmseqs-linclust", "mmseqs-cluster", "vrhyme", "mash", "diamond"],
                     "fa_icon": "fas fa-bezier-curve"
+                },
+                "network_clustering": {
+                    "type": "string",
+                    "default": "connected_components",
+                    "fa_icon": "fas fa-bezier-curve",
+                    "description": "(only with mash) Algorithm to partition the network.",
+                    "enum": ["connected_components", "leiden"],
+                    "help_text": "Mash creates a distance matrix that gets translated into a network of connectected nodes where the edges represent the similarity. This network is then split up using the specified method.\n\n - [leiden](https://leidenalg.readthedocs.io/en/stable/intro.html) algorithm: a hierarchical clustering algorithm, that recursively merges communities into single nodes by greedily optimizing the modularity\n - [connected_components] algorithm: a clustering algorithm that defines the largest possible communities where each node within a subset is reachable from every other node in the same subset via any edge .\n"
+                },
+                "skip_hybrid_consensus": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward",
+                    "description": "Skip creation of the hybrid consensus, instead keep the scaffold with ambiguous bases if the depth of scaffolds is not high enough."
                 },
                 "identity_threshold": {
                     "type": "number",
@@ -570,23 +616,6 @@
                     "type": "integer",
                     "default": 50000,
                     "fa_icon": "fas fa-expand-alt"
-                },
-                "skip_consensus_calling_contigs": {
-                    "type": "boolean",
-                    "description": "Skip the consensus construction of  multiple contigs, instead use only the representative",
-                    "fa_icon": "fas fa-forward"
-                },
-                "contig_align_method": {
-                    "type": "string",
-                    "default": "mafft",
-                    "description": "Method for alignment of cluster of contigs",
-                    "enum": ["mafft", "muscle"],
-                    "fa_icon": "fas fa-align-center"
-                },
-                "skip_consensus_calling_reads": {
-                    "type": "boolean",
-                    "description": "Skip further polishing of consensus by mapping reads",
-                    "fa_icon": "fas fa-forward"
                 },
                 "skip_singleton_filtering": {
                     "type": "boolean",
@@ -674,11 +703,10 @@
                     "description": "Define which mapping tool needs to be used when mapping reads to reference",
                     "enum": ["bwamem2", "bowtie2"]
                 },
-                "mapping_constrains": {
+                "mapping_sequence": {
                     "type": "string",
                     "description": "Sequence to use as a mapping reference instead of the de novo contigs or scaffolds",
-                    "fa_icon": "far fa-file-alt",
-                    "schema": "assets/schemas/mapping_constrains.json"
+                    "fa_icon": "far fa-file-alt"
                 },
                 "deduplicate": {
                     "type": "boolean",
@@ -741,6 +769,18 @@
                     "fa_icon": "fas fa-database",
                     "description": "Reference database used by checkv for consensus quality control",
                     "help_text": "If not given, the most recent one is downloaded."
+                },
+                "skip_annotation": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward",
+                    "description": "Skip the annotation of the consensus constructs"
+                },
+                "annotation_db": {
+                    "type": "string",
+                    "default": "${projectDir}/assets/bv-brc-refvirus-anno.withRC.fasta.gz",
+                    "fa_icon": "fas fa-database",
+                    "description": "Database used for annotation of the cosensus constructs",
+                    "help_text": "The metada fields are stored in the fasta comment as `key1:\"value1\"|key2:\"value2\"|...` see docs/databases.md for more information."
                 },
                 "skip_quast": {
                     "type": "boolean",

@@ -41,6 +41,7 @@ workflow BAM_CALL_CONSENSUS {
         ch_consensus,
         consensus_caller
     )
+    ch_versions = ch_versions.mix(RENAME_FASTA_HEADER_CALLED_CONSENSUS.out.versions.first())
 
     emit:
     consensus = RENAME_FASTA_HEADER_CALLED_CONSENSUS.out.fasta   // channel: [ val(meta), [ fasta ] ]

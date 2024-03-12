@@ -16,7 +16,7 @@ logger = logging.getLogger()
 def parse_args(argv=None):
     """Define and immediately parse command line arguments."""
     parser = argparse.ArgumentParser(
-        description="Provide a command line tool to extract sequence names from cdhit's cluster files.",
+        description="Provide a command line tool to filter blast results.",
         epilog="Example: python blast_filter.py in.clstr prefix",
     )
 
@@ -108,7 +108,6 @@ def read_blast(blast):
         "subject",
         "pident",
         "qlen",
-        "slen",
         "length",
         "mismatch",
         "gapopen",

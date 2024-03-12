@@ -10,6 +10,7 @@ process NETWORK_CLUSTER {
     input:
     tuple val(meta), path(dist)
     val(cluster_method)
+    val(algorithm)
 
     output:
     tuple val(meta), path("*.tsv"), emit: clusters
@@ -26,6 +27,7 @@ process NETWORK_CLUSTER {
     network_cluster.py \\
         $args \\
         --method $cluster_method \\
+        --cluster-algorithm $algorithm \\
         --prefix $prefix \\
         $dist \\
 

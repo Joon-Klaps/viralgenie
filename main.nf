@@ -32,7 +32,7 @@ if (params.validate_params) {
     validateParameters()
 }
 
-WorkflowMain.initialise(workflow, params, log)
+WorkflowMain.initialise(workflow, params, log, args)
 
 if (!params.global_prefix) {
     params.global_prefix = WorkflowMain.getGlobalPrefix(workflow,params)

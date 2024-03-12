@@ -7,9 +7,11 @@ We try to manage the required tasks for nf-core/viralgenie using GitHub issues, 
 Please use the pre-filled template to save time.
 
 However, don't be put off by this template - other more general issues and suggestions are welcome!
-Contributions to the code are even more welcome ;)
+Contributions to the code are even more welcome ;
 
-> If you need help using or modifying nf-core/viralgenie then the best place to ask is on the nf-core Slack [#viralgenie](https://nfcore.slack.com/channels/viralgenie) channel ([join our Slack here](https://nf-co.re/join/slack)).
+:::info
+If you need help using or modifying viralgenie then the best place to ask is on the nf-core Slack [Joon-Klaps](https://nfcore.slack.com/team/U043Y6FQR6J).
+:::
 
 ## Contribution workflow
 
@@ -24,6 +26,9 @@ If you'd like to write some code for nf-core/viralgenie, the standard workflow i
 If you're not used to this workflow with git, you can start with some [docs from GitHub](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests) or even their [excellent `git` resources](https://try.github.io/).
 
 ## Tests
+
+You can optionally test your changes by running the pipeline locally. Then it is recommended to use the `debug` profile to
+receive warnings about process selectors and other debug info. Example: `nextflow run . -profile debug,test,docker --outdir <OUTDIR>`.
 
 When you create a pull request with changes, [GitHub Actions](https://github.com/features/actions) will run automatic tests.
 Typically, pull-requests are only fully reviewed when these tests are passing, though of course we can help out before then.
@@ -48,9 +53,9 @@ These tests are run both with the latest available version of `Nextflow` and als
 
 :warning: Only in the unlikely and regretful event of a release happening with a bug.
 
-- On your own fork, make a new branch `patch` based on `upstream/master`.
-- Fix the bug, and bump version (X.Y.Z+1).
-- A PR should be made on `master` from patch to directly this particular bug.
+-   On your own fork, make a new branch `patch` based on `upstream/master`.
+-   Fix the bug, and bump version (X.Y.Z+1).
+-   A PR should be made on `master` from patch to directly this particular bug.
 
 ## Getting help
 
@@ -91,8 +96,8 @@ The process resources can be passed on to the tool dynamically within the proces
 
 Please use the following naming schemes, to make it easy to understand what is going where.
 
-- initial process channel: `ch_output_from_<process>`
-- intermediate and terminal channels: `ch_<previousprocess>_for_<nextprocess>`
+-   initial process channel: `ch_output_from_<process>`
+-   intermediate and terminal channels: `ch_<previousprocess>_for_<nextprocess>`
 
 ### Nextflow version bumping
 
@@ -108,11 +113,11 @@ This repo includes a devcontainer configuration which will create a GitHub Codes
 
 To get started:
 
-- Open the repo in [Codespaces](https://github.com/nf-core/viralgenie/codespaces)
-- Tools installed
-  - nf-core
-  - Nextflow
+-   Open the repo in [Codespaces](https://github.com/nf-core/viralgenie/codespaces)
+-   Tools installed
+    -   nf-core
+    -   Nextflow
 
 Devcontainer specs:
 
-- [DevContainer config](.devcontainer/devcontainer.json)
+-   [DevContainer config](.devcontainer/devcontainer.json)

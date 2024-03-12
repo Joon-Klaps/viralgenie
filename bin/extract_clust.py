@@ -26,6 +26,7 @@ class Cluster:
         self.cluster_id = cluster_id
         self.centroid = centroid
         self.members = members
+        self.external_reference = None
         if members is not None:
             self.cluster_size = len(members)
         else:
@@ -43,6 +44,13 @@ class Cluster:
         """
         self.cluster_id = id
 
+    def set_external_reference(self, pattern):
+        """
+        Set the external reference for the cluster.
+        """
+        regex = re.compile(pattern)
+        self.external_reference = not bool(regex.search(self.centroid))
+
     def __iter__(self):
         yield "cluster_id", self.row
         yield "centroid", self.centroid
@@ -50,7 +58,7 @@ class Cluster:
         yield "cluster_size", self.cluster_size
 
     def __str__(self):
-        return f"Cluster {self.cluster_id} with centroid {self.centroid} and {self.cluster_size} members {self.members}"
+        return f"Cluster {self.cluster_id} with centroid {self.centroid}, external {self.external_reference} and {self.cluster_size} members {self.members}"
 
     def _save_cluster_members(self, prefix):
         """
@@ -232,7 +240,6 @@ def parse_clusters_vrhyme(file_in, pattern, skip_header=True):
             members = [value for value in values if value != centroid]
             cluster_id = f"cl{key}"
             clusters[cluster_id] = Cluster(cluster_id, centroid, members)
-            print(clusters[cluster_id])
 
     return list(clusters.values())
 
@@ -401,6 +408,10 @@ def main(argv=None):
 
     # Remove clusters with no members and external reference
     filtered_clusters = filter_clusters(clusters_renamed, args.pattern)
+
+    # Set external reference, used to know if it needs to collapse or called consensus normally
+    for cluster in filtered_clusters:
+        cluster.set_external_reference(args.pattern)
 
     write_clusters(filtered_clusters, args.seq, args.prefix)
 

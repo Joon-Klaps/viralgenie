@@ -64,7 +64,7 @@ workflow FASTA_BLAST_REFSEL {
         .set{ hits_contigs }
 
     BLAST_FILTER (
-        hits_contigs, 
+        hits_contigs,
         blast_db_fasta
     )
     ch_versions = ch_versions.mix(BLAST_FILTER.out.versions.first())
