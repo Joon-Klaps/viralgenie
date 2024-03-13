@@ -141,7 +141,7 @@ workflow CONSENSUS_QC  {
     if ( !params.skip_annotation){
         // use MMSEQS easy search to find best hits against annotation db
         MMSEQS_ANNOTATE(
-            ch_genome,
+            ch_genome_collapsed,
             annotation_db
         )
         annotation_txt = MMSEQS_ANNOTATE.out.tsv
