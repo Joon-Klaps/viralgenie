@@ -106,6 +106,7 @@ def read_blast(blast):
     df.columns = [
         "query",
         "subject",
+        "subject_title",  # "stitle
         "pident",
         "qlen",
         "slen",
@@ -167,7 +168,9 @@ def write_hits(df, contigs, references, prefix):
     # Write unique hits to file
     unique_hits = df["subject"].unique()
     unique_series = pd.Series(unique_hits)
-    unique_series.to_csv(prefix + ".filter.hits.txt", sep="\t", index=False, header=False)
+    unique_series.to_csv(
+        prefix + ".filter.hits.txt", sep="\t", index=False, header=False
+    )
 
 
 def main(argv=None):

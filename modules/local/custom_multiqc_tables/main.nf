@@ -13,7 +13,7 @@ process CUSTOM_MULTIQC_TABLES {
     path quast_files, stageAs: "?/quast/*"
     path blast_files, stageAs: "?/blast/*"
     path mapping_constrains
-    path annotation_files, stageAs: "?/annotation/*"
+    path anno_files, stageAs: "?/annotation/*"
     path multiqc_dir
     path comment_headers
     path custom_table_headers
