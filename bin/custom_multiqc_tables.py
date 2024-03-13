@@ -115,14 +115,6 @@ def parse_args(argv=None):
     )
 
     parser.add_argument(
-        "--annotation_files",
-        metavar="Annotation FILES",
-        nargs="+",
-        help="Blast files for each contig to the annotation database, having the standard outfmt 6",
-        type=Path,
-    )
-
-    parser.add_argument(
         "--quast_files",
         metavar="QUAST FILES",
         nargs="+",
