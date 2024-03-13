@@ -47,7 +47,7 @@ process CUSTOM_MULTIQC_TABLES {
     def custom_table_headers   = custom_table_headers   ? "--table_headers ${custom_table_headers}"                : ''
 
     """
-    create_custom_multiqc_tables.py\\
+    custom_multiqc_tables.py\\
         $args \\
         $clusters_summary_files \\
         $sample_metadata \\
