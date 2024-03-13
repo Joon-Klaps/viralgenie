@@ -201,6 +201,8 @@ table_columns_visible:
     Largest contig: True
     Total length: False
 
+skip_versions_section: true
+
 # Viral reads are not so big
 read_count_multiplier: 1
 read_count_prefix: ""
@@ -230,3 +232,6 @@ extra_fn_clean_exts:
   - "_megahit"
   - "_trinity"
   - ".filtered"
+  - ".norm"
+  - ".consensus_bcftools"
+  - ".consensus_ivar"
