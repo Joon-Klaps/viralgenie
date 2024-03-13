@@ -6,8 +6,8 @@ import argparse
 import csv
 import logging
 import os
-import sys
 import re
+import sys
 from pathlib import Path
 
 import pandas as pd
@@ -111,6 +111,14 @@ def parse_args(argv=None):
         metavar="BLAST FILES",
         nargs="+",
         help="Blast files for each contig, having the standard outfmt 6",
+        type=Path,
+    )
+
+    parser.add_argument(
+        "--annotation_files",
+        metavar="Annotation FILES",
+        nargs="+",
+        help="Blast files for each contig to the annotation database, having the standard outfmt 6",
         type=Path,
     )
 
@@ -693,7 +701,6 @@ def reorder_columns(df, columns):
 
 
 def create_constrain_summary(df_constrain, file_columns):
-
     # Filter only for columns of interest
     # Some columns were already renamed, so we get the new values of them based on the original naming of mqc
     dic_columns = {
@@ -890,6 +897,32 @@ def main(argv=None):
             "(annotation) taxon_id"
         ].astype(str)
 
+    # CLuster table - Blast summary
+    annotation_df = handle_tables(args.annotation_files, header=None)
+    if not annotation_df.empty:
+        annotation_df.columns = BlastConstants.COLUMNS
+        # Filter on best hit per contig and keep only the best hit
+        annotation_df = annotation_df.sort_values(
+            "bitscore", ascending=False
+        ).drop_duplicates("query")
+
+        # Extract all key-value pairs into separate columns
+        df_extracted = (
+            annotation_df["subject title"].apply(parse_annotation_data).apply(pd.Series)
+        )
+
+        # Concatenate the original DataFrame with the extracted columns
+        annotation_df = pd.concat([annotation_df, df_extracted], axis=1)
+
+        # Remove the blast columns (but not query), we only want annotation data (but not genome_name)
+        annotation_df = drop_columns(annotation_df, BlastConstants.COLUMNS[1:])
+        annotation_df = handle_dataframe(
+            annotation_df, "annotation", "query", blast_header, "summary_anno_mqc.tsv"
+        )
+        annotation_df["(annotation) taxon_id"] = annotation_df[
+            "(annotation) taxon_id"
+        ].astype(str)
+
     # CLuster table -  Multiqc output txt files
     if args.multiqc_dir:
         # Check if the given files exist
@@ -923,6 +956,7 @@ def main(argv=None):
         multiqc_contigs_df = multiqc_contigs_df.join(checkv_df, how="outer")
         multiqc_contigs_df = multiqc_contigs_df.join(quast_df, how="outer")
         multiqc_contigs_df = multiqc_contigs_df.join(blast_df, how="outer")
+        multiqc_contigs_df = multiqc_contigs_df.join(annotation_df, how="outer")
 
         # adding a tag saying that contig faild qc check
         logger.info("Adding failed contig QC check")
