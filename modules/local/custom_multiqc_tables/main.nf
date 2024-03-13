@@ -1,13 +1,13 @@
-process CREATE_MULTIQC_TABLES {
+process CUSTOM_MULTIQC_TABLES {
     label 'process_single'
 
-    conda "bioconda:bioframe==0.5.1"
+    conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/bioframe:0.5.1--pyhdfd78af_0':
         'biocontainers/bioframe:0.5.1--pyhdfd78af_0' }"
 
     input:
-    path clusters_summary_files, stageAs: "?/cluster/*"
+    path clusters_summary_files
     path sample_metadata
     path checkv_files, stageAs: "?/checkv/*"
     path quast_files, stageAs: "?/quast/*"
@@ -35,19 +35,19 @@ process CREATE_MULTIQC_TABLES {
 
     script:
     def args = task.ext.args ?: ''
-    def clusters_summary_files = clusters_summary_files ? "--clusters_summary ${clusters_summary_files}"   : ''
-    def sample_metadata        = sample_metadata        ? "--sample_metadata ${sample_metadata}"           : ''
-    def checkv_files           = checkv_files           ? "--checkv_files ${checkv_files}"                 : ''
-    def quast_files            = quast_files            ? "--quast_files ${quast_files}"                   : ''
-    def annotation_files       = anno_files             ? "--annotation_files ${anno_files}"               : ''
-    def blast_files            = blast_files            ? "--blast_files ${blast_files}"                   : ''
-    def mapping_constrains     = mapping_constrains     ? "--mapping_constrains ${mapping_constrains}"     : ''
-    def multiqc_dir            = multiqc_dir            ? "--multiqc_dir ${multiqc_dir}"                   : ''
-    def comment_headers        = comment_headers        ? "--comment_dir ${comment_headers}"               : ''
-    def custom_table_headers   = custom_table_headers   ? "--table_headers ${custom_table_headers}"        : ''
+    def clusters_summary_files = clusters_summary_files ? "--clusters_summary ${clusters_summary_files.join(' ')}" : ''
+    def sample_metadata        = sample_metadata        ? "--sample_metadata ${sample_metadata}"                   : ''
+    def checkv_files           = checkv_files           ? "--checkv_files ${checkv_files.join(' ')}"               : ''
+    def quast_files            = quast_files            ? "--quast_files ${quast_files.join(' ')}"                 : ''
+    def blast_files            = blast_files            ? "--blast_files ${blast_files.join(' ')}"                 : ''
+    def annotation_files       = anno_files             ? "--annotation_files ${anno_files.join(' ')}"             : ''
+    def mapping_constrains     = mapping_constrains     ? "--mapping_constrains ${mapping_constrains}"             : ''
+    def multiqc_dir            = multiqc_dir            ? "--multiqc_dir ${multiqc_dir}"                           : ''
+    def comment_headers        = comment_headers        ? "--comment_dir ${comment_headers}"                       : ''
+    def custom_table_headers   = custom_table_headers   ? "--table_headers ${custom_table_headers}"                : ''
 
     """
-    create_multiqc_custom_tables.py\\
+    custom_multiqc_tables.py\\
         $args \\
         $clusters_summary_files \\
         $sample_metadata \\
