@@ -4,13 +4,12 @@ include { BOWTIE2_ALIGN     } from '../../modules/nf-core/bowtie2/align/main'
 include { BOWTIE2_BUILD     } from '../../modules/nf-core/bowtie2/build/main'
 include { BWA_MEM           } from '../../modules/nf-core/bwa/mem/main'
 include { BWA_INDEX         } from '../../modules/nf-core/bwa/index/main'
-include { SAMTOOLS_SORT     } from '../../modules/nf-core/samtools/sort/main'
 
 workflow MAP_READS  {
 
     take:
     reference_reads     // channel: [ val(meta), [ fasta ], [ reads ] ]
-    mapper              // val: 'bwamem2' or 'bowtie2'
+    mapper              // val: 'bwamem2' or 'bowtie2' or 'bwa'
 
     main:
 
@@ -28,7 +27,7 @@ workflow MAP_READS  {
         reads_up    = reads_index.map{meta, reads, index -> [ meta, reads ]}
         index       = reads_index.map{meta, reads, index -> [ meta, index ]}
 
-        BWAMEM2_MEM ( reads_up, index, false )
+        BWAMEM2_MEM ( reads_up, index, true )
         ch_versions = ch_versions.mix(BWAMEM2_MEM.out.versions.first())
         //no mqc for bwamem2
 
@@ -42,7 +41,7 @@ workflow MAP_READS  {
         reads_up    = reads_index.map{meta, reads, index -> [ meta, reads ]}
         index       = reads_index.map{meta, reads, index -> [ meta, index ]}
 
-        BOWTIE2_ALIGN ( reads_up, index, false, false)
+        BOWTIE2_ALIGN ( reads_up, index, false, true)
         ch_versions = ch_versions.mix(BOWTIE2_ALIGN.out.versions.first())
 
         ch_bam      = BOWTIE2_ALIGN.out.aligned
@@ -55,7 +54,7 @@ workflow MAP_READS  {
         reads_up    = reads_index.map{meta, reads, index -> [ meta, reads ]}
         index       = reads_index.map{meta, reads, index -> [ meta, index ]}
 
-        BWA_MEM ( reads_up, index, false )
+        BWA_MEM ( reads_up, index, true )
         ch_versions = ch_versions.mix(BWA_MEM.out.versions.first())
         //no mqc for bwa
 
@@ -64,13 +63,6 @@ workflow MAP_READS  {
     } else {
         Nextflow.error ("Unknown mapper: ${mapper}")
     }
-
-    SAMTOOLS_SORT ( ch_bam )
-    ch_bam      = SAMTOOLS_SORT.out.bam
-
-
-
-    ch_versions = ch_versions.mix(SAMTOOLS_SORT.out.versions.first())
 
     emit:
     bam      = ch_bam                          // channel: [ val(meta), [ bam ] ]

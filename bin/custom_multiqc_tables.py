@@ -556,7 +556,7 @@ def dynamic_split(row, delimiter="_"):
 
 def parse_annotation_data(annotation_str):
     annotation_dict = {}
-    pattern = r'(?P<key>\w+)[:=]"(?P<value>[^"]+)"'
+    pattern = r'(?P<key>\w+)\s*[:=]\s*"?([^";]+)"?'
     matches = re.findall(pattern, annotation_str)
     for key, value in matches:
         annotation_dict[key] = value
@@ -885,35 +885,9 @@ def main(argv=None):
         annotation_df = handle_dataframe(
             annotation_df, "annotation", "query", blast_header, "summary_anno_mqc.tsv"
         )
-        annotation_df["(annotation) taxon_id"] = annotation_df[
-            "(annotation) taxon_id"
-        ].astype(str)
+        # Make everything a string for the annotation
+        annotation_df = annotation_df.astype(str)
 
-    # CLuster table - Blast summary
-    annotation_df = handle_tables(args.annotation_files, header=None)
-    if not annotation_df.empty:
-        annotation_df.columns = BlastConstants.COLUMNS
-        # Filter on best hit per contig and keep only the best hit
-        annotation_df = annotation_df.sort_values(
-            "bitscore", ascending=False
-        ).drop_duplicates("query")
-
-        # Extract all key-value pairs into separate columns
-        df_extracted = (
-            annotation_df["subject title"].apply(parse_annotation_data).apply(pd.Series)
-        )
-
-        # Concatenate the original DataFrame with the extracted columns
-        annotation_df = pd.concat([annotation_df, df_extracted], axis=1)
-
-        # Remove the blast columns (but not query), we only want annotation data (but not genome_name)
-        annotation_df = drop_columns(annotation_df, BlastConstants.COLUMNS[1:])
-        annotation_df = handle_dataframe(
-            annotation_df, "annotation", "query", blast_header, "summary_anno_mqc.tsv"
-        )
-        annotation_df["(annotation) taxon_id"] = annotation_df[
-            "(annotation) taxon_id"
-        ].astype(str)
 
     # CLuster table -  Multiqc output txt files
     if args.multiqc_dir:
