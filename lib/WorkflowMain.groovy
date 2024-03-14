@@ -32,6 +32,28 @@ class WorkflowMain {
     }
 
     //
+    // Print warning if genome fasta has more than one sequence
+    //
+    public static void isMultiFasta(fasta_file, log) {
+        def count = 0
+        def line  = null
+        fasta_file.withReader { reader ->
+            while (line = reader.readLine()) {
+                if (line.contains('>')) {
+                    count++
+                    if (count > 1) {
+                        log.warn "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
+                            "  Multi-fasta genome files are not well supported by bowtie2 and bwamem2\n\n" +
+                            "            Consider rerunning the pipeline with '--mapper bwa' \n" +
+                            "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                        break
+                    }
+                }
+            }
+        }
+    }
+
+    //
     // Validate parameters and print summary to screen
     //
     public static void initialise(workflow, params, log, args) {

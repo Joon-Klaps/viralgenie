@@ -649,7 +649,7 @@
                     "type": "string",
                     "default": "bwamem2",
                     "fa_icon": "fas fa-align-center",
-                    "enum": ["bwamem2", "bowtie2"],
+                    "enum": ["bwamem2", "bowtie2", "bwa"],
                     "description": "mapping tool used during iterations"
                 },
                 "intermediate_variant_caller": {
@@ -702,7 +702,7 @@
                     "default": "bwamem2",
                     "fa_icon": "fas fa-align-center",
                     "description": "Define which mapping tool needs to be used when mapping reads to reference",
-                    "enum": ["bwamem2", "bowtie2"]
+                    "enum": ["bwamem2", "bowtie2", "bwa"]
                 },
                 "mapping_constrains": {
                     "type": "string",

@@ -414,8 +414,12 @@ workflow VIRALGENIE {
             .transpose(remainder:true)                                                         // Unnest
             .set{ch_mapping_constrains}
 
+        // // Check if the input is a multi-fasta
+        // ch_mapping_constrains.map{ meta, samples, sequence -> WorkflowMain.isMultiFasta(sequence, log)}
+
+        //
         ch_decomplex_trim_reads
-            .combine( ch_mapping_constrains ) // TODO Filter
+            .combine( ch_mapping_constrains )
             .filter{ meta_reads, fastq, meta_mapping, mapping_samples, sequence -> mapping_samples == null || mapping_samples == meta_reads.sample}
             .map
                 {
@@ -435,19 +439,19 @@ workflow VIRALGENIE {
             .set{ch_map_seq_anno_combined}
 
         // For QC we keep original sequence to compare to
-        ch_unaligned_raw_contigs = ch_unaligned_raw_contigs.mix(ch_map_seq_anno_combined)
+        ch_unaligned_raw_contigs2 = ch_unaligned_raw_contigs.mix(ch_map_seq_anno_combined)
 
-        //rename fasta headers
-        RENAME_FASTA_HEADER_CONSTRAIN (ch_map_seq_anno_combined,[])
-        ch_versions = ch_versions.mix(RENAME_FASTA_HEADER_CONSTRAIN.out.versions)
+        // //rename fasta headers
+        // RENAME_FASTA_HEADER_CONSTRAIN (ch_map_seq_anno_combined,[])
+        // ch_versions = ch_versions.mix(RENAME_FASTA_HEADER_CONSTRAIN.out.versions)
 
-        RENAME_FASTA_HEADER_CONSTRAIN
-            .out
-            .fasta
+        ch_map_seq_anno_combined
+            // .out
+            // .fasta
             .map{ meta, fasta -> [meta, fasta, meta.reads] }
             .set{constrain_consensus_reads}
 
-        //Add to the consensus channel, the mapping sequences will now always be mapped against
+        //Add to the consensus channel, which will be used for variant calling
         ch_consensus_results_reads = ch_consensus_results_reads.mix(constrain_consensus_reads)
     }
 
