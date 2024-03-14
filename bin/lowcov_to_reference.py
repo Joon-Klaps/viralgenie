@@ -234,7 +234,7 @@ def main(argv=None):
     # Check if mpileup is empty, if empty then exit
     if mpileup.size == 0:
         logger.error("Mpileup file is empty. Exiting ...")
-        raise ValueError("Mpileup file is empty. Exiting ...")
+        sys.exit(4)
 
 
     # Extract regions with coverage & subtract 1 for 0 index base
