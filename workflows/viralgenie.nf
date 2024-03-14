@@ -414,8 +414,10 @@ workflow VIRALGENIE {
             .transpose(remainder:true)                                                         // Unnest
             .set{ch_mapping_constrains}
 
+        ch_mapping_constrains.map{ meta, samples, sequence -> WorkflowMain.isMultiFasta(sequence, log)}
+
         ch_decomplex_trim_reads
-            .combine( ch_mapping_constrains ) // TODO Filter
+            .combine( ch_mapping_constrains )
             .filter{ meta_reads, fastq, meta_mapping, mapping_samples, sequence -> mapping_samples == null || mapping_samples == meta_reads.sample}
             .map
                 {

@@ -2,6 +2,8 @@ include { BWAMEM2_MEM       } from '../../modules/nf-core/bwamem2/mem/main'
 include { BWAMEM2_INDEX     } from '../../modules/nf-core/bwamem2/index/main'
 include { BOWTIE2_ALIGN     } from '../../modules/nf-core/bowtie2/align/main'
 include { BOWTIE2_BUILD     } from '../../modules/nf-core/bowtie2/build/main'
+include { BWA_MEM           } from '../../modules/nf-core/bwa/mem/main'
+include { BWA_INDEX         } from '../../modules/nf-core/bwa/index/main'
 include { SAMTOOLS_SORT     } from '../../modules/nf-core/samtools/sort/main'
 
 workflow MAP_READS  {
@@ -45,6 +47,19 @@ workflow MAP_READS  {
 
         ch_bam      = BOWTIE2_ALIGN.out.aligned
         ch_multiqc  = ch_multiqc.mix(BOWTIE2_ALIGN.out.log)
+    } else if ( mapper == "bwa") {
+        BWA_INDEX ( reference )
+        ch_versions = ch_versions.mix(BWA_INDEX.out.versions.first())
+
+        reads_index = reads.join(BWA_INDEX.out.index, by: [0])
+        reads_up    = reads_index.map{meta, reads, index -> [ meta, reads ]}
+        index       = reads_index.map{meta, reads, index -> [ meta, index ]}
+
+        BWA_MEM ( reads_up, index, false )
+        ch_versions = ch_versions.mix(BWA_MEM.out.versions.first())
+        //no mqc for bwa
+
+        ch_bam      = BWA_MEM.out.bam
 
     } else {
         Nextflow.error ("Unknown mapper: ${mapper}")
