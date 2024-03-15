@@ -39,16 +39,7 @@ workflow BAM_FLAGSTAT_FILTER {
     bam_pass = ch_bam_filtered.pass
     bam_fail = ch_bam_filtered.fail
 
-    bam_fail
-        .map { meta, bam, mapped_reads ->
-            ["$meta.id\t$meta.sample\t$meta.cluster_id\t$meta.previous_step\t$mapped_reads"]
-            }
-        .collect()
-        .failedMappedReadsToMultiQC()
-        .collectFile(name:'failed_mapped_reads_mqc.tsv')
-        .set{ch_fail_mapping_multiqc}
-
-    // ch_fail_mapping_multiqc = failedMappedReadsToMultiQC(bam_fail_tsv).collectFile(name:'failed_mapped_reads_mqc.tsv')
+    ch_fail_mapping_multiqc = failedMappedReadsToMultiQC(bam_fail, min_mapped_reads).collectFile(name:'failed_mapped_reads_mqc.tsv')
 
     emit:
     bam_pass     = bam_pass                        // channel: [ val(meta), [ bam ] ]

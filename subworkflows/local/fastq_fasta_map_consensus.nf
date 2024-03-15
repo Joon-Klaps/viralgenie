@@ -115,13 +115,7 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
 
     contigs = filterContigs ( consensus_all, min_len, n_100 )
 
-    contigs
-        .fail
-        .map { meta, fasta, stats -> ["$meta.id\t$meta.sample\t$meta.cluster_id\t$meta.previous_step\t$stats.contig_size\t$stats.n_100"] }
-        .collect()
-        .set { contig_fail_tsv}
-
-    contig_qc_fail_mqc = failedContigsToMultiQC ( contig_fail_tsv, min_len, n_100 )
+    contig_qc_fail_mqc = failedContigsToMultiQC ( contigs.fail, min_len, n_100 )
 
     consensus_filtered = contig.pass
     ch_multiqc         = ch_multiqc.mix(contig_qc_fail_mqc.collectFile(name:'failed_contig_quality_mqc.tsv').ifEmpty([]))

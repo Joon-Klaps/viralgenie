@@ -38,13 +38,9 @@ workflow FASTA_BLAST_REFSEL {
     ch_blast_txt
         .no_hits
         .join(fasta)
-        .map { meta, txt, fasta ->
-            def n_fasta = fasta.countFasta()
-            ["$meta.sample\t$n_fasta"]}
-        .collect()
-        .set{no_blast_hits_tsv}
+        .set{no_blast_hits}
 
-    ch_no_blast_hits = noBlastHitsToMultiQC(no_blast_hits_tsv,params.assemblers).collectFile(name:'samples_no_blast_hits_mqc.tsv')
+    no_blast_hits_mqc = noBlastHitsToMultiQC(no_blast_hits,params.assemblers).collectFile(name:'samples_no_blast_hits_mqc.tsv')
 
     // Filter out false positve hits that based on query length, alignment length, identity, e-score & bit-score
     ch_blast_txt
