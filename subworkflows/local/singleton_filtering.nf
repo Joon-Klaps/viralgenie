@@ -12,6 +12,12 @@ workflow SINGLETON_FILTERING {
     main:
     ch_versions = Channel.empty()
 
+    FASTA_CONTIG_FILTERING (
+        fasta,
+        min_contig_size,
+        max_n_1OOkbp
+        )
+
     // Rename to avoid errors downstream
     RENAME_FASTA_HEADER_SINGLETON(
         fasta,
@@ -19,11 +25,7 @@ workflow SINGLETON_FILTERING {
         )
     ch_versions = ch_versions.mix(RENAME_FASTA_HEADER_SINGLETON.out.versions)
 
-    FASTA_CONTIG_FILTERING (
-        RENAME_FASTA_HEADER_SINGLETON.out.fasta,
-        min_contig_size,
-        max_n_1OOkbp
-        )
+
     ch_versions = ch_versions.mix(FASTA_CONTIG_FILTERING.out.versions)
 
     emit:
