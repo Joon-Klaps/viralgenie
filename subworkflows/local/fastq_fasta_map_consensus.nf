@@ -117,7 +117,7 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
 
     contig_qc_fail_mqc = failedContigsToMultiQC ( contigs.fail, min_len, n_100 )
 
-    consensus_filtered = contig.pass
+    consensus_filtered = contigs.pass
     ch_multiqc         = ch_multiqc.mix(contig_qc_fail_mqc.collectFile(name:'failed_contig_quality_mqc.tsv').ifEmpty([]))
 
     consensus_filtered.view()
