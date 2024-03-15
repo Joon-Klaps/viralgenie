@@ -54,29 +54,6 @@ class WorkflowMain {
     }
 
     //
-    // Print warning if genome fasta has more than one sequence
-    //
-def calculateFastaLengthAndAmbiguousCount(File fastaFile) {
-    def length = 0
-    def ambiguousCount = 0
-
-    fastaFile.eachLine { line ->
-        if (line.startsWith(">")) {
-            // Ignore header lines starting with ">"
-            return
-        } else {
-            // Count the length of the sequence
-            length += line.trim().length()
-            // Count the occurrences of 'N' and ambiguous bases (e.g., 'R', 'Y', 'M', etc.)
-            ambiguousCount += line.trim().findAll { it == 'N' }.size()
-        }
-    }
-
-    return [length, ambiguousCount]
-}
-
-
-    //
     // Validate parameters and print summary to screen
     //
     public static void initialise(workflow, params, log, args) {

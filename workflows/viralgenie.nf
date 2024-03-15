@@ -334,7 +334,7 @@ workflow VIRALGENIE {
             SINGLETON_FILTERING (
                 ch_centroids_members.singletons,
                 params.min_contig_size,
-                params.max_n_1OOkbp
+                params.max_n_perc
                 )
             ch_versions = ch_versions.mix(SINGLETON_FILTERING.out.versions)
 
@@ -385,7 +385,7 @@ workflow VIRALGENIE {
                     params.get_intermediate_stats,
                     params.min_mapped_reads,
                     params.min_contig_size,
-                    params.max_n_1OOkbp
+                    params.max_n_perc
                 )
                 ch_consensus               = ch_consensus.mix(FASTQ_FASTA_ITERATIVE_CONSENSUS.out.consensus_allsteps)
                 ch_consensus_results_reads = FASTQ_FASTA_ITERATIVE_CONSENSUS.out.consensus_reads
@@ -470,7 +470,7 @@ workflow VIRALGENIE {
             params.get_stats,
             params.min_mapped_reads,
             params.min_contig_size,
-            params.max_n_1OOkbp
+            params.max_n_perc
         )
         ch_consensus     = ch_consensus.mix(FASTQ_FASTA_MAP_CONSENSUS.out.consensus_all)
         ch_multiqc_files = ch_multiqc_files.mix(FASTQ_FASTA_MAP_CONSENSUS.out.mqc.ifEmpty([])) // collect already done in subworkflow
@@ -482,7 +482,7 @@ workflow VIRALGENIE {
     ch_blast_summary      = Channel.empty()
     ch_annotation_summary = Channel.empty()
 
-    if ( !params.skip_consensus_qc || (!params.skip_assembly && !params.skip_variant_calling) ) {
+    if ( !params.skip_consensus_qc && (!params.skip_assembly && !params.skip_variant_calling) ) {
 
         CONSENSUS_QC(
             ch_consensus,

@@ -613,9 +613,9 @@
                     "description": "Maximum allowed contig size",
                     "fa_icon": "fas fa-expand-alt"
                 },
-                "max_n_1OOkbp": {
+                "max_n_perc": {
                     "type": "integer",
-                    "default": 50000,
+                    "default": 50,
                     "fa_icon": "fas fa-expand-alt"
                 },
                 "skip_singleton_filtering": {

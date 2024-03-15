@@ -1,3 +1,4 @@
+include { noBlastHitsToMultiQC  } from '../../modules/local/functions'
 include { BLAST_BLASTN          } from '../../modules/nf-core/blast/blastn/main'
 include { BLAST_FILTER          } from '../../modules/local/blast_filter'
 
@@ -41,21 +42,9 @@ workflow FASTA_BLAST_REFSEL {
             def n_fasta = fasta.countFasta()
             ["$meta.sample\t$n_fasta"]}
         .collect()
-        .map {
-            tsv_data ->
-                def comments = [
-                    "id: 'samples_without_blast_hits'",
-                    "anchor: 'WARNING: Filtered samples'",
-                    "section_name: 'Samples without blast hits'",
-                    "format: 'tsv'",
-                    "description: 'Samples that did not have any blast hits for their contigs (using ${params.assemblers}) were not included in further assembly polishing'",
-                    "plot_type: 'table'"
-                ]
-                def header = ['Sample', "Number of contigs"]
-                return WorkflowCommons.multiqcTsvFromList(tsv_data, header, comments) // make it compatible with the other mqc files
-        }
-        .collectFile(name:'samples_no_blast_hits_mqc.tsv')
-        .set { ch_no_blast_hits }
+        .set{no_blast_hits_tsv}
+
+    ch_no_blast_hits = noBlastHitsToMultiQC(no_blast_hits_tsv,params.assemblers).collectFile(name:'samples_no_blast_hits_mqc.tsv')
 
     // Filter out false positve hits that based on query length, alignment length, identity, e-score & bit-score
     ch_blast_txt

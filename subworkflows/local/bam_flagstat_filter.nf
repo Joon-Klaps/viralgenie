@@ -1,20 +1,8 @@
 // Take in a bam file and remove those that don't have any reads aligned
 
-include { SAMTOOLS_INDEX     } from '../../modules/nf-core/samtools/index/main'
-include { SAMTOOLS_FLAGSTAT  } from '../../modules/nf-core/samtools/flagstat/main'
-
-//
-// Function that parses and returns the number of mapped reasds from flagstat files
-//
-def getFlagstatMappedReads(flagstat_file) {
-    def mapped_reads = 0
-    flagstat_file.eachLine { line ->
-        if (line.contains(' mapped (')) {
-            mapped_reads = line.tokenize().first().toInteger()
-        }
-    }
-    return mapped_reads
-}
+include {failedMappedReadsToMultiQC } from '../../modules/local/functions'
+include { SAMTOOLS_INDEX            } from '../../modules/nf-core/samtools/index/main'
+include { SAMTOOLS_FLAGSTAT         } from '../../modules/nf-core/samtools/flagstat/main'
 
 workflow BAM_FLAGSTAT_FILTER {
 
@@ -39,7 +27,7 @@ workflow BAM_FLAGSTAT_FILTER {
         .out
         .flagstat
         .join(ch_bam, by: [0] )
-        .map{ meta, flagstat, bam -> [ meta, bam, getFlagstatMappedReads(flagstat) ] }
+        .map{ meta, flagstat, bam -> [ meta, bam, WorkflowCommons.getFlagstatMappedReads(flagstat) ] }
         .branch { meta, bam, mapped_reads ->
             pass: mapped_reads > min_mapped_reads
                 return [ meta, bam ]
@@ -56,21 +44,11 @@ workflow BAM_FLAGSTAT_FILTER {
             ["$meta.id\t$meta.sample\t$meta.cluster_id\t$meta.previous_step\t$mapped_reads"]
             }
         .collect()
-        .map {
-            tsv_data ->
-                def comments = [
-                    "id: 'failed_mapped'",
-                    "anchor: 'WARNING: Filtered contigs'",
-                    "section_name: 'Minimum mapped reads'",
-                    "format: 'tsv'",
-                    "description: 'Contigs that did not have more then ${min_mapped_reads} mapped reads were filtered out'",
-                    "plot_type: 'table'"
-                ]
-                def header = ['Id','Sample', 'Cluster','Step','Mapped reads']
-                return WorkflowCommons.multiqcTsvFromList(tsv_data, header, comments) // make it compatible with other mqc files
-        }
+        .failedMappedReadsToMultiQC()
         .collectFile(name:'failed_mapped_reads_mqc.tsv')
-        .set { ch_fail_mapping_multiqc }
+        .set{ch_fail_mapping_multiqc}
+
+    // ch_fail_mapping_multiqc = failedMappedReadsToMultiQC(bam_fail_tsv).collectFile(name:'failed_mapped_reads_mqc.tsv')
 
     emit:
     bam_pass     = bam_pass                        // channel: [ val(meta), [ bam ] ]

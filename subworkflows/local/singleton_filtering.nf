@@ -7,7 +7,7 @@ workflow SINGLETON_FILTERING {
     take:
     fasta               // channel: [ val(meta), [ fasta ] ]
     min_contig_size     // int
-    max_n_1OOkbp        // int
+    max_n_perc        // int
 
     main:
     ch_versions = Channel.empty()
@@ -15,7 +15,7 @@ workflow SINGLETON_FILTERING {
     FASTA_CONTIG_FILTERING (
         fasta,
         min_contig_size,
-        max_n_1OOkbp
+        max_n_perc
         )
 
     // Rename to avoid errors downstream
