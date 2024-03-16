@@ -265,7 +265,8 @@ workflow VIRALGENIE {
             }
             .set{ch_contigs}
 
-        noContigSamplesToMultiQC(ch_contigs.fail)
+        no_contig_samples = ch_contigs.fail
+        noContigSamplesToMultiQC(no_contig_samples, params.assemblers)
             .collectFile(name:'samples_no_contigs_mqc.tsv')
             .set{no_contigs}
 

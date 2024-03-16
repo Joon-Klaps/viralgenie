@@ -74,9 +74,9 @@ def lowReadSamplesToMultiQC(tsv_data, min_trimmed_reads) {
     tsv_data
         .map { meta, read_count -> ["$meta.sample\t$read_count"] }
         .collect()
-        .map { tsv_data ->
+        .map { tsv ->
             WorkflowCommons.multiqcTsvFromList(
-                tsv_data,
+                tsv,
                 ['Sample', "Number of reads"],
                 [
                     "id: 'samples_low_reads'",
@@ -97,9 +97,9 @@ def noContigSamplesToMultiQC(tsv_data, assemblers) {
             ["$meta.sample\t$n_fasta"]
         }
         .collect()
-        .map { tsv_data ->
+        .map { tsv ->
             WorkflowCommons.multiqcTsvFromList(
-                tsv_data,
+                tsv,
                 ['sample name', "number of contigs"],
                 [
                     "id: 'samples_without_contigs'",
