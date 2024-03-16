@@ -456,12 +456,9 @@ def process_failed_contig_dataframe(df):
         pandas.Index: The index series of the processed dataframe.
     """
     df = df.astype(str)
-    df["Cluster"] = df["Cluster"].str.split(".0").str[0]
-    df["Iteration"] = df["Step"].str.split(".0").str[0]
-    df["id"] = df["Sample.1"] + "_" + df["Cluster"] + "_" + df["Iteration"]
+    df["id"] = df["sample name"] + "_" + df["cluster"] + "_" + df["step"]
     df.set_index("id", inplace=True)
-    index_series = df.index
-    return index_series
+    return df
 
 
 def filter_files_of_interest(multiqc_data, files_of_interest):
@@ -924,17 +921,6 @@ def main(argv=None):
         multiqc_contigs_df = multiqc_contigs_df.join(blast_df, how="outer")
         multiqc_contigs_df = multiqc_contigs_df.join(annotation_df, how="outer")
 
-        # adding a tag saying that contig faild qc check
-        logger.info("Adding failed contig QC check")
-        failed_contigs = {"failed_mapped": {}, "failed_contig_quality": {}}
-        failed_contig_df = read_data(
-            args.multiqc_dir, failed_contigs, process_failed_contig_dataframe
-        )
-        if not failed_contig_df.empty:
-            multiqc_contigs_df["Contig failed QC check"] = (
-                multiqc_contigs_df.index.isin(failed_contig_df)
-            )
-
         # If we are empty, just quit
         if multiqc_contigs_df.empty:
             logger.warning("No data was found to create the contig overview table!")
@@ -951,6 +937,19 @@ def main(argv=None):
         mqc_contigs_sel[["sample name", "cluster", "step"]] = mqc_contigs_sel[
             "index"
         ].str.split("_", n=3, expand=True)
+
+        # # adding a tag saying that contig faild qc check
+        # logger.info("Adding failed contig QC check")
+        # failed_contigs = {"failed_mapped": {}, "failed_contig_quality": {}}
+        # failed_contig_df = read_data(
+        #     args.multiqc_dir, failed_contigs, process_failed_contig_dataframe
+        # )
+        # if not failed_contig_df.empty:
+        #     merged_df = pd.merge(mqc_contigs_sel.reset_index(), failed_contig_df, on=['sample name', 'cluster', 'step'], how='left', indicator=True)
+        #     merged_df['Contig failed QC check'] = merged_df['_merge'] == 'both'
+        #     mqc_contigs_sel['Contig failed QC check'] = merged_df['Contig failed QC check']
+
+
 
         # Reorder the columns
         logger.info("Reordering columns")

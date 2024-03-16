@@ -86,6 +86,7 @@ include { FASTQ_KRAKEN_KAIJU              } from '../subworkflows/local/fastq_kr
 
 // Assembly
 include { FASTQ_SPADES_TRINITY_MEGAHIT    } from '../subworkflows/local/fastq_spades_trinity_megahit'
+include { noContigSamplesToMultiQC        } from '../modules/local/functions'
 
 // Consensus polishing of genome
 include { FASTA_CONTIG_CLUST              } from '../subworkflows/local/fasta_contig_clust'
@@ -264,26 +265,8 @@ workflow VIRALGENIE {
             }
             .set{ch_contigs}
 
-        ch_contigs
-            .fail
-            .map{ meta, scaffolds ->
-                def n_fasta = scaffolds.countFasta()
-                ["$meta.sample\t$n_fasta"]
-            }
-            .collect()
-            .map {
-                tsv_data ->
-                    def comments = [
-                        "id: 'samples_without_contigs'",
-                        "anchor: 'WARNING: Filtered samples'",
-                        "section_name: 'Samples without contigs'",
-                        "format: 'tsv'",
-                        "description: 'Samples that did not have any contigs (using ${params.assemblers}) were not included in further assembly polishing'",
-                        "plot_type: 'table'"
-                    ]
-                    def header = ['Sample', "Number of contigs"]
-                    return WorkflowCommons.multiqcTsvFromList(tsv_data, header, comments) // make it compatible with the other mqc files
-            }
+        no_contig_samples = ch_contigs.fail
+        noContigSamplesToMultiQC(no_contig_samples, params.assemblers)
             .collectFile(name:'samples_no_contigs_mqc.tsv')
             .set{no_contigs}
 
@@ -321,7 +304,6 @@ workflow VIRALGENIE {
                 .set{ch_centroids_members}
 
             ch_clusters_summary    = FASTA_CONTIG_CLUST.out.clusters_summary.collect{it[1]}.ifEmpty([])
-
             ch_multiqc_files       =  ch_multiqc_files.mix(FASTA_CONTIG_CLUST.out.no_blast_hits_mqc.ifEmpty([]))
 
             // map clustered contigs & create a single consensus per cluster
@@ -334,7 +316,7 @@ workflow VIRALGENIE {
             SINGLETON_FILTERING (
                 ch_centroids_members.singletons,
                 params.min_contig_size,
-                params.max_n_1OOkbp
+                params.max_n_perc
                 )
             ch_versions = ch_versions.mix(SINGLETON_FILTERING.out.versions)
 
@@ -385,7 +367,7 @@ workflow VIRALGENIE {
                     params.get_intermediate_stats,
                     params.min_mapped_reads,
                     params.min_contig_size,
-                    params.max_n_1OOkbp
+                    params.max_n_perc
                 )
                 ch_consensus               = ch_consensus.mix(FASTQ_FASTA_ITERATIVE_CONSENSUS.out.consensus_allsteps)
                 ch_consensus_results_reads = FASTQ_FASTA_ITERATIVE_CONSENSUS.out.consensus_reads
@@ -470,7 +452,7 @@ workflow VIRALGENIE {
             params.get_stats,
             params.min_mapped_reads,
             params.min_contig_size,
-            params.max_n_1OOkbp
+            params.max_n_perc
         )
         ch_consensus     = ch_consensus.mix(FASTQ_FASTA_MAP_CONSENSUS.out.consensus_all)
         ch_multiqc_files = ch_multiqc_files.mix(FASTQ_FASTA_MAP_CONSENSUS.out.mqc.ifEmpty([])) // collect already done in subworkflow
@@ -482,7 +464,7 @@ workflow VIRALGENIE {
     ch_blast_summary      = Channel.empty()
     ch_annotation_summary = Channel.empty()
 
-    if ( !params.skip_consensus_qc || (!params.skip_assembly && !params.skip_variant_calling) ) {
+    if ( !params.skip_consensus_qc && (!params.skip_assembly && !params.skip_variant_calling) ) {
 
         CONSENSUS_QC(
             ch_consensus,

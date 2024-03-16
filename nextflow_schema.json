@@ -568,7 +568,7 @@
                 },
                 "taxon_merge_strategy": {
                     "type": "string",
-                    "default": "lowest",
+                    "default": "lca",
                     "fa_icon": "far fa-object-ungroup",
                     "description": "Taxon conflict resolution mode, must be 1 (Kaiju), 2 (Kraken),  lca, or lowest.",
                     "help_text": "The option -c determines the method of resolving conflicts in the taxonomic assignment for a read.\nPossible values are '1', '2', 'lca', 'lowest':\n  '1' -> the taxon id from Kaiju is used.\n  '2' -> the taxon id from Kraken is used.\n  'lca' -> the least common ancestor of the two taxon ids from both input files is used.\n  'lowest' -> the lower rank of the two taxa is used if they are within the same lineage. Otherwise the LCA is used.",
@@ -613,9 +613,9 @@
                     "description": "Maximum allowed contig size",
                     "fa_icon": "fas fa-expand-alt"
                 },
-                "max_n_1OOkbp": {
+                "max_n_perc": {
                     "type": "integer",
-                    "default": 50000,
+                    "default": 50,
                     "fa_icon": "fas fa-expand-alt"
                 },
                 "skip_singleton_filtering": {
