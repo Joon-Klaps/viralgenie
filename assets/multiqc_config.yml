@@ -178,6 +178,7 @@ table_columns_visible:
   "CLUSTER: Samtools Stats: stats": False
   "CLUSTER: Samtools Stats: flagstat": False
   "CLUSTER: Bcftools: Stats": False
+  "CLUSTER: Samtools Stats": False
   "CLUSTER: Picard: Mark Duplicates": False
   "CLUSTER: UMI-tools": False
   "CLUSTER: mosdepth": False

@@ -120,8 +120,6 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
     consensus_filtered = contigs.pass
     ch_multiqc         = ch_multiqc.mix(contig_qc_fail_mqc.collectFile(name:'failed_contig_quality_mqc.tsv').ifEmpty([]))
 
-    consensus_filtered.view()
-
     consensus_reads    = consensus_filtered.join(reads_in, by: [0])
     bam_out            = ch_dedup_bam_ref.map{meta,bam,ref -> [meta,bam] }
 

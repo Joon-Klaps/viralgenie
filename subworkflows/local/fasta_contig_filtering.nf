@@ -40,8 +40,6 @@ workflow FASTA_CONTIG_FILTERING {
         .collectFile(name:'failed_contig_quality_mqc.tsv')
         .set { ch_contig_qc_fail_mqc }
 
-    ch_contigs_filtered.pass.view()
-
     emit:
     contigs            = ch_contigs_filtered.pass      // channel: [ val(meta), [ fasta ] ]
     contig_qc_fail_mqc = ch_contig_qc_fail_mqc         // channel: [ tsv ]
