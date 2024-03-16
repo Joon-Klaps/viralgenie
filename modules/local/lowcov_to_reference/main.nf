@@ -1,7 +1,7 @@
 process LOWCOV_TO_REFERENCE {
     tag "$meta.id"
     label 'process_single'
-    errorStrategy { task.exitStatus == 4 ? 'ignore' : sleep(10 * 200 as long); return 'retry' } // can fail if mpileup empty
+    errorStrategy { task.exitStatus == 4 ? 'ignore' : 'retry' } // can fail if mpileup empty
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
