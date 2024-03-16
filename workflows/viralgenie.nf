@@ -86,6 +86,7 @@ include { FASTQ_KRAKEN_KAIJU              } from '../subworkflows/local/fastq_kr
 
 // Assembly
 include { FASTQ_SPADES_TRINITY_MEGAHIT    } from '../subworkflows/local/fastq_spades_trinity_megahit'
+include { noContigSamplesToMultiQC        } from '../modules/local/functions'
 
 // Consensus polishing of genome
 include { FASTA_CONTIG_CLUST              } from '../subworkflows/local/fasta_contig_clust'
@@ -264,26 +265,7 @@ workflow VIRALGENIE {
             }
             .set{ch_contigs}
 
-        ch_contigs
-            .fail
-            .map{ meta, scaffolds ->
-                def n_fasta = scaffolds.countFasta()
-                ["$meta.sample\t$n_fasta"]
-            }
-            .collect()
-            .map {
-                tsv_data ->
-                    def comments = [
-                        "id: 'samples_without_contigs'",
-                        "anchor: 'WARNING: Filtered samples'",
-                        "section_name: 'Samples without contigs'",
-                        "format: 'tsv'",
-                        "description: 'Samples that did not have any contigs (using ${params.assemblers}) were not included in further assembly polishing'",
-                        "plot_type: 'table'"
-                    ]
-                    def header = ['Sample', "Number of contigs"]
-                    return WorkflowCommons.multiqcTsvFromList(tsv_data, header, comments) // make it compatible with the other mqc files
-            }
+        noContigSamplesToMultiQC(ch_contigs.fail)
             .collectFile(name:'samples_no_contigs_mqc.tsv')
             .set{no_contigs}
 
@@ -321,7 +303,6 @@ workflow VIRALGENIE {
                 .set{ch_centroids_members}
 
             ch_clusters_summary    = FASTA_CONTIG_CLUST.out.clusters_summary.collect{it[1]}.ifEmpty([])
-
             ch_multiqc_files       =  ch_multiqc_files.mix(FASTA_CONTIG_CLUST.out.no_blast_hits_mqc.ifEmpty([]))
 
             // map clustered contigs & create a single consensus per cluster

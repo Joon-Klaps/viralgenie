@@ -6,7 +6,6 @@ include { SAMTOOLS_FAIDX                          } from '../../modules/nf-core/
 include { BAM_STATS_METRICS                       } from './bam_stats_metrics'
 include { BAM_CALL_VARIANTS                       } from './bam_call_variants'
 include { BAM_CALL_CONSENSUS                      } from './bam_call_consensus'
-include { FASTA_CONTIG_FILTERING                  } from './fasta_contig_filtering'
 include { BAM_FLAGSTAT_FILTER                     } from './bam_flagstat_filter'
 
 workflow FASTQ_FASTA_MAP_CONSENSUS {

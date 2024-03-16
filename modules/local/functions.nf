@@ -69,3 +69,46 @@ def noBlastHitsToMultiQC(tsv_data, assemblers) {
             )
         }
 }
+
+def lowReadSamplesToMultiQC(tsv_data, min_trimmed_reads) {
+    tsv_data
+        .map { meta, read_count -> ["$meta.sample\t$read_count"] }
+        .collect()
+        .map { tsv_data ->
+            WorkflowCommons.multiqcTsvFromList(
+                tsv_data,
+                ['Sample', "Number of reads"],
+                [
+                    "id: 'samples_low_reads'",
+                    "anchor: 'WARNING: Filtered samples'",
+                    "section_name: 'Samples with to few reads'",
+                    "format: 'tsv'",
+                    "description: 'Samples that did not have the minimum number of reads (<${min_trimmed_reads}) after trimming, complexity filtering & host removal'",
+                    "plot_type: 'table'"
+                ]
+            )
+        }
+}
+
+def noContigSamplesToMultiQC(tsv_data, assemblers) {
+    tsv_data
+        .map { meta, fasta ->
+            def n_fasta = scaffolds.countFasta()
+            ["$meta.sample\t$n_fasta"]
+        }
+        .collect()
+        .map { tsv_data ->
+            WorkflowCommons.multiqcTsvFromList(
+                tsv_data,
+                ['sample name', "number of contigs"],
+                [
+                    "id: 'samples_without_contigs'",
+                    "anchor: 'WARNING: Filtered samples'",
+                    "section_name: 'Samples without contigs'",
+                    "format: 'tsv'",
+                    "description: 'Samples that did not have any contigs (using ${assemblers}) were not included in further assembly polishing'",
+                    "plot_type: 'table'"
+                ]
+            )
+        }
+}
