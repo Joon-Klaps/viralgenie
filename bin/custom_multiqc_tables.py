@@ -616,9 +616,7 @@ def handle_dataframe(df, prefix, column_to_split, header=False, output=False):
             },
             inplace=True,
         )
-
         df = pd.concat([df, split_data], axis=1)
-
         df["step"] = df["step"].str.split(".").str[0]
         df["id"] = df["sample"] + "_" + df["cluster"] + "_" + df["step"]
         df = df.set_index("id")
@@ -698,13 +696,15 @@ def create_constrain_summary(df_constrain, file_columns):
         for sub_key, sub_value in sub_dict.items()
     }
     keys_to_extract = [
-        "reads_mapped",
-        "reads_mapped_percent",
+        "input_reads",
+        "output_reads",
         "number_of_SNPs",
-        "10_x_pc",
-        "median_coverage",
-        "min_coverage",
-        "max_coverage",
+        "mosdepth-1_x_pc",
+        "mosdepth-10_x_pc",
+        "mosdepth-median_coverage",
+        "mosdepth-mean_coverage",
+        "mosdepth-min_coverage",
+        "mosdepth-max_coverage",
     ]
     columns_of_interest = [
         dic_columns[key] for key in keys_to_extract if key in dic_columns.keys()
@@ -934,6 +934,7 @@ def main(argv=None):
         mqc_contigs_sel = mqc_contigs_sel[
             mqc_contigs_sel["index"].str.contains("_", na=False)
         ]
+        print(reorder_columns(mqc_contigs_sel, ["index"]))
         mqc_contigs_sel[["sample name", "cluster", "step"]] = mqc_contigs_sel[
             "index"
         ].str.split("_", n=3, expand=True)

@@ -320,20 +320,14 @@ workflow VIRALGENIE {
                 )
             ch_versions = ch_versions.mix(SINGLETON_FILTERING.out.versions)
 
-            if ( !params.skip_singleton_filtering ) {
-                ch_singletons = SINGLETON_FILTERING.out.filtered
-            } else {
-                ch_singletons = SINGLETON_FILTERING.out.renamed
-            }
-
             ALIGN_COLLAPSE_CONTIGS
                 .out
                 .consensus
-                .mix( ch_singletons )
+                .mix( SINGLETON_FILTERING.out.filtered )
                 .set{ ch_consensus }
 
             ch_unaligned_raw_contigs = ALIGN_COLLAPSE_CONTIGS.out.unaligned_fasta
-            ch_unaligned_raw_contigs = ch_unaligned_raw_contigs.mix( SINGLETON_FILTERING.out.renamed )
+            ch_unaligned_raw_contigs = ch_unaligned_raw_contigs.mix( SINGLETON_FILTERING.out.filtered )
 
             // We want the meta from the reference channel to be used downstream as this is our varying factor
             // To do this we combine the channels based on sample
@@ -428,8 +422,6 @@ workflow VIRALGENIE {
         // ch_versions = ch_versions.mix(RENAME_FASTA_HEADER_CONSTRAIN.out.versions)
 
         ch_map_seq_anno_combined
-            // .out
-            // .fasta
             .map{ meta, fasta -> [meta, fasta, meta.reads] }
             .set{constrain_consensus_reads}
 

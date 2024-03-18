@@ -9,7 +9,7 @@
         "properties": {
             "id": {
                 "type": "string",
-                "pattern": "^[A-z0-9\\-\\.]+$",
+                "pattern": "^(?!.*\\_)[A-Za-z0-9\\-\\.]+$",
                 "errorMessage": "Sequence ID must be provided and cannot contain spaces or special characters with the exception of '-' and '.'",
                 "meta": ["id"]
             },
@@ -26,7 +26,7 @@
                 "anyOf": [
                     {
                         "type": "string",
-                        "pattern": "^[A-z0-9\\-\\.]+$"
+                        "pattern": "^(?!.*\\_)[A-Za-z0-9\\-\\.]+$"
                     },
                     {
                         "type": "string",
@@ -40,7 +40,7 @@
                 "anyOf": [
                     {
                         "type": "string",
-                        "pattern": "^[A-z0-9\\-\\.\\;]+$"
+                        "pattern": "^(?!.*\\_)[A-Za-z0-9\\-\\.]+$"
                     },
                     {
                         "type": "string",
@@ -54,7 +54,7 @@
                 "anyOf": [
                     {
                         "type": "string",
-                        "pattern": "^[A-z0-9\\-\\.]+$",
+                        "pattern": "^(?!.*\\_)[A-Za-z0-9\\-\\.]+$",
                         "dependentRequired": ["species"],
                         "unique": ["species"]
                     },

@@ -223,6 +223,7 @@ extra_fn_clean_exts:
   - "_raw_2"
   - "_trim_1"
   - "_trim_2"
+  - "_trim"
   - "_1"
   - "_2"
   - "_host"

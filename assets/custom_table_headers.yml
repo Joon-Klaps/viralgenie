@@ -1,7 +1,7 @@
-umitools:
-  - input_reads
+umitools_dedup:
+  - input_reads: "mapped reads"
   - removed_reads
-  - output_reads
+  - output_reads: "deduplicated reads"
   - positions_deduplicated
   - max_umi_per_pos
   - mean_umi_per_pos

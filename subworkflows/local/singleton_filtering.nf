@@ -12,19 +12,21 @@ workflow SINGLETON_FILTERING {
     main:
     ch_versions = Channel.empty()
 
-    contig = filterContigs ( fasta, min_contig_size, max_n_perc )
-
+    contigs = fasta
+    if ( !params.skip_singleton_filtering) {
+        filtered = filterContigs ( fasta, min_contig_size, max_n_perc)
+        contig = filtered.pass
+    }
     // Rename to avoid errors downstream
     RENAME_FASTA_HEADER_SINGLETON(
-        contig.pass,
+        contig,
         "singleton.contig"
         )
     ch_versions = ch_versions.mix(RENAME_FASTA_HEADER_SINGLETON.out.versions)
 
 
     emit:
-    filtered     = contig.pass                              // channel: [ val(meta), [ fasta ] ]
-    renamed      = RENAME_FASTA_HEADER_SINGLETON.out.fasta  // channel: [ val(meta), [ fasta ] ]
+    filtered     = RENAME_FASTA_HEADER_SINGLETON.out.fasta  // channel: [ val(meta), [ fasta ] ]
     versions     = ch_versions                              // channel: [ versions.yml ]
 }
 
