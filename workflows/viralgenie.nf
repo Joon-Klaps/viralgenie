@@ -129,8 +129,16 @@ workflow VIRALGENIE {
         'input'
         ).map{
             meta, read1, read2 ->
-            [meta + [sample: meta.id] , [read1, read2]]
+            single_end = read1 && !read2
+            if (single_end) {
+                return [meta + [sample: meta.id, single_end: single_end] , [read1]]
             }
+            else {
+                return [meta + [sample: meta.id, single_end: single_end] , [read1, read2]]
+            }
+        }
+
+    ch_reads.view()
 
     // Prepare Databases
     ch_db = Channel.empty()
