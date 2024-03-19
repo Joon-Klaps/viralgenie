@@ -220,22 +220,28 @@ def main(argv=None):
     args = parse_args(argv)
     logging.basicConfig(level=args.log_level, format="[%(levelname)s] %(message)s")
 
+    reference = None
+    consensus = None
+    mpileup = None
+
     # Read in the reference sequence
-    reference = SeqIO.read(args.reference, "fasta")
-    logger.info("Reading reference ...\n")
+    with open (args.reference, 'r') as f:
+        reference = SeqIO.read(f, "fasta")
+        logger.info("Reading reference ...\n")
     # Read in the consensus sequence
-    consensus = SeqIO.read(args.consensus, "fasta")
-    logger.info("Reading consensus ...\n")
+    with open (args.consensus, 'r') as f:
+        consensus = SeqIO.read(f, "fasta")
+        logger.info("Reading consensus ...\n")
 
     # Read in the mpileup file in a numpy array, Important to set the comments to None as '#' is used in the mpileup file
-    mpileup = np.loadtxt(args.mpileup, dtype=str, delimiter="\t", comments=None)
-    logger.info("Reading mpileup ...\n")
+    with open (args.mpileup, 'r') as f:
+        mpileup = np.loadtxt(f, dtype=str, delimiter="\t", comments=None)
+        logger.info("Reading mpileup ...\n")
 
     # Check if mpileup is empty, if empty then exit
     if mpileup.size == 0:
         logger.error("Mpileup file is empty. Exiting ...")
         sys.exit(4)
-
 
     # Extract regions with coverage & subtract 1 for 0 index base
     low_coverage = mpileup[mpileup[:, 3].astype(int) <= args.minimum_depth, 1].astype(int) - 1
