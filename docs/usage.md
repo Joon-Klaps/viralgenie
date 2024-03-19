@@ -48,7 +48,6 @@ with `params.yaml` containing:
 ```yaml
 input: "./samplesheet.csv"
 outdir: "./results/"
-metadata: "./metadata.csv"
 ```
 
 You can also generate such `YAML`/`JSON` files via [nf-core/launch](https://nf-co.re/launch).
@@ -85,7 +84,24 @@ TREATMENT-REP3,AEG588A6_S6_L003_R1_001.fastq.gz,
 
 An [example samplesheet](../assets/samplesheet.csv) has been provided with the pipeline.
 
-### Samplesheets: metadata
+### Samplesheets: Mapping constrains
+
+Viralgenie allows the user to specify the mapping constrains for the pipeline, meaning that the specified or all samples will be mapped against the specified references. This is done by providing a samplesheet to parameter `--mapping_constrains`.
+
+An example mapping constrain samplesheet file consisting of references that need to have all samples mapped towards them and a selection may look something like the one below. This is for 5 references, 2 of them being a multi-fasta file.
+
+```csv title="samplesheet.csv"
+id	species	segment	samples	sequence	definition
+Lassa-L-dataset	LASV	L		LASV_L.multi.fasta	Collection of LASV sequences used for hybrid capture bait design, all publicly availble sequences of the L segment clustered at 99.5% similarity
+Lassa-S-dataset	LASV	S	CONTROL-REP1;CONTROL-REP2;CONTROL-REP3	LASV_S.multi.fasta	Collection of LASV sequences used for hybrid capture bait design, all publicly availble sequences of the S segment clustered at 99.5% similarity
+NC038709.1	HAZV	L	CONTROL-REP1;CONTROL-REP2;CONTROL-REP3	L-NC_038709.1.fasta	Hazara virus isolate JC280 segment L, complete sequence.
+NC038710.1	HAZV	M		M-NC_038710.1.fasta	Hazara virus isolate JC280 segment M, complete sequence.
+NC038711.1	HAZV	S		S-NC_038711.1.fasta	Hazara virus isolate JC280 segment S, complete sequence.
+```
+
+<!-- TODO explain the columns -->
+
+### Samplesheets: metadata [optional]
 
 You can also provide a metadata file to the pipeline. This file should contain information about the samples in the samplesheet, such as the condition, timepoint, or any other relevant information. This file should be a comma/tab-separated file with a header row and at least one column with the same name as the `sample` column in the samplesheet.
 
@@ -97,7 +113,7 @@ SRR11140748	SAMN14154201	SRS6189918	PRJNA607948	vero76_Illumina.fastq	PAIRED
 SRR11140744	SAMN14154205	SRS6189924	PRJNA607948	veroSTAT-1KO_Illumina.fastq	PAIRED
 ```
 
-<!-- TODO: ### Samplesheets: constrains -->
+Provide the metadata file with the argument `--metadata`.
 
 ### Updating the pipeline
 

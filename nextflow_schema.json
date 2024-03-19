@@ -33,7 +33,7 @@
                     "type": "string",
                     "fa_icon": "fas fa-file-csv",
                     "description": "Sample metadata that is included in the multiqc report",
-                    "pattern": "^\\S+\\.tsv$"
+                    "pattern": "^\\S+\\.[tc]sv$"
                 },
                 "email": {
                     "type": "string",
