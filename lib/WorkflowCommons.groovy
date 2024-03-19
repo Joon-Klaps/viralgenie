@@ -37,17 +37,6 @@ class WorkflowCommons {
     }
 
     //
-    // Function that returns the number of lines in a file
-    //
-    public static Integer getNumLinesInFile(input_file) {
-        def num_lines = 0
-        input_file.eachLine { line ->
-            num_lines ++
-        }
-        return num_lines
-    }
-
-    //
     // Function to get number of variants reported in BCFTools stats file
     //
     public static Integer getNumVariantsFromBCFToolsStats(bcftools_stats) {
@@ -66,4 +55,55 @@ class WorkflowCommons {
         def Map json = (Map) new JsonSlurper().parse(json_file)
         return json
     }
+
+    // // Function to extract the contig size & N' per 100 kbp from the QUAST report
+    // public static Map getQuastStats(report_file) {
+    //     def contig_size = 0
+    //     def n_100 = 100000 // assume the worst
+    //     report_file.eachLine { line ->
+    //         def contig_size_match = line =~ /Largest contig\s([\d]+)/
+    //         def n_100_match       = line =~ /N's per 100 kbp\s([\d\.]+)/
+    //         if (contig_size_match) contig_size = contig_size_match[0][1].toFloat()
+    //         if (n_100_match) n_100 = n_100_match[0][1].toFloat()
+    //     }
+    //     return [contig_size : contig_size, n_100 : n_100]
+    // }
+
+
+    public static Map getLengthAndAmbigous(fastaFile) {
+        def length = 0
+        def ambiguousCount = 0
+        def ambiguousPerc = 0
+
+        fastaFile.eachLine { line ->
+            if (line.startsWith(">")) {
+                // Ignore header lines starting with ">"
+                return
+            } else {
+                // Count the length of the sequence
+                length += line.trim().length()
+                // Count the occurrences of 'N'
+                ambiguousCount += line.count("N")
+            }
+        }
+        if (length.toInteger() > 0) {
+            ambiguousPerc = (ambiguousCount / length) * 100
+        }
+
+        return [contig_size: length.toInteger(), n_100 :ambiguousPerc.toInteger()]
+    }
+
+    //
+    // Function that parses and returns the number of mapped reasds from flagstat files
+    //
+    public static Integer getFlagstatMappedReads(flagstat_file) {
+        def mapped_reads = 0
+        flagstat_file.eachLine { line ->
+            if (line.contains(' mapped (')) {
+                mapped_reads = line.tokenize().first().toInteger()
+            }
+        }
+        return mapped_reads
+}
+
 }

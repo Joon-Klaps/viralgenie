@@ -21,7 +21,7 @@
                     "description": "Path to comma-separated file containing information about the samples in the experiment.",
                     "help_text": "You will need to create a design file with information about the samples in your experiment before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row. See [usage docs](https://nf-co.re/viralgenie/usage#samplesheet-input).",
                     "fa_icon": "fas fa-file-csv",
-                    "schema": "assets/schema_input.json"
+                    "schema": "assets/schemas/input.json"
                 },
                 "outdir": {
                     "type": "string",
@@ -249,7 +249,8 @@
                     "help_text": "By default, when an unrecognised parameter is found, it returns a warinig."
                 },
                 "validationSchemaIgnoreParams": {
-                    "type": "string"
+                    "type": "string",
+                    "default": "global_prefix"
                 },
                 "validationLenientMode": {
                     "type": "boolean",
@@ -567,7 +568,7 @@
                 },
                 "taxon_merge_strategy": {
                     "type": "string",
-                    "default": "lowest",
+                    "default": "lca",
                     "fa_icon": "far fa-object-ungroup",
                     "description": "Taxon conflict resolution mode, must be 1 (Kaiju), 2 (Kraken),  lca, or lowest.",
                     "help_text": "The option -c determines the method of resolving conflicts in the taxonomic assignment for a read.\nPossible values are '1', '2', 'lca', 'lowest':\n  '1' -> the taxon id from Kaiju is used.\n  '2' -> the taxon id from Kraken is used.\n  'lca' -> the least common ancestor of the two taxon ids from both input files is used.\n  'lowest' -> the lower rank of the two taxa is used if they are within the same lineage. Otherwise the LCA is used.",
@@ -612,9 +613,9 @@
                     "description": "Maximum allowed contig size",
                     "fa_icon": "fas fa-expand-alt"
                 },
-                "max_n_1OOkbp": {
+                "max_n_perc": {
                     "type": "integer",
-                    "default": 50000,
+                    "default": 50,
                     "fa_icon": "fas fa-expand-alt"
                 },
                 "skip_singleton_filtering": {
@@ -648,7 +649,7 @@
                     "type": "string",
                     "default": "bwamem2",
                     "fa_icon": "fas fa-align-center",
-                    "enum": ["bwamem2", "bowtie2"],
+                    "enum": ["bwamem2", "bowtie2", "bwa"],
                     "description": "mapping tool used during iterations"
                 },
                 "intermediate_variant_caller": {
@@ -701,12 +702,13 @@
                     "default": "bwamem2",
                     "fa_icon": "fas fa-align-center",
                     "description": "Define which mapping tool needs to be used when mapping reads to reference",
-                    "enum": ["bwamem2", "bowtie2"]
+                    "enum": ["bwamem2", "bowtie2", "bwa"]
                 },
-                "mapping_sequence": {
+                "mapping_constrains": {
                     "type": "string",
                     "description": "Sequence to use as a mapping reference instead of the de novo contigs or scaffolds",
-                    "fa_icon": "far fa-file-alt"
+                    "fa_icon": "far fa-file-alt",
+                    "schema": "assets/schemas/mapping_constrains.json"
                 },
                 "deduplicate": {
                     "type": "boolean",

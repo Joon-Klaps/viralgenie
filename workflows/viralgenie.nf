@@ -48,6 +48,7 @@ ch_metadata      = createFileChannel(params.metadata)
 ch_contaminants  = createFileChannel(params.contaminants)
 ch_spades_yml    = createFileChannel(params.spades_yml)
 ch_spades_hmm    = createFileChannel(params.spades_hmm)
+ch_constrain_meta = createFileChannel(params.mapping_constrains)
 ch_ref_pool      = (!params.skip_assembly && !params.skip_polishing) || (!params.skip_consensus_qc && !params.skip_blast_qc)           ? createChannel( params.reference_pool, "reference", true )                    : Channel.empty()
 ch_kraken2_db    = (!params.skip_assembly && !params.skip_polishing && !params.skip_precluster) || !params.skip_metagenomic_diversity  ? createChannel( params.kraken2_db, "kraken2", !params.skip_kraken2 )          : Channel.empty()
 ch_kaiju_db      = (!params.skip_assembly && !params.skip_polishing && !params.skip_precluster) || !params.skip_metagenomic_diversity  ? createChannel( params.kaiju_db, "kaiju", !params.skip_kaiju )                : Channel.empty()
@@ -85,6 +86,7 @@ include { FASTQ_KRAKEN_KAIJU              } from '../subworkflows/local/fastq_kr
 
 // Assembly
 include { FASTQ_SPADES_TRINITY_MEGAHIT    } from '../subworkflows/local/fastq_spades_trinity_megahit'
+include { noContigSamplesToMultiQC        } from '../modules/local/functions'
 
 // Consensus polishing of genome
 include { FASTA_CONTIG_CLUST              } from '../subworkflows/local/fasta_contig_clust'
@@ -103,7 +105,7 @@ include { FASTQ_FASTA_MAP_CONSENSUS                            } from '../subwor
 include { CONSENSUS_QC                    } from '../subworkflows/local/consensus_qc'
 
 // Report generation
-include { CREATE_MULTIQC_TABLES           } from '../modules/local/create_multiqc_tables'
+include { CUSTOM_MULTIQC_TABLES           } from '../modules/local/custom_multiqc_tables'
 include { MULTIQC as MULTIQC_DATAPREP     } from '../modules/nf-core/multiqc/main'
 include { MULTIQC as MULTIQC_REPORT       } from '../modules/nf-core/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS     } from '../modules/nf-core/custom/dumpsoftwareversions/main'
@@ -263,26 +265,8 @@ workflow VIRALGENIE {
             }
             .set{ch_contigs}
 
-        ch_contigs
-            .fail
-            .map{ meta, scaffolds ->
-                def n_fasta = scaffolds.countFasta()
-                ["$meta.sample\t$n_fasta"]
-            }
-            .collect()
-            .map {
-                tsv_data ->
-                    def comments = [
-                        "id: 'samples_without_contigs'",
-                        "anchor: 'WARNING: Filtered samples'",
-                        "section_name: 'Samples without contigs'",
-                        "format: 'tsv'",
-                        "description: 'Samples that did not have any contigs (using ${params.assemblers}) were not included in further assembly polishing'",
-                        "plot_type: 'table'"
-                    ]
-                    def header = ['Sample', "Number of contigs"]
-                    return WorkflowCommons.multiqcTsvFromList(tsv_data, header, comments) // make it compatible with the other mqc files
-            }
+        no_contig_samples = ch_contigs.fail
+        noContigSamplesToMultiQC(no_contig_samples, params.assemblers)
             .collectFile(name:'samples_no_contigs_mqc.tsv')
             .set{no_contigs}
 
@@ -320,7 +304,6 @@ workflow VIRALGENIE {
                 .set{ch_centroids_members}
 
             ch_clusters_summary    = FASTA_CONTIG_CLUST.out.clusters_summary.collect{it[1]}.ifEmpty([])
-
             ch_multiqc_files       =  ch_multiqc_files.mix(FASTA_CONTIG_CLUST.out.no_blast_hits_mqc.ifEmpty([]))
 
             // map clustered contigs & create a single consensus per cluster
@@ -333,24 +316,18 @@ workflow VIRALGENIE {
             SINGLETON_FILTERING (
                 ch_centroids_members.singletons,
                 params.min_contig_size,
-                params.max_n_1OOkbp
+                params.max_n_perc
                 )
             ch_versions = ch_versions.mix(SINGLETON_FILTERING.out.versions)
-
-            if ( !params.skip_singleton_filtering ) {
-                ch_singletons = SINGLETON_FILTERING.out.filtered
-            } else {
-                ch_singletons = SINGLETON_FILTERING.out.renamed
-            }
 
             ALIGN_COLLAPSE_CONTIGS
                 .out
                 .consensus
-                .mix( ch_singletons )
+                .mix( SINGLETON_FILTERING.out.filtered )
                 .set{ ch_consensus }
 
             ch_unaligned_raw_contigs = ALIGN_COLLAPSE_CONTIGS.out.unaligned_fasta
-            ch_unaligned_raw_contigs = ch_unaligned_raw_contigs.mix( SINGLETON_FILTERING.out.renamed )
+            ch_unaligned_raw_contigs = ch_unaligned_raw_contigs.mix( SINGLETON_FILTERING.out.filtered )
 
             // We want the meta from the reference channel to be used downstream as this is our varying factor
             // To do this we combine the channels based on sample
@@ -384,7 +361,7 @@ workflow VIRALGENIE {
                     params.get_intermediate_stats,
                     params.min_mapped_reads,
                     params.min_contig_size,
-                    params.max_n_1OOkbp
+                    params.max_n_perc
                 )
                 ch_consensus               = ch_consensus.mix(FASTQ_FASTA_ITERATIVE_CONSENSUS.out.consensus_allsteps)
                 ch_consensus_results_reads = FASTQ_FASTA_ITERATIVE_CONSENSUS.out.consensus_reads
@@ -403,57 +380,52 @@ workflow VIRALGENIE {
             }
         .set{ch_consensus_results_reads}
 
-    if (params.mapping_sequence && !params.skip_variant_calling ) {
-        ch_mapping_sequence = Channel.fromPath(params.mapping_sequence)
+    if (params.mapping_constrains && !params.skip_variant_calling ) {
+        // Importing samplesheet
+        Channel.fromSamplesheet('mapping_constrains')
+            .map{ meta, sequence ->
+                samples = meta.samples == null ? meta.samples: tuple(meta.samples.split(";"))  // Split up samples if meta.samples is not null
+                [meta, samples, sequence]
+            }
+            .transpose(remainder:true)                                                         // Unnest
+            .set{ch_mapping_constrains}
 
-        //get header names of sequences
-        ch_mapping_sequence
-            .splitFasta(record: [id: true])
-            .set {seq_names}
+        // // Check if the input is a multi-fasta
+        // ch_mapping_constrains.map{ meta, samples, sequence -> WorkflowMain.isMultiFasta(sequence, log)}
 
-        //split up multifasta
-        ch_mapping_sequence
-            .splitFasta(file : true, by:1)
-            .merge(seq_names)
-            .set{ch_map_seq_anno}
-
-        //combine with all input samples & rename the meta.id
-        // TODO: consider adding another column to the samplesheet with the mapping sequence
-        ch_host_trim_reads
-            .combine( ch_map_seq_anno )
+        //
+        ch_decomplex_trim_reads
+            .combine( ch_mapping_constrains )
+            .filter{ meta_reads, fastq, meta_mapping, mapping_samples, sequence -> mapping_samples == null || mapping_samples == meta_reads.sample}
             .map
                 {
-                    meta, reads, seq, name ->
-                    sample = meta.id
-                    id = "${sample}_${name.id}"
-                    new_meta = meta + [
+                    meta, reads, meta_mapping, samples, sequence_mapping ->
+                    id = "${meta.sample}_${meta_mapping.id}-CONSTRAIN"
+                    new_meta = meta + meta_mapping + [
                         id: id,
-                        sample: sample,
-                        cluster_id: "${name.id}",
+                        cluster_id: "${meta_mapping.id}",
                         step: "constrain",
                         constrain: true,
                         reads: reads,
                         iteration: 'variant-calling',
                         previous_step: 'constrain'
                         ]
-                    return [new_meta, seq]
+                    return [new_meta, sequence_mapping]
                 }
             .set{ch_map_seq_anno_combined}
 
         // For QC we keep original sequence to compare to
-        ch_unaligned_raw_contigs = ch_unaligned_raw_contigs.mix(ch_map_seq_anno_combined)
+        ch_unaligned_raw_contigs2 = ch_unaligned_raw_contigs.mix(ch_map_seq_anno_combined)
 
-        //rename fasta headers
-        RENAME_FASTA_HEADER_CONSTRAIN (ch_map_seq_anno_combined,[])
-        ch_versions = ch_versions.mix(RENAME_FASTA_HEADER_CONSTRAIN.out.versions)
+        // //rename fasta headers
+        // RENAME_FASTA_HEADER_CONSTRAIN (ch_map_seq_anno_combined,[])
+        // ch_versions = ch_versions.mix(RENAME_FASTA_HEADER_CONSTRAIN.out.versions)
 
-        RENAME_FASTA_HEADER_CONSTRAIN
-            .out
-            .fasta
+        ch_map_seq_anno_combined
             .map{ meta, fasta -> [meta, fasta, meta.reads] }
             .set{constrain_consensus_reads}
 
-        //Add to the consensus channel, the mapping sequences will now always be mapped against
+        //Add to the consensus channel, which will be used for variant calling
         ch_consensus_results_reads = ch_consensus_results_reads.mix(constrain_consensus_reads)
     }
 
@@ -472,7 +444,7 @@ workflow VIRALGENIE {
             params.get_stats,
             params.min_mapped_reads,
             params.min_contig_size,
-            params.max_n_1OOkbp
+            params.max_n_perc
         )
         ch_consensus     = ch_consensus.mix(FASTQ_FASTA_MAP_CONSENSUS.out.consensus_all)
         ch_multiqc_files = ch_multiqc_files.mix(FASTQ_FASTA_MAP_CONSENSUS.out.mqc.ifEmpty([])) // collect already done in subworkflow
@@ -484,7 +456,7 @@ workflow VIRALGENIE {
     ch_blast_summary      = Channel.empty()
     ch_annotation_summary = Channel.empty()
 
-    if ( !params.skip_consensus_qc || (!params.skip_assembly && !params.skip_variant_calling) ) {
+    if ( !params.skip_consensus_qc && (!params.skip_assembly && !params.skip_variant_calling) ) {
 
         CONSENSUS_QC(
             ch_consensus,
@@ -512,21 +484,24 @@ workflow VIRALGENIE {
     multiqc_data = MULTIQC_DATAPREP.out.data.ifEmpty([])
 
     // Prepare MULTIQC custom tables
-    CREATE_MULTIQC_TABLES (
+    CUSTOM_MULTIQC_TABLES (
             ch_clusters_summary.ifEmpty([]),
             ch_metadata,
             ch_checkv_summary.ifEmpty([]),
             ch_quast_summary.ifEmpty([]),
             ch_blast_summary.ifEmpty([]),
+            ch_constrain_meta,
             ch_annotation_summary.ifEmpty([]),
             multiqc_data,
-            ch_multiqc_comment_headers,
-            ch_multiqc_custom_table_headers
+            ch_multiqc_comment_headers.ifEmpty([]),
+            ch_multiqc_custom_table_headers.ifEmpty([])
             )
-    ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.summary_clusters_mqc.ifEmpty([]))
-    ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.sample_metadata_mqc.ifEmpty([]))
-    ch_multiqc_files = ch_multiqc_files.mix(CREATE_MULTIQC_TABLES.out.contigs_overview_mqc.ifEmpty([]))
-    ch_versions      = ch_versions.mix(CREATE_MULTIQC_TABLES.out.versions)
+    ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_MULTIQC_TABLES.out.summary_clusters_mqc.ifEmpty([]))
+    ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_MULTIQC_TABLES.out.sample_metadata_mqc.ifEmpty([]))
+    ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_MULTIQC_TABLES.out.contigs_overview_mqc.ifEmpty([]))
+    ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_MULTIQC_TABLES.out.mapping_constrains_mqc.ifEmpty([]))
+    ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_MULTIQC_TABLES.out.constrains_summary_mqc.ifEmpty([]))
+    ch_versions      = ch_versions.mix(CUSTOM_MULTIQC_TABLES.out.versions)
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')

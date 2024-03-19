@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import argparse
-import errno
 import logging
 import sys
 from pathlib import Path
@@ -231,6 +230,12 @@ def main(argv=None):
     # Read in the mpileup file in a numpy array, Important to set the comments to None as '#' is used in the mpileup file
     mpileup = np.loadtxt(args.mpileup, dtype=str, delimiter="\t", comments=None)
     logger.info("Reading mpileup ...\n")
+
+    # Check if mpileup is empty, if empty then exit
+    if mpileup.size == 0:
+        logger.error("Mpileup file is empty. Exiting ...")
+        sys.exit(4)
+
 
     # Extract regions with coverage & subtract 1 for 0 index base
     low_coverage = mpileup[mpileup[:, 3].astype(int) <= args.minimum_depth, 1].astype(int) - 1
