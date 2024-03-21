@@ -25,6 +25,7 @@ nav:
 
 theme:
   name: material
+  favicon: images/ViralGenie-nf-core-theme.png
   icon:
     logo: octicons/checklist-16
     repo: fontawesome/brands/github
@@ -58,8 +59,8 @@ theme:
     - navigation.footer
     - search.share
     - toc.follow
-# extra_css:
-#   - stylesheets/extra.css
+extra_css:
+  - stylesheets/extra.css
 
 markdown_extensions:
   - admonition
