@@ -10,7 +10,7 @@
 
 <!-- TODO nf-core: Add documentation about anything specific to running your pipeline. For general topics, please point to (and add to) the main nf-core website. -->
 
-## Running the pipeline
+# Running the pipeline
 
 The typical command for running the pipeline is as follows:
 
@@ -78,7 +78,7 @@ TREATMENT-REP3,AEG588A6_S6_L003_R1_001.fastq.gz,
 
 | Column    | Description                                                                                                                                       |
 | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `sample`  | Custom sample name. This entry will be identical for multiple sequencing libraries/runs from the same sample.                                     |
+| `sample`  | Custom sample name, needs to be unique                                                                                                            |
 | `fastq_1` | Full path (_not_ relative paths) to FastQ file for Illumina short reads 1. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz". |
 | `fastq_2` | Full path (_not_ relative paths) to FastQ file for Illumina short reads 2. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz". |
 
@@ -99,7 +99,14 @@ NC038710.1	HAZV	M		M-NC_038710.1.fasta	Hazara virus isolate JC280 segment M, com
 NC038711.1	HAZV	S		S-NC_038711.1.fasta	Hazara virus isolate JC280 segment S, complete sequence.
 ```
 
-<!-- TODO explain the columns -->
+| Column       | Description                                                                                         |
+| ------------ | --------------------------------------------------------------------------------------------------- |
+| `id`         | Reference identifier, needs to be unique'                                                           |
+| `species`    | [Optional] Species name of the reference                                                            |
+| `segment`    | [Optional] Segment name of the reference                                                            |
+| `samples`    | [Optional] List of samples that need to be mapped towards the reference. If empty, map all samples. |
+| `sequence`   | Full path (_not_ relative paths) to the reference sequence file.                                    |
+| `definition` | [Optional] Definition of the reference sequence file.                                               |
 
 ### Samplesheets: metadata [optional]
 
@@ -115,13 +122,15 @@ SRR11140744	SAMN14154205	SRS6189924	PRJNA607948	veroSTAT-1KO_Illumina.fastq	PAIR
 
 Provide the metadata file with the argument `--metadata`.
 
-### Updating the pipeline
+## Updating the pipeline
 
-When you run the above command, Nextflow automatically pulls the pipeline code from GitHub and stores it as a cached version. When running the pipeline after this, it will always use the cached version if available - even if the pipeline has been updated since. To make sure that you're running the latest version of the pipeline, make sure that you regularly update the cached version of the pipeline:
+<!-- TODO: make a conda image -->
 
 ```bash
 nextflow pull Joon-Klaps/viralgenie
 ```
+
+When you run the above command, Nextflow automatically pulls the pipeline code from GitHub and stores it as a cached version. When running the pipeline after this, it will always use the cached version if available - even if the pipeline has been updated since. To make sure that you're running the latest version of the pipeline, make sure that you regularly update the cached version of the pipeline:
 
 ### Reproducibility
 
@@ -143,7 +152,7 @@ If you wish to share such profile (such as upload as supplementary material for 
 These options are part of Nextflow and use a _single_ hyphen (pipeline parameters use a double-hyphen).
 :::
 
-### `-profile`
+### The `-profile` parameter
 
 Use this parameter to choose a configuration profile. Profiles can give configuration presets for different compute environments.
 

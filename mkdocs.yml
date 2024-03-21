@@ -1,0 +1,90 @@
+site_name: viralgenie
+repo_name: Joon-Klaps/viralgenie
+repo_url: https://github.com/Joon-Klaps/viralgenie
+# site_url: https://Joon-Klaps.github.io/viralgenie/latest/
+edit_uri: edit/main/docs/
+
+nav:
+  - Home:
+      - index.md
+      # - background.md
+      # - migration_guide.md
+  - Input:
+      - usage.md
+      - databases.md
+  # - Parameters:
+  #     - parameters/validation.md
+  #     - parameters/help_text.md
+  #     - parameters/summary_log.md
+  # - Samplesheets:
+  #     - samplesheets/validate_sample_sheet.md
+  #     - samplesheets/fromSamplesheet.md
+  #     - samplesheets/examples.md
+  # - Contributing:
+  #     - contributing/setup.md
+
+theme:
+  name: material
+  icon:
+    logo: octicons/checklist-16
+    repo: fontawesome/brands/github
+  palette:
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+  font:
+    text: Inter
+  features:
+    - content.action.edit
+    - content.code.annotate
+    - content.code.copy
+    - navigation.instant
+    - navigation.top
+    - navigation.tracking
+    - navigation.sections
+    - navigation.footer
+    - search.share
+    - toc.follow
+# extra_css:
+#   - stylesheets/extra.css
+
+# markdown_extensions:
+#   - admonition
+#   - def_list
+#   - md_in_html
+#   - pymdownx.emoji:
+#       emoji_index: !!python/name:material.extensions.emoji.twemoji
+#       emoji_generator: !!python/name:material.extensions.emoji.to_svg
+#   - pymdownx.highlight:
+#       anchor_linenums: true
+#   - pymdownx.inlinehilite
+#   - pymdownx.critic
+#   - pymdownx.snippets
+#   - pymdownx.superfences
+#   - pymdownx.tabbed:
+#       alternate_style: true
+#   - pymdownx.details
+#   - pymdownx.tasklist:
+#       custom_checkbox: true
+
+# plugins:
+#   - search
+#   - social:
+#       cards: !ENV [CARDS, true]
+
+# extra:
+#   version:
+#     provider: mike
