@@ -15,71 +15,6 @@ Any nucleotide fasta file will do.
 
 Specify it with the parameter `--reference_pool`.
 
-## Annotation sequences
-
-Identifying the species and the segment of the final genome construct is done based on a blast search to a smaller annotated sequencing data `assets/bv-brc-refvirus-anno.fasta.gz`. This dataset is extracted from the [BV-BRC](https://www.bv-brc.org/). The default annotation dataset was reconstructed using their [CLI-tool](https://www.bv-brc.org/docs/cli_tutorial/index.html) to communicate with their [relational database](https://www.bv-brc.org/docs/cli_tutorial/cli_getting_started.html#the-bv-brc-database)
-
-In case you want to modify the default database see [here how to install the CLI](https://www.bv-brc.org/docs/cli_tutorial/cli_installation.html) and use the following scripts as a guideline to reconstruct the dataset.
-
-Here we select all viral genomes that are not lab reassortments and are reference genomes and add metadata attributes to the output.
-
-```bash
-# download annotation metadata +/- 5s
-p3-all-genomes --eq superkingdom,Viruses --eq reference_genome,Reference --ne host_common_name,'Lab reassortment' --attr genome_id,species,segment,genome_name,genome_length,host_common_name,genbank_accessions,taxon_id   > all-virus-anno.txt
-# download genome data, done seperatly as it takes much longer to query +/- 1 hour
-p3-all-genomes --eq superkingdom,Viruses --eq reference_genome,Reference --ne host_common_name,'Lab reassortment' | p3-get-genome-contigs --attr sequence > all-virus.fasta
-```
-
-> [!NOTE]
-> Any attribute can be downloaded and will be added to the final report if the formatting remains the same.
-> For a complete list of attributes see `p3-all-genomes --fields` or read their [manual](https://www.bv-brc.org/docs/cli_tutorial/cli_getting_started.html)
-
-Next, the metadata and the genomic data is combined into a single fasta file where the metada fields are stored in the fasta comment as `key1:"value1"|key2:"value2"|...` using the following python code.
-
-```python
-import pandas as pd
-import re
-
-# read in sequences with all columns as strings
-sequences = pd.read_csv("refseq-virus.fasta", index_col=0, sep="\t", dtype=str)
-data = pd.read_csv("refseq-virus-anno.txt", index_col=0, sep="\t", dtype=str)
-
-# merge the df's
-df = sequences.join(data)
-# remove 'genome' from the name
-df.columns = df.columns.str.replace("genome.", "")
-
-# create fasta header
-def create_fasta_header(row):
-    annotations = "|".join(
-        [
-            f'{column}:"{value}"'
-            for column, value in row.items()
-            if column != "contig.sequence"
-        ]
-    )
-    return f"{annotations}\n"
-
-
-df["fasta_header"] = df.apply(create_fasta_header, axis=1)
-
-df["fasta_entry"] = (
-    ">" + df.index.astype(str) + " " + df["fasta_header"] + df["contig.sequence"]
-)
-with open("bv-brc-refvirus-anno.fasta", "w") as f:
-    for entry in df["fasta_entry"]:
-        f.write(entry + "\n")
-```
-
-<details markdown="1">
-<summary>Expected files in database directory</summary>
-
--   `bv-brc-refvirus-anno.fasta.gz`
-
-</details>
-
-This annotation database can then be specified using `--annotation_db`
-
 ## Kaiju
 
 The kaiju database will be used to classify the reads and intermediate contigs in taxonomic groups. The default database is the RVDB-prot pre-built database from Kaiju.
@@ -178,7 +113,81 @@ The metagenomic diveristy estimated with kraken2 is based on the viral refseq da
 
 Set it with the variable `--kraken2_db`
 
-### Bracken
+## Annotation sequences
+
+Identifying the species and the segment of the final genome constructs is done based on a tblastx search (with MMSEQS) to a annotated sequencing dataset. This dataset is by default the [Virosaurus](https://viralzone.expasy.org/8676) as it contains a good representation of the viral genomes and is annotated.
+
+This annotation database can be specified using `--annotation_db`
+
+### Creating a custom annotation dataset
+
+In case [Virosaurus](https://viralzone.expasy.org/8676) does not suffice your needs, a custom annotation dataset can be made. Creating a custom annotation dataset can easily be done as long as the annotation data is in the fasta header using this format: `(key)=(value)` or `(key):(value)`. For example, the following fasta headers are both valid:
+
+```
+>754189.6 species:"Ungulate tetraparvovirus 3"|segment:"nan"|host_common_name:"Pig"|genbank_accessions:"NC_038883"|taxon_id:"754189"
+>NC_001731; usual name=Molluscum contagiosum virus; clinical level=SPECIES; clinical typing=unknown; species=Molluscum contagiosum virus; taxid=10279; acronym=MOCV; nucleic acid=DNA; circular=N; segment=N/A; host=Human,Vertebrate;
+```
+
+An easy to use public database to creata a custom consenus annotation dataset is [BV-BRC](https://www.bv-brc.org/). Sequences can be extracted using their [CLI-tool](https://www.bv-brc.org/docs/cli_tutorial/index.html) and linked to their [metadata](https://www.bv-brc.org/docs/cli_tutorial/cli_getting_started.html#the-bv-brc-database)
+
+Here we select all viral genomes that are not lab reassortments and are reference genomes and add metadata attributes to the output.
+
+```bash
+# download annotation metadata +/- 5s
+p3-all-genomes --eq superkingdom,Viruses --eq reference_genome,Reference --ne host_common_name,'Lab reassortment' --attr genome_id,species,segment,genome_name,genome_length,host_common_name,genbank_accessions,taxon_id   > all-virus-anno.txt
+# download genome data, done seperatly as it takes much longer to query +/- 1 hour
+p3-all-genomes --eq superkingdom,Viruses --eq reference_genome,Reference --ne host_common_name,'Lab reassortment' | p3-get-genome-contigs --attr sequence > all-virus.fasta
+```
+
+!!! note
+    Any attribute can be downloaded and will be added to the final report if the formatting remains the same.
+    For a complete list of attributes see `p3-all-genomes --fields` or read their [manual](https://www.bv-brc.org/docs/cli_tutorial/cli_getting_started.html)
+
+Next, the metadata and the genomic data is combined into a single fasta file where the metada fields are stored in the fasta comment as `key1:"value1"|key2:"value2"|...` using the following python code.
+
+```python
+import pandas as pd
+import re
+
+# read in sequences with all columns as strings
+sequences = pd.read_csv("refseq-virus.fasta", index_col=0, sep="\t", dtype=str)
+data = pd.read_csv("refseq-virus-anno.txt", index_col=0, sep="\t", dtype=str)
+
+# merge the df's
+df = sequences.join(data)
+# remove 'genome' from the name
+df.columns = df.columns.str.replace("genome.", "")
+
+# create fasta header
+def create_fasta_header(row):
+    annotations = "|".join(
+        [
+            f'{column}:"{value}"'
+            for column, value in row.items()
+            if column != "contig.sequence"
+        ]
+    )
+    return f"{annotations}\n"
+
+
+df["fasta_header"] = df.apply(create_fasta_header, axis=1)
+
+df["fasta_entry"] = (
+    ">" + df.index.astype(str) + " " + df["fasta_header"] + df["contig.sequence"]
+)
+with open("bv-brc-refvirus-anno.fasta", "w") as f:
+    for entry in df["fasta_entry"]:
+        f.write(entry + "\n")
+```
+
+<details markdown="1">
+<summary>Expected files in database directory</summary>
+
+-   `bv-brc-refvirus-anno.fasta.gz`
+
+</details>
+
+<!-- ### Bracken
 
 Bracken does not require an independent database but rather builds upon Kraken2 databases. [The pre-built Kraken2 databases hosted by Ben Langmead](https://benlangmead.github.io/aws-indexes/k2) already contain the required files to run Bracken.
 
@@ -208,4 +217,4 @@ bracken-build -d <KRAKEN_DB_DIR> -k <KRAKEN_DB_KMER_LENGTH> -l <READLENGTH>
 
 You can follow Bracken [tutorial](https://ccb.jhu.edu/software/bracken/index.shtml?t=manual) for more information.
 
-Set it with the variable `--bracken_db`
+Set it with the variable `--bracken_db` -->
