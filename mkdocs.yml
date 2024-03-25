@@ -5,7 +5,7 @@ repo_url: https://github.com/Joon-Klaps/viralgenie
 
 nav:
   - "Home":
-      - "Introduction": index.md
+      - "Introduction": readme.md
       - "Installation": installation.md
       - "Usage": usage.md
       - "Output": output.md
