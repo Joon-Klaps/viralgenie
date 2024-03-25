@@ -1,0 +1,45 @@
+name: Publish Docs On Change
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - dev
+      - master
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Deploy docs
+    runs-on: ubuntu-latest
+    if: github.event.repository.fork == false
+    defaults:
+      run:
+        shell: bash -x -l {0}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # fetch all commits/branches
+      - name: Configure Git Credentials
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.x
+      - run: echo "cache_id=$(date --utc '+%V')" >> $GITHUB_ENV
+      - uses: actions/cache@v4
+        with:
+          key: mkdocs-material-${{ env.cache_id }}
+          path: .cache
+          restore-keys: |
+            mkdocs-material-
+      - run: apt-get install pngquant
+      - name: Install dependencies
+        run: pip install mkdocs-material pymdown-extensions pillow cairosvg mike
+      - name: Build docs
+        run: mike deploy --push --update-aliases ${{ env.plugin_version }} latest
+      - name: Set default docs
+        run: mike set-default --push latest

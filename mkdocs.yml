@@ -1,17 +1,23 @@
-site_name: viralgenie
+site_name: Viralgenie
 repo_name: Joon-Klaps/viralgenie
 repo_url: https://github.com/Joon-Klaps/viralgenie
 # site_url: https://Joon-Klaps.github.io/viralgenie/latest/
-edit_uri: edit/main/docs/
 
 nav:
-  - Home:
-      - index.md
-      # - background.md
-      # - migration_guide.md
-  - Input:
-      - usage.md
-      - databases.md
+  - "Home":
+      - "Introduction": index.md
+      - "Installation": installation.md
+      - "Usage": usage.md
+      - "Output": output.md
+  - Workflow:
+      - "Pipeline overview": workflow/overview.md
+      - "Preprocessing": workflow/preprocessing.md
+      - "Assembly polishing": workflow/assembly_polishing.md
+      - "Variant analysis & Iterative refinement": workflow/iterative_refinement.md
+  - Customisation:
+      - "Databases": customisation/databases.md
+      - "Configuration": customisation/configuration.md
+
   # - Parameters:
   #     - parameters/validation.md
   #     - parameters/help_text.md
@@ -26,38 +32,46 @@ nav:
 theme:
   name: material
   favicon: images/ViralGenie-nf-core-theme.png
-  icon:
-    logo: octicons/checklist-16
-    repo: fontawesome/brands/github
+  logo: images/ViralGenie-nf-core-theme.png
   palette:
-    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme)"
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      # scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
       primary: custom
       accent: custom
       toggle:
-        icon: material/weather-sunny
-        name: Switch to light mode
-    # Palette toggle for light mode
-    - media: "(prefers-color-scheme: light)"
-      scheme: default
-      primary: custom
-      accent: custom
-      toggle:
         icon: material/weather-night
-        name: Switch to dark mode
+        name: Switch to system preference
   font:
-    text: Inter
+    text: "Ubuntu"
+    code: "Ubuntu Mono"
   features:
+    - announce.dismiss
     - content.action.edit
     - content.code.annotate
     - content.code.copy
+    - header.autohide
+    - navigation.footer
     - navigation.instant
+    - navigation.sections
+    - navigation.tabs
+    - navigation.tabs.sticky
     - navigation.top
     - navigation.tracking
-    - navigation.sections
-    - navigation.footer
     - search.share
+    - search.suggest
     - toc.follow
 extra_css:
   - stylesheets/extra.css
@@ -88,6 +102,9 @@ markdown_extensions:
 extra:
   version:
     provider: mike
+  # analytics:
+  #   provider: google
+  #   property:
   social:
     - icon: fontawesome/brands/x-twitter
       link: https://twitter.com/LemeyLab

@@ -23,7 +23,7 @@
 
 ## Pipeline summary
 
-![viral-genie-workflow](docs/images/workflow.png)
+![viral-genie-workflow](./images/workflow.png)
 
 Tools given for each step can change as benchmarking is in progress.
 

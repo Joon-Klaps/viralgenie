@@ -4,16 +4,14 @@
 
 Viralgenie uses a multitude of databases in order to analyse reads, contigs and consensus constructs. The default databases will be sufficient in most cases but there are always exceptions. This document will guide you towards the right documentation location for creating your custom databases.
 
-> [!NOTE]
-> Keep an eye out for [nf-core createtaxdb](https://nf-co.re/createtaxdb/) as it can be used for the main databases.
+!!! Tip
+    Keep an eye out for [nf-core createtaxdb](https://nf-co.re/createtaxdb/) as it can be used for the customization of the main databases but is still under development.
 
 ## Reference pool
 
 The reference pool dataset is used to identify potential references for scaffolding. It's a fasta file that will be used to make a blast database within the pipeline. The default database is the [clustered Reference Viral DataBase (C-RVDB)](https://rvdb.dbi.udel.edu/) a database that was build for enhancing virus detection using high-throughput/next-generation sequencing (HTS/NGS) technologies. An alternative reference pool is the [Virosaurus](https://viralzone.expasy.org/8676) database which is a manually curated database of viral genomes.
 
-Any nucleotide fasta file will do.
-
-Specify it with the parameter `--reference_pool`.
+Any nucleotide fasta file will do. Specify it with the parameter `--reference_pool`.
 
 ## Kaiju
 
@@ -22,8 +20,8 @@ The kaiju database will be used to classify the reads and intermediate contigs i
 A number of Kaiju pre-built indexes for reference datasets are maintained by the the developers of Kaiju and made available on the [Kaiju website](https://bioinformatics-centre.github.io/kaiju/downloads.html).
 To build a kaiju database, you need three components: a FASTA file with the protein sequences, the NCBI taxonomy dump files, and you need to define the uppercase characters of the standard 20 amino acids you wish to include.
 
-> [!Warning]
-> The headers of the protein fasta file must be numeric NCBI taxon identifiers of the protein sequences.
+!!! Warning
+    The headers of the protein fasta file must be numeric NCBI taxon identifiers of the protein sequences.
 
 To download the NCBI taxonomy files, please run the following commands:
 
@@ -39,8 +37,8 @@ kaiju-mkbwt -a ACDEFGHIKLMNPQRSTVWY -o proteins proteins.faa
 kaiju-mkfmi proteins
 ```
 
-> [!Tip]
-> You can speed up database construction by supplying the threads parameter (`-t`).
+!!! Tip
+    You can speed up database construction by supplying the threads parameter (`-t`).
 
 <details markdown="1">
 <summary>Expected files in database directory</summary>
@@ -85,15 +83,12 @@ kraken2-build --clean --db <YOUR_DB_NAME>
 
 You can then add the `<YOUR_DB_NAME>/` path to your nf-core/taxprofiler database input sheet.
 
-<details markdown="1">
-<summary>Expected files in database directory</summary>
+???+ Tip "Expected files in database directory"
+    -   `kraken2`
+        -   `opts.k2d`
+        -   `hash.k2d`
+        -   `taxo.k2d`
 
--   `kraken2`
-    -   `opts.k2d`
-    -   `hash.k2d`
-    -   `taxo.k2d`
-
-</details>
 
 You can follow the Kraken2 [tutorial](https://github.com/DerrickWood/kraken2/blob/master/docs/MANUAL.markdown#custom-databases) for a more detailed description.
 
@@ -101,7 +96,11 @@ You can follow the Kraken2 [tutorial](https://github.com/DerrickWood/kraken2/blo
 
 Viralgenie uses kraken2 to remove contaminated reads.
 
-> motivation read: [The human “contaminome”: bacterial, viral, and computational contamination in whole genome sequences from 1000 families](https://www.nature.com/articles/s41598-022-13269-z) and [Reconstruction of the personal information from human genome reads in gut metagenome sequencing data](https://www.nature.com/articles/s41564-023-01381-3)
+!!! info
+    The reason why we use Kraken2 for host removal over regular read mappers is nicely explained in the following papers:
+
+    * [The human “contaminome”: bacterial, viral, and computational contamination in whole genome sequences from 1000 families](https://www.nature.com/articles/s41598-022-13269-z)
+    * [Reconstruction of the personal information from human genome reads in gut metagenome sequencing data](https://www.nature.com/articles/s41564-023-01381-3)
 
 The contamination database is likely the largest database. The default databases is made small explicitly made smaller to save storage for end users but is not optimal. I would recommend to create a database consisting of the libraries `human, archea, bacteria` which will be more then 200GB in size. Additionally, it's good practice to include DNA & RNA of the host of origin if known (i.e. mice, ticks, mosquito, ... ). Add it as described above.
 
@@ -139,7 +138,7 @@ p3-all-genomes --eq superkingdom,Viruses --eq reference_genome,Reference --ne ho
 p3-all-genomes --eq superkingdom,Viruses --eq reference_genome,Reference --ne host_common_name,'Lab reassortment' | p3-get-genome-contigs --attr sequence > all-virus.fasta
 ```
 
-!!! note
+!!! Tip
     Any attribute can be downloaded and will be added to the final report if the formatting remains the same.
     For a complete list of attributes see `p3-all-genomes --fields` or read their [manual](https://www.bv-brc.org/docs/cli_tutorial/cli_getting_started.html)
 
@@ -180,12 +179,10 @@ with open("bv-brc-refvirus-anno.fasta", "w") as f:
         f.write(entry + "\n")
 ```
 
-<details markdown="1">
-<summary>Expected files in database directory</summary>
+???+ Tip "Expected files in database directory"
 
--   `bv-brc-refvirus-anno.fasta.gz`
+    -   `bv-brc-refvirus-anno.fasta.gz`
 
-</details>
 
 <!-- ### Bracken
 
