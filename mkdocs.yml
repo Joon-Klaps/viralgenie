@@ -4,7 +4,7 @@ repo_url: https://github.com/Joon-Klaps/viralgenie
 # site_url: https://Joon-Klaps.github.io/viralgenie/latest/
 
 nav:
-  - "Home":
+  - Home:
       - "Introduction": README.md
       - "Installation": installation.md
       - "Usage": usage.md
@@ -17,6 +17,7 @@ nav:
   - Customisation:
       - "Databases": customisation/databases.md
       - "Configuration": customisation/configuration.md
+  - Contributing: "CONTRIBUTING.md"
 
   # - Parameters:
   #     - parameters/validation.md
