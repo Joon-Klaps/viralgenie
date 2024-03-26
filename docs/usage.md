@@ -75,24 +75,40 @@ If you wish to repeatedly use the same parameters for multiple runs, rather than
 
 Pipeline settings can be provided in a `yaml` or `json` file via `-params-file <file>`.
 
-:::warning
-Do not use `-c <file>` to specify parameters as this will result in errors. Custom config files specified with `-c` must only be used for [tuning process resource specifications](https://nf-co.re/docs/usage/configuration#tuning-workflow-resources), other infrastructural tweaks (such as output directories), or module arguments (args).
-:::
+!!! warning
+Do **not** use `-c <file>` to specify parameters as this will result in errors. Custom config files specified with `-c` must only be used for [tuning process resource specifications](https://nf-co.re/docs/usage/configuration#tuning-workflow-resources), other infrastructural tweaks (such as output directories), or module arguments (args).
 
-The above pipeline run specified with a params file in yaml format:
+=== "params.json"
 
-```bash
-nextflow run Joon-Klaps/viralgenienienie -profile docker -params-file params.yaml
-```
+    The above pipeline run specified with a params file in yaml format:
 
-with `params.yaml` containing:
+    ```bash
+    nextflow run Joon-Klaps/viralgenie -profile docker -params-file params.yaml
+    ```
 
-```yaml
-input: './samplesheet.csv'
-outdir: './results/'
-genome: 'GRCh37'
-<...>
-```
+    !!! info "`params.yaml` will contain:"
+        ```json
+        {
+            input: "./samplesheet.csv",
+            outdir: "./results/",
+            host_k2_db: "./databases/kraken2/host",
+            mapping_constrains: "./mapping_constrains.tsv",
+            cluster_method: "mmseqs-linclust"
+            ...
+        }
+        ```
+
+=== "command line"
+
+    ```bash
+    nextflow run Joon-Klaps/viralgenie -profile docker \
+        --input ./samplesheet.csv \
+        --outdir ./results/ \
+        --host_k2_db ./databases/kraken2/host \
+        --mapping_constrains ./mapping_constrains.tsv \
+        --cluster_method 'mmseqs-linclust' \
+        ...
+    ```
 
 You can also generate such `YAML`/`JSON` files via [nf-core/launch](https://nf-co.re/launch).
 

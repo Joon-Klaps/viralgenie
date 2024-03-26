@@ -1,0 +1,42 @@
+/* :root {
+  --md-primary-fg-color: #ee0f0f;
+  --md-primary-fg-color--light: #ecb7b7;
+  --md-primary-fg-color--dark: #90030c;
+} */
+:root {
+  --md-primary-fg-color: #4a6c6f;
+  --md-primary-fg-color--light: #4a6c6f;
+  --md-accent-fg-color--light: #4a6c6f;
+
+  mark.critic.block {
+    background-color: #4a6c6f;
+  }
+
+  .md-nav {
+    margin-bottom: 0.9rem;
+  }
+
+  [dir="ltr"] .md-nav--secondary .md-nav__list {
+    padding-left: 1rem;
+  }
+  .md-typeset .admonition,
+  .md-typeset details {
+    font-size: 0.77rem;
+  }
+}
+
+[data-md-color-scheme="slate"] {
+  --md-hue: 210;
+  --md-primary-fg-color: #6a7cf8;
+  --md-primary-fg-color--dark: #6a7cf8;
+  --md-accent-fg-color--dark: #6a7cf8;
+
+  mark.critic.block {
+    background-color: #6a7cf8;
+    color: white;
+  }
+}
+/* Bigger table font size */
+.md-typeset table:not([class]) {
+  font-size: 0.8rem;
+}
