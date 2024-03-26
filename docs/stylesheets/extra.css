@@ -11,6 +11,14 @@
   mark.critic.block {
     background-color: #4a6c6f;
   }
+
+  .md-nav {
+    margin-bottom: 0.9rem;
+  }
+
+  [dir="ltr"] .md-nav--secondary .md-nav__list {
+    padding-left: 1rem;
+  }
 }
 
 [data-md-color-scheme="slate"] {

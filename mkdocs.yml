@@ -9,6 +9,7 @@ nav:
       - "Installation": installation.md
       - "Usage": usage.md
       - "Output": output.md
+      - "Citations": CITATIONS.md
   - Workflow:
       - "Pipeline overview": workflow/overview.md
       - "Preprocessing": workflow/preprocessing.md

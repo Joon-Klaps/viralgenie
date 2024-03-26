@@ -27,6 +27,7 @@ lint:
     - report_comment
   files_exist:
     - .github/CONTRIBUTING.md
+    - CITATIONS.md
     - conf/test.config
     - conf/test_full.config
     - lib/Utils.groovy
