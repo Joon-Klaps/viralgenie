@@ -1,6 +1,6 @@
 ## Installation
 
-Viralgenie uses Nextflow, and a [package/container management system](https://www.nextflow.io/docs/latest/container.html#containers) ([Docker](https://www.docker.com/resources/what-container/), [singularity](https://docs.sylabs.io/guides/latest/user-guide/introduction.html) or [conda](https://docs.conda.io/en/latest/)). Both need to be installed on the system where you launch the analysis.
+Viralgenie uses Nextflow, and a [package/container management system](https://www.nextflow.io/docs/latest/container.html#containers) ([Docker](https://www.docker.com/resources/what-container/), [singularity](https://docs.sylabs.io/guides/latest/user-guide/introduction.html) or [conda](https://docs.conda.io/en/latest/)) so both need to be installed on the system where you launch your analysis.
 
 ### Software managers: Docker, singularity, and conda
 
@@ -21,6 +21,7 @@ Viralgenie can be run using either [Docker](https://www.docker.com/resources/wha
 
     To install Singularity, follow the instructions on the [Singularity website](https://sylabs.io/guides/latest/user-guide/quick_start.html).
 
+
 === "Conda | Mamba"
 
     Conda is a package manager that allows you to install software packages and dependencies in isolated environments. It is a good choice if you are facing issues while installing Docker or Singularity.
@@ -31,12 +32,14 @@ Viralgenie can be run using either [Docker](https://www.docker.com/resources/wha
     !!! warning
         Conda environments are not as reproducible as Docker or Singularity containers. If you encounter issues with Conda, please try running the pipeline with Docker or Singularity first to see if the issue persists.
 
+
+
 ### Nextflow
 
 Nextflow runs on most POSIX systems (Linux, macOS, etc) and requires java 11 or later. It can be installed in several ways, including using the [Nextflow installer](https://www.nextflow.io/docs/latest/getstarted.html#installation) or [Bioconda](https://bioconda.github.io/).
 === "Nextflow installer"
-!!! Tip
-Unsure how to install Nextflow with these commands? Check out the [Nextflow installation documentation](https://www.nextflow.io/docs/latest/getstarted.html#installation) for more information.
+    !!! Tip
+        Unsure how to install Nextflow with these commands? Check out the [Nextflow installation documentation](https://www.nextflow.io/docs/latest/getstarted.html#installation) for more information.
 
     ```console
     # Make sure that Java v11+ is installed:
@@ -58,7 +61,6 @@ Unsure how to install Nextflow with these commands? Check out the [Nextflow inst
         ```console
         sudo mv nextflow /usr/local/bin/
         ```
-
 === "Bioconda"
 
     First, set up Bioconda according to the [Bioconda documentation](https://bioconda.github.io/#usage), notably setting up channels:
@@ -97,6 +99,5 @@ If you have both nextflow and a software manager installed, you are all set! You
 nextflow run Joon-Klaps/viralgenie \
     -profile test,<docker/singularity/.../institute> \
 ```
-
 !!! note
-With the argument `-profile <docker/singularity/.../institute>`, you can specify the container system you want to use. The `test` profile is used to run the pipeline with a small dataset to check if everything is working correctly.
+    With the argument `-profile <docker/singularity/.../institute>`, you can specify the container system you want to use. The `test` profile is used to run the pipeline with a small dataset to check if everything is working correctly.
