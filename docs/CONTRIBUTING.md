@@ -2,7 +2,7 @@
 
 Hi there!
 
-__🤩 Many thanks for taking an interest in improving Viralgenie. 🤩__
+**🤩 Many thanks for taking an interest in improving Viralgenie. 🤩**
 
 We try to manage the required tasks for Viralgenie using GitHub issues, you probably came to this page when creating one.
 Please use the pre-filled template to save time.
@@ -11,8 +11,7 @@ However, don't be put off by this template - other more general issues and sugge
 Contributions to the code are even more welcome ;
 
 !!! info
-    If you need help using or modifying viralgenie then the best place to ask is on the nf-core Slack [Joon-Klaps](https://nfcore.slack.com/team/U043Y6FQR6J).
-
+If you need help using or modifying viralgenie then the best place to ask is on the nf-core Slack [Joon-Klaps](https://nfcore.slack.com/team/U043Y6FQR6J).
 
 ## Contribution workflow
 
@@ -52,10 +51,7 @@ These tests are run both with the latest available version of `Nextflow` and als
 
 ## Patch
 
-!!! Warning "Only in the unlikely and regretful event of a release happening with a bug."
-    -   On your own fork, make a new branch `patch` based on `upstream/master`.
-    -   Fix the bug, and bump version (X.Y.Z+1).
-    -   A PR should be made on `master` from patch to directly this particular bug.
+!!! Warning "Only in the unlikely and regretful event of a release happening with a bug." - On your own fork, make a new branch `patch` based on `upstream/master`. - Fix the bug, and bump version (X.Y.Z+1). - A PR should be made on `master` from patch to directly this particular bug.
 
 ## Getting help
 
@@ -120,4 +116,4 @@ To get started:
 
 Devcontainer specs:
 
--   [DevContainer config](.devcontainer/devcontainer.json)
+-   [DevContainer config](https://github.com/Joon-Klaps/viralgenie/blob/master/.devcontainer/devcontainer.json)

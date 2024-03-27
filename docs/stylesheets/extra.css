@@ -19,6 +19,10 @@
   [dir="ltr"] .md-nav--secondary .md-nav__list {
     padding-left: 1rem;
   }
+  .md-typeset .admonition,
+  .md-typeset details {
+    font-size: 0.77rem;
+  }
 }
 
 [data-md-color-scheme="slate"] {
