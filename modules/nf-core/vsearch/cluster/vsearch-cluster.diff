@@ -1,0 +1,13 @@
+Changes in module 'nf-core/vsearch/cluster'
+--- modules/nf-core/vsearch/cluster/main.nf
++++ modules/nf-core/vsearch/cluster/main.nf
+@@ -1,6 +1,6 @@
+ process VSEARCH_CLUSTER {
+     tag "$meta.id"
+-    label 'process_low'
++    label 'process_high'
+ 
+     conda "${moduleDir}/environment.yml"
+     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+
+************************************************************

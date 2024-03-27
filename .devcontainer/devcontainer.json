@@ -2,6 +2,7 @@
     "name": "nfcore",
     "image": "nfcore/gitpod:latest",
     "remoteUser": "gitpod",
+    "runArgs": ["--privileged"],
 
     // Configure tool-specific properties.
     "customizations": {
@@ -32,13 +33,5 @@
         }
     },
 
-    "postCreateCommand": "pre-commit install --install-hooks && nextflow self-update",
-
-    "features": {
-        "docker-in-docker": {
-            "version": "latest",
-            "moby": true,
-            "dockerDashComposeVersion": "v1"
-        }
-    }
+    "postCreateCommand": "pre-commit install --install-hooks && nextflow self-update && pip install mkdocs-material"
 }

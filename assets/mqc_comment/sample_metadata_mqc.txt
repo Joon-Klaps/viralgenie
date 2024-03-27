@@ -1,0 +1,5 @@
+# id: 'sample_metadata'
+# section_name: 'SAMPLE: Sample metadata'
+# format: 'tsv'
+# description: 'Sample metadata provided through the parameter --metadata'
+# plot_type: 'generalstats'

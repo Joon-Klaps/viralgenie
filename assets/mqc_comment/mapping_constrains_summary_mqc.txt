@@ -1,0 +1,5 @@
+# id: 'Constrain_summary'
+# section_name: 'SAMPLE: Constrained sequences summary'
+# format: 'tsv'
+# description: 'Summary of mapping constrains with each sample in combination with ID or species & segment'
+# plot_type: 'generalstats'

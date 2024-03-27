@@ -1,10 +1,13 @@
 //
 // Create contigs using
 //
-include { SPADES   } from '../../modules/nf-core/spades/main'
-include { TRINITY  } from '../../modules/nf-core/trinity/main'
-include { MEGAHIT  } from '../../modules/nf-core/megahit/main'
-include { CAT_CAT  } from '../../modules/nf-core/cat/cat/main'
+include { SPADES                    } from '../../modules/nf-core/spades/main'
+include { QUAST as QUAST_SPADES     } from '../../modules/nf-core/quast/main'
+include { TRINITY                   } from '../../modules/nf-core/trinity/main'
+include { QUAST as QUAST_TRINITY    } from '../../modules/nf-core/quast/main'
+include { MEGAHIT                   } from '../../modules/nf-core/megahit/main'
+include { QUAST as QUAST_MEGAHIT    } from '../../modules/nf-core/quast/main'
+include { CAT_CAT as CAT_ASSEMBLERS } from '../../modules/nf-core/cat/cat/main'
 
 workflow FASTQ_SPADES_TRINITY_MEGAHIT  {
 
@@ -15,11 +18,9 @@ workflow FASTQ_SPADES_TRINITY_MEGAHIT  {
     ch_spades_hmm   // channel: ['path/to/hmm']
 
     main:
-    ch_versions          = Channel.empty()
-    ch_scaffolds         = reads.map{meta,reads -> [meta]}
-    ch_scaffolds_spades  = Channel.empty()
-    ch_scaffolds_trinity = Channel.empty()
-    ch_scaffolds_megahit = Channel.empty()
+    ch_versions   = Channel.empty()
+    ch_scaffolds  = Channel.empty()
+    ch_multiqc    = Channel.empty()
 
     // SPADES
     if ('spades' in assemblers) {
@@ -31,48 +32,73 @@ workflow FASTQ_SPADES_TRINITY_MEGAHIT  {
             )
 
         ch_versions         = ch_versions.mix(SPADES.out.versions.first())
-        ch_scaffolds_spades = SPADES.out.scaffolds
-        ch_scaffolds        = ch_scaffolds.join(ch_scaffolds_spades,remainder: true)
+        ch_scaffolds        = ch_scaffolds.mix( SPADES.out.scaffolds)
+        spades_filtered     = SPADES.out.scaffolds.filter{ meta, contigs -> contigs.countFasta() > 0 }
+
+        QUAST_SPADES (
+            spades_filtered,
+            [[:],[]],
+            [[:],[]]
+        )
+        ch_versions         = ch_versions.mix(QUAST_SPADES.out.versions.first())
+        ch_multiqc          = ch_multiqc.mix(QUAST_SPADES.out.tsv)
     }
 
     // TRINITY
     if ('trinity' in assemblers) {
         TRINITY(reads)
 
+        TRINITY
+            .out
+            .transcript_fasta
+            .filter{ meta, contigs -> contigs != null } // filter out empty contigs check issue #21
+            .set{trinity_filtered}
+
+        ch_scaffolds         = ch_scaffolds.mix(trinity_filtered)
         ch_versions          = ch_versions.mix(TRINITY.out.versions.first())
-        ch_scaffolds_trinity = TRINITY.out.transcript_fasta
-        ch_scaffolds         = ch_scaffolds.join(ch_scaffolds_trinity,remainder: true)
+
+        QUAST_TRINITY (
+            trinity_filtered,
+            [[:],[]],
+            [[:],[]]
+        )
+
+        ch_versions          = ch_versions.mix(QUAST_TRINITY.out.versions.first())
+        ch_multiqc           = ch_multiqc.mix(QUAST_TRINITY.out.tsv)
     }
 
     // MEGAHIT
     if ('megahit' in assemblers) {
         MEGAHIT(reads)
-
         ch_versions          = ch_versions.mix(MEGAHIT.out.versions.first())
-        ch_scaffolds_megahit = MEGAHIT.out.contigs
-        ch_scaffolds         = ch_scaffolds.join(ch_scaffolds_megahit,remainder: true)
+        ch_scaffolds         = ch_scaffolds.mix(MEGAHIT.out.contigs)
+        megahit_filtered     = MEGAHIT.out.contigs.filter{ meta, contigs -> contigs.countFasta() > 0 }
+
+
+        QUAST_MEGAHIT (
+            megahit_filtered,
+            [[:],[]],
+            [[:],[]]
+        )
+        ch_versions          = ch_versions.mix(QUAST_MEGAHIT.out.versions.first())
+        ch_multiqc           = ch_multiqc.mix(QUAST_MEGAHIT.out.tsv)
     }
 
-    // ch_scaffolds, go from [meta,scaffold1,scaffold2] to [meta,[scaffolds]]
+    // ch_scaffolds, go from [[meta,scaffold1],[meta,scaffold2], ...] to [meta,[scaffolds]]
     ch_scaffolds
-        .map{
-            it ->
-            [it[0],it[1..-1]]
-        }
+        .map { meta, scaffold  -> tuple( groupKey(meta, assemblers.size()), scaffold ) }
+        .groupTuple(remainder: true)
         .set{ch_scaffolds_combined}
 
-    CAT_CAT(ch_scaffolds_combined)
-    ch_versions = CAT_CAT.out.versions.first()
+    CAT_ASSEMBLERS(ch_scaffolds_combined)
+    ch_versions = CAT_ASSEMBLERS.out.versions.first()
 
 
 
     emit:
-    scaffolds            = CAT_CAT.out.file_out      // channel: [ val(meta), [ scaffolds] ]
-    scaffolds_spades     = ch_scaffolds_spades       // channel: [ val(meta), [ scaffolds] ]
-    ch_scaffolds_trinity = ch_scaffolds_trinity      // channel: [ val(meta), [ scaffolds] ]
-    ch_scaffolds_megahit = ch_scaffolds_megahit      // channel: [ val(meta), [ scaffolds] ]
-
-    versions             = ch_versions               // channel: [ versions.yml ]
+    scaffolds            = CAT_ASSEMBLERS.out.file_out      // channel: [ val(meta), [ scaffolds] ]
+    mqc                  = ch_multiqc                       // channel: [ val(meta), [ mqc ] ]
+    versions             = ch_versions                      // channel: [ versions.yml ]
     // there are not any MQC files available for spades, trinity and megahit
 }
 
