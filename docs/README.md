@@ -1,8 +1,15 @@
-# Joon-Klaps/viralgenie: Documentation
+---
+title: Viralgenie
+description: A metagenomics analysis pipeline for eukaryotic viruses written in nextflow
+---
 
-The Joon-Klaps/viralgenie documentation is split into the following pages:
+# ![viralgenie](images/nf-core-viralgenie_logo_dark.png#only-dark)
+# ![viralgenie](images/nf-core-viralgenie_logo_light.png#only-light)
 
--   [Usage](usage.md)
-    -   An overview of how the pipeline works, how to run it and a description of all of the different command-line flags.
--   [Output](output.md)
-    -   An overview of the different results produced by the pipeline and how to interpret them.
+{==
+
+**A metagenomic analysis pipeline for eukaryotic viruses written in nextflow.**
+
+==}
+
+--8<-- "README.md:6:"

@@ -455,7 +455,7 @@ workflow VIRALGENIE {
     ch_blast_summary      = Channel.empty()
     ch_annotation_summary = Channel.empty()
 
-    if ( !params.skip_consensus_qc || (!params.skip_assembly && !params.skip_variant_calling) ) {
+    if ( !params.skip_consensus_qc  && (!params.skip_assembly || !params.skip_variant_calling) ) {
 
         CONSENSUS_QC(
             ch_consensus,
