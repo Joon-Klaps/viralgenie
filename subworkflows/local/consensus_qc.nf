@@ -1,6 +1,7 @@
 include { CHECKV_DOWNLOADDATABASE           } from '../../modules/nf-core/checkv/downloaddatabase/main'
 include { CHECKV_ENDTOEND                   } from '../../modules/nf-core/checkv/endtoend/main'
 include { CAT_CAT as CAT_CAT_QC             } from '../../modules/nf-core/cat/cat/main'
+include { CAT_CAT as CAT_CAT_MMSEQS         } from '../../modules/nf-core/cat/cat/main'
 include { QUAST  as QUAST_QC                } from '../../modules/nf-core/quast/main'
 include { BLAST_BLASTN as BLASTN_QC         } from '../../modules/nf-core/blast/blastn/main'
 include { MAFFT as MAFFT_ITERATIONS         } from '../../modules/nf-core/mafft/main'
@@ -139,9 +140,13 @@ workflow CONSENSUS_QC  {
     }
 
     if ( !params.skip_annotation){
+        ch_genomes_collect = ch_genome.collect{it[1]}.map{files -> [[id:"genomes_combined"], files]}
+        CAT_CAT_MMSEQS(
+            ch_genomes_collect
+        )
         // use MMSEQS easy search to find best hits against annotation db
         MMSEQS_ANNOTATE(
-            ch_genome_collapsed,
+            CAT_CAT_MMSEQS.out.file_out,
             annotation_db
         )
         annotation_txt = MMSEQS_ANNOTATE.out.tsv
