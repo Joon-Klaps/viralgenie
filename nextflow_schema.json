@@ -779,7 +779,7 @@
                 },
                 "annotation_db": {
                     "type": "string",
-                    "default": "${projectDir}/assets/bv-brc-refvirus-anno.withRC.fasta.gz",
+                    "default": "https://viralzone.expasy.org/resources/Virosaurus/2020%5F4/virosaurus90%5Fvertebrate-20200330.fas.gz",
                     "fa_icon": "fas fa-database",
                     "description": "Database used for annotation of the cosensus constructs",
                     "help_text": "The metada fields are stored in the fasta comment as `key1:\"value1\"|key2:\"value2\"|...` see docs/databases.md for more information."
@@ -798,6 +798,13 @@
                     "type": "boolean",
                     "description": "Skip creating an alignment of each the collapsed clusters and each iterative step",
                     "fa_icon": "fas fa-forward"
+                },
+                "mmseqs_searchtype": {
+                    "type": "integer",
+                    "default": 3,
+                    "fa_icon": "fas fa-search",
+                    "description": "Specify the search algorithm to use for mmseqs. 0: auto 1: amino acid, 2: translated, 3: nucleotide, 4: translated nucleotide alignment",
+                    "help_text": "Only search-type 3 supports both forward and reverse search\n1 - BLASTP;\n2 - TBLASTN;\n3 - BLASTN;\n4 - TBLASTX"
                 }
             },
             "fa_icon": "fas fa-balance-scale"
