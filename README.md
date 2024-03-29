@@ -17,6 +17,9 @@
 
 <!-- [![Get help on Slack](http://img.shields.io/badge/slack-nf--core%20%23viralgenie-4A154B?labelColor=000000&logo=slack)](https://nfcore.slack.com/channels/viralgenie)-->
 
+> [!TIP]
+> Make sure to checkout the [viralgenie website](https://joon-klaps.github.io/viralgenie/) for more elaborate documentation!
+
 ## Introduction
 
 **Joon-Klaps/viralgenie** is a bioinformatics best-practice analysis pipeline for reconstructing consensus genomes and to identify intra-host variants from metagenomic sequencing data or enriched based sequencing data like hybrid capture.

@@ -117,7 +117,3 @@ To get started:
 -   Tools installed
     -   nf-core
     -   Nextflow
-
-Devcontainer specs:
-
--   [DevContainer config](.devcontainer/devcontainer.json)
