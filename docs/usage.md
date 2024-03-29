@@ -1,7 +1,5 @@
 # Usage
 
-!!! warning "Please read this documentation on the [Viralgenie website](https://github.io/Joon-Klaps/viralgenie/usage)"
-
 ## Running the pipeline
 
 The typical command for running the pipeline is as follows:

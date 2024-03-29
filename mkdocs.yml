@@ -1,7 +1,7 @@
 site_name: Viralgenie
 repo_name: Joon-Klaps/viralgenie
 repo_url: https://github.com/Joon-Klaps/viralgenie
-# site_url: https://Joon-Klaps.github.io/viralgenie/latest/
+site_url: https://joon-klaps.github.io/viralgenie/
 
 nav:
   - Home:
@@ -104,9 +104,16 @@ markdown_extensions:
 extra:
   version:
     provider: mike
-  # analytics:
-  #   provider: google
-  #   property:
+  analytics:
+    provider: google
+    property: G-DJ9PDTBEEC
+  consent:
+    title: Cookie Consent
+    description: >-
+      We use cookies to recognize your repeated visits and preferences, as well
+      as to measure the effectiveness of our documentation and whether users
+      find what they're searching for. With your consent, you're helping us to
+      make our documentation better.
   social:
     - icon: fontawesome/brands/x-twitter
       link: https://twitter.com/LemeyLab

@@ -176,15 +176,14 @@ workflow VIRALGENIE {
     ch_ref_pool     = Channel.empty()
     ch_blast_refdb  = Channel.empty()
     ch_blast_annodb = Channel.empty()
-    if ( !params.skip_consensus_qc ){
+    if ( !params.skip_consensus_qc || (!params.skip_assembly && !params.skip_polishing) ){
         ch_blastdb_in = Channel.empty()
-        if ((!params.skip_assembly && !params.skip_polishing) ) {
-            // see issue #56
-            SEQKIT_REPLACE (ch_ref_pool_raw)
-            ch_versions   = ch_versions.mix(SEQKIT_REPLACE.out.versions)
-            ch_ref_pool   = SEQKIT_REPLACE.out.fastx
-            ch_blastdb_in = ch_blastdb_in.mix(ch_ref_pool)
-        }
+
+        // see issue #56
+        SEQKIT_REPLACE (ch_ref_pool_raw)
+        ch_versions   = ch_versions.mix(SEQKIT_REPLACE.out.versions)
+        ch_ref_pool   = SEQKIT_REPLACE.out.fastx
+        ch_blastdb_in = ch_blastdb_in.mix(ch_ref_pool)
 
         // if ( !params.skip_annotation){
         //     ch_blastdb_in = ch_blastdb_in.mix(ch_annotation_db)

@@ -23,6 +23,7 @@ process MMSEQS_EASYSEARCH {
     def args = task.ext.args ?: ''
     def args2 = task.ext.args2 ?: "*.dbtype"
     prefix = task.ext.prefix ?: "${meta.id}"
+    strand_search = args.contains("--search-type 3") ? "--strand 2" : ""
     """
     mkdir -p ${prefix}
 
@@ -36,6 +37,7 @@ process MMSEQS_EASYSEARCH {
         ${prefix}.tsv \\
         tmp1 \\
         $args \\
+        $strand_search \\
         --threads ${task.cpus} \\
         --compressed 1
 

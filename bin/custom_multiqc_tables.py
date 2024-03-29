@@ -174,7 +174,7 @@ def check_file_exists(file, throw_error=True):
             logger.warning("The given input file %s was not found!", file)
             return False
     elif not os.stat(file).st_size > 0:
-        logger.warning("The given input file %s is empty, it will not be used!", file)
+        # logger.warning("The given input file %s is empty, it will not be used!", file)
         return False
     return True
 
@@ -399,6 +399,9 @@ def read_file_to_dataframe(file, **kwargs):
         df = read_dataframe_from_csv(file_path, **kwargs)
     elif file_path.suffix in [".yaml", ".yml"]:
         df = read_dataframe_from_yaml(file_path, **kwargs)
+    else:
+        logger.error("The file format %s is not supported of file %s!", file_path.suffix, file_path)
+        sys.exit(2)
     return df
 
 
@@ -934,7 +937,6 @@ def main(argv=None):
         mqc_contigs_sel = mqc_contigs_sel[
             mqc_contigs_sel["index"].str.contains("_", na=False)
         ]
-        print(reorder_columns(mqc_contigs_sel, ["index"]))
         mqc_contigs_sel[["sample name", "cluster", "step"]] = mqc_contigs_sel[
             "index"
         ].str.split("_", n=3, expand=True)
