@@ -107,6 +107,20 @@ extra:
   analytics:
     provider: google
     property: G-DJ9PDTBEEC
+    feedback:
+      title: Was this page helpful?
+      ratings:
+        - icon: material/heart
+          name: This page was helpful
+          data: 1
+          note: >-
+            Thanks for your feedback!
+        - icon: material/heart-broken
+          name: This page could be improved
+          data: 0
+          note: >-
+            Thanks for your feedback! Help us improve this page by
+            submitting an <a href="https://github.com/Joon-Klaps/viralgenie/issues/new/?title=[Feedback]+{title}+-+{url}" target="_blank" rel="noopener">issue</a>.
   consent:
     title: Cookie Consent
     description: >-
