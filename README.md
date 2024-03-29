@@ -23,9 +23,7 @@
 
 ## Pipeline summary
 
-![viral-genie-workflow](images/metromap_style_pipeline_workflow_viralgenie.png)
-
-Tools given for each step can change as benchmarking is in progress.
+![viralgenie-workflow](docs/images/metromap_style_pipeline_workflow_viralgenie.png)
 
 1. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/))
 2. Performs optional read pre-processing
