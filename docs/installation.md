@@ -2,6 +2,9 @@
 
 Viralgenie uses Nextflow, and a [package/container management system](https://www.nextflow.io/docs/latest/container.html#containers) ([Docker](https://www.docker.com/resources/what-container/), [singularity](https://docs.sylabs.io/guides/latest/user-guide/introduction.html) or [conda](https://docs.conda.io/en/latest/)) so both need to be installed on the system where you launch your analysis.
 
+!!! Tip "New to bioinformatics?"
+    If the word "terminal" brings to mind an airport boarding area, you can become a little lost. [This blogpost](https://www.nextflow.io/blog/2021/setup-nextflow-on-windows.html) (up until Configuring an Xserver ...) will help you setup nextflow and docker on a windows computer, if you are new to bioinformatics.
+
 ### Software managers: Docker, singularity, and conda
 
 Viralgenie can be run using either [Docker](https://www.docker.com/resources/what-container/), [singularity](https://docs.sylabs.io/guides/latest/user-guide/introduction.html) or [conda](https://docs.conda.io/en/latest/). The choice of container system is up to the user, but it is important to note that Docker and Singularity are the most reproducible. Nextflow supports more containers in addition to Docker and Singularity, such as Podman, Shifter, and Charliecloud. You can read the full list of supported containers and how to set them up [here](https://www.nextflow.io/docs/latest/container.html#containers).
@@ -100,4 +103,4 @@ nextflow run Joon-Klaps/viralgenie \
     -profile test,<docker/singularity/.../institute> \
 ```
 !!! note
-    With the argument `-profile <docker/singularity/.../institute>`, you can specify the container system you want to use. The `test` profile is used to run the pipeline with a small dataset to check if everything is working correctly.
+    With the argument `-profile <docker/singularity/.../institute>`, you can specify the container system you want to use. The `test` profile is used to run the pipeline with a small dataset to verify if everything is working correctly.

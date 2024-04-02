@@ -5,7 +5,7 @@ Try out the pipeline right now!
 ```bash
 nextflow run Joon-Klaps/viralgenie -profile test,docker
 ```
-> Make sure you have [Nextflow](https://nf-co.re/docs/usage/installation) and [Docker](https://docs.docker.com/get-docker/) installed. See the [installation instructions](installation.md) for more info.
+> Make sure you have [Nextflow](https://nf-co.re/docs/usage/installation) and a container manager (for example, [Docker](https://docs.docker.com/get-docker/)) installed. See the [installation instructions](installation.md) for more info.
 
 ## Input
 ### Samples

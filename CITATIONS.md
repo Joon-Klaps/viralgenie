@@ -1,6 +1,6 @@
 # Citations
 
-!!! Warning "INCOMPLETE, YET TO BE WRITTEN"
+!!! Warning "INCOMPLETE, WORK IN PROGRESS"
 
 ## [nf-core](https://pubmed.ncbi.nlm.nih.gov/32055031/)
 
@@ -12,29 +12,82 @@
 
 ## Pipeline tools
 
--   [FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/)
+- [Bbduk](https://jgi.doe.gov/data-and-tools/software-tools/bbtools/bb-tools-user-guide/bbduk-guide/)
+
+    > Bushnell B. (2022) BBMap, URL: http://sourceforge.net/projects/bbmap/
+
+- [cdhit](https://pubmed.ncbi.nlm.nih.gov/23060610/)
+
+    > Fu, Limin et al. “CD-HIT: accelerated for clustering the next-generation sequencing data.” Bioinformatics (Oxford, England) vol. 28,23 (2012): 3150-2. doi:10.1093/bioinformatics/bts565
+
+- [FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/)
 
     > Andrews, S. (2010). FastQC: A Quality Control Tool for High Throughput Sequence Data [Online].
 
--   [fastp](https://github.com/OpenGene/fastp)
+- [fastp](https://github.com/OpenGene/fastp)
 
-    > Chen S, Zhou Y, Chen Y, Gu J. fastp: an ultra-fast all-in-one FASTQ preprocessor. Bioinformatics. 2018 Sep 1;34(17):i884-i890. doi: 10.1093/bioinformatics/bty560. PMID: 30423086; PMCID: PMC6129281.
+    > Chen, Shifu et al. “fastp: an ultra-fast all-in-one FASTQ preprocessor.” Bioinformatics (Oxford, England) vol. 34,17 (2018): i884-i890. doi:10.1093/bioinformatics/bty560
 
--   [Trimmomatic](https://github.com/usadellab/Trimmomatic)
+- [iVar](https://www.ncbi.nlm.nih.gov/pubmed/30621750/)
 
-    > Bolger AM, Lohse M, Usadel B. Trimmomatic: a flexible trimmer for Illumina sequence data. Bioinformatics. 2014 Aug 1;30(15):2114-20. doi: 10.1093/bioinformatics/btu170. Epub 2014 Apr 1. PMID: 24695404; PMCID: PMC4103590.
+    > Grubaugh, Nathan D et al. “An amplicon-based sequencing framework for accurately measuring intrahost virus diversity using PrimalSeq and iVar.” Genome biology vol. 20,1 8. 8 Jan. 2019, doi:10.1186/s13059-018-1618-7
 
--  [Bbduk](https://jgi.doe.gov/data-and-tools/software-tools/bbtools/bb-tools-user-guide/bbduk-guide/)
+- [Kaiju](https://pubmed.ncbi.nlm.nih.gov/27071849/)
 
-   > Bushnell B. (2022) BBMap, URL: http://sourceforge.net/projects/bbmap/
+    > Menzel, Peter et al. “Fast and sensitive taxonomic classification for metagenomics with Kaiju.” Nature communications vol. 7 11257. 13 Apr. 2016, doi:10.1038/ncomms11257
 
--  [Kraken2](https://doi.org/10.1186/s13059-019-1891-0)
+- [Kraken2](https://doi.org/10.1186/s13059-019-1891-0)
 
     > Wood, Derrick E., Jennifer Lu, and Ben Langmead. 2019. Improved Metagenomic Analysis with Kraken 2. Genome Biology 20 (1): 257. doi: 10.1186/s13059-019-1891-0.
 
--   [MultiQC](https://pubmed.ncbi.nlm.nih.gov/27312411/)
+- [leiden-algorithm](https://pubmed.ncbi.nlm.nih.gov/30914743/)
 
-    > Ewels P, Magnusson M, Lundin S, Käller M. MultiQC: summarize analysis results for multiple tools and samples in a single report. Bioinformatics. 2016 Oct 1;32(19):3047-8. doi: 10.1093/bioinformatics/btw354. Epub 2016 Jun 16. PubMed PMID: 27312411; PubMed Central PMCID: PMC5039924.
+    > Traag, V A et al. “From Louvain to Leiden: guaranteeing well-connected communities.” Scientific reports vol. 9,1 5233. 26 Mar. 2019, doi:10.1038/s41598-019-41695-z
+
+- [Mash](https://pubmed.ncbi.nlm.nih.gov/27323842/)
+
+    > Ondov, Brian D et al. “Mash: fast genome and metagenome distance estimation using MinHash.” Genome biology vol. 17,1 132. 20 Jun. 2016, doi:10.1186/s13059-016-0997-x
+
+- [Megahit](https://pubmed.ncbi.nlm.nih.gov/27012178/)
+
+    > Li, Dinghua et al. “MEGAHIT v1.0: A fast and scalable metagenome assembler driven by advanced methodologies and community practices.” Methods (San Diego, Calif.) vol. 102 (2016): 3-11. doi:10.1016/j.ymeth.2016.02.020
+
+- [Minimap2](https://pubmed.ncbi.nlm.nih.gov/29750242/)
+
+    > Li, Heng. “Minimap2: pairwise alignment for nucleotide sequences.” Bioinformatics (Oxford, England) vol. 34,18 (2018): 3094-3100. doi:10.1093/bioinformatics/bty191
+
+- [MMseqs2](https://pubmed.ncbi.nlm.nih.gov/29035372/)
+
+    > Steinegger, Martin, and Johannes Söding. “MMseqs2 enables sensitive protein sequence searching for the analysis of massive data sets.” Nature biotechnology vol. 35,11 (2017): 1026-1028. doi:10.1038/nbt.3988
+
+- [MultiQC](https://pubmed.ncbi.nlm.nih.gov/27312411/)
+
+    > Ewels, Philip et al. “MultiQC: summarize analysis results for multiple tools and samples in a single report.” Bioinformatics (Oxford, England) vol. 32,19 (2016): 3047-8. doi:10.1093/bioinformatics/btw354
+
+- [QUAST](https://www.ncbi.nlm.nih.gov/pubmed/23422339/)
+
+    > Gurevich, Alexey et al. “QUAST: quality assessment tool for genome assemblies.” Bioinformatics (Oxford, England) vol. 29,8 (2013): 1072-5. doi:10.1093/bioinformatics/btt086
+
+- [SPAdes](https://www.ncbi.nlm.nih.gov/pubmed/24093227/)
+
+    > Bankevich, Anton et al. “SPAdes: a new genome assembly algorithm and its applications to single-cell sequencing.” Journal of computational biology : a journal of computational molecular cell biology vol. 19,5 (2012): 455-77. doi:10.1089/cmb.2012.0021
+
+- [Trimmomatic](https://pubmed.ncbi.nlm.nih.gov/24695404/)
+
+    > Bolger, Anthony M et al. “Trimmomatic: a flexible trimmer for Illumina sequence data.” Bioinformatics (Oxford, England) vol. 30,15 (2014): 2114-20. doi:10.1093/bioinformatics/btu170
+
+- [Trinity](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3571712/)
+
+    > Haas, Brian J et al. “De novo transcript sequence reconstruction from RNA-seq using the Trinity platform for reference generation and analysis.” Nature protocols vol. 8,8 (2013): 1494-512. doi:10.1038/nprot.2013.084
+
+- [vRhyme](https://pubmed.ncbi.nlm.nih.gov/35544285/)
+
+    > Kieft, Kristopher et al. “vRhyme enables binning of viral genomes from metagenomes.” Nucleic acids research vol. 50,14 (2022): e83. doi:10.1093/nar/gkac341
+
+- [VSEARCH](https://pubmed.ncbi.nlm.nih.gov/27521926/)
+
+    > Rognes, Torbjørn et al. “VSEARCH: a versatile open source tool for metagenomics.” PeerJ vol. 4 e2584. 18 Oct. 2016, doi:10.7717/peerj.2584
+
 
 ## Software packaging/containerisation tools
 
