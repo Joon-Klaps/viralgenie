@@ -1,14 +1,21 @@
 
 # Assembly & polishing
 
-Viralgenie offers an elaborate workflow for the assembly and polishing of viral genomes. Viralgenie combines the results of multiple assemblers, creates bins of viral contigs and creates a consensus of each bin which is used as a input for the [iterative refinement workflow](./iterative_refinement.md).
+Viralgenie offers an elaborate workflow for the assembly and polishing of viral genomes:
+
+- [Assembly](#assembly): combining the results of multiple assemblers.
+- [Reference Matching](#reference-matching): comparing the newly assembled contigs to a reference sequence pool.
+- [Clustering](#clustering): clustering the contigs based on taxonomy and similarity.
+- [Scaffolding](#scaffolding): scaffolding the contigs to the centroid of each bin.
+- [Annotation with Reference](#annotation-with-reference): annotating regions with 0-depth coverage with the reference sequence.
 
 ![assembly_polishing](../images/assembly_polishing.png)
 
-> The overal workflow of creating reference assisted assemblies can be skipped with the argument `--skip_assembly`.
+> The overal workflow of creating reference assisted assemblies can be skipped with the argument `--skip_assembly`. See the [parameters assembly section](../parameters.md#assembly) for all relevant arguments to control the assembly steps.
 
-> The overall refinement of contigs can be skipped with the argument `--skip_polishing`.
+> The overall refinement of contigs can be skipped with the argument `--skip_polishing`. See the [parameters polishing section](../parameters.md#polishing) for all relevant arguments to control the polishing steps.
 
+The consensus genome of all clusters are then send to the [variant analysis & iterative refinement](iterative_refinement.md) step.
 
 ## Assembly
 Three assemblers are used, [SPAdes](http://cab.spbu.ru/software/spades/), [Megahit](https://github.com/voutcn/megahit), and [Trinity](https://github.com/trinityrnaseq/trinityrnaseq). The resulting contigs of all specified assemblers, are combined and processed further together.

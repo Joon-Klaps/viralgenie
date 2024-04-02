@@ -1,11 +1,11 @@
-# Joon-Klaps/viralgenie: Databases
+# Databases
 
 ## Introduction
 
 Viralgenie uses a multitude of databases in order to analyse reads, contigs and consensus constructs. The default databases will be sufficient in most cases but there are always exceptions. This document will guide you towards the right documentation location for creating your custom databases.
 
 !!! Tip
-    Keep an eye out for [nf-core createtaxdb](https://nf-co.re/createtaxdb/) as it can be used for the customization of the main databases but is still under development.
+    Keep an eye out for [nf-core createtaxdb](https://nf-co.re/createtaxdb/) as it can be used for the customization of the main databases but the pipeline is still under development.
 
 ## Reference pool
 
