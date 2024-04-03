@@ -1,11 +1,11 @@
-## Installation
+# Installation
 
 Viralgenie uses Nextflow, and a [package/container management system](https://www.nextflow.io/docs/latest/container.html#containers) ([Docker](https://www.docker.com/resources/what-container/), [singularity](https://docs.sylabs.io/guides/latest/user-guide/introduction.html) or [conda](https://docs.conda.io/en/latest/)) so both need to be installed on the system where you launch your analysis.
 
 !!! Tip "New to bioinformatics?"
     If the word "terminal" brings to mind an airport boarding area, you can become a little lost. [This blogpost](https://www.nextflow.io/blog/2021/setup-nextflow-on-windows.html) (up until Configuring an Xserver ...) will help you setup nextflow and docker on a windows computer, if you are new to bioinformatics.
 
-### Software managers: Docker, singularity, and conda
+## Software managers: Docker, singularity, and conda
 
 Viralgenie can be run using either [Docker](https://www.docker.com/resources/what-container/), [singularity](https://docs.sylabs.io/guides/latest/user-guide/introduction.html) or [conda](https://docs.conda.io/en/latest/). The choice of container system is up to the user, but it is important to note that Docker and Singularity are the most reproducible. Nextflow supports more containers in addition to Docker and Singularity, such as Podman, Shifter, and Charliecloud. You can read the full list of supported containers and how to set them up [here](https://www.nextflow.io/docs/latest/container.html#containers).
 
@@ -37,7 +37,7 @@ Viralgenie can be run using either [Docker](https://www.docker.com/resources/wha
 
 
 
-### Nextflow
+## Nextflow
 
 Nextflow runs on most POSIX systems (Linux, macOS, etc) and requires java 11 or later. It can be installed in several ways, including using the [Nextflow installer](https://www.nextflow.io/docs/latest/getstarted.html#installation) or [Bioconda](https://bioconda.github.io/).
 === "Nextflow installer"
@@ -94,7 +94,7 @@ Nextflow runs on most POSIX systems (Linux, macOS, etc) and requires java 11 or 
     > conda install nextflow
     > ```
 
-### Viralgenie
+## Viralgenie
 
 If you have both nextflow and a software manager installed, you are all set! You can test the pipeline using the following command:
 
