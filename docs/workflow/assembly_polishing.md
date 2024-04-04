@@ -78,7 +78,7 @@ These methods all come with their own advantages and disadvantages. For example,
 
 > The network clustering method for `mash` can be specified with the `--network_clustering` parameter. The default is `connected_components`, alternative is [`leiden`]().
 
-> The similarity threshold can be specified with the `--similarity_threshold` parameter. The default is `0.6`.
+> The similarity threshold can be specified with the `--similarity_threshold` parameter. The default is `0.6`. However, for cdhit the default is `0.8` which is its minimum value.
 
 ## Scaffolding
 
