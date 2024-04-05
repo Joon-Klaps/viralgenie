@@ -9,6 +9,8 @@ Viralgenie uses Nextflow, and a [package/container management system](https://ww
 
 Viralgenie can be run using either [Docker](https://www.docker.com/resources/what-container/), [singularity](https://docs.sylabs.io/guides/latest/user-guide/introduction.html) or [conda](https://docs.conda.io/en/latest/). The choice of container system is up to the user, but it is important to note that Docker and Singularity are the most reproducible. Nextflow supports more containers in addition to Docker and Singularity, such as Podman, Shifter, and Charliecloud. You can read the full list of supported containers and how to set them up [here](https://www.nextflow.io/docs/latest/container.html#containers).
 
+When using these containers, Nextflow will use the manager for each process that is executed. In other words, Nextflow will be using `docker run` or `singularity exec` without the need for you to do anything else.
+
 === "Docker"
 
     Docker is a containerisation system that allows you to package your code, tools and data into a single image that can be run on most operating systems. It is the most widely used containerisation system in bioinformatics.
@@ -32,8 +34,8 @@ Viralgenie can be run using either [Docker](https://www.docker.com/resources/wha
     - To install Conda, follow the instructions on the [Conda website](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html).
     - To install Mamba, a faster alternative to Conda, follow the instructions on the [Mamba miniforge website](https://github.com/conda-forge/miniforge/blob/main/README.md#install).
 
-    !!! warning
-        Conda environments are not as reproducible as Docker or Singularity containers. If you encounter issues with Conda, please try running the pipeline with Docker or Singularity first to see if the issue persists.
+    !!! warning Containter systems are better then Conda
+        Conda environments are great! However, conda tools can easily become broken or incompatible due to dependency issues. For this reason, conda is not as reproducible as Docker or Singularity containers. If you encounter issues with Conda, please try running the pipeline with Docker or Singularity first to see if the issue persists. In other words, if you have a container system, use it over conda!
 
 
 
@@ -104,3 +106,6 @@ nextflow run Joon-Klaps/viralgenie \
 ```
 !!! note
     With the argument `-profile <docker/singularity/.../institute>`, you can specify the container system you want to use. The `test` profile is used to run the pipeline with a small dataset to verify if everything is working correctly.
+
+!!! danger "Apple silicon (ARM)"
+    If you are using an Apple silicon (ARM) machine, you may encounter issues. Most tools are not yet compatible with ARM architecture, therefore conda will most likely fail. In this case, use Docker in combination with wave.

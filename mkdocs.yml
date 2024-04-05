@@ -15,7 +15,7 @@ nav:
       - "Preprocessing": workflow/preprocessing.md
       - "Metagenomic diversity": workflow/metagenomic_diversity.md
       - "Assembly & Polishing": workflow/assembly_polishing.md
-      - "Variant analysis & Iterative refinement": workflow/iterative_refinement.md
+      - "Variant analysis & Iterative refinement": workflow/variant_and_refinement.md
       - "Consensus evaluation": workflow/consensus_qc.md
   - Parameters: "parameters.md"
   - Customisation:
