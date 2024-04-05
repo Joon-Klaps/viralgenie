@@ -16,6 +16,11 @@
     margin-bottom: 0.9rem;
   }
 
+  .center {
+    display: block;
+    margin: 0 auto;
+  }
+
   [dir="ltr"] .md-nav--secondary .md-nav__list {
     padding-left: 1rem;
   }

@@ -13,7 +13,7 @@ nav:
   - Workflow:
       - "Pipeline overview": workflow/overview.md
       - "Preprocessing": workflow/preprocessing.md
-      - "Read classification": workflow/read_classification.md
+      - "Metagenomic diversity": workflow/metagenomic_diversity.md
       - "Assembly & Polishing": workflow/assembly_polishing.md
       - "Variant analysis & Iterative refinement": workflow/iterative_refinement.md
       - "Consensus evaluation": workflow/consensus_qc.md

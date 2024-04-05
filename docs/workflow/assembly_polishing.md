@@ -76,7 +76,7 @@ These methods all come with their own advantages and disadvantages. For example,
 
 > The clustering method can be specified with the `--clustering_method` parameter. The default is `mash`.
 
-> The network clustering method for `mash` can be specified with the `--network_clustering` parameter. The default is `connected_components`, alternative is [`leiden`]().
+> The network clustering method for `mash` can be specified with the `--network_clustering` parameter. The default is `connected_components`, alternative is [`leiden`](https://www.nature.com/articles/s41598-019-41695-z).
 
 > The similarity threshold can be specified with the `--similarity_threshold` parameter. The default is `0.6`. However, for cdhit the default is `0.8` which is its minimum value.
 
@@ -89,4 +89,4 @@ After classifying all contigs and their top BLAST hits into distinct clusters or
 
 Regions with 0-depth coverage are annotated with the reference sequence. This is done with a custom script that uses the coverage of the denovo contigs towards the reference sequence to identify regions with 0-depth coverage. The reference sequence is then annotated to these regions.
 
-> This step can be skipped using `--custom_script` parameter. The default is `annotate_0depth.py`.
+> This step can be skipped using `--skip_hybrid_consensus` parameter.
