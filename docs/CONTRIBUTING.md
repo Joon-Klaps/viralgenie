@@ -49,12 +49,12 @@ Viralgenie is set up with a minimal set of test-data.
 If there are any failures then the automated tests fail.
 These tests are run both with the latest available version of `Nextflow` and also the minimum required version that is stated in the pipeline code.
 
-## Patch
+<!-- ## Patch
 
 !!! Warning "Only in the unlikely and regretful event of a release happening with a bug."
     - On your own fork, make a new branch `patch` based on `upstream/master`.
     - Fix the bug, and bump version (X.Y.Z+1).
-    - A PR should be made on `master` from patch to directly this particular bug.
+    - A PR should be made on `master` from patch to directly this particular bug. -->
 
 ## Getting help
 

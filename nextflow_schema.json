@@ -522,7 +522,7 @@
             "fa_icon": "fas fa-layer-group"
         },
         "genome_qc": {
-            "title": "Genome QC",
+            "title": "Consensus QC",
             "type": "object",
             "description": "Apply different quality control techniques on the generated consensus genomes",
             "default": "",

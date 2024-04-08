@@ -102,14 +102,28 @@ If you have both nextflow and a software manager installed, you are all set! You
 
 ```bash
 nextflow run Joon-Klaps/viralgenie \
-    -profile test,<docker/singularity/.../institute> \
+    -profile test,<docker/singularity/.../institute>
 ```
 !!! note
     With the argument `-profile <docker/singularity/.../institute>`, you can specify the container system you want to use. The `test` profile is used to run the pipeline with a small dataset to verify if everything is working correctly.
 
+!!! Tip "Running nextflow on a High performance computing (HPC) system?"
+    You might not be the first person to run a nextflow pipeline on your infrastructure! Check out the [nf-core configuration website](https://nf-co.re/configs) as it might already contain a specific configuration for your infrastructure.
+
 !!! danger "Apple silicon (ARM)"
-    If you are using an Apple silicon (ARM) machine, you may encounter issues. Most tools are not yet compatible with ARM architecture, therefore conda will most likely fail. In this case, use Docker in combination with the profile `arm`. Hence it will be:
+    If you are using an Apple silicon (ARM) machine, you may encounter issues. Most tools are not yet compatible with ARM architecture, therefore conda will most likely fail. In this case, use Docker in combination with the profile `arm`.
     ```bash
     nextflow run Joon-Klaps/viralgenie \
         -profile test,docker,arm
     ```
+    If you still encounter issues, you can setup a nextflow tower account and run the pipeline with [wave containers](https://www.nextflow.io/docs/latest/wave.html). In this config file, supply the following:
+    ```groovy
+    wave {
+        enabled = true
+        wave.strategy = ['dockerfile']
+    }
+    tower {
+        accessToken = '<your access token>'
+    }
+    ```
+

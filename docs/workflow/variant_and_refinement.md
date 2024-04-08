@@ -80,10 +80,24 @@ Viralgenie uses multiple tools to get statitics on the variants and on the read 
 
 There is a little overlap between the tools, but they all provide a different perspective on the mapping statistics.
 
-> By default, all these tools are run, but they can be skipped with the argument `--mapping_stats false`. In case the intermediate mapping statistics (for intermediate refinement cycles) don't need to be determined, `--mapping_stats`.
+> By default, all these tools are run, but they can be skipped with the argument `--mapping_stats false`. In case the intermediate mapping statistics (for intermediate refinement cycles) don't need to be determined set `--intermediate_mapping_stats false`.
 
 ## Consensus calling
 
-The consensus genome is updated with the variants of sufficient quality, either the ones determined previously in variant [calling](#variant-calling) and [filtering](#variant-filtering) for the `--consensus_caller` `bcftools` or they are redetermined for `ivar`.
+The consensus genome is updated with the variants of sufficient quality, either the ones determined previously in variant [calling](#variant-calling) and [filtering](#variant-filtering) for the `--consensus_caller` [`bcftools`](https://samtools.github.io/bcftools/bcftools.html#consensus) or they are redetermined for [`ivar`](https://andersen-lab.github.io/ivar/html/manualpage.html#autotoc_md19).
+
+There are again a couple of differences between the iVar and BCFtools:
+
+1.	Low frequency deletions in iVar.
+> Area’s of low frequency are more easily deleted and not carried along with iVar, this can be a bad thing during the iterative improvement of the consensus but is a good thing at the final consensus step.
+2. Ambiguous nucleotides for multi-allelic sites in iVar.
+> iVar is capable to give lower frequency nucleotides ambiguous bases a summarising annotation instead of 'N'. For example at a certain position, the frequency of 'A' is 40% and of 'G' is 40%. Instead of reporting an 'N', iVar will report 'R'.
+>
+> ![multi-allelic sites ivar vs bcftools](../images/multi_allelic_sites_ivar_vs_bcftools.png){.center}
+3. Ambiguous nucleotides for low read depth.
+> In case of a low read depth at a certain position, if it doesn't get flagged by bcftools during variant calling, it will not be considered as a variant and the consensus will not be updated. iVar will update the consensus with an ambiguous base in case of low read depth.
+>
+> ![low depth ivar vs bcftools](../images/low_depth_ivar_vs_bcftools.png){.center}
 
 
+> The consensus caller can be specified with the `--consensus_caller` parameter, the default is `ivar`. The intermediate consensus caller (for intermediate refinement cycles) can be specififed with `--intermediate_consensus_caller` and is by default `bcftools`.

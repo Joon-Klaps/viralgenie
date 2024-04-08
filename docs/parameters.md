@@ -125,7 +125,7 @@ Parameters relating to the analysis of variants associated to contigs and scaffo
 | `multiqc_comment_headers` | Directory containing the mutliqc headers for multiple tables like 'clusters_summary_mqc.txt', 'blast_mqc.txt', ... | ${projectDir}/assets/mqc_comment |
 | `ivar_header` |  |  |
 
-## Genome QC
+## Consensus QC
 
 Apply different quality control techniques on the generated consensus genomes
 
