@@ -15,7 +15,7 @@ Viralgenie offers an elaborate workflow for the assembly and polishing of viral 
 
 > The overall refinement of contigs can be skipped with the argument `--skip_polishing`. See the [parameters polishing section](../parameters.md#polishing) for all relevant arguments to control the polishing steps.
 
-The consensus genome of all clusters are then send to the [variant analysis & iterative refinement](iterative_refinement.md) step.
+The consensus genome of all clusters are then send to the [variant analysis & iterative refinement](variant_and_refinement.md) step.
 
 ## Assembly
 Three assemblers are used, [SPAdes](http://cab.spbu.ru/software/spades/), [Megahit](https://github.com/voutcn/megahit), and [Trinity](https://github.com/trinityrnaseq/trinityrnaseq). The resulting contigs of all specified assemblers, are combined and processed further together.
@@ -72,7 +72,7 @@ The clustering is performed with one of the following tools:
 These methods all come with their own advantages and disadvantages. For example, cdhitest is very fast but cannot be used for large viruses >10Mb and similarity threshold cannot go below 80% which is not preferable for highly diverse RNA viruses. Vsearch is slower but accurate. Mmseqs-linclust is the fastest but tends to create a large amount of bins. Mmseqs-cluster is slower but can handle larger datasets and is more accurate. vRhyme is a new method that is still under development but has shown promising results but can sometimes not output any bins when segments are small. Mash is a very fast comparison method is linked with a custom script that identifies communities within a network.
 
 !!! Tip
-    When pre-clustering is performed, it is recommended to set a lower identity_threshold (60% ANI) as the new goal becomes to separate genome segments within the same bin.
+    When pre-clustering is performed, it is recommended to set a lower identity_threshold (60-70% ANI) as the new goal becomes to separate genome segments within the same bin.
 
 > The clustering method can be specified with the `--clustering_method` parameter. The default is `mash`.
 
@@ -87,6 +87,6 @@ After classifying all contigs and their top BLAST hits into distinct clusters or
 
 ## Annotation with Reference
 
-Regions with 0-depth coverage are annotated with the reference sequence. This is done with a custom script that uses the coverage of the denovo contigs towards the reference sequence to identify regions with 0-depth coverage. The reference sequence is then annotated to these regions.
+Regions with 0-depth coverage are annotated with the reference sequence. This is done with a [custom script](https://github.com/Joon-Klaps/viralgenie/blob/dev/bin/lowcov_to_reference.py) that uses the coverage of the denovo contigs towards the reference sequence to identify regions with 0-depth coverage. The reference sequence is then annotated to these regions.
 
 > This step can be skipped using `--skip_hybrid_consensus` parameter.

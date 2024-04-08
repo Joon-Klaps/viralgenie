@@ -108,4 +108,8 @@ nextflow run Joon-Klaps/viralgenie \
     With the argument `-profile <docker/singularity/.../institute>`, you can specify the container system you want to use. The `test` profile is used to run the pipeline with a small dataset to verify if everything is working correctly.
 
 !!! danger "Apple silicon (ARM)"
-    If you are using an Apple silicon (ARM) machine, you may encounter issues. Most tools are not yet compatible with ARM architecture, therefore conda will most likely fail. In this case, use Docker in combination with wave.
+    If you are using an Apple silicon (ARM) machine, you may encounter issues. Most tools are not yet compatible with ARM architecture, therefore conda will most likely fail. In this case, use Docker in combination with the profile `arm`. Hence it will be:
+    ```bash
+    nextflow run Joon-Klaps/viralgenie \
+        -profile test,docker,arm
+    ```

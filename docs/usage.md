@@ -10,7 +10,7 @@ nextflow run Joon-Klaps/viralgenie -profile test,docker
 ## Input
 ### Samples
 
-The pipeline requires a samplesheet as input. This file should contain information about the samples you would like to analyse.
+The pipeline requires a samplesheet as input. This samplesheet should contain the name and the absolute locations of reads.
 
 ```bash
 --input '[path to samplesheet file]'
