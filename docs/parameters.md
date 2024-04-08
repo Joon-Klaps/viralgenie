@@ -107,7 +107,7 @@ Define parameters for iterations to update denovo consensus using  reference bas
 | `consensus_caller` | consensus tool used for calling new consensus in final iteration | ivar |
 | `call_intermediate_variants` | call variants during the iterations <details><summary>Help</summary><small>Will always be done when iterative consensus caller is bcftools</small></details>|  |
 | `intermediate_consensus_caller` | consensus tool used for calling new consensus during iterations | bcftools |
-| `get_intermediate_stats` | calculate summary statistics during iterations | True |
+| `intermediate_mapping_stats` | calculate summary statistics during iterations | True |
 
 ## Variant analysis
 
@@ -121,7 +121,7 @@ Parameters relating to the analysis of variants associated to contigs and scaffo
 | `deduplicate` | deduplicate the reads <details><summary>Help</summary><small>If used with umi's, `umi tools` will be used to group and call consensus of each indiual read group. If not used with umi's use `PicardsMarkDuplicates`. </small></details>| True |
 | `variant_caller` |  | ivar |
 | `min_mapped_reads` |  | 200 |
-| `get_stats` | calculate summary statistics in final iteration | True |
+| `mapping_stats` | calculate summary statistics in final iteration | True |
 | `multiqc_comment_headers` | Directory containing the mutliqc headers for multiple tables like 'clusters_summary_mqc.txt', 'blast_mqc.txt', ... | ${projectDir}/assets/mqc_comment |
 | `ivar_header` |  |  |
 

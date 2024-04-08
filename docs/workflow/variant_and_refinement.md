@@ -18,9 +18,9 @@ The variant calling and consensus refinement step consists of the following step
 
 - [Mapping of reads](#mapping-of-reads): (un)filtered but trimmed reads are mapped to the reference.
 - [Deduplication](#deduplication): (optional) deduplication of reads can be performed with
-- [Mapping statistics](#mapping-statistics): (optional) generate multiple summary statistics of the BAM files.
 - [Variant calling](#variant-calling): identify differences (variants) between the mapped reads and the supplied reference.
 - [Variant filtering](#variant-filtering): variant filtering, only variants with sufficient depth and quality are retained for consensus calling ( only for BCFtools).
+- [Mapping statistics](#mapping-statistics): (optional) generate multiple summary statistics of the BAM files.
 - [Consensus calling](#consensus-calling): reference sequence is updated with the variants of sufficient quality.
 
 !!! info
@@ -43,10 +43,6 @@ So if you have UMI’s, no need to use Picard, instead use UMI-tools to deduplic
 
 > Specify `--deduplicate` to enable deduplication, the default is `true`. If UMI's are used, specify `--with_umi` to enable UMI-tools deduplication. UMI's can be in the read header, if it is not in the header specify `--skip_umi_extract false`, the default is `true`.
 
-## Mapping statistics
-
-Viralgenie uses
-
 
 ## Variant calling
 
@@ -65,10 +61,29 @@ There are multiple studies on the benchmarking of variant callers as this is a a
 
 The following steps are implemented for variant filtering.
 
-    - [only for `BCFtools`]: split up multiallelic sites into biallelicl records and SNPs and indels should be merged into a single record.
-    - Variant filtering: filter out variants with an allelic depth of less than 75% of the average depth of the sample.
-    - [only for `iVar`]: strand bias correction & collapsing variants belonging to the same codon.
+- [only for `BCFtools`]: split up multiallelic sites into biallelicl records and SNPs and indels should be merged into a single record.
+- Variant filtering: filter out variants with an allelic depth of less than 75% of the average depth of the sample.
+- [only for `iVar`]: strand bias correction & collapsing variants belonging to the same codon.
 
 !!! Info
     If these filtering options are not to your liking, you can modify all of them. See the section on [configuration](../customisation/configuration.md) for more information on how to do so.
+
+## Mapping statistics
+
+Viralgenie uses multiple tools to get statitics on the variants and on the read mapping. These tools are:
+
+- [`samtools flagstat`](https://www.htslib.org/doc/samtools-flagstat.html) to get the number of reads that are mapped, unmapped, paired, etc.
+- [`samtools idxstats`](https://www.htslib.org/doc/samtools-idxstats.html) to get the number of reads that are mapped to each reference sequence.
+- [`samtools stats`](https://www.htslib.org/doc/samtools-stats.html) to collects statistics from BAM files and outputs in a text format.
+- [`picard CollectMultipleMetrics`](https://broadinstitute.github.io/picard/command-line-overview.html#CollectMultipleMetrics) to collect multiple metrics from a BAM file.
+- [`mosdepth`](https://github.com/brentp/mosdepth) to calculate genome-wide sequencing coverage.
+
+There is a little overlap between the tools, but they all provide a different perspective on the mapping statistics.
+
+> By default, all these tools are run, but they can be skipped with the argument `--mapping_stats false`. In case the intermediate mapping statistics (for intermediate refinement cycles) don't need to be determined, `--mapping_stats`.
+
+## Consensus calling
+
+The consensus genome is updated with the variants of sufficient quality, either the ones determined previously in variant [calling](#variant-calling) and [filtering](#variant-filtering) for the `--consensus_caller` `bcftools` or they are redetermined for `ivar`.
+
 

@@ -450,7 +450,7 @@
                     "fa_icon": "fas fa-compress-alt",
                     "description": "consensus tool used for calling new consensus during iterations"
                 },
-                "get_intermediate_stats": {
+                "intermediate_mapping_stats": {
                     "type": "boolean",
                     "fa_icon": "fas fa-info",
                     "description": "calculate summary statistics during iterations",
@@ -500,7 +500,7 @@
                     "default": 200,
                     "fa_icon": "fas fa-align-center"
                 },
-                "get_stats": {
+                "mapping_stats": {
                     "type": "boolean",
                     "default": true,
                     "fa_icon": "fas fa-info",

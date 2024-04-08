@@ -9,7 +9,7 @@ workflow BAM_CALL_CONSENSUS {
     bam_ref          // channel: [ val(meta), [ bam ], [ fasta ] ]
     vcf              // channel: [ val(meta), [ vcf ] ]
     consensus_caller // value: [ bcftools | ivar ]
-    get_stats        // value: [ true | false ]
+    mapping_stats        // value: [ true | false ]
 
     main:
 
@@ -22,7 +22,7 @@ workflow BAM_CALL_CONSENSUS {
             bam,
             vcf,
             fasta,
-            get_stats
+            mapping_stats
         )
         ch_consensus = BAM_VCF_CONSENSUS_BCFTOOLS.out.consensus
         ch_versions = ch_versions.mix(BAM_VCF_CONSENSUS_BCFTOOLS.out.versions.first())
@@ -31,7 +31,7 @@ workflow BAM_CALL_CONSENSUS {
         IVAR_CONSENSUS (
             bam,
             fasta.map{it[1]},
-            get_stats // save mpileup
+            mapping_stats // save mpileup
         )
         ch_consensus = IVAR_CONSENSUS.out.fasta
         ch_versions = ch_versions.mix(IVAR_CONSENSUS.out.versions.first())
