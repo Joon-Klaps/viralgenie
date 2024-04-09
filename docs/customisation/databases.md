@@ -118,7 +118,7 @@ Identifying the species and the segment of the final genome constructs is done b
 
 This annotation database can be specified using `--annotation_db`
 
-### Creating a custom annotation dataset
+### Creating a custom annotation dataset with [BV-BRC](https://www.bv-brc.org/)
 
 In case [Virosaurus](https://viralzone.expasy.org/8676) does not suffice your needs, a custom annotation dataset can be made. Creating a custom annotation dataset can easily be done as long as the annotation data is in the fasta header using this format: `(key)=(value)` or `(key):(value)`. For example, the following fasta headers are both valid:
 
@@ -127,9 +127,10 @@ In case [Virosaurus](https://viralzone.expasy.org/8676) does not suffice your ne
 >NC_001731; usual name=Molluscum contagiosum virus; clinical level=SPECIES; clinical typing=unknown; species=Molluscum contagiosum virus; taxid=10279; acronym=MOCV; nucleic acid=DNA; circular=N; segment=N/A; host=Human,Vertebrate;
 ```
 
-An easy to use public database to creata a custom consenus annotation dataset is [BV-BRC](https://www.bv-brc.org/). Sequences can be extracted using their [CLI-tool](https://www.bv-brc.org/docs/cli_tutorial/index.html) and linked to their [metadata](https://www.bv-brc.org/docs/cli_tutorial/cli_getting_started.html#the-bv-brc-database)
+An easy to use public database with a lot of metadata is [BV-BRC](https://www.bv-brc.org/). Sequences can be extracted using their [CLI-tool](https://www.bv-brc.org/docs/cli_tutorial/index.html) and linked to their [metadata](https://www.bv-brc.org/docs/cli_tutorial/cli_getting_started.html#the-bv-brc-database)
 
 Here we select all viral genomes that are not lab reassortments and are reference genomes and add metadata attributes to the output.
+> This is an example, in case you need to have a more elaborate dataset then virosaurus, be more inclusive towards your taxa of interest and include more metadata attributes.
 
 ```bash
 # download annotation metadata +/- 5s
@@ -180,8 +181,9 @@ with open("bv-brc-refvirus-anno.fasta", "w") as f:
 ```
 
 ???+ Tip "Expected files in database directory"
-
-    -   `bv-brc-refvirus-anno.fasta.gz`
+    -   `refseq-virus.fasta`
+    -   `refseq-virus-anno.txt`
+    -   `bv-brc-refvirus-anno.fasta`
 
 
 <!-- ### Bracken

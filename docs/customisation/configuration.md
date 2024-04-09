@@ -71,7 +71,8 @@ process {
 Next, supply the file to viralgenie using the `-c` Nextflow option:
 ```bash
 nextflow run Joon-Klaps/viralgenie \
-    -c docker,custom.config \
+    -profile docker \
+    -c custom.config \
     --input samplesheet.csv ...
 ```
 
