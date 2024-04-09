@@ -43,6 +43,8 @@ So if you have UMI’s, no need to use Picard, instead use UMI-tools to deduplic
 
 > Specify `--deduplicate` to enable deduplication, the default is `true`. If UMI's are used, specify `--with_umi` to enable UMI-tools deduplication. UMI's can be in the read header, if it is not in the header specify `--skip_umi_extract false`, the default is `true`.
 
+> By default the UMI's are seperated in the header by ':' if this is different, specify with "--umi_separator 'YOUR_SEPARATOR'".
+
 
 ## Variant calling
 
