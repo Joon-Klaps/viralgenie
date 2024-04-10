@@ -237,3 +237,5 @@ extra_fn_clean_exts:
   - ".norm"
   - ".consensus_bcftools"
   - ".consensus_ivar"
+  - "-CONSTRAIN_constrain"
+  - "-CONSTRAIN_itvariant_calling"

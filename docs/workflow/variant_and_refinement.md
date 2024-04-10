@@ -48,11 +48,11 @@ So if you have UMI’s, no need to use Picard, instead use UMI-tools to deduplic
 
 ## Variant calling
 
-Variant calling is done with [`BCFTools`](http://samtools.github.io/bcftools/bcftools.html) and [`iVar`](https://andersen-lab.github.io/ivar/html/manualpage.html), here a SNP will need to habve at leas a depth of 10 and a base quality of 20.
+Variant calling is done with [`BCFTools`](http://samtools.github.io/bcftools/bcftools.html) and [`iVar`](https://andersen-lab.github.io/ivar/html/manualpage.html), here a SNP will need to have at least a depth of 10 and a base quality of 20.
 
-BCFtools is a set of utilities that manipulate variant calls in the Variant Call Format (VCF) and its binary counterpart BCF. iVar is a computational package that contains functions broadly useful for viral amplicon-based sequencing while each of ivar functions can be accomplished using existing tools, iVar contains an intersection of functionality from multiple tools that are required to call iSNVs and consensus sequences from viral sequencing data across multiple replicates.
+BCFtools is a set of utilities that manipulate variant calls in the Variant Call Format (VCF) and its binary counterpart BCF. iVar is a computational package that contains functions broadly useful for viral amplicon-based sequencing while each of iVar functions can be accomplished using existing tools, iVar contains an intersection of functionality from multiple tools that are required to call iSNVs and consensus sequences from viral sequencing data across multiple replicates.
 
-There are multiple studies on the benchmarking of variant callers as this is a area with active development. For instance [Bassano _et al._ (2023)](https://doi.org/10.1099/mgen.0.000933) noticed that BCFtools called mutations with higher precision and recall than iVar. However, the reason behind this is that Ivar has a lower precision then the others within their setup as it detects a lot of ‘additional’ variants within the sample, resulting in a higher amount of false positives but also true positives.
+There are multiple studies on the benchmarking of variant callers as this is a area with active development. For instance [Bassano _et al._ (2023)](https://doi.org/10.1099/mgen.0.000933) noticed that BCFtools called mutations with higher precision and recall than iVar. However, the reason behind this is that iVar has a lower precision then the others within their setup as it detects a lot of ‘additional’ variants within the sample, resulting in a higher amount of false positives but also true positives.
 
 !!! Tip
     Bcftools doesn't handle well multiallelic sites, so if you have a lot of multiallelic sites, iVar is the better choice. iVar is also the better choice if you have a lot of low-frequency variants.
@@ -63,7 +63,7 @@ There are multiple studies on the benchmarking of variant callers as this is a a
 
 The following steps are implemented for variant filtering.
 
-- [only for `BCFtools`]: split up multiallelic sites into biallelicl records and SNPs and indels should be merged into a single record.
+- [only for `BCFtools`]: split up multiallelic sites into biallelic records and SNPs and indels should be merged into a single record.
 - Variant filtering: filter out variants with an allelic depth of less than 75% of the average depth of the sample.
 - [only for `iVar`]: strand bias correction & collapsing variants belonging to the same codon.
 

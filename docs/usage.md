@@ -7,6 +7,9 @@ nextflow run Joon-Klaps/viralgenie -profile test,docker
 ```
 > Make sure you have [Nextflow](https://nf-co.re/docs/usage/installation) and a container manager (for example, [Docker](https://docs.docker.com/get-docker/)) installed. See the [installation instructions](installation.md) for more info.
 
+!!! Tip
+    Did your analysis fail? After fixing the issue add `-resume` to the command to continue from where it left off.
+
 ## Input
 ### Samples
 
