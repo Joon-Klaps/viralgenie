@@ -580,7 +580,7 @@
                 },
                 "mmseqs_searchtype": {
                     "type": "integer",
-                    "default": 3,
+                    "default": 4,
                     "fa_icon": "fas fa-search",
                     "description": "Specify the search algorithm to use for mmseqs. 0: auto 1: amino acid, 2: translated, 3: nucleotide, 4: translated nucleotide alignment",
                     "help_text": "Only search-type 3 supports both forward and reverse search\n1 - BLASTP;\n2 - TBLASTN;\n3 - BLASTN;\n4 - TBLASTX"

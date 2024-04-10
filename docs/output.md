@@ -654,7 +654,7 @@ Consensus quality control is done with multiple tools, the results are stored in
 
 ### MMseqs-search (annotation)
 
-[MMseqs-search](https://github.com/soedinglab/MMseqs2/wiki#searching) is a ultra fast and sensitive search tool for protein and nucleotide databases. Viralgenie uses MMseqs to search the consensus genomes in a annotated database, like [Virousarus](https://virosaurus.vital-it.ch/) (see also [defining your own custom annotation database](../customisation/databases.md#annotation-sequences)), and uses the annotation data of the best hit to assign the consensus genome a species name, segment name, expected host and any other metadata that is embedded within the database.
+[MMseqs-search](https://github.com/soedinglab/MMseqs2/wiki#searching) is a ultra fast and sensitive search tool for protein and nucleotide databases. Viralgenie uses MMseqs to search the consensus genomes in a annotated database, like [Virousarus](https://virosaurus.vital-it.ch/) (see also [defining your own custom annotation database](customisation/databases.md#annotation-sequences)), and uses the annotation data of the best hit to assign the consensus genome a species name, segment name, expected host and any other metadata that is embedded within the database.
 
 ???- info "Column names"
 
@@ -693,6 +693,10 @@ It is used to align the following genomic data:
     - `consensus/qc/mafft/`
         - `<sample-id>/<sample_id>_cl#_iterations.fas`: A fasta file containing a multiple sequence alignment of only the iterations.
         - `<sample-id>/<sample_id>_cl#_aligned.fas`: A fasta file containing a multiple sequence alignment of the denovo contigs, the reference from reference_pool and the consensus from iteratations.
+
+Alignment can then be opened with MSA viewer, for example Jalview
+
+![MSA alignment jalview](images/mafft_example_alignment_jalview.png){.center}
 
 ## MultiQC
 
