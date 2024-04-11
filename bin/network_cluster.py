@@ -63,27 +63,29 @@ def parse_args(argv=None):
     )
 
     parser.add_argument(
-        "--pattern",
-        metavar="PATTERN",
-        type=str,
-        help="Regex pattern to filter clusters by centroid sequence name.",
-        default="^(TRINITY)|(NODE)|(k\d+)",  # Default pattern matches Trinity, SPADes and MEGAHIT assembly names
+        "-c",
+        "--chunksize",
+        metavar="CHUNKSIZE",
+        help="The chunksize to read in the dataframe",
+        type=int,
+        default=1000,
     )
 
     parser.add_argument(
         "-l",
         "--log-level",
-        help="The desired log level (default WARNING).",
+        help="The desired log level (default INFO).",
         choices=("CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"),
-        default="WARNING",
+        default="INFO",
     )
     return parser.parse_args(argv)
 
 
-def read_in_file(file_in, method):
+def read_in_file(args):
     """
     Read in the file and return a networkx graph object
     """
+    method = args.method
     method_dict = {
         "mash": read_in_mash
         # Add more methods here if needed
@@ -91,55 +93,64 @@ def read_in_file(file_in, method):
 
     # Check if the method exists in the dictionary
     if method in method_dict:
-        return method_dict[method](file_in)
+        logger.info("Choosing method %s", method_dict[method])
+        return method_dict[method](args)
     else:
         raise ValueError(f"Method '{method}' not found.")
 
 
-def read_in_mash(file_in):
+def read_in_mash(args):
     """
     Read in the file and return a networkx graph object
     """
-    df = pd.read_csv(file_in, sep="\t", index_col="#query")
-    # wide to long
-    long_df = df.reset_index().melt(id_vars="#query", var_name="target", value_name="weight")
-    # to a network igraph object
-    G = ig.Graph.TupleList(long_df.itertuples(index=False), directed=True, weights=True)
+    INPUT= args.file_in
+    CHUNKSIZE= args.chunksize
+    THRESHOLD= 1 - args.score # args.score is ANI, mash calculates distances, so we need to invert the score
+
+    output = pd.DataFrame()
+    logger.info("Read in file %s", INPUT)
+    # see issue 105
+    with pd.read_csv(INPUT, sep="\t", encoding="utf-8", index_col="#query", chunksize=CHUNKSIZE) as reader:
+        for chunk in reader:
+            # wide to long
+            long_df = chunk.reset_index().melt(id_vars="#query", var_name="target", value_name="weight")
+
+            # Select only lower triangle
+            lower_triangle = long_df[long_df['#query'] >= long_df['target']]
+
+            # Remove what we don't need
+            filtered_df = lower_triangle[(lower_triangle['weight'] < THRESHOLD) & (lower_triangle['weight'] != 0)]
+
+            output = pd.concat([output,filtered_df], ignore_index=True)
+
+            logger.info("Processed chunk, current dataframe size: %d", len(output.index))
+
+    # Create Igraph object
+    G = ig.Graph.TupleList(output.itertuples(index=False), directed=False, weights=True)
+    logger.info("Created the network graph with %d nodes", len(G.vs))
+
     return G
-
-
-def filter_network(network, threshold):
-    """
-    Filter the network based on the given score
-    """
-    filtered_network = network.copy()
-
-    # Get a copy of the edges before removal for iteration
-    edges_to_remove = [
-        (edge.source, edge.target) for edge in filtered_network.es if edge["weight"] >= threshold or edge["weight"] == 0
-    ]
-
-    # Remove edges based on the specified conditions
-    filtered_network.delete_edges(edges_to_remove)
-
-    return filtered_network
-
 
 def cluster_network(network, method):
     """
     Cluster the network based on the given score
     """
+
     if method == "leiden":
         # Partition the network
         partitions = la.find_partition(
             network, partition_type=la.ModularityVertexPartition, n_iterations=-1, seed=42, weights="weight"
         )
+
     elif method == "connected_components":
         partitions = network.components(mode="weak")
     else:
         raise ValueError(f"Method '{method}' not found.")
+    logger.info("Partitioned the network using %s", method )
+
     # extract the names of the vertices
     vertices_names = [[network.vs[index]["name"] for index in cluster] for cluster in partitions]
+    logger.info("Extracted members of network groups")
 
     return partitions, vertices_names
 
@@ -151,11 +162,12 @@ def to_tsv(vertices_names, prefix):
     # Create a list of lists with the indexed vertices
     indexed_vertices = [[name, idx] for idx, names in enumerate(vertices_names) for name in names]
 
+    logger.info("Writing network to file")
+
     # Write the indexed data to a TSV file
     with open(f"{prefix}.tsv", "w") as file:
         for line in indexed_vertices:
             file.write(f"{line[0]}\t{line[1]}\n")
-
 
 def visualize_network(partitions, network, prefix):
     """
@@ -163,29 +175,32 @@ def visualize_network(partitions, network, prefix):
     """
     # Set the layout of the network
     layout = network.layout("kk")
+    logger.info("Determined layout of network")
 
     # Plot the network
     ig.plot(partitions, target=f"{prefix}.png", layout=layout, vertex_label=network.vs["name"])
+    logger.info("Visualised the network")
+
 
 
 def main(argv=None):
     """Coordinate argument parsing and program execution."""
     args = parse_args(argv)
     logging.basicConfig(level=args.log_level, format="[%(levelname)s] %(message)s")
+    logger.info("Start clustering")
     if not args.file_in.is_file():
         logger.error(f"The given input file {args.file_in} was not found!")
         sys.exit(2)
 
-    network = read_in_file(args.file_in, args.method)
+    network = read_in_file(args)
 
-    # args.score is ANI, mash calculates distances, so we need to invert the score
-    network_filtered = filter_network(network, 1 - args.score)
-
-    clusters, vertices_names = cluster_network(network_filtered, args.cluster_algorithm)
+    clusters, vertices_names = cluster_network(network, args.cluster_algorithm)
 
     to_tsv(vertices_names, args.prefix)
 
-    visualize_network(clusters, network_filtered, args.prefix)
+    visualize_network(clusters, network, args.prefix)
+
+    logger.info("All done!")
 
 
 if __name__ == "__main__":
