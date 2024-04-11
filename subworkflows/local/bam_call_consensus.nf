@@ -25,7 +25,7 @@ workflow BAM_CALL_CONSENSUS {
             mapping_stats
         )
         ch_consensus = BAM_VCF_CONSENSUS_BCFTOOLS.out.consensus
-        ch_versions = ch_versions.mix(BAM_VCF_CONSENSUS_BCFTOOLS.out.versions.first())
+        ch_versions = ch_versions.mix(BAM_VCF_CONSENSUS_BCFTOOLS.out.versions)
     }
     else if (consensus_caller == "ivar"){
         IVAR_CONSENSUS (

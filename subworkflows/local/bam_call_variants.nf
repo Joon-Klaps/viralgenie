@@ -25,7 +25,7 @@ workflow BAM_CALL_VARIANTS {
         )
         ch_vcf        = BAM_VARIANTS_BCFTOOLS.out.vcf
         ch_vcf_filter = BAM_VARIANTS_BCFTOOLS.out.vcf_filter
-        ch_versions   = ch_versions.mix(BAM_VARIANTS_BCFTOOLS.out.versions.first())
+        ch_versions   = ch_versions.mix(BAM_VARIANTS_BCFTOOLS.out.versions)
     }
     else if (variant_caller == "ivar"){
         BAM_VARIANTS_IVAR (
@@ -34,7 +34,7 @@ workflow BAM_CALL_VARIANTS {
         )
         ch_vcf        = BAM_VARIANTS_IVAR.out.vcf
         ch_vcf_filter = BAM_VARIANTS_IVAR.out.vcf_filter
-        ch_versions   = ch_versions.mix(BAM_VARIANTS_IVAR.out.versions.first())
+        ch_versions   = ch_versions.mix(BAM_VARIANTS_IVAR.out.versions)
         ch_multiqc    = ch_multiqc.mix(BAM_VARIANTS_IVAR.out.multiqc)
     }
 
