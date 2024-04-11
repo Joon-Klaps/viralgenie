@@ -197,6 +197,16 @@
                         "installed_by": ["modules"],
                         "patch": "modules/nf-core/mash/dist/mash-dist.diff"
                     },
+                    "mash/screen": {
+                        "branch": "master",
+                        "git_sha": "10f1f6526942539d5368cedb05afd1aa16eda5be",
+                        "installed_by": ["modules"]
+                    },
+                    "mash/sketch": {
+                        "branch": "master",
+                        "git_sha": "10f1f6526942539d5368cedb05afd1aa16eda5be",
+                        "installed_by": ["modules"]
+                    },
                     "megahit": {
                         "branch": "master",
                         "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",

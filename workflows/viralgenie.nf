@@ -97,6 +97,9 @@ include { UNPACK_DB                       } from '../subworkflows/local/unpack_d
 include { FASTQ_FASTA_ITERATIVE_CONSENSUS } from '../subworkflows/local/fastq_fasta_iterative_consensus'
 include { SINGLETON_FILTERING             } from '../subworkflows/local/singleton_filtering'
 
+// Mapping constrains selection
+include { FASTQ_FASTA_MASH_SCREEN         } from '../subworkflows/local/fastq_fasta_mash_screen'
+
 // Variant calling
 include { RENAME_FASTA_HEADER as RENAME_FASTA_HEADER_CONSTRAIN } from '../modules/local/rename_fasta_header'
 include { FASTQ_FASTA_MAP_CONSENSUS                            } from '../subworkflows/local/fastq_fasta_map_consensus'
@@ -413,16 +416,26 @@ workflow VIRALGENIE {
                 }
             .set{ch_map_seq_anno_combined}
 
-        // For QC we keep original sequence to compare to
-        ch_unaligned_raw_contigs2 = ch_unaligned_raw_contigs.mix(ch_map_seq_anno_combined)
-
-        // //rename fasta headers
-        // RENAME_FASTA_HEADER_CONSTRAIN (ch_map_seq_anno_combined,[])
-        // ch_versions = ch_versions.mix(RENAME_FASTA_HEADER_CONSTRAIN.out.versions)
-
+        // Map with both reads and mapping constrains
         ch_map_seq_anno_combined
             .map{ meta, fasta -> [meta, fasta, meta.reads] }
+            .branch{
+                meta, fasta, fastq ->
+                multiFastaRefine : meta.refine == true
+                singleFastaRefine : meta.refine == false}
             .set{constrain_consensus_reads}
+
+        // Select the correct reference
+        FASTQ_FASTA_MASH_SCREEN (
+            constrain_consensus_reads.multiFastaRefine
+        )
+        ch_versions = ch_versions.mix(FASTQ_FASTA_MASH_SCREEN.out.versions)
+
+        FASTQ_FASTA_MASH_SCREEN.out.out.view{}
+
+        // For QC we keep original sequence to compare to
+        ch_unaligned_raw_contigs = ch_unaligned_raw_contigs.mix(ch_map_seq_anno_combined)
+
 
         //Add to the consensus channel, which will be used for variant calling
         ch_consensus_results_reads = ch_consensus_results_reads.mix(constrain_consensus_reads)
