@@ -11,14 +11,14 @@
         <link rel="canonical" href="https://joon-klaps.github.io/viralgenie/latest/customisation/databases/">
       
       
-        <link rel="prev" href="../../workflow/iterative_refinement/">
+        <link rel="prev" href="../../parameters/">
       
       
         <link rel="next" href="../configuration/">
       
       
       <link rel="icon" href="../../images/ViralGenie-nf-core-theme.png">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.15">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.17">
     
     
       
@@ -26,7 +26,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.7e359304.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.bcfcd587.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
@@ -86,7 +86,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#joon-klapsviralgenie-databases" class="md-skip">
+        <a href="#databases" class="md-skip">
           Skip to content
         </a>
       
@@ -271,6 +271,23 @@
         </a>
       </li>
     
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../parameters/" class="md-tabs__link">
+        
+  
+    
+  
+  Parameters
+
+      </a>
+    </li>
   
 
       
@@ -602,11 +619,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../../workflow/assembly_polishing/" class="md-nav__link">
+      <a href="../../workflow/metagenomic_diversity/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Assembly polishing
+    Metagenomic diversity
   </span>
   
 
@@ -623,7 +640,28 @@
   
   
     <li class="md-nav__item">
-      <a href="../../workflow/iterative_refinement/" class="md-nav__link">
+      <a href="../../workflow/assembly_polishing/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Assembly & Polishing
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../workflow/variant_and_refinement/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -637,9 +675,50 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../workflow/consensus_qc/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Consensus evaluation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../parameters/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Parameters
+  </span>
+  
+
+      </a>
     </li>
   
 
@@ -668,10 +747,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
         
           
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
             
   
   <span class="md-ellipsis">
@@ -682,8 +761,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_3">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             Customisation
           </label>
@@ -812,9 +891,9 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#creating-a-custom-annotation-dataset" class="md-nav__link">
+  <a href="#creating-a-custom-annotation-dataset-with-bv-brc" class="md-nav__link">
     <span class="md-ellipsis">
-      Creating a custom annotation dataset
+      Creating a custom annotation dataset with BV-BRC
     </span>
   </a>
   
@@ -979,9 +1058,9 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#creating-a-custom-annotation-dataset" class="md-nav__link">
+  <a href="#creating-a-custom-annotation-dataset-with-bv-brc" class="md-nav__link">
     <span class="md-ellipsis">
-      Creating a custom annotation dataset
+      Creating a custom annotation dataset with BV-BRC
     </span>
   </a>
   
@@ -1015,12 +1094,12 @@
   
 
 
-<h1 id="joon-klapsviralgenie-databases">Joon-Klaps/viralgenie: Databases</h1>
+<h1 id="databases">Databases</h1>
 <h2 id="introduction">Introduction</h2>
 <p>Viralgenie uses a multitude of databases in order to analyse reads, contigs and consensus constructs. The default databases will be sufficient in most cases but there are always exceptions. This document will guide you towards the right documentation location for creating your custom databases.</p>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
-<p>Keep an eye out for <a href="https://nf-co.re/createtaxdb/">nf-core createtaxdb</a> as it can be used for the customization of the main databases but is still under development.</p>
+<p>Keep an eye out for <a href="https://nf-co.re/createtaxdb/">nf-core createtaxdb</a> as it can be used for the customization of the main databases but the pipeline is still under development.</p>
 </div>
 <h2 id="reference-pool">Reference pool</h2>
 <p>The reference pool dataset is used to identify potential references for scaffolding. It's a fasta file that will be used to make a blast database within the pipeline. The default database is the <a href="https://rvdb.dbi.udel.edu/">clustered Reference Viral DataBase (C-RVDB)</a> a database that was build for enhancing virus detection using high-throughput/next-generation sequencing (HTS/NGS) technologies. An alternative reference pool is the <a href="https://viralzone.expasy.org/8676">Virosaurus</a> database which is a manually curated database of viral genomes.</p>
@@ -1034,13 +1113,13 @@ To build a kaiju database, you need three components: a FASTA file with the prot
 <p>The headers of the protein fasta file must be numeric NCBI taxon identifiers of the protein sequences.</p>
 </div>
 <p>To download the NCBI taxonomy files, please run the following commands:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>wget<span class="w"> </span>https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/new_taxdump/new_taxdump.zip
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>unzip<span class="w"> </span>new_taxdump.zip
-</code></pre></div>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>wget<span class="w"> </span>https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/new_taxdump/new_taxdump.zip
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>unzip<span class="w"> </span>new_taxdump.zip
+</span></code></pre></div>
 <p>To build the database, run the following command (the contents of taxdump must be in the same location where you run the command):</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>kaiju-mkbwt<span class="w"> </span>-a<span class="w"> </span>ACDEFGHIKLMNPQRSTVWY<span class="w"> </span>-o<span class="w"> </span>proteins<span class="w"> </span>proteins.faa
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>kaiju-mkfmi<span class="w"> </span>proteins
-</code></pre></div>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>kaiju-mkbwt<span class="w"> </span>-a<span class="w"> </span>ACDEFGHIKLMNPQRSTVWY<span class="w"> </span>-o<span class="w"> </span>proteins<span class="w"> </span>proteins.faa
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>kaiju-mkfmi<span class="w"> </span>proteins
+</span></code></pre></div>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
 <p>You can speed up database construction by supplying the threads parameter (<code>-t</code>).</p>
@@ -1062,16 +1141,16 @@ To build a kaiju database, you need three components: a FASTA file with the prot
 <p>A number of database indexes have already been generated and maintained by <a href="https://github.com/BenLangmead">@BenLangmead Lab</a>, see <a href="https://benlangmead.github.io/aws-indexes/k2">here</a>. These databases can directly be used to run the workflow with Kraken2 as well as Bracken.</p>
 <p>In case the databases above do not contain your desired libraries, you can build a custom Kraken2 database. This requires two components: a taxonomy (consisting of <code>names.dmp</code>, <code>nodes.dmp</code>, and <code>*accession2taxid</code>) files, and the FASTA files you wish to include.</p>
 <p>To pull the NCBI taxonomy, you can run the following:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>kraken2-build<span class="w"> </span>--download-taxonomy<span class="w"> </span>--db<span class="w"> </span>&lt;YOUR_DB_NAME&gt;
-</code></pre></div>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>kraken2-build<span class="w"> </span>--download-taxonomy<span class="w"> </span>--db<span class="w"> </span>&lt;YOUR_DB_NAME&gt;
+</span></code></pre></div>
 <p>You can then add your FASTA files with the following build command.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>kraken2-build<span class="w"> </span>--add-to-library<span class="w"> </span>*.fna<span class="w"> </span>--db<span class="w"> </span>&lt;YOUR_DB_NAME&gt;
-</code></pre></div>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>kraken2-build<span class="w"> </span>--add-to-library<span class="w"> </span>*.fna<span class="w"> </span>--db<span class="w"> </span>&lt;YOUR_DB_NAME&gt;
+</span></code></pre></div>
 <p>You can repeat this step multiple times to iteratively add more genomes prior building.</p>
 <p>Once all genomes are added to the library, you can build the database (and optionally clean it up):</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>kraken2-build<span class="w"> </span>--build<span class="w"> </span>--db<span class="w"> </span>&lt;YOUR_DB_NAME&gt;
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>kraken2-build<span class="w"> </span>--clean<span class="w"> </span>--db<span class="w"> </span>&lt;YOUR_DB_NAME&gt;
-</code></pre></div>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>kraken2-build<span class="w"> </span>--build<span class="w"> </span>--db<span class="w"> </span>&lt;YOUR_DB_NAME&gt;
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>kraken2-build<span class="w"> </span>--clean<span class="w"> </span>--db<span class="w"> </span>&lt;YOUR_DB_NAME&gt;
+</span></code></pre></div>
 <p>You can then add the <code>&lt;YOUR_DB_NAME&gt;/</code> path to your nf-core/taxprofiler database input sheet.</p>
 <details class="tip" open="open">
 <summary>Expected files in database directory</summary>
@@ -1103,61 +1182,66 @@ To build a kaiju database, you need three components: a FASTA file with the prot
 <h2 id="annotation-sequences">Annotation sequences</h2>
 <p>Identifying the species and the segment of the final genome constructs is done based on a tblastx search (with MMSEQS) to a annotated sequencing dataset. This dataset is by default the <a href="https://viralzone.expasy.org/8676">Virosaurus</a> as it contains a good representation of the viral genomes and is annotated.</p>
 <p>This annotation database can be specified using <code>--annotation_db</code></p>
-<h3 id="creating-a-custom-annotation-dataset">Creating a custom annotation dataset</h3>
+<h3 id="creating-a-custom-annotation-dataset-with-bv-brc">Creating a custom annotation dataset with <a href="https://www.bv-brc.org/">BV-BRC</a></h3>
 <p>In case <a href="https://viralzone.expasy.org/8676">Virosaurus</a> does not suffice your needs, a custom annotation dataset can be made. Creating a custom annotation dataset can easily be done as long as the annotation data is in the fasta header using this format: <code>(key)=(value)</code> or <code>(key):(value)</code>. For example, the following fasta headers are both valid:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>&gt;754189.6 species:&quot;Ungulate tetraparvovirus 3&quot;|segment:&quot;nan&quot;|host_common_name:&quot;Pig&quot;|genbank_accessions:&quot;NC_038883&quot;|taxon_id:&quot;754189&quot;
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>&gt;NC_001731; usual name=Molluscum contagiosum virus; clinical level=SPECIES; clinical typing=unknown; species=Molluscum contagiosum virus; taxid=10279; acronym=MOCV; nucleic acid=DNA; circular=N; segment=N/A; host=Human,Vertebrate;
-</code></pre></div>
-<p>An easy to use public database to creata a custom consenus annotation dataset is <a href="https://www.bv-brc.org/">BV-BRC</a>. Sequences can be extracted using their <a href="https://www.bv-brc.org/docs/cli_tutorial/index.html">CLI-tool</a> and linked to their <a href="https://www.bv-brc.org/docs/cli_tutorial/cli_getting_started.html#the-bv-brc-database">metadata</a></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>&gt;754189.6 species:&quot;Ungulate tetraparvovirus 3&quot;|segment:&quot;nan&quot;|host_common_name:&quot;Pig&quot;|genbank_accessions:&quot;NC_038883&quot;|taxon_id:&quot;754189&quot;
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>&gt;NC_001731; usual name=Molluscum contagiosum virus; clinical level=SPECIES; clinical typing=unknown; species=Molluscum contagiosum virus; taxid=10279; acronym=MOCV; nucleic acid=DNA; circular=N; segment=N/A; host=Human,Vertebrate;
+</span></code></pre></div>
+<p>An easy to use public database with a lot of metadata is <a href="https://www.bv-brc.org/">BV-BRC</a>. Sequences can be extracted using their <a href="https://www.bv-brc.org/docs/cli_tutorial/index.html">CLI-tool</a> and linked to their <a href="https://www.bv-brc.org/docs/cli_tutorial/cli_getting_started.html#the-bv-brc-database">metadata</a></p>
 <p>Here we select all viral genomes that are not lab reassortments and are reference genomes and add metadata attributes to the output.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># download annotation metadata +/- 5s</span>
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>p3-all-genomes<span class="w"> </span>--eq<span class="w"> </span>superkingdom,Viruses<span class="w"> </span>--eq<span class="w"> </span>reference_genome,Reference<span class="w"> </span>--ne<span class="w"> </span>host_common_name,<span class="s1">&#39;Lab reassortment&#39;</span><span class="w"> </span>--attr<span class="w"> </span>genome_id,species,segment,genome_name,genome_length,host_common_name,genbank_accessions,taxon_id<span class="w">   </span>&gt;<span class="w"> </span>all-virus-anno.txt
-<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="c1"># download genome data, done seperatly as it takes much longer to query +/- 1 hour</span>
-<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>p3-all-genomes<span class="w"> </span>--eq<span class="w"> </span>superkingdom,Viruses<span class="w"> </span>--eq<span class="w"> </span>reference_genome,Reference<span class="w"> </span>--ne<span class="w"> </span>host_common_name,<span class="s1">&#39;Lab reassortment&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>p3-get-genome-contigs<span class="w"> </span>--attr<span class="w"> </span>sequence<span class="w"> </span>&gt;<span class="w"> </span>all-virus.fasta
-</code></pre></div>
+<blockquote>
+<p>This is an example, in case you need to have a more elaborate dataset then virosaurus, be more inclusive towards your taxa of interest and include more metadata attributes.</p>
+</blockquote>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># download annotation metadata +/- 5s</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>p3-all-genomes<span class="w"> </span>--eq<span class="w"> </span>superkingdom,Viruses<span class="w"> </span>--eq<span class="w"> </span>reference_genome,Reference<span class="w"> </span>--ne<span class="w"> </span>host_common_name,<span class="s1">&#39;Lab reassortment&#39;</span><span class="w"> </span>--attr<span class="w"> </span>genome_id,species,segment,genome_name,genome_length,host_common_name,genbank_accessions,taxon_id<span class="w">   </span>&gt;<span class="w"> </span>all-virus-anno.txt
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="c1"># download genome data, done seperatly as it takes much longer to query +/- 1 hour</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>p3-all-genomes<span class="w"> </span>--eq<span class="w"> </span>superkingdom,Viruses<span class="w"> </span>--eq<span class="w"> </span>reference_genome,Reference<span class="w"> </span>--ne<span class="w"> </span>host_common_name,<span class="s1">&#39;Lab reassortment&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>p3-get-genome-contigs<span class="w"> </span>--attr<span class="w"> </span>sequence<span class="w"> </span>&gt;<span class="w"> </span>all-virus.fasta
+</span></code></pre></div>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
 <p>Any attribute can be downloaded and will be added to the final report if the formatting remains the same.
 For a complete list of attributes see <code>p3-all-genomes --fields</code> or read their <a href="https://www.bv-brc.org/docs/cli_tutorial/cli_getting_started.html">manual</a></p>
 </div>
 <p>Next, the metadata and the genomic data is combined into a single fasta file where the metada fields are stored in the fasta comment as <code>key1:"value1"|key2:"value2"|...</code> using the following python code.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="kn">import</span> <span class="nn">re</span>
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
-<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="c1"># read in sequences with all columns as strings</span>
-<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="n">sequences</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;refseq-virus.fasta&quot;</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
-<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;refseq-virus-anno.txt&quot;</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
-<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>
-<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="c1"># merge the df&#39;s</span>
-<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="n">df</span> <span class="o">=</span> <span class="n">sequences</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="c1"># remove &#39;genome&#39; from the name</span>
-<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;genome.&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
-<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>
-<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="c1"># create fasta header</span>
-<a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="k">def</span> <span class="nf">create_fasta_header</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
-<a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a>    <span class="n">annotations</span> <span class="o">=</span> <span class="s2">&quot;|&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-<a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a>        <span class="p">[</span>
-<a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a>            <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">column</span><span class="si">}</span><span class="s1">:&quot;</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">&quot;&#39;</span>
-<a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a>            <span class="k">for</span> <span class="n">column</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">row</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-<a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a>            <span class="k">if</span> <span class="n">column</span> <span class="o">!=</span> <span class="s2">&quot;contig.sequence&quot;</span>
-<a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a>        <span class="p">]</span>
-<a id="__codelineno-7-21" name="__codelineno-7-21" href="#__codelineno-7-21"></a>    <span class="p">)</span>
-<a id="__codelineno-7-22" name="__codelineno-7-22" href="#__codelineno-7-22"></a>    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">annotations</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-<a id="__codelineno-7-23" name="__codelineno-7-23" href="#__codelineno-7-23"></a>
-<a id="__codelineno-7-24" name="__codelineno-7-24" href="#__codelineno-7-24"></a>
-<a id="__codelineno-7-25" name="__codelineno-7-25" href="#__codelineno-7-25"></a><span class="n">df</span><span class="p">[</span><span class="s2">&quot;fasta_header&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">create_fasta_header</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<a id="__codelineno-7-26" name="__codelineno-7-26" href="#__codelineno-7-26"></a>
-<a id="__codelineno-7-27" name="__codelineno-7-27" href="#__codelineno-7-27"></a><span class="n">df</span><span class="p">[</span><span class="s2">&quot;fasta_entry&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-<a id="__codelineno-7-28" name="__codelineno-7-28" href="#__codelineno-7-28"></a>    <span class="s2">&quot;&gt;&quot;</span> <span class="o">+</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;fasta_header&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;contig.sequence&quot;</span><span class="p">]</span>
-<a id="__codelineno-7-29" name="__codelineno-7-29" href="#__codelineno-7-29"></a><span class="p">)</span>
-<a id="__codelineno-7-30" name="__codelineno-7-30" href="#__codelineno-7-30"></a><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;bv-brc-refvirus-anno.fasta&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-<a id="__codelineno-7-31" name="__codelineno-7-31" href="#__codelineno-7-31"></a>    <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;fasta_entry&quot;</span><span class="p">]:</span>
-<a id="__codelineno-7-32" name="__codelineno-7-32" href="#__codelineno-7-32"></a>        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">entry</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="kn">import</span> <span class="nn">re</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="c1"># read in sequences with all columns as strings</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="n">sequences</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;refseq-virus.fasta&quot;</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;refseq-virus-anno.txt&quot;</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="c1"># merge the df&#39;s</span>
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="n">df</span> <span class="o">=</span> <span class="n">sequences</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="c1"># remove &#39;genome&#39; from the name</span>
+</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;genome.&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>
+</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="c1"># create fasta header</span>
+</span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="k">def</span> <span class="nf">create_fasta_header</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
+</span><span id="__span-7-15"><a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a>    <span class="n">annotations</span> <span class="o">=</span> <span class="s2">&quot;|&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+</span><span id="__span-7-16"><a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a>        <span class="p">[</span>
+</span><span id="__span-7-17"><a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a>            <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">column</span><span class="si">}</span><span class="s1">:&quot;</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">&quot;&#39;</span>
+</span><span id="__span-7-18"><a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a>            <span class="k">for</span> <span class="n">column</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">row</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+</span><span id="__span-7-19"><a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a>            <span class="k">if</span> <span class="n">column</span> <span class="o">!=</span> <span class="s2">&quot;contig.sequence&quot;</span>
+</span><span id="__span-7-20"><a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a>        <span class="p">]</span>
+</span><span id="__span-7-21"><a id="__codelineno-7-21" name="__codelineno-7-21" href="#__codelineno-7-21"></a>    <span class="p">)</span>
+</span><span id="__span-7-22"><a id="__codelineno-7-22" name="__codelineno-7-22" href="#__codelineno-7-22"></a>    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">annotations</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+</span><span id="__span-7-23"><a id="__codelineno-7-23" name="__codelineno-7-23" href="#__codelineno-7-23"></a>
+</span><span id="__span-7-24"><a id="__codelineno-7-24" name="__codelineno-7-24" href="#__codelineno-7-24"></a>
+</span><span id="__span-7-25"><a id="__codelineno-7-25" name="__codelineno-7-25" href="#__codelineno-7-25"></a><span class="n">df</span><span class="p">[</span><span class="s2">&quot;fasta_header&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">create_fasta_header</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</span><span id="__span-7-26"><a id="__codelineno-7-26" name="__codelineno-7-26" href="#__codelineno-7-26"></a>
+</span><span id="__span-7-27"><a id="__codelineno-7-27" name="__codelineno-7-27" href="#__codelineno-7-27"></a><span class="n">df</span><span class="p">[</span><span class="s2">&quot;fasta_entry&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+</span><span id="__span-7-28"><a id="__codelineno-7-28" name="__codelineno-7-28" href="#__codelineno-7-28"></a>    <span class="s2">&quot;&gt;&quot;</span> <span class="o">+</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;fasta_header&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;contig.sequence&quot;</span><span class="p">]</span>
+</span><span id="__span-7-29"><a id="__codelineno-7-29" name="__codelineno-7-29" href="#__codelineno-7-29"></a><span class="p">)</span>
+</span><span id="__span-7-30"><a id="__codelineno-7-30" name="__codelineno-7-30" href="#__codelineno-7-30"></a><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;bv-brc-refvirus-anno.fasta&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+</span><span id="__span-7-31"><a id="__codelineno-7-31" name="__codelineno-7-31" href="#__codelineno-7-31"></a>    <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;fasta_entry&quot;</span><span class="p">]:</span>
+</span><span id="__span-7-32"><a id="__codelineno-7-32" name="__codelineno-7-32" href="#__codelineno-7-32"></a>        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">entry</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+</span></code></pre></div>
 <details class="tip" open="open">
 <summary>Expected files in database directory</summary>
 <ul>
-<li><code>bv-brc-refvirus-anno.fasta.gz</code></li>
+<li><code>refseq-virus.fasta</code></li>
+<li><code>refseq-virus-anno.txt</code></li>
+<li><code>bv-brc-refvirus-anno.fasta</code></li>
 </ul>
 </details>
 <!-- ### Bracken
@@ -1166,8 +1250,8 @@ Bracken does not require an independent database but rather builds upon Kraken2 
 
 However, to build custom databases, you will need a Kraken2 database, the (average) read lengths (in bp) of your sequencing experiment, the K-mer size used to build the Kraken2 database, and Kraken2 available on your machine.
 
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>bracken-build<span class="w"> </span>-d<span class="w"> </span>&lt;KRAKEN_DB_DIR&gt;<span class="w"> </span>-k<span class="w"> </span>&lt;KRAKEN_DB_KMER_LENGTH&gt;<span class="w"> </span>-l<span class="w"> </span>&lt;READLENGTH&gt;
-</code></pre></div>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>bracken-build<span class="w"> </span>-d<span class="w"> </span>&lt;KRAKEN_DB_DIR&gt;<span class="w"> </span>-k<span class="w"> </span>&lt;KRAKEN_DB_KMER_LENGTH&gt;<span class="w"> </span>-l<span class="w"> </span>&lt;READLENGTH&gt;
+</span></code></pre></div>
 
 > [!Tip]
 > You can speed up database construction by supplying the threads parameter (`-t`).
@@ -1203,6 +1287,46 @@ Set it with the variable `--bracken_db` -->
 
 
 
+  <form class="md-feedback" name="feedback" hidden>
+    <fieldset>
+      <legend class="md-feedback__title">
+        Was this page helpful?
+      </legend>
+      <div class="md-feedback__inner">
+        <div class="md-feedback__list">
+          
+            <button class="md-feedback__icon md-icon" type="submit" title="This page was helpful" data-md-value="1">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12 21.35-1.45-1.32C5.4 15.36 2 12.27 2 8.5 2 5.41 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.08C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.41 22 8.5c0 3.77-3.4 6.86-8.55 11.53L12 21.35Z"/></svg>
+            </button>
+          
+            <button class="md-feedback__icon md-icon" type="submit" title="This page could be improved" data-md-value="0">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12 21.35-1.45-1.32C5.4 15.36 2 12.27 2 8.5 2 5.41 4.42 3 7.5 3c.67 0 1.32.12 1.94.33L13 9.35l-4 5 3 7M16.5 3C19.58 3 22 5.41 22 8.5c0 3.77-3.4 6.86-8.55 11.53L12 21.35l-1-7 4.5-5-2.65-5.08C13.87 3.47 15.17 3 16.5 3Z"/></svg>
+            </button>
+          
+        </div>
+        <div class="md-feedback__note">
+          
+            <div data-md-value="1" hidden>
+              
+              
+                
+              
+              Thanks for your feedback, I like you too!
+            </div>
+          
+            <div data-md-value="0" hidden>
+              
+              
+                
+              
+              Thanks for your feedback! Help us improve this page by submitting an <a href="https://github.com/Joon-Klaps/viralgenie/issues/new/?labels=website%2Cdocumentation&template=website_feedback.yml&title=[Website feedback]+Databases" target="_blank" rel="noopener">issue</a>.
+            </div>
+          
+        </div>
+      </div>
+    </fieldset>
+  </form>
+
 
                 
               </article>
@@ -1227,7 +1351,7 @@ Set it with the variable `--bracken_db` -->
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../../workflow/iterative_refinement/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Variant analysis &amp; Iterative refinement">
+          <a href="../../parameters/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Parameters">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
@@ -1237,7 +1361,7 @@ Set it with the variable `--bracken_db` -->
                 Previous
               </span>
               <div class="md-ellipsis">
-                Variant analysis & Iterative refinement
+                Parameters
               </div>
             </div>
           </a>
@@ -1285,6 +1409,17 @@ Set it with the variable `--bracken_db` -->
     
     <a href="https://twitter.com/LemeyLab" target="_blank" rel="noopener" title="twitter.com" class="md-social__link">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M389.2 48h70.6L305.6 224.2 487 464H345L233.7 318.6 106.5 464H35.8l164.9-188.5L26.8 48h145.6l100.5 132.9L389.2 48zm-24.8 373.8h39.1L151.1 88h-42l255.3 333.8z"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/Joon-Klaps" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
     </a>
   
 </div>
@@ -1376,7 +1511,11 @@ Set it with the variable `--bracken_db` -->
     <script id="__config" type="application/json">{"base": "../..", "features": ["announce.dismiss", "content.action.edit", "content.code.annotate", "content.code.copy", "header.autohide", "navigation.footer", "navigation.instant", "navigation.sections", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.tracking", "search.share", "search.suggest", "toc.follow"], "search": "../../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.bd41221c.min.js"></script>
+      <script src="../../assets/javascripts/bundle.1e8ae164.min.js"></script>
+      
+        <script src="https://unpkg.com/tablesort@5.3.0/dist/tablesort.min.js"></script>
+      
+        <script src="../../javascripts/tablesort.js"></script>
       
     
   </body>

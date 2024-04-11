@@ -18,7 +18,7 @@
       
       
       <link rel="icon" href="images/ViralGenie-nf-core-theme.png">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.15">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.17">
     
     
       
@@ -26,7 +26,7 @@
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.7e359304.min.css">
+      <link rel="stylesheet" href="assets/stylesheets/main.bcfcd587.min.css">
       
         
         <link rel="stylesheet" href="assets/stylesheets/palette.06af60db.min.css">
@@ -273,6 +273,23 @@
         </a>
       </li>
     
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="parameters/" class="md-tabs__link">
+        
+  
+    
+  
+  Parameters
+
+      </a>
+    </li>
   
 
       
@@ -617,11 +634,11 @@
   
   
     <li class="md-nav__item">
-      <a href="workflow/assembly_polishing/" class="md-nav__link">
+      <a href="workflow/metagenomic_diversity/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Assembly polishing
+    Metagenomic diversity
   </span>
   
 
@@ -638,7 +655,28 @@
   
   
     <li class="md-nav__item">
-      <a href="workflow/iterative_refinement/" class="md-nav__link">
+      <a href="workflow/assembly_polishing/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Assembly & Polishing
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="workflow/variant_and_refinement/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -652,9 +690,50 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="workflow/consensus_qc/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Consensus evaluation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="parameters/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Parameters
+  </span>
+  
+
+      </a>
     </li>
   
 
@@ -678,10 +757,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
         
           
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
             
   
   <span class="md-ellipsis">
@@ -692,8 +771,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             Customisation
           </label>
@@ -821,7 +900,7 @@
 <!-- [![Get help on Slack](http://img.shields.io/badge/slack-nf--core%20%23viralgenie-4A154B?labelColor=000000&logo=slack)](https://nfcore.slack.com/channels/viralgenie)-->
 
 <h2 id="introduction">Introduction</h2>
-<p><strong>Joon-Klaps/viralgenie</strong> is a bioinformatics best-practice analysis pipeline for reconstructing consensus genomes and to identify intra-host variants from metagenomic sequencing data or enriched based sequencing data like hybrid capture.</p>
+<p><strong>Viralgenie</strong> is a bioinformatics best-practice analysis pipeline for reconstructing consensus genomes and to identify intra-host variants from metagenomic sequencing data or enriched based sequencing data like hybrid capture.</p>
 <h2 id="pipeline-summary">Pipeline summary</h2>
 <p><img alt="viralgenie-workflow" src="images/metromap_style_pipeline_workflow_viralgenie.png" /></p>
 <ol>
@@ -868,8 +947,8 @@
 <li>Variant calling and filtering (<a href="http://samtools.github.io/bcftools/bcftools.html"><code>BCFTools</code></a>,<a href="https://andersen-lab.github.io/ivar/html/manualpage.html"><code>iVar</code></a>)</li>
 <li>Create consensus genome (<a href="http://samtools.github.io/bcftools/bcftools.html"><code>BCFTools</code></a>,<a href="https://andersen-lab.github.io/ivar/html/manualpage.html"><code>iVar</code></a>)</li>
 <li>Repeat step 10-13 multiple times for the denovo contig route</li>
-<li>Contig evaluation and annotation (<a href="http://quast.sourceforge.net/quast"><code>QUAST</code></a>,<a href="https://bitbucket.org/berkeleylab/checkv/src/master/"><code>CheckV</code></a>,<a href="https://blast.ncbi.nlm.nih.gov/Blast.cgi"><code>blastn</code></a>, <a href="https://github.com/soedinglab/MMseqs2/wiki#batch-sequence-searching-using-mmseqs-search"><code>mmseqs-search</code></a>)</li>
-<li>Present QC and visualisation for raw read, alignment, assembly, variant calling and consensus calling results (<a href="http://multiqc.info/"><code>MultiQC</code></a>)</li>
+<li>Consensus evaluation and annotation (<a href="http://quast.sourceforge.net/quast"><code>QUAST</code></a>,<a href="https://bitbucket.org/berkeleylab/checkv/src/master/"><code>CheckV</code></a>,<a href="https://blast.ncbi.nlm.nih.gov/Blast.cgi"><code>blastn</code></a>, <a href="https://github.com/soedinglab/MMseqs2/wiki#batch-sequence-searching-using-mmseqs-search"><code>mmseqs-search</code></a>)</li>
+<li>Result summary visualisation for raw read, alignment, assembly, variant calling and consensus calling results (<a href="http://multiqc.info/"><code>MultiQC</code></a>)</li>
 </ol>
 <h2 id="usage">Usage</h2>
 <div class="admonition note">
@@ -877,11 +956,11 @@
 <p>If you are new to Nextflow and nf-core, please refer to <a href="https://nf-co.re/docs/usage/installation">this page</a> on how to set-up Nextflow. Make sure to <a href="https://nf-co.re/docs/usage/introduction#how-to-run-a-pipeline">test your setup</a> with <code>-profile test</code> before running the workflow on actual data.</p>
 </div>
 <p>Now, you can run the pipeline using:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>nextflow<span class="w"> </span>run<span class="w"> </span>Joon-Klaps/viralgenie<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">   </span>-profile<span class="w"> </span>&lt;docker/singularity/.../institute&gt;<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">   </span>--input<span class="w"> </span>samplesheet.csv<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">   </span>--outdir<span class="w"> </span>&lt;OUTDIR&gt;
-</code></pre></div>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>nextflow<span class="w"> </span>run<span class="w"> </span>Joon-Klaps/viralgenie<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">   </span>-profile<span class="w"> </span>&lt;docker/singularity/.../institute&gt;<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">   </span>--input<span class="w"> </span>samplesheet.csv<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">   </span>--outdir<span class="w"> </span>&lt;OUTDIR&gt;
+</span></code></pre></div>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>Please provide pipeline parameters via the CLI or Nextflow <code>-params-file</code> option. Custom config files including those provided by the <code>-c</code> Nextflow option can be used to provide any configuration <em><strong>except for parameters</strong></em>;
@@ -896,8 +975,6 @@
 <li><a href="https://github.com/LianaKafetzopoulou"><code>Liana Kafetzopoulou</code></a></li>
 <li><a href="https://nf-co.re/"><code>nf-core community</code></a></li>
 </ul>
-<!-- TODO nf-core: If applicable, make list of people who have also contributed -->
-
 <h2 id="contributions-and-support">Contributions and Support</h2>
 <p>If you would like to contribute to this pipeline, please see the <a href="https://github.io/Joon-klaps/viralgenie/CONTRIBUTING">contributing guidelines</a>.</p>
 <!--
@@ -933,6 +1010,46 @@ For further information or help, don't hesitate to get in touch on the [Slack `#
   
 
 
+
+  <form class="md-feedback" name="feedback" hidden>
+    <fieldset>
+      <legend class="md-feedback__title">
+        Was this page helpful?
+      </legend>
+      <div class="md-feedback__inner">
+        <div class="md-feedback__list">
+          
+            <button class="md-feedback__icon md-icon" type="submit" title="This page was helpful" data-md-value="1">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12 21.35-1.45-1.32C5.4 15.36 2 12.27 2 8.5 2 5.41 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.08C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.41 22 8.5c0 3.77-3.4 6.86-8.55 11.53L12 21.35Z"/></svg>
+            </button>
+          
+            <button class="md-feedback__icon md-icon" type="submit" title="This page could be improved" data-md-value="0">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12 21.35-1.45-1.32C5.4 15.36 2 12.27 2 8.5 2 5.41 4.42 3 7.5 3c.67 0 1.32.12 1.94.33L13 9.35l-4 5 3 7M16.5 3C19.58 3 22 5.41 22 8.5c0 3.77-3.4 6.86-8.55 11.53L12 21.35l-1-7 4.5-5-2.65-5.08C13.87 3.47 15.17 3 16.5 3Z"/></svg>
+            </button>
+          
+        </div>
+        <div class="md-feedback__note">
+          
+            <div data-md-value="1" hidden>
+              
+              
+                
+              
+              Thanks for your feedback, I like you too!
+            </div>
+          
+            <div data-md-value="0" hidden>
+              
+              
+                
+              
+              Thanks for your feedback! Help us improve this page by submitting an <a href="https://github.com/Joon-Klaps/viralgenie/issues/new/?labels=website%2Cdocumentation&template=website_feedback.yml&title=[Website feedback]+Viralgenie" target="_blank" rel="noopener">issue</a>.
+            </div>
+          
+        </div>
+      </div>
+    </fieldset>
+  </form>
 
 
                 
@@ -1000,6 +1117,17 @@ For further information or help, don't hesitate to get in touch on the [Slack `#
     
     <a href="https://twitter.com/LemeyLab" target="_blank" rel="noopener" title="twitter.com" class="md-social__link">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M389.2 48h70.6L305.6 224.2 487 464H345L233.7 318.6 106.5 464H35.8l164.9-188.5L26.8 48h145.6l100.5 132.9L389.2 48zm-24.8 373.8h39.1L151.1 88h-42l255.3 333.8z"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/Joon-Klaps" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
     </a>
   
 </div>
@@ -1091,7 +1219,11 @@ For further information or help, don't hesitate to get in touch on the [Slack `#
     <script id="__config" type="application/json">{"base": ".", "features": ["announce.dismiss", "content.action.edit", "content.code.annotate", "content.code.copy", "header.autohide", "navigation.footer", "navigation.instant", "navigation.sections", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.tracking", "search.share", "search.suggest", "toc.follow"], "search": "assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="assets/javascripts/bundle.bd41221c.min.js"></script>
+      <script src="assets/javascripts/bundle.1e8ae164.min.js"></script>
+      
+        <script src="https://unpkg.com/tablesort@5.3.0/dist/tablesort.min.js"></script>
+      
+        <script src="javascripts/tablesort.js"></script>
       
     
   </body>
