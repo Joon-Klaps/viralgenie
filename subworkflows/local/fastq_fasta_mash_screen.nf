@@ -43,6 +43,8 @@ workflow FASTQ_FASTA_MASH_SCREEN {
     MASH_SCREEN ( ch_input_screen.query, ch_input_screen.sequences )
     ch_versions = ch_versions.mix(MASH_SCREEN.out.versions)
 
+
+    // TODO: write a script that extracts the top hit from the screen output
     out = MASH_SCREEN.out.screen
 
     emit:
