@@ -107,7 +107,8 @@ def read_in_mash(args):
     CHUNKSIZE= args.chunksize
     THRESHOLD= 1 - args.score # args.score is ANI, mash calculates distances, so we need to invert the score
 
-    output = pd.DataFrame()
+    first_chunk = True  # Flag to track if it's the first chunk
+
     logger.info("Read in file %s", INPUT)
     # see issue 105
     with pd.read_csv(INPUT, sep="\t", encoding="utf-8", index_col="#query", chunksize=CHUNKSIZE) as reader:
@@ -118,18 +119,35 @@ def read_in_mash(args):
             # Select only lower triangle
             lower_triangle = long_df[long_df['#query'] >= long_df['target']]
 
-            # Remove what we don't need
-            filtered_df = lower_triangle[(lower_triangle['weight'] < THRESHOLD) & (lower_triangle['weight'] != 0)]
+            if first_chunk:
+                # Create Igraph object
+                graph = ig.Graph.TupleList(lower_triangle.itertuples(index=False), directed=False, weights=True)
+                graph = filter_network(graph, THRESHOLD)
+                first_chunk = False  # Set flag to False after processing the first chunk
+            else:
+                graph_new = ig.Graph.TupleList(lower_triangle.itertuples(index=False), directed=False, weights=True)
+                graph_new = filter_network(graph_new, THRESHOLD)
+                graph = ig.Graph.union(graph, graph_new)
 
-            output = pd.concat([output,filtered_df], ignore_index=True)
+            logger.info("Created the network graph with %d nodes", len(graph.vs))
 
-            logger.info("Processed chunk, current dataframe size: %d", len(output.index))
+    return graph
 
-    # Create Igraph object
-    G = ig.Graph.TupleList(output.itertuples(index=False), directed=False, weights=True)
-    logger.info("Created the network graph with %d nodes", len(G.vs))
+def filter_network(network, threshold):
+    """
+    Filter the network based on the given score
+    """
+    filtered_network = network.copy()
 
-    return G
+    # Get a copy of the edges before removal for iteration
+    edges_to_remove = [
+            (edge.source, edge.target) for edge in filtered_network.es if edge["weight"] >= threshold or edge["weight"] == 0
+        ]
+
+    # Remove edges based on the specified conditions
+    filtered_network.delete_edges(edges_to_remove)
+
+    return filtered_network
 
 def cluster_network(network, method):
     """
