@@ -19,7 +19,7 @@ workflow FASTQ_FASTA_MASH_SCREEN {
     //
     ch_input_cat = fasta_reads.map{meta, fasta, reads -> [meta, reads]}
     CAT_CAT_READS ( ch_input_cat )
-    ch_versions = ch_versions.mix(CAT_CAT_READS.versions)
+    ch_versions = ch_versions.mix(CAT_CAT_READS.out.versions)
 
 
     //
@@ -27,9 +27,9 @@ workflow FASTQ_FASTA_MASH_SCREEN {
     //
     ch_input_sketch = fasta_reads.map{meta, fasta, reads -> [meta, fasta]}
     MASH_SKETCH ( ch_input_sketch )
-    ch_versions = ch_versions.mix(MASH_SKETCH.versions)
+    ch_versions = ch_versions.mix(MASH_SKETCH.out.versions)
 
-    ch_input_screen = CAT_CAT_READS.out.cat
+    ch_input_screen = CAT_CAT_READS.out.file_out
         .join(MASH_SKETCH.out.mash)
         .multiMap{
             meta, fastq, sketch ->
@@ -41,7 +41,7 @@ workflow FASTQ_FASTA_MASH_SCREEN {
     // Identify best hits from the reference sketch.
     //
     MASH_SCREEN ( ch_input_screen.query, ch_input_screen.sequences )
-    ch_versions = ch_versions.mix(MASH_SCREEN.versions)
+    ch_versions = ch_versions.mix(MASH_SCREEN.out.versions)
 
     out = MASH_SCREEN.out.screen
 

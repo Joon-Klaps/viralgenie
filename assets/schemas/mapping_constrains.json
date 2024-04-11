@@ -64,22 +64,6 @@
                     }
                 ]
             },
-            "segment": {
-                "errorMessage": "Segment cannot contain spaces or special characters with the exception of '-' and '.'. Segment is unique in combination with species",
-                "meta": ["segment"],
-                "anyOf": [
-                    {
-                        "type": "string",
-                        "pattern": "^(?!.*\\_)[A-Za-z0-9\\-\\.]+$",
-                        "dependentRequired": ["species"],
-                        "unique": ["species"]
-                    },
-                    {
-                        "type": "string",
-                        "maxLength": 0
-                    }
-                ]
-            },
             "refine": {
                 "errorMessage": "Refine can only be true (doesn't need  or false",
                 "meta": ["refine"],
