@@ -16,9 +16,38 @@
     margin-bottom: 0.9rem;
   }
 
+  .center {
+    display: block;
+    margin: 0 auto;
+  }
+
   [dir="ltr"] .md-nav--secondary .md-nav__list {
     padding-left: 1rem;
   }
+  .md-typeset .admonition,
+  .md-typeset details {
+    font-size: 0.77rem;
+  }
+
+  /* Bigger table font size */
+  .md-typeset table:not([class]) {
+    font-size: 0.7rem;
+  }
+
+  /* @media only screen and (min-width: 76.25em) {
+    .parameters .md-main__inner {
+      max-width: none;
+    }
+    .parameters .md-sidebar--primary {
+      left: 0;
+    }
+    .parameters .md-sidebar--secondary {
+      right: 0;
+      margin-left: 0;
+      -webkit-transform: none;
+      transform: none;
+    }
+  } */
 }
 
 [data-md-color-scheme="slate"] {
@@ -31,8 +60,4 @@
     background-color: #6a7cf8;
     color: white;
   }
-}
-/* Bigger table font size */
-.md-typeset table:not([class]) {
-  font-size: 0.8rem;
 }

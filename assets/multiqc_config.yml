@@ -95,16 +95,16 @@ module_order:
       anchor: "quast_trinity"
       path_filters:
         - "*_trinity.tsv"
-  - "samtools":
-      name: "CLUSTER: Samtools Stats"
-  - "bcftools":
-      name: "CLUSTER: Bcftools"
   - "picard":
       name: "CLUSTER: Picard"
   - "umitools":
       name: "CLUSTER: UMI-tools"
+  - "samtools":
+      name: "CLUSTER: Samtools Stats"
   - "mosdepth":
       name: "CLUSTER: mosdepth"
+  - "bcftools":
+      name: "CLUSTER: Bcftools"
   - "custom_content"
 
 # Summary table names
@@ -237,3 +237,5 @@ extra_fn_clean_exts:
   - ".norm"
   - ".consensus_bcftools"
   - ".consensus_ivar"
+  - "-CONSTRAIN_constrain"
+  - "-CONSTRAIN_itvariant_calling"

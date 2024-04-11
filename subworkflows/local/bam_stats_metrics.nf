@@ -39,7 +39,7 @@ workflow BAM_STATS_METRICS {
     ch_versions  = ch_versions.mix(BAM_STATS_SAMTOOLS.out.versions)
     ch_multiqc   = ch_multiqc.mix(BAM_STATS_SAMTOOLS.out.stats)
     ch_multiqc   = ch_multiqc.mix(BAM_STATS_SAMTOOLS.out.flagstat)
-    ch_multiqc   = ch_multiqc.mix(BAM_STATS_SAMTOOLS.out.idxstats)
+    // ch_multiqc   = ch_multiqc.mix(BAM_STATS_SAMTOOLS.out.idxstats)
 
 
     emit:

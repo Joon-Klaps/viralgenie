@@ -80,8 +80,8 @@ def parse_args(argv=None):
     parser.add_argument(
         "--sample_metadata",
         metavar="SAMPLE METADATA",
-        help="Sample metadata file containing information on the samples, supported formats: '.csv', '.tsv'",
-        type=lambda s: file_choices(("csv", "tsv"), s),
+        help="Sample metadata file containing information on the samples, supported formats: '.csv', '.tsv', '.yaml', '.yml'",
+        type=lambda s: file_choices(("csv", "tsv", "yaml","yml"), s),
     )
 
     parser.add_argument(

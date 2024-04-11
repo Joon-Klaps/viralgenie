@@ -42,7 +42,7 @@ def parse_args(argv=None):
         "--mpileup",
         metavar="MPILEUP FILE",
         type=Path,
-        help="Mpileup file in (default) tsv format.",
+        help="Mpileup file in (default) tsv format, typically from iVar consensus.",
     )
 
     parser.add_argument(
@@ -143,14 +143,15 @@ def alignment_replacement(reference_record, consensus_record, regions):
     alignments = aligner.align(str(reference_record.seq), str(consensus_record.seq))
     alignment = alignments[0]
 
-    target_locations = alignment.aligned[0]
-    query_locations = alignment.aligned[1]
+    target_locations = alignment.aligned[0] # Reference locations
+    query_locations = alignment.aligned[1]  # Consensus locations
 
     logger.debug(alignment.aligned)
 
     with open("alignment.txt", "w") as f:
         f.write(str(alignment))
 
+    # Account for the gaps in the alignment, by updating the consensus indexes
     logger.info("> Finding target tuples")
     indexes_differences = find_target_tuples_sorted(regions, target_locations)
 
