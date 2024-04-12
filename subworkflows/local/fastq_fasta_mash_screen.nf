@@ -5,6 +5,7 @@
 include { CAT_CAT as CAT_CAT_READS } from '../../modules/nf-core/cat/cat/main'
 include { MASH_SKETCH              } from '../../modules/nf-core/mash/sketch/main'
 include { MASH_SCREEN              } from '../../modules/nf-core/mash/screen/main'
+include { SELECT_REFERENCE         } from '../../modules/local/select_reference/main'
 
 workflow FASTQ_FASTA_MASH_SCREEN {
 
@@ -43,12 +44,22 @@ workflow FASTQ_FASTA_MASH_SCREEN {
     MASH_SCREEN ( ch_input_screen.query, ch_input_screen.sequences )
     ch_versions = ch_versions.mix(MASH_SCREEN.out.versions)
 
+    //
+    // Isolate/extract the best hit from mash screen using custom script select_reference
+    //
+    ch_input_select_reference = MASH_SCREEN.out.screen.join(fasta_reads)
+    SELECT_REFERENCE ( ch_input_select_reference )
+    ch_versions = ch_versions.mix(SELECT_REFERENCE.out.versions)
 
-    // TODO: write a script that extracts the top hit from the screen output
-    out = MASH_SCREEN.out.screen
+    reference_fastq = SELECT_REFERENCE.out.fasta_reads
+        .map{
+            meta, json, fasta, reads ->
+            json = WorkflowCommons.getMapFromJson(json)
+            return [meta + json, fasta, reads]
+        }
 
     emit:
-    out      = out
-    versions = ch_versions                     // channel: [ versions.yml ]
+    reference_fastq = reference_fastq   // channel: [meta, fasta, reads]
+    versions        = ch_versions       // channel: [ versions.yml ]
 }
 

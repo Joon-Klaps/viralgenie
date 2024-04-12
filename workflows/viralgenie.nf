@@ -422,7 +422,8 @@ workflow VIRALGENIE {
             .branch{
                 meta, fasta, fastq ->
                 multiFastaRefine : meta.refine == true
-                singleFastaRefine : meta.refine == false}
+                singleFastaRefine : meta.refine == false
+            }
             .set{constrain_consensus_reads}
 
         // Select the correct reference
@@ -431,14 +432,16 @@ workflow VIRALGENIE {
         )
         ch_versions = ch_versions.mix(FASTQ_FASTA_MASH_SCREEN.out.versions)
 
-        FASTQ_FASTA_MASH_SCREEN.out.out.view{}
+        FASTQ_FASTA_MASH_SCREEN.out.reference_fastq.view{}
 
         // For QC we keep original sequence to compare to
-        ch_unaligned_raw_contigs = ch_unaligned_raw_contigs.mix(ch_map_seq_anno_combined)
+        ch_unaligned_raw_contigs = ch_unaligned_raw_contigs.mix(constrain_consensus_reads.singleFastaRefine)
 
 
         //Add to the consensus channel, which will be used for variant calling
-        ch_consensus_results_reads = ch_consensus_results_reads.mix(constrain_consensus_reads)
+        ch_consensus_results_reads = ch_consensus_results_reads
+            .mix(constrain_consensus_reads.singleFastaRefine)
+            .mix(FASTQ_FASTA_MASH_SCREEN.out.reference_fastq)
     }
 
     // After consensus sequences have been made, we still have to map against it and call variants

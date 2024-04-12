@@ -851,5 +851,15 @@
         {
             "$ref": "#/definitions/generic_options"
         }
-    ]
+    ],
+    "properties": {
+        "mash_sketch_size": {
+            "type": "integer",
+            "default": 4000
+        },
+        "mash_sketch_kmer_size": {
+            "type": "integer",
+            "default": 15
+        }
+    }
 }
