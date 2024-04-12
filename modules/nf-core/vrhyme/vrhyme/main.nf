@@ -11,7 +11,6 @@ process VRHYME_VRHYME {
     tuple val(meta), path(fasta), path(reads)
 
     output:
-    tuple val(meta), path("vRhyme_best_bins_fasta/")                , emit: bins
     tuple val(meta), path("**/vRhyme_best_bins.*.membership.tsv")   , emit: membership
     tuple val(meta), path("**/vRhyme_best_bins.*.summary.tsv")      , emit: summary
     path "versions.yml"                                             , emit: versions
@@ -29,8 +28,6 @@ process VRHYME_VRHYME {
         -o $prefix \\
         -t $task.cpus \\
         $args
-
-    mv $prefix/vRhyme_best_bins_fasta/ vRhyme_best_bins_fasta
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

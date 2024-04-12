@@ -21,7 +21,7 @@ description: A metagenomics analysis pipeline for eukaryotic viruses written in 
 
 ## Introduction
 
-**Joon-Klaps/viralgenie** is a bioinformatics best-practice analysis pipeline for reconstructing consensus genomes and to identify intra-host variants from metagenomic sequencing data or enriched based sequencing data like hybrid capture.
+**Viralgenie** is a bioinformatics best-practice analysis pipeline for reconstructing consensus genomes and to identify intra-host variants from metagenomic sequencing data or enriched based sequencing data like hybrid capture.
 
 ## Pipeline summary
 

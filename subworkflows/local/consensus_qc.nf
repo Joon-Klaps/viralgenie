@@ -140,7 +140,7 @@ workflow CONSENSUS_QC  {
     }
 
     if ( !params.skip_annotation){
-        ch_genomes_collect = ch_genome.collect{it[1]}.map{files -> [[id:"genomes_combined"], files]}
+        ch_genomes_collect = ch_genome.collect{it[1]}.map{files -> [[id:"all_genomes_annotation.hits"], files]}
         CAT_CAT_MMSEQS(
             ch_genomes_collect
         )

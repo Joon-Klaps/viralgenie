@@ -360,7 +360,7 @@ workflow VIRALGENIE {
                     params.call_intermediate_variants,
                     params.intermediate_variant_caller,
                     params.intermediate_consensus_caller,
-                    params.get_intermediate_stats,
+                    params.intermediate_mapping_stats,
                     params.min_mapped_reads,
                     params.min_contig_size,
                     params.max_n_perc
@@ -453,7 +453,7 @@ workflow VIRALGENIE {
             params.variant_caller,
             true,
             params.consensus_caller,
-            params.get_stats,
+            params.mapping_stats,
             params.min_mapped_reads,
             params.min_contig_size,
             params.max_n_perc
