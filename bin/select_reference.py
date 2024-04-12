@@ -57,7 +57,7 @@ def to_dict_remove_dups(sequences):
     return {record.id: record for record in sequences}
 
 
-def extract_hits(df, contigs, references, prefix):
+def extract_hits(df, references, prefix):
     """
     Extracts contigs hits from a DataFrame and writes them to a FASTA file.
 
@@ -98,12 +98,17 @@ def read_mash_screen(file):
     0.997039	3826/4000	121	0	OP958840
     0.997022	3825/4000	122	0	OP971202
     """
+
+    logger.info("Reading in the mash screen file...")
     df = pd.read_csv(file, sep="\t", header=None)
     df.columns = ["identity", "shared-hashes", "median-multiplicity", "p-value", "query-ID", "query-comment"]
-    df = df.sort_values(by=["identity", "shared-hashes"], ascending=False)
-    # take first hit
-    df = df.drop_duplicates(subset=["query-ID"], keep="first")
-    return df
+
+    logger.info("Removing duplicates and sorting by identity and shared-hashes...")
+    df['shared-hashes_num'] = df['shared-hashes'].str.split('/').str[0].astype(float)
+    df = df.sort_values(by=["identity", "shared-hashes_num"], ascending=False)
+    df = df.drop(columns=['shared-hashes_num'])
+
+    return df.iloc[[0]]
 
 
 def main(argv=None):
@@ -119,9 +124,9 @@ def main(argv=None):
 
     df = read_mash_screen(args.mash)
 
-    extract_hits(df, args.contigs, args.references, args.prefix)
+    extract_hits(df, args.references, args.prefix)
 
-    df.to_json(orient="records")
+    df.to_json(f"{args.prefix}.json",orient="records")
 
     return 0
 
