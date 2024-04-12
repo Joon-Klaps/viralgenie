@@ -27,6 +27,9 @@ Three assemblers are used, [SPAdes](http://cab.spbu.ru/software/spades/), [Megah
 ## Reference Matching
 The newly assembled contigs are compared to a reference sequence pool (--reference_pool) using a [BLASTn search](https://www.ncbi.nlm.nih.gov/books/NBK153387/). This process not only helps annotate the contigs but also assists in linking together sets of contigs that are distant within a single genome. Essentially, it aids in identifying contigs belonging to the same genomic segment and choosing the right reference for scaffolding purposes.
 
+> THIS IS A NEW LINE
+> The BLASTn search is performed with the `--blastn_db` parameter. The default is the latest clustered [Reference Viral DataBase (RVDB)](https://rvdb.dbi.udel.edu/).
+
 The top 5 hits for each contig are combined with the denovo contigs and send to the clustering step.
 
 > The reference pool can be specified with the `--reference_pool` parameter. The default is the latest clustered [Reference Viral DataBase (RVDB)](https://rvdb.dbi.udel.edu/).
