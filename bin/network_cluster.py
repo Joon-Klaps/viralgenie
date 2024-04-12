@@ -68,7 +68,7 @@ def parse_args(argv=None):
         metavar="CHUNKSIZE",
         help="The chunksize to read in the dataframe",
         type=int,
-        default=1000,
+        default=20000,
     )
 
     parser.add_argument(
