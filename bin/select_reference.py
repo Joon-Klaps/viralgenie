@@ -83,6 +83,7 @@ def extract_hits(df, references, prefix):
         for hit in df["query-ID"].unique():
             hit_name = hit.split(" ")[0]
             if hit_name in ref_records:
+                # Sometimes reads can have illegal characters in the header
                 ref_records[hit_name].id = ref_records[hit_name].id.replace("\\","_")
                 ref_records[hit_name].description = ref_records[hit_name].description.replace("\\","_")
                 SeqIO.write(ref_records[hit_name], f, "fasta")
