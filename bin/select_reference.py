@@ -83,6 +83,8 @@ def extract_hits(df, references, prefix):
         for hit in df["query-ID"].unique():
             hit_name = hit.split(" ")[0]
             if hit_name in ref_records:
+                ref_records[hit_name].id = ref_records[hit_name].id.replace("\\","_")
+                ref_records[hit_name].description = ref_records[hit_name].description.replace("\\","_")
                 SeqIO.write(ref_records[hit_name], f, "fasta")
         if f.tell() == init_position:
             logger.error("No reference sequences found in the hits. Exiting...")
@@ -126,7 +128,7 @@ def main(argv=None):
 
     extract_hits(df, args.references, args.prefix)
 
-    df.to_json(f"{args.prefix}.json",orient="records")
+    df.to_json(f"{args.prefix}.json",orient="records", lines=True)
 
     return 0
 

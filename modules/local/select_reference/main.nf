@@ -11,7 +11,7 @@ process SELECT_REFERENCE {
     tuple val(meta), path(screen), path(reference), path(reads)
 
     output:
-    tuple val(meta), path("*.json"), path("*_reference.fasta"), path(reads), emit: fasta_reads
+    tuple val(meta), path("*.json"), path("*_reference.fa"), path(reads), emit: fasta_reads
     path "versions.yml"                                                    , emit: versions
 
     when:
@@ -39,7 +39,7 @@ process SELECT_REFERENCE {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    touch ${prefix}_reference.fasta
+    touch ${prefix}_reference.fa
     touch ${prefix}.json
 
     cat <<-END_VERSIONS > versions.yml
