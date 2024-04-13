@@ -356,6 +356,26 @@ The results from the iterations are stored with the same structure as the final 
 
     The prefix of the sample is combined with the previous state of sample. For example, in the first iteration (directory `iterations/it1`), reads will be mapped to the [reference-assisted de novo consensus sequence](./workflow/assembly_polishing.md) (_ie_ `consensus`) and so the output file will be `assembly/polishing/iterations/it1/bwamem2/bam/<sample-id>/<sample-id>_cl#_consensus.bam`.
 
+### Reference refinement or selection
+
+The reference refinement/selection is done using [`mash`](https://mash.readthedocs.io/en/latest/index.html) tool. Here there reference file is sketched (`variants/mapping-info/mash/sketch`) and compared to the reads (`variants/mapping-info/mash/screen`) where the reference with the highest estimated avirage nucleotide identity (ANI) and shared hashes is selected (`variants/mapping-info/mash/select-ref`).
+
+???- abstract "Output files"
+
+    - `variants/mapping-info/mash`
+        - `sketch/<sample-id>_<constrain-id>-CONSTRAIN.msh`: The sketch file of the reads.
+        - `screen/<sample-id>_<constrain-id>-CONSTRAIN.screen`: The tab results file of the comparisons between references and reads.
+        - `select-ref/<sample-id>_<constrain-id>-CONSTRAIN.json`: The reference with the highest estimated ANI and shared hashes.
+
+???- info "Column names: mash-screen"
+
+    - identity
+    - shared-hashes
+    - median-multiplicity
+    - p-value
+    - query-ID
+    - query-comment
+
 
 ### Read mapping
 
