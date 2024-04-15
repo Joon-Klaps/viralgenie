@@ -92,22 +92,22 @@ An example mapping constrain samplesheet file consisting of 5 references, may lo
 === "TSV"
     ```tsv title="constrains-samplesheet.tsv"
     id	species	segment	selection	samples	sequence	definition
-    Lassa-L-dataset	LASV	L	True		LASV_L.multi.fasta	Collection of LASV sequences used for hybrid capture bait design, all publicly availble sequences of the L segment clustered at 99.5% similarity
-    Lassa-S-dataset	LASV	S	False	sample1;sample3	LASV_S.multi.fasta	Collection of LASV sequences used for hybrid capture bait design, all publicly availble sequences of the S segment clustered at 99.5% similarity
-    NC038709.1	HAZV	L	False	sample1;sample2	L-NC_038709.1.fasta	Hazara virus isolate JC280 segment L, complete sequence.
-    NC038710.1	HAZV	M	False		M-NC_038710.1.fasta	Hazara virus isolate JC280 segment M, complete sequence.
-    NC038711.1	HAZV	S	False		S-NC_038711.1.fasta	Hazara virus isolate JC280 segment S, complete sequence.
+    Lassa-L-dataset	LASV	L	true		LASV_L.multi.fasta	Collection of LASV sequences used for hybrid capture bait design, all publicly availble sequences of the L segment clustered at 99.5% similarity
+    Lassa-S-dataset	LASV	S	false	sample1;sample3	LASV_S.multi.fasta	Collection of LASV sequences used for hybrid capture bait design, all publicly availble sequences of the S segment clustered at 99.5% similarity
+    NC038709.1	HAZV	L	false	sample1;sample2	L-NC_038709.1.fasta	Hazara virus isolate JC280 segment L, complete sequence.
+    NC038710.1	HAZV	M	false		M-NC_038710.1.fasta	Hazara virus isolate JC280 segment M, complete sequence.
+    NC038711.1	HAZV	S	false		S-NC_038711.1.fasta	Hazara virus isolate JC280 segment S, complete sequence.
 
     ```
 
 === "CSV"
     ```csv title="constrains-samplesheet.csv"
     id,species,segment,selection,samples,sequence,definition
-    Lassa-L-dataset,LASV,L,True,,LASV_L.multi.fasta,"Collection of LASV sequences used for hybrid capture bait design, all publicly availble sequences of the L segment clustered at 99.5% similarity"
-    Lassa-S-dataset,LASV,S,False,"sample1;sample3",LASV_S.multi.fasta,"Collection of LASV sequences used for hybrid capture bait design, all publicly availble sequences of the S segment clustered at 99.5% similarity"
-    NC038709.1,HAZV,L,False,"sample1;sample2",L-NC_038709.1.fasta,"Hazara virus isolate JC280 segment L, complete sequence."
-    NC038710.1,HAZV,M,False,,M-NC_038710.1.fasta,"Hazara virus isolate JC280 segment M, complete sequence."
-    NC038711.1,HAZV,S,False,,S-NC_038711.1.fasta,"Hazara virus isolate JC280 segment S, complete sequence."
+    Lassa-L-dataset,LASV,L,true,,LASV_L.multi.fasta,"Collection of LASV sequences used for hybrid capture bait design, all publicly availble sequences of the L segment clustered at 99.5% similarity"
+    Lassa-S-dataset,LASV,S,false,"sample1;sample3",LASV_S.multi.fasta,"Collection of LASV sequences used for hybrid capture bait design, all publicly availble sequences of the S segment clustered at 99.5% similarity"
+    NC038709.1,HAZV,L,false,"sample1;sample2",L-NC_038709.1.fasta,"Hazara virus isolate JC280 segment L, complete sequence."
+    NC038710.1,HAZV,M,false,,M-NC_038710.1.fasta,"Hazara virus isolate JC280 segment M, complete sequence."
+    NC038711.1,HAZV,S,false,,S-NC_038711.1.fasta,"Hazara virus isolate JC280 segment S, complete sequence."
 
     ```
 
@@ -117,33 +117,33 @@ An example mapping constrain samplesheet file consisting of 5 references, may lo
     - id: Lassa-L-dataset
     species: LASV
     segment: L
-    selection: True
+    selection: true
     sequence: LASV_L.multi.fasta
     definition: 'Collection of LASV sequences used for hybrid capture bait design, all publicly availble sequences of the L segment clustered at 99.5% similarity'
     - id: Lassa-S-dataset
     species: LASV
     segment: S
-    selection: False
+    selection: false
     samples: sample1;sample3
     sequence: LASV_S.multi.fasta
             definition: 'Collection of LASV sequences used for hybrid capture bait design, all publicly availble sequences of the S segment clustered at 99.5% similarity'
     - id: NC038709.1
     species: HAZV
     segment: L
-    selection: False
+    selection: false
     samples: sample1;sample2
     sequence: L-NC_038709.1.fasta
             definition: 'Hazara virus isolate JC280 segment L, complete sequence.'
     - id: NC038710.1
     species: HAZV
     segment: M
-    selection: False
+    selection: false
     sequence: M-NC_038710.1.fasta
     definition: 'Hazara virus isolate JC280 segment M, complete sequence.'
     - id: NC038711.1
     species: HAZV
     segment: S
-    selection: False
+    selection: false
     sequence: S-NC_038711.1.fasta
     definition: 'Hazara virus isolate JC280 segment S, complete sequence.'
     ```
