@@ -62,14 +62,14 @@ def parse_args(argv=None):
         default=0.80,
     )
 
-    # parser.add_argument(
-    #     "-c",
-    #     "--chunksize",
-    #     metavar="CHUNKSIZE",
-    #     help="The chunksize to read in the dataframe",
-    #     type=int,
-    #     default=20000,
-    # )
+    parser.add_argument(
+        "-f",
+        "--force_visualization",
+        metavar="FORCE-VISUALIZATION",
+        help="Force a visualization despite the size of the network.",
+        type=bool,
+        default=False,
+    )
 
     parser.add_argument(
         "-l",
@@ -110,9 +110,14 @@ def read_in_mash(args):
 
     logger.info("Read in file %s", FILE)
 
-    # see issue 105
     row_names = np.loadtxt(FILE, delimiter=SEP, usecols=(0,), dtype=str, comments=COMMENT_CHAR).tolist()
-    matrix = np.loadtxt(FILE, delimiter=SEP, usecols=range(1, len(row_names) + 1), comments=COMMENT_CHAR, dtype=float)
+    matrix = np.loadtxt(
+        FILE,
+        delimiter=SEP,
+        usecols=range(1, len(row_names) + (0 if len(row_names) == 1 else 1)), # if only one column, you'll get a index error
+        comments=COMMENT_CHAR,
+        dtype=float
+    )
     graph = ig.Graph.Weighted_Adjacency(matrix, mode="lower", attr="weight", loops=False)
 
     logger.info("Created the network graph with %d nodes", len(row_names))
@@ -175,11 +180,14 @@ def to_tsv(vertices_names, prefix):
         for line in indexed_vertices:
             file.write(f"{line[0]}\t{line[1]}\n")
 
+    logger.info("Wrote network to file")
+
 def visualize_network(partitions, network, prefix):
     """
     Visualize the network
     """
     # Set the layout of the network
+    logger.info("Determining layout of network")
     layout = network.layout("kk")
     logger.info("Determined layout of network")
 
@@ -192,7 +200,11 @@ def visualize_network(partitions, network, prefix):
 def main(argv=None):
     """Coordinate argument parsing and program execution."""
     args = parse_args(argv)
-    logging.basicConfig(level=args.log_level, format="[%(levelname)s] %(message)s")
+    logging.basicConfig(
+        level=args.log_level,
+        format="[%(asctime)s - %(levelname)s] %(message)s",
+        datefmt='%Y-%m-%d %H:%M:%S',
+        )
     logger.info("Start clustering")
     if not args.file_in.is_file():
         logger.error(f"The given input file {args.file_in} was not found!")
@@ -205,7 +217,11 @@ def main(argv=None):
 
     to_tsv(vertices_names, args.prefix)
 
-    visualize_network(clusters, network, args.prefix)
+    # see issue 105
+    if ( args.force_visualization or len(network.vs) < 10000 ):
+        visualize_network(clusters, network, args.prefix)
+    else :
+        logger.info("Network is too large to visualize, skipping visualization.")
 
     logger.info("All done!")
 
