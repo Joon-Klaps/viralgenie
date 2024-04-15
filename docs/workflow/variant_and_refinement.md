@@ -26,6 +26,25 @@ The variant calling and consensus refinement step consists of the following step
 !!! info
     The variant calling and consensus refinement step can be skipped with the argument `--skip_iterative_refinement` and `--skip_variant_calling`, see the [parameters iterative refinement section](../parameters.md#iterative-consensus-refinement) and [parameters variant analysis section](../parameters.md#variant-analysis), respectively, for all relevant arguments to control the variant analysis steps.
 
+## Selection of reference
+
+The reference genome(s) can be supplied with the [samplesheet `--mapping_constrains`](../usage.md#mapping-constrains), here the reference can be a multiFasta file representing a range of genomes that could be valid reference genomes. Here, viralgenie supports a selection procedure where the reference genomes that shares the highest number of [k-mer's](https://ucdavis-bioinformatics-training.github.io/2020-Genome_Assembly_Workshop/kmers/kmers#:~:text=A%20K%2Dmer%20is%20a,%2C%20GGC%2C%20GCC%2C%20CCG.) with the read files will be selected and kept for read mapping, variant calling and consensus genome reconstruction.
+
+```mermaid
+graph LR
+    A[reference genomes] --> B[Sketching]
+    B --> C[Distance evaluation]
+    D[Reads] --> C
+    C --> E[Reference selection]
+```
+
+This procedure is done with [`Mash`](https://mash.readthedocs.io/en/latest/) where the reads are compared to the reference genomes and the reference genome with the highest number of shared k-mers is selected. The number of shared k-mers can be specified with the `--mash_sketch_kmer_size` (default: `15`), and the number of sketches to create with `--mash_sketch_kmer_size`, the default is `4000`.
+
+!!! Tip
+
+    - As in any k-mer based method, larger k-mers will provide more specificity, while smaller k-mers will provide more sensitivity. Larger genomes will also require larger k-mers to avoid k-mers that are shared by chance
+    - Sketch size corresponds to the number of (non-redundant) min-hashes that are kept. Larger sketches will better represent the sequence, but at the cost of larger sketch files and longer comparison times.
+
 
 ## Mapping of reads
 

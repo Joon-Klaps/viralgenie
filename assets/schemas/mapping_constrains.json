@@ -64,9 +64,9 @@
                     }
                 ]
             },
-            "refine": {
-                "errorMessage": "Refine can only be true (doesn't need  or false",
-                "meta": ["refine"],
+            "selection": {
+                "errorMessage": "Selection can only be true or false",
+                "meta": ["selection"],
                 "type": "boolean",
                 "default": false
             },
