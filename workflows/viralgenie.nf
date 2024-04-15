@@ -182,6 +182,7 @@ workflow VIRALGENIE {
     ch_ref_pool     = Channel.empty()
     ch_blast_refdb  = Channel.empty()
     ch_blast_annodb = Channel.empty()
+
     if ( (!params.skip_assembly && !params.skip_polishing) || (!params.skip_consensus_qc && !params.skip_blast_qc)){
         ch_blastdb_in = Channel.empty()
         // see issue #56
@@ -358,7 +359,7 @@ workflow VIRALGENIE {
                     params.call_intermediate_variants,
                     params.intermediate_variant_caller,
                     params.intermediate_consensus_caller,
-                    params.get_intermediate_stats,
+                    params.intermediate_mapping_stats,
                     params.min_mapped_reads,
                     params.min_contig_size,
                     params.max_n_perc
@@ -441,7 +442,7 @@ workflow VIRALGENIE {
             params.variant_caller,
             true,
             params.consensus_caller,
-            params.get_stats,
+            params.mapping_stats,
             params.min_mapped_reads,
             params.min_contig_size,
             params.max_n_perc
@@ -456,7 +457,7 @@ workflow VIRALGENIE {
     ch_blast_summary      = Channel.empty()
     ch_annotation_summary = Channel.empty()
 
-    if ( !params.skip_consensus_qc && (!params.skip_assembly && !params.skip_variant_calling) ) {
+    if ( !params.skip_consensus_qc  && (!params.skip_assembly || !params.skip_variant_calling) ) {
 
         CONSENSUS_QC(
             ch_consensus,

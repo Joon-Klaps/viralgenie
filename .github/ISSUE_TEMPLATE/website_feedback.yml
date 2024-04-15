@@ -1,0 +1,11 @@
+name: Website feedback
+description: Report an issue or suggest an improvement for the viralgenie website
+labels: ["website", "documentation"]
+body:
+  - type: textarea
+    id: feedback
+    attributes:
+      label: Feedback
+      description: Please describe the issue or suggestion you have for the website.
+    validations:
+      required: true

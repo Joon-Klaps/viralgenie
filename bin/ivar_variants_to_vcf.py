@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# Taken from https://github.com/nf-core/viralrecon/blob/master/bin/ivar_varaints_to_vcf.py
 
 import argparse
 import errno
@@ -10,9 +11,6 @@ from email.charset import QP
 import numpy as np
 from Bio import SeqIO
 from scipy.stats import fisher_exact
-
-# Taken from https://github.com/nf-core/viralrecon/blob/master/bin/ivar_varaints_to_vcf.py
-
 
 def parse_args(args=None):
     Description = "Convert iVar variants TSV file to VCF format."
