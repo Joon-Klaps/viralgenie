@@ -9,7 +9,7 @@ from pathlib import Path
 
 import igraph as ig
 import leidenalg as la
-import pandas as pd
+import numpy as np
 
 logger = logging.getLogger()
 
@@ -62,14 +62,14 @@ def parse_args(argv=None):
         default=0.80,
     )
 
-    parser.add_argument(
-        "-c",
-        "--chunksize",
-        metavar="CHUNKSIZE",
-        help="The chunksize to read in the dataframe",
-        type=int,
-        default=20000,
-    )
+    # parser.add_argument(
+    #     "-c",
+    #     "--chunksize",
+    #     metavar="CHUNKSIZE",
+    #     help="The chunksize to read in the dataframe",
+    #     type=int,
+    #     default=20000,
+    # )
 
     parser.add_argument(
         "-l",
@@ -103,33 +103,21 @@ def read_in_mash(args):
     """
     Read in the file and return a networkx graph object
     """
-    INPUT= args.file_in
-    CHUNKSIZE= args.chunksize
+    FILE= args.file_in
     THRESHOLD= 1 - args.score # args.score is ANI, mash calculates distances, so we need to invert the score
+    SEP = "\t"
+    COMMENT_CHAR = "#"
 
-    first_chunk = True  # Flag to track if it's the first chunk
+    logger.info("Read in file %s", FILE)
 
-    logger.info("Read in file %s", INPUT)
     # see issue 105
-    with pd.read_csv(INPUT, sep="\t", encoding="utf-8", index_col="#query", chunksize=CHUNKSIZE) as reader:
-        for chunk in reader:
-            # wide to long
-            long_df = chunk.reset_index().melt(id_vars="#query", var_name="target", value_name="weight")
+    row_names = np.loadtxt(FILE, delimiter=SEP, usecols=(0,), dtype=str, comments=COMMENT_CHAR).tolist()
+    matrix = np.loadtxt(FILE, delimiter=SEP, usecols=range(1, len(row_names) + 1), comments=COMMENT_CHAR, dtype=float)
+    graph = ig.Graph.Adjacency(matrix, mode="lower", loops=False)
 
-            # Select only lower triangle
-            lower_triangle = long_df[long_df['#query'] >= long_df['target']]
+    logger.info("Created the network graph with %d nodes", len(row_names))
 
-            if first_chunk:
-                # Create Igraph object
-                graph = ig.Graph.TupleList(lower_triangle.itertuples(index=False), directed=False, weights=True)
-                graph = filter_network(graph, THRESHOLD)
-                first_chunk = False  # Set flag to False after processing the first chunk
-            else:
-                graph_new = ig.Graph.TupleList(lower_triangle.itertuples(index=False), directed=False, weights=True)
-                graph_new = filter_network(graph_new, THRESHOLD)
-                graph = ig.Graph.union(graph, graph_new)
-
-            logger.info("Created the network graph with %d nodes", len(graph.vs))
+    graph.vs["name"] = row_names
 
     return graph
 
@@ -211,6 +199,7 @@ def main(argv=None):
         sys.exit(2)
 
     network = read_in_file(args)
+    network = filter_network(network, args.score)
 
     clusters, vertices_names = cluster_network(network, args.cluster_algorithm)
 

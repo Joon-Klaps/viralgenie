@@ -43,7 +43,7 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
     SAMTOOLS_FAIDX ( ch_reference, [[],[]])
     ch_versions  = ch_versions.mix(SAMTOOLS_FAIDX.out.versions)
 
-    // remove
+    // remove runs with low number of mapped reads
     BAM_FLAGSTAT_FILTER ( ch_bam, min_mapped_reads )
     ch_multiqc   = ch_multiqc.mix(BAM_FLAGSTAT_FILTER.out.bam_fail_mqc.ifEmpty([]))
     ch_versions  = ch_versions.mix(BAM_FLAGSTAT_FILTER.out.versions)
