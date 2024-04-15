@@ -1,7 +1,7 @@
 Changes in module 'nf-core/vrhyme/vrhyme'
 --- modules/nf-core/vrhyme/vrhyme/main.nf
 +++ modules/nf-core/vrhyme/vrhyme/main.nf
-@@ -8,8 +8,7 @@
+@@ -8,11 +8,9 @@
          'biocontainers/vrhyme:1.1.0--pyhdfd78af_1' }"
  
      input:
@@ -10,6 +10,18 @@ Changes in module 'nf-core/vrhyme/vrhyme'
 +    tuple val(meta), path(fasta), path(reads)
  
      output:
-     tuple val(meta), path("vRhyme_best_bins_fasta/")                , emit: bins
+-    tuple val(meta), path("vRhyme_best_bins_fasta/")                , emit: bins
+     tuple val(meta), path("**/vRhyme_best_bins.*.membership.tsv")   , emit: membership
+     tuple val(meta), path("**/vRhyme_best_bins.*.summary.tsv")      , emit: summary
+     path "versions.yml"                                             , emit: versions
+@@ -30,8 +28,6 @@
+         -o $prefix \\
+         -t $task.cpus \\
+         $args
+-
+-    mv $prefix/vRhyme_best_bins_fasta/ vRhyme_best_bins_fasta
+ 
+     cat <<-END_VERSIONS > versions.yml
+     "${task.process}":
 
 ************************************************************

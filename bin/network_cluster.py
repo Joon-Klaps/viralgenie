@@ -25,7 +25,7 @@ def parse_args(argv=None):
         "file_in",
         metavar="FILE_IN",
         type=Path,
-        help="cluster file from chdit or vsearch containing cluster information.",
+        help="Matrix with distance values of genomes.",
     )
 
     parser.add_argument(

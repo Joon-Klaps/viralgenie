@@ -19,7 +19,7 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
     variant_caller       // val: [ bcftools | ivar ]
     call_consensus       // val: [ true | false ]
     consensus_caller     // val: [ bcftools | ivar ]
-    get_stats            // val: [ true | false ]
+    mapping_stats            // val: [ true | false ]
     min_mapped_reads     // integer: min_mapped_reads
     min_len              // integer: min_length
     n_100                // integer: n_100
@@ -43,7 +43,7 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
     SAMTOOLS_FAIDX ( ch_reference, [[],[]])
     ch_versions  = ch_versions.mix(SAMTOOLS_FAIDX.out.versions)
 
-    // remove runs with low number of mapped reads
+    // remove references-read combinations with low mapping rates
     BAM_FLAGSTAT_FILTER ( ch_bam, min_mapped_reads )
     ch_multiqc   = ch_multiqc.mix(BAM_FLAGSTAT_FILTER.out.bam_fail_mqc.ifEmpty([]))
     ch_versions  = ch_versions.mix(BAM_FLAGSTAT_FILTER.out.versions)
@@ -57,7 +57,7 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
 
     // deduplicate bam using umitools (if UMI) or picard
     if (deduplicate) {
-        BAM_DEDUPLICATE ( ch_bam_fa_fai, umi, get_stats)
+        BAM_DEDUPLICATE ( ch_bam_fa_fai, umi, mapping_stats)
 
         ch_dedup_bam = BAM_DEDUPLICATE.out.bam
         ch_multiqc   = ch_multiqc.mix(BAM_DEDUPLICATE.out.mqc.collect{it[1]}.ifEmpty([]))
@@ -76,7 +76,7 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
         join(ch_reference, by: [0])
 
     // report summary statistics of alignment
-    if (get_stats) {
+    if (mapping_stats) {
         BAM_STATS_METRICS ( ch_dedup_bam_ref )
         ch_multiqc   = ch_multiqc.mix(BAM_STATS_METRICS.out.mqc.collect{it[1]}.ifEmpty([]))
         ch_versions  = ch_versions.mix(BAM_STATS_METRICS.out.versions)
@@ -91,7 +91,7 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
         BAM_CALL_VARIANTS (
             ch_dedup_bam_ref,
             variant_caller,
-            get_stats
+            mapping_stats
         )
         ch_versions   = ch_versions.mix(BAM_CALL_VARIANTS.out.versions)
         ch_multiqc    = ch_multiqc.mix(BAM_CALL_VARIANTS.out.mqc.collect{it[1]}.ifEmpty([]))
@@ -107,7 +107,7 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
         ch_dedup_bam_ref,
         ch_vcf_filter,
         consensus_caller,
-        get_stats
+        mapping_stats
     )
     ch_versions = ch_versions.mix(BAM_CALL_CONSENSUS.out.versions)
     consensus_all   = BAM_CALL_CONSENSUS.out.consensus

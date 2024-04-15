@@ -13,23 +13,15 @@ nav:
   - Workflow:
       - "Pipeline overview": workflow/overview.md
       - "Preprocessing": workflow/preprocessing.md
-      - "Assembly polishing": workflow/assembly_polishing.md
-      - "Variant analysis & Iterative refinement": workflow/iterative_refinement.md
+      - "Metagenomic diversity": workflow/metagenomic_diversity.md
+      - "Assembly & Polishing": workflow/assembly_polishing.md
+      - "Variant analysis & Iterative refinement": workflow/variant_and_refinement.md
+      - "Consensus evaluation": workflow/consensus_qc.md
+  - Parameters: "parameters.md"
   - Customisation:
       - "Databases": customisation/databases.md
       - "Configuration": customisation/configuration.md
   - Contributing: "CONTRIBUTING.md"
-
-  # - Parameters:
-  #     - parameters/validation.md
-  #     - parameters/help_text.md
-  #     - parameters/summary_log.md
-  # - Samplesheets:
-  #     - samplesheets/validate_sample_sheet.md
-  #     - samplesheets/fromSamplesheet.md
-  #     - samplesheets/examples.md
-  # - Contributing:
-  #     - contributing/setup.md
 
 theme:
   name: material
@@ -78,19 +70,31 @@ theme:
 extra_css:
   - stylesheets/extra.css
 
+extra_javascript:
+  - https://unpkg.com/tablesort@5.3.0/dist/tablesort.min.js
+  - javascripts/tablesort.js
+
 markdown_extensions:
   - admonition
+  - attr_list
   - def_list
+  - tables
   - md_in_html
   - pymdownx.emoji:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - pymdownx.highlight:
       anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
   - pymdownx.inlinehilite
   - pymdownx.critic
   - pymdownx.snippets
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.tabbed:
       alternate_style: true
   - pymdownx.details
@@ -107,6 +111,20 @@ extra:
   analytics:
     provider: google
     property: G-DJ9PDTBEEC
+    feedback:
+      title: Was this page helpful?
+      ratings:
+        - icon: material/heart
+          name: This page was helpful
+          data: 1
+          note: >-
+            Thanks for your feedback, I like you too!
+        - icon: material/heart-broken
+          name: This page could be improved
+          data: 0
+          note: >-
+            Thanks for your feedback! Help us improve this page by
+            submitting an <a href="https://github.com/Joon-Klaps/viralgenie/issues/new/?labels=website%2Cdocumentation&template=website_feedback.yml&title=[Website feedback]+{title}" target="_blank" rel="noopener">issue</a>.
   consent:
     title: Cookie Consent
     description: >-
@@ -117,3 +135,5 @@ extra:
   social:
     - icon: fontawesome/brands/x-twitter
       link: https://twitter.com/LemeyLab
+    - icon: fontawesome/brands/github
+      link: https://github.com/Joon-Klaps
