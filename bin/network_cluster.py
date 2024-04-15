@@ -113,7 +113,7 @@ def read_in_mash(args):
     # see issue 105
     row_names = np.loadtxt(FILE, delimiter=SEP, usecols=(0,), dtype=str, comments=COMMENT_CHAR).tolist()
     matrix = np.loadtxt(FILE, delimiter=SEP, usecols=range(1, len(row_names) + 1), comments=COMMENT_CHAR, dtype=float)
-    graph = ig.Graph.Adjacency(matrix, mode="lower", loops=False)
+    graph = ig.Graph.Weighted_Adjacency(matrix, mode="lower", attr="weight", loops=False)
 
     logger.info("Created the network graph with %d nodes", len(row_names))
 
