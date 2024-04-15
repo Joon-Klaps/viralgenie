@@ -109,20 +109,28 @@ def read_in_mash(args):
     COMMENT_CHAR = "#"
 
     logger.info("Read in file %s", FILE)
+    with open (FILE, "r") as file:
+        row_names = np.loadtxt(FILE, delimiter=SEP, usecols=(0,), dtype=str, comments=COMMENT_CHAR)
 
-    row_names = np.loadtxt(FILE, delimiter=SEP, usecols=(0,), dtype=str, comments=COMMENT_CHAR).tolist()
-    matrix = np.loadtxt(
-        FILE,
-        delimiter=SEP,
-        usecols=range(1, len(row_names) + (0 if len(row_names) == 1 else 1)), # if only one column, you'll get a index error
-        comments=COMMENT_CHAR,
-        dtype=float
-    )
+        # if only one column, you'll get a index error
+        if row_names.size == 1:
+            usecols = (1, )
+        else:
+            usecols = tuple(range(1, row_names.size + 1))
+
+        matrix = np.loadtxt(
+            FILE,
+            delimiter=SEP,
+            usecols=usecols,
+            comments=COMMENT_CHAR,
+            dtype=float,
+            ndmin=2
+            )
     graph = ig.Graph.Weighted_Adjacency(matrix, mode="lower", attr="weight", loops=False)
 
-    logger.info("Created the network graph with %d nodes", len(row_names))
+    logger.info("Created the network graph with %d nodes", row_names.size)
 
-    graph.vs["name"] = row_names
+    graph.vs["name"] = row_names.tolist()
 
     return graph
 
