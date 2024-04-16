@@ -1,7 +1,8 @@
 // modules
 
 include { lowReadSamplesToMultiQC            } from '../../modules/local/functions'
-include { CALIB                                } from '../../modules/local/calib/main'
+// include { CALIB                              } from '../../modules/local/calib/main'
+include { HUMID                              } from '../../modules/nf-core/humid/main'
 include { BBMAP_BBDUK                        } from '../../modules/nf-core/bbmap/bbduk/main'
 include { FASTQ_FASTQC_UMITOOLS_TRIMMOMATIC  } from './fastq_fastqc_umitools_trimmomatic'
 include { FASTQ_FASTQC_UMITOOLS_FASTP        } from '../nf-core/fastq_fastqc_umitools_fastp/main'
@@ -19,17 +20,6 @@ workflow PREPROCESSING_ILLUMINA {
     ch_versions         = Channel.empty()
     ch_multiqc_files    = Channel.empty()
     trim_read_count     = Channel.empty()
-
-    // deduplicate UMI's with CALIB
-
-    if (params.with_umi && !params.skip_calib) {
-        CALIB (
-            ch_reads,
-            params.umi_tag_length
-        )
-        ch_reads = CALIB.out.reads
-        ch_versions = ch_versions.mix(CALIB.out.versions)
-    }
 
     // QC & UMI & Trimming with fastp or trimmomatic
     if (params.trim_tool == 'trimmomatic') {
@@ -89,14 +79,29 @@ workflow PREPROCESSING_ILLUMINA {
         .filter{meta,num_reads -> num_reads < params.min_trimmed_reads.toLong() }
         .set { failed_reads }
 
+    // deduplicate UMI's with HUMID
+    if (params.with_umi && !params.skip_humid) {
+        HUMID (
+            ch_reads_trim,
+            [[:],[]]
+        )
+        ch_reads_dedup   = HUMID.out.dedup
+        ch_multiqc_files = ch_multiqc_files.mix(HUMID.out.stats)
+        ch_versions      = ch_versions.mix(HUMID.out.versions)
+    }
+    else {
+        ch_reads_dedup = ch_reads_trim
+    }
+
+
     // Decomplexification with BBDuk
     if (!params.skip_complexity_filtering) {
-        BBMAP_BBDUK ( ch_reads_trim, ch_contaminants )
+        BBMAP_BBDUK ( ch_reads_dedup, ch_contaminants )
         ch_reads_decomplexified = BBMAP_BBDUK.out.reads
         ch_multiqc_files        = ch_multiqc_files.mix(BBMAP_BBDUK.out.log)
         ch_versions             = ch_versions.mix(BBMAP_BBDUK.out.versions)
     } else {
-        ch_reads_decomplexified = ch_reads_trim
+        ch_reads_decomplexified = ch_reads_dedup
     }
 
     // Host removal with kraken2

@@ -35,6 +35,7 @@ run_modules:
   - fastqc
   - fastp
   - trimmomatic
+  - humid
   - bbduk
   - umitools
   - bowtie2

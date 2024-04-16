@@ -26,7 +26,7 @@ process CALIB {
     def threads   = task.cpus <= 8  ? task.cpus : 8
     second_read   = meta.single_end ? '' : "-r ${reads[1]}"
     reads_joined  = meta.single_end ? reads : "${reads[0]} ${reads[1]}"
-    output_prefix = meta.single_end ? "${prefix}_dedup." : "${prefix}_dedup1. ${prefix}_dedup2."
+    output_prefix = meta.single_end ? "${prefix}_dedup" : "${prefix}_dedup1 ${prefix}_dedup2"
 
     """
     calib $args \\
