@@ -132,8 +132,14 @@ workflow VIRALGENIE {
         'input'
         ).map{
             meta, read1, read2 ->
-            [meta + [sample: meta.id] , [read1, read2]]
+            single_end = read1 && !read2
+            if (single_end) {
+                return [meta + [sample: meta.id, single_end: single_end] , [read1]]
             }
+            else {
+                return [meta + [sample: meta.id, single_end: single_end] , [read1, read2]]
+            }
+        }
 
     // Prepare Databases
     ch_db = Channel.empty()
@@ -179,18 +185,14 @@ workflow VIRALGENIE {
     ch_ref_pool     = Channel.empty()
     ch_blast_refdb  = Channel.empty()
     ch_blast_annodb = Channel.empty()
-    if ( !params.skip_consensus_qc || (!params.skip_assembly && !params.skip_polishing) ){
-        ch_blastdb_in = Channel.empty()
 
+    if ( (!params.skip_assembly && !params.skip_polishing) || (!params.skip_consensus_qc && !params.skip_blast_qc)){
+        ch_blastdb_in = Channel.empty()
         // see issue #56
         SEQKIT_REPLACE (ch_ref_pool_raw)
         ch_versions   = ch_versions.mix(SEQKIT_REPLACE.out.versions)
         ch_ref_pool   = SEQKIT_REPLACE.out.fastx
         ch_blastdb_in = ch_blastdb_in.mix(ch_ref_pool)
-
-        // if ( !params.skip_annotation){
-        //     ch_blastdb_in = ch_blastdb_in.mix(ch_annotation_db)
-        // }
 
         BLAST_MAKEBLASTDB ( ch_blastdb_in )
         BLAST_MAKEBLASTDB
@@ -204,7 +206,6 @@ workflow VIRALGENIE {
             }.
             set{ch_blastdb_out}
         ch_blast_refdb  = ch_blastdb_out.reference.collect{it[1]}.ifEmpty([]).map{it -> [[id: 'reference'], it]}
-        // ch_blast_annodb = ch_blastdb_out.annotation.collect{it[1]}.ifEmpty([]).map{it -> [[id: 'annotation'], it]}
         ch_versions     = ch_versions.mix(BLAST_MAKEBLASTDB.out.versions)
     }
 
@@ -273,6 +274,7 @@ workflow VIRALGENIE {
             .set{no_contigs}
 
         ch_multiqc_files = ch_multiqc_files.mix(no_contigs.ifEmpty([]))
+
 
         if (!params.skip_polishing){
             // blast contigs against reference & identify clusters of (contigs & references)
