@@ -1566,6 +1566,16 @@
 <td>:</td>
 </tr>
 <tr>
+<td><code>mash_sketch_size</code></td>
+<td>Specify the sketch size, the number of (non-redundant) min-hashes that are kept. <details><summary>Help</summary><small>Larger sketches will better represent the sequence, but at the cost of larger sketch files and longer comparison times.</small></details></td>
+<td>4000</td>
+</tr>
+<tr>
+<td><code>mash_sketch_kmer_size</code></td>
+<td>Specify the kmer size for mash to create their hashes <details><summary>Help</summary><small>larger k-mers will provide more specificity, while smaller k-mers will provide more sensitivity. Larger genomes will also require larger k-mers to avoid k-mers that are shared by chance</small></details></td>
+<td>15</td>
+</tr>
+<tr>
 <td><code>min_mapped_reads</code></td>
 <td></td>
 <td>200</td>

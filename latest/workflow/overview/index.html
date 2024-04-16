@@ -1008,16 +1008,21 @@
 <li><a href="https://github.com/soedinglab/MMseqs2/wiki#linear-time-clustering-using-mmseqs-linclust"><code>mmseqs-linclust</code></a></li>
 <li><a href="https://github.com/soedinglab/MMseqs2/wiki#cascaded-clustering"><code>mmseqs-cluster</code></a></li>
 <li><a href="https://github.com/AnantharamanLab/vRhyme"><code>vRhyme</code></a></li>
-<li><a href="https://github.com/marbl/Mash"><code>mash</code></a></li>
+<li><a href="https://github.com/marbl/Mash"><code>Mash</code></a></li>
 </ul>
 </li>
 <li>Scaffolding of contigs to centroid (<a href="https://github.com/lh3/minimap2"><code>Minimap2</code></a>, <a href="https://andersen-lab.github.io/ivar/html/manualpage.html"><code>iVar-consensus</code></a>)</li>
 <li>[Optional] Annotate 0-depth regions with external reference <code>custom-script</code>.</li>
+<li>[Optional] Select best reference from <code>--mapping_constrains</code>:<ul>
+<li><a href="https://github.com/marbl/Mash"><code>Mash sketch</code></a></li>
+<li><a href="https://github.com/marbl/Mash"><code>Mash screen</code></a></li>
+</ul>
+</li>
 <li>Mapping filtered reads to supercontig and mapping constrains(<a href="http://bowtie-bio.sourceforge.net/bowtie2/"><code>BowTie2</code></a>,<a href="https://github.com/bwa-mem2/bwa-mem2"><code>BWAmem2</code></a> and <a href="https://github.com/lh3/bwa"><code>BWA</code></a>)</li>
 <li>[Optional] Deduplicate reads (<a href="https://broadinstitute.github.io/picard/"><code>Picard</code></a> or if UMI's are used <a href="https://umi-tools.readthedocs.io/en/latest/QUICK_START.html"><code>UMI-tools</code></a>)</li>
 <li>Variant calling and filtering (<a href="http://samtools.github.io/bcftools/bcftools.html"><code>BCFTools</code></a>,<a href="https://andersen-lab.github.io/ivar/html/manualpage.html"><code>iVar</code></a>)</li>
 <li>Create consensus genome (<a href="http://samtools.github.io/bcftools/bcftools.html"><code>BCFTools</code></a>,<a href="https://andersen-lab.github.io/ivar/html/manualpage.html"><code>iVar</code></a>)</li>
-<li>Repeat step 10-13 multiple times for the denovo contig route</li>
+<li>Repeat step 11-14 multiple times for the denovo contig route</li>
 <li>Consensus evaluation and annotation (<a href="http://quast.sourceforge.net/quast"><code>QUAST</code></a>,<a href="https://bitbucket.org/berkeleylab/checkv/src/master/"><code>CheckV</code></a>,<a href="https://blast.ncbi.nlm.nih.gov/Blast.cgi"><code>blastn</code></a>, <a href="https://github.com/soedinglab/MMseqs2/wiki#batch-sequence-searching-using-mmseqs-search"><code>mmseqs-search</code></a>)</li>
 <li>Result summary visualisation for raw read, alignment, assembly, variant calling and consensus calling results (<a href="http://multiqc.info/"><code>MultiQC</code></a>)</li>
 </ol>

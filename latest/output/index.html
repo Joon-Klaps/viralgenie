@@ -780,6 +780,15 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#reference-selection" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reference selection
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#read-mapping" class="md-nav__link">
     <span class="md-ellipsis">
       Read mapping
@@ -1571,6 +1580,15 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#reference-selection" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reference selection
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#read-mapping" class="md-nav__link">
     <span class="md-ellipsis">
       Read mapping
@@ -2169,6 +2187,30 @@
     D --&gt; E[Variant-calling: 'itvariant-calling']</code></pre></p>
 <p>The prefix of the sample is combined with the previous state of sample. For example, in the first iteration (directory <code>iterations/it1</code>), reads will be mapped to the <a href="../workflow/assembly_polishing/">reference-assisted de novo consensus sequence</a> (<em>ie</em> <code>consensus</code>) and so the output file will be <code>assembly/polishing/iterations/it1/bwamem2/bam/&lt;sample-id&gt;/&lt;sample-id&gt;_cl#_consensus.bam</code>.</p>
 </div>
+<h3 id="reference-selection">Reference selection</h3>
+<p>The reference selection is done using <a href="https://mash.readthedocs.io/en/latest/index.html"><code>mash</code></a> tool. Here there reference file is sketched (<code>variants/mapping-info/mash/sketch</code>) and compared to the reads (<code>variants/mapping-info/mash/screen</code>) where the reference with the highest estimated avirage nucleotide identity (ANI) and shared hashes is selected (<code>variants/mapping-info/mash/select-ref</code>).</p>
+<details class="- abstract">
+<summary>Output files</summary>
+<ul>
+<li><code>variants/mapping-info/mash</code><ul>
+<li><code>sketch/&lt;sample-id&gt;_&lt;constrain-id&gt;-CONSTRAIN.msh</code>: The sketch file of the reads.</li>
+<li><code>screen/&lt;sample-id&gt;_&lt;constrain-id&gt;-CONSTRAIN.screen</code>: The tab results file of the comparisons between references and reads.</li>
+<li><code>select-ref/&lt;sample-id&gt;_&lt;constrain-id&gt;-CONSTRAIN.json</code>: The reference with the highest estimated ANI and shared hashes.</li>
+</ul>
+</li>
+</ul>
+</details>
+<details class="- info">
+<summary>Column names: mash-screen</summary>
+<ul>
+<li>identity</li>
+<li>shared-hashes</li>
+<li>median-multiplicity</li>
+<li>p-value</li>
+<li>query-ID</li>
+<li>query-comment</li>
+</ul>
+</details>
 <h3 id="read-mapping">Read mapping</h3>
 <p>The mapping results are stored in the directory <code>variants/mapping-info/</code> or in the iterations directory <code>assembly/polishing/iterations/it#</code>.</p>
 <p>If bowtie is used, the output from the raw mapping results (in addition to the results after deduplication) are included in the multiqc report.</p>
@@ -2351,7 +2393,7 @@
 </ul>
 </details>
 <h4 id="mosdepth-coverage">Mosdepth - Coverage</h4>
-<p><a href="mosdepth">mosdepth</a> is a fast BAM/CRAM depth calculation for WGS, exome, or targeted sequencing. mosdepth is used in this pipeline to obtain genome-wide coverage values in 200bp windows. The results are rendered in MultiQC (genome-wide coverage).</p>
+<p><a href="https://github.com/brentp/mosdepth">mosdepth</a> is a fast BAM/CRAM depth calculation for WGS, exome, or targeted sequencing. mosdepth is used in this pipeline to obtain genome-wide coverage values in 200bp windows. The results are rendered in MultiQC (genome-wide coverage).</p>
 <p><img alt="MultiQC - Mosdepth cumulative coverage plot" class="center" src="../images/mqc_mosdepth-cumcoverage-dist-id.png" />
 <img alt="MultiQC - Mosdepth coverage plot" class="center" src="../images/mqc_mosdepth-coverage-per-contig-single.png" /></p>
 <details class="- abstract">

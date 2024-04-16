@@ -984,7 +984,7 @@
 <p>Viralgenie uses Nextflow, and a <a href="https://www.nextflow.io/docs/latest/container.html#containers">package/container management system</a> (<a href="https://www.docker.com/resources/what-container/">Docker</a>, <a href="https://docs.sylabs.io/guides/latest/user-guide/introduction.html">singularity</a> or <a href="https://docs.conda.io/en/latest/">conda</a>) so both need to be installed on the system where you launch your analysis.</p>
 <div class="admonition tip">
 <p class="admonition-title">New to bioinformatics?</p>
-<p>If the word "terminal" brings to mind an airport boarding area, you can become a little lost. <a href="https://www.nextflow.io/blog/2021/setup-nextflow-on-windows.html">This blogpost</a> (up until Configuring an Xserver ...) will help you setup nextflow and docker on a windows computer, if you are new to bioinformatics.</p>
+<p>If the word "terminal" brings to mind an airport boarding area, you can become a little lost. <a href="https://www.nextflow.io/blog/2021/setup-nextflow-on-windows.html">This blogpost</a> (up until Configuring an Xserver ...) will help people with little bioinformatic experience setup nextflow and docker on a windows computer.</p>
 </div>
 <h2 id="software-managers-docker-singularity-and-conda">Software managers: Docker, singularity, and conda</h2>
 <p>Viralgenie can be run using either <a href="https://www.docker.com/resources/what-container/">Docker</a>, <a href="https://docs.sylabs.io/guides/latest/user-guide/introduction.html">singularity</a> or <a href="https://docs.conda.io/en/latest/">conda</a>. The choice of container system is up to the user, but it is important to note that Docker and Singularity are the most reproducible. Nextflow supports more containers in addition to Docker and Singularity, such as Podman, Shifter, and Charliecloud. You can read the full list of supported containers and how to set them up <a href="https://www.nextflow.io/docs/latest/container.html#containers">here</a>.</p>
@@ -1002,6 +1002,10 @@
 <div class="tabbed-block">
 <p>Singularity is a containerisation system that allows you to package your code, tools and data into a single image that can be run on most operating systems. It is the most widely used containerisation system in bioinformatics.</p>
 <p>To install Singularity, follow the instructions on the <a href="https://sylabs.io/guides/latest/user-guide/quick_start.html">Singularity website</a>.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Singularity is a great alternative to Docker but can be challenging to setup on a Apple silicon chip or any other ARM device. If you are using an ARM device, consider using Docker instead.</p>
+</div>
 </div>
 <div class="tabbed-block">
 <p>Conda is a package manager that allows you to install software packages and dependencies in isolated environments. It is a good choice if you are facing issues while installing Docker or Singularity.</p>
