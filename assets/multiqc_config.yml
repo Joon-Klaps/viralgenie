@@ -59,7 +59,7 @@ module_order:
   - "fastqc":
       name: "SAMPLE: FastQC (post-Host-removal)"
       path_filters:
-        - "*_trim*fastqc.zip"
+        - "*_host*fastqc.zip"
   - "fastp":
       name: "SAMPLE: fastp"
   - "trimmomatic":
@@ -95,16 +95,16 @@ module_order:
       anchor: "quast_trinity"
       path_filters:
         - "*_trinity.tsv"
-  - "samtools":
-      name: "CLUSTER: Samtools Stats"
-  - "bcftools":
-      name: "CLUSTER: Bcftools"
   - "picard":
       name: "CLUSTER: Picard"
   - "umitools":
       name: "CLUSTER: UMI-tools"
+  - "samtools":
+      name: "CLUSTER: Samtools Stats"
   - "mosdepth":
       name: "CLUSTER: mosdepth"
+  - "bcftools":
+      name: "CLUSTER: Bcftools"
   - "custom_content"
 
 # Summary table names
@@ -172,8 +172,13 @@ table_columns_visible:
     percent_gc: True
     percent_duplicates: True
     percent_fails: True
-  "CLUSTER: Samtools Stats": False
+  "SAMPLE: fastp":
+    filtering_result_passed_filter_reads: False
+    after_filtering_q30_rate: True
+  "CLUSTER: Samtools Stats: stats": False
+  "CLUSTER: Samtools Stats: flagstat": False
   "CLUSTER: Bcftools: Stats": False
+  "CLUSTER: Samtools Stats": False
   "CLUSTER: Picard: Mark Duplicates": False
   "CLUSTER: UMI-tools": False
   "CLUSTER: mosdepth": False
@@ -197,8 +202,12 @@ table_columns_visible:
     Largest contig: True
     Total length: False
 
-section_comments:
-  general_stats: "By default, all read count columns are displayed as millions (M) of reads."
+skip_versions_section: true
+
+# Viral reads are not so big
+read_count_multiplier: 1
+read_count_prefix: ""
+read_count_desc: ""
 
 sp:
   fastp:
@@ -214,6 +223,7 @@ extra_fn_clean_exts:
   - "_raw_2"
   - "_trim_1"
   - "_trim_2"
+  - "_trim"
   - "_1"
   - "_2"
   - "_host"
@@ -224,3 +234,8 @@ extra_fn_clean_exts:
   - "_megahit"
   - "_trinity"
   - ".filtered"
+  - ".norm"
+  - ".consensus_bcftools"
+  - ".consensus_ivar"
+  - "-CONSTRAIN_constrain"
+  - "-CONSTRAIN_itvariant_calling"

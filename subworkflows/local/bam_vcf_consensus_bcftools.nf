@@ -13,7 +13,7 @@ workflow BAM_VCF_CONSENSUS_BCFTOOLS {
     bam          // channel: [ val(meta), [ bam ] ]
     vcf          // channel: [ val(meta), [ vcf ] ]
     fasta        // channel: [ val(meta), [ fasta ] ]
-    get_stats    // value: [ true | false ]
+    mapping_stats    // value: [ true | false ]
 
     main:
 
@@ -34,7 +34,7 @@ workflow BAM_VCF_CONSENSUS_BCFTOOLS {
     //
     MAKE_BED_MASK (
         bam_vcf_fasta,
-        get_stats
+        mapping_stats
     )
     ch_versions = ch_versions.mix(MAKE_BED_MASK.out.versions.first())
 

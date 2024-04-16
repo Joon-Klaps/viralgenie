@@ -1,11 +1,12 @@
 include { CHECKV_DOWNLOADDATABASE           } from '../../modules/nf-core/checkv/downloaddatabase/main'
 include { CHECKV_ENDTOEND                   } from '../../modules/nf-core/checkv/endtoend/main'
 include { CAT_CAT as CAT_CAT_QC             } from '../../modules/nf-core/cat/cat/main'
+include { CAT_CAT as CAT_CAT_MMSEQS         } from '../../modules/nf-core/cat/cat/main'
 include { QUAST  as QUAST_QC                } from '../../modules/nf-core/quast/main'
 include { BLAST_BLASTN as BLASTN_QC         } from '../../modules/nf-core/blast/blastn/main'
-include { BLAST_BLASTN as BLASTN_ANNOTATION } from '../../modules/nf-core/blast/blastn/main'
 include { MAFFT as MAFFT_ITERATIONS         } from '../../modules/nf-core/mafft/main'
 include { MAFFT as MAFFT_QC                 } from '../../modules/nf-core/mafft/main'
+include { MMSEQS_ANNOTATE                   } from './mmseqs_annotate.nf'
 
 workflow CONSENSUS_QC  {
 
@@ -75,7 +76,8 @@ workflow CONSENSUS_QC  {
             [[:],[]],
             [[:],[]],
             [[:],[]],
-            [[:],[]]
+            [[:],[]],
+            false
         )
         ch_versions = ch_versions.mix(MAFFT_ITERATIONS.out.versions)
 
@@ -111,12 +113,13 @@ workflow CONSENSUS_QC  {
             [[:],[]],
             [[:],[]],
             [[:],[]],
+            false
         )
         ch_versions = ch_versions.mix(MAFFT_QC.out.versions)
     }
 
     if ( !params.skip_quast ) {
-        // Basic summary statistics
+        // Contig summary statistics
         QUAST_QC (
             ch_genome,
             [[:],[]],
@@ -127,7 +130,7 @@ workflow CONSENSUS_QC  {
     }
 
     if ( !params.skip_blast_qc ){
-        // Identify closest reference from the database
+        // Identify closest reference from the reference pool database using blast
         BLASTN_QC (
             ch_genome,
             refpool_db
@@ -137,13 +140,17 @@ workflow CONSENSUS_QC  {
     }
 
     if ( !params.skip_annotation){
-        // Blast to annotation db
-        BLASTN_ANNOTATION(
-            ch_genome,
+        ch_genomes_collect = ch_genome.collect{it[1]}.map{files -> [[id:"all_genomes_annotation.hits"], files]}
+        CAT_CAT_MMSEQS(
+            ch_genomes_collect
+        )
+        // use MMSEQS easy search to find best hits against annotation db
+        MMSEQS_ANNOTATE(
+            CAT_CAT_MMSEQS.out.file_out,
             annotation_db
         )
-        annotation_txt = BLASTN_ANNOTATION.out.txt
-        ch_versions = ch_versions.mix(BLASTN_ANNOTATION.out.versions)
+        annotation_txt = MMSEQS_ANNOTATE.out.tsv
+        ch_versions = ch_versions.mix(MMSEQS_ANNOTATE.out.versions)
     }
 
 

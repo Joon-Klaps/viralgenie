@@ -1,9 +1,11 @@
 // modules
-include { BBMAP_BBDUK                          } from '../../modules/nf-core/bbmap/bbduk/main'
+
+include { lowReadSamplesToMultiQC            } from '../../modules/local/functions'
 include { CALIB                                } from '../../modules/local/calib/main'
-include { FASTQ_FASTQC_UMITOOLS_TRIMMOMATIC    } from './fastq_fastqc_umitools_trimmomatic'
-include { FASTQ_FASTQC_UMITOOLS_FASTP          } from '../nf-core/fastq_fastqc_umitools_fastp/main'
-include { FASTQ_KRAKEN_HOST_REMOVE             } from './fastq_kraken_host_remove'
+include { BBMAP_BBDUK                        } from '../../modules/nf-core/bbmap/bbduk/main'
+include { FASTQ_FASTQC_UMITOOLS_TRIMMOMATIC  } from './fastq_fastqc_umitools_trimmomatic'
+include { FASTQ_FASTQC_UMITOOLS_FASTP        } from '../nf-core/fastq_fastqc_umitools_fastp/main'
+include { FASTQ_KRAKEN_HOST_REMOVE           } from './fastq_kraken_host_remove'
 
 workflow PREPROCESSING_ILLUMINA {
 
@@ -119,22 +121,7 @@ workflow PREPROCESSING_ILLUMINA {
     //
     // Create a section that reports failed samples and their read counts
     //
-    failed_reads
-        .map { meta, read_count -> ["$meta.sample\t$read_count"] }
-        .collect()
-        .map {
-            tsv_data ->
-                def comments = [
-                    "id: 'samples_low_reads'",
-                    "anchor: 'WARNING: Filtered samples'",
-                    "section_name: 'Samples with to few reads'",
-                    "format: 'tsv'",
-                    "description: 'Samples that did not have the minimum number of reads (<${params.min_trimmed_reads}) after trimming, complexity filtering & host removal'",
-                    "plot_type: 'table'"
-                ]
-                def header = ['Sample', "Number of reads"]
-                return WorkflowCommons.multiqcTsvFromList(tsv_data, header, comments) // make it compatible with the other mqc files
-        }
+    lowReadSamplesToMultiQC(failed_reads, params.min_trimmed_reads)
         .collectFile(name:'samples_low_reads_mqc.tsv')
         .set{low_reads_mqc}
 

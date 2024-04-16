@@ -1,6 +1,7 @@
 process QUAST {
     tag "$meta.id"
     label 'process_medium'
+    errorStrategy { task.exitStatus == 4 ? 'ignore' : 'retry' } // can fail if mpileup empty
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?

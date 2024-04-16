@@ -1,12 +1,12 @@
-umitools:
-  - input_reads
+umitools_dedup:
+  - input_reads: "mapped reads"
   - removed_reads
-  - output_reads
+  - output_reads: "deduplicated reads"
   - positions_deduplicated
   - max_umi_per_pos
   - mean_umi_per_pos
   - total_umis
-  - percent_passing_dedup
+  - percent_passing_dedup: "% passing dedup"
   - unique_umis
 picard_dups:
   - UNPAIRED_READS_EXAMINED: "unpaired reads examined"
@@ -21,26 +21,26 @@ picard_dups:
   - LIBRARY: "library"
 samtools_stats:
   - sequences
-  - reads_paired_percent
+  - reads_paired_percent: "reads paired %"
   - average_length
   - is_sorted
   - bases_mapped_(cigar)
-  - reads_QC_failed_percent
+  - reads_QC_failed_percent: "reads QC failed %"
   - reads_unmapped
-  - reads_unmapped_percent
-  - reads_properly_paired_percent
+  - reads_unmapped_percent: "reads unmapped %"
+  - reads_properly_paired_percent: "reads properly paired %"
   - average_quality
   - reads_paired
   - non-primary_alignments
   - supplementary_alignments
   - reads_mapped
-  - reads_mapped_percent
+  - reads_mapped_percent: "reads mapped %"
   - bases_trimmed
   - bases_duplicated
   - reads_properly_paired
   - outward_oriented_pairs
   - reads_duplicated
-  - reads_duplicated_percent
+  - reads_duplicated_percent: "reads duplicated %"
   - bases_mapped
   - insert_size_average
   - insert_size_standard_deviation
@@ -83,9 +83,12 @@ bcftools_stats:
   - substitution_type_G>A: "substitution G->A"
   - substitution_type_A>G: "substitution A->G"
 general_stats:
-  - mosdepth_mqc-generalstats-mosdepth-10_x_pc: "mosdepth 10X coverage"
-  - mosdepth_mqc-generalstats-mosdepth-1_x_pc: "mosdepth 1X coverage"
-  - mosdepth_mqc-generalstats-mosdepth-30_x_pc: "mosdepth 30X coverage"
-  - mosdepth_mqc-generalstats-mosdepth-50_x_pc: "mosdepth 50X coverage"
-  - mosdepth_mqc-generalstats-mosdepth-5_x_pc: "mosdepth 5X coverage"
-  - mosdepth_mqc-generalstats-mosdepth-median_coverage: "mosdepth Median coverage"
+  - mosdepth-1_x_pc: "mosdepth 1X coverage"
+  - mosdepth-5_x_pc: "mosdepth 5X coverage"
+  - mosdepth-10_x_pc: "mosdepth 10X coverage"
+  - mosdepth-30_x_pc: "mosdepth 30X coverage"
+  - mosdepth-30_x_pc: "mosdepth 50X coverage"
+  - mosdepth-median_coverage: "mosdepth Median read depth"
+  - mosdepth-mean_coverage: "mosdepth Mean read depth"
+  - mosdepth-min_coverage: "mosdepth Min read depth"
+  - mosdepth-max_coverage: "mosdepth Max read depth"

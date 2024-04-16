@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import argparse
-import errno
 import logging
 import sys
 from pathlib import Path
@@ -43,7 +42,7 @@ def parse_args(argv=None):
         "--mpileup",
         metavar="MPILEUP FILE",
         type=Path,
-        help="Mpileup file in (default) tsv format.",
+        help="Mpileup file in (default) tsv format, typically from iVar consensus.",
     )
 
     parser.add_argument(
@@ -144,14 +143,15 @@ def alignment_replacement(reference_record, consensus_record, regions):
     alignments = aligner.align(str(reference_record.seq), str(consensus_record.seq))
     alignment = alignments[0]
 
-    target_locations = alignment.aligned[0]
-    query_locations = alignment.aligned[1]
+    target_locations = alignment.aligned[0] # Reference locations
+    query_locations = alignment.aligned[1]  # Consensus locations
 
     logger.debug(alignment.aligned)
 
     with open("alignment.txt", "w") as f:
         f.write(str(alignment))
 
+    # Account for the gaps in the alignment, by updating the consensus indexes
     logger.info("> Finding target tuples")
     indexes_differences = find_target_tuples_sorted(regions, target_locations)
 
@@ -221,16 +221,28 @@ def main(argv=None):
     args = parse_args(argv)
     logging.basicConfig(level=args.log_level, format="[%(levelname)s] %(message)s")
 
-    # Read in the reference sequence
-    reference = SeqIO.read(args.reference, "fasta")
-    logger.info("Reading reference ...\n")
-    # Read in the consensus sequence
-    consensus = SeqIO.read(args.consensus, "fasta")
-    logger.info("Reading consensus ...\n")
+    reference = None
+    consensus = None
+    mpileup = None
 
-    # Read in the mpileup file in a numpy array
-    mpileup = np.loadtxt(args.mpileup, dtype=str, delimiter="\t")
-    logger.info("Reading mpileup ...\n")
+    # Read in the reference sequence
+    with open (args.reference, 'r') as f:
+        reference = SeqIO.read(f, "fasta")
+        logger.info("Reading reference ...\n")
+    # Read in the consensus sequence
+    with open (args.consensus, 'r') as f:
+        consensus = SeqIO.read(f, "fasta")
+        logger.info("Reading consensus ...\n")
+
+    # Read in the mpileup file in a numpy array, Important to set the comments to None as '#' is used in the mpileup file
+    with open (args.mpileup, 'r') as f:
+        mpileup = np.loadtxt(f, dtype=str, delimiter="\t", comments=None)
+        logger.info("Reading mpileup ...\n")
+
+    # Check if mpileup is empty, if empty then exit
+    if mpileup.size == 0:
+        logger.error("Mpileup file is empty. Exiting ...")
+        sys.exit(4)
 
     # Extract regions with coverage & subtract 1 for 0 index base
     low_coverage = mpileup[mpileup[:, 3].astype(int) <= args.minimum_depth, 1].astype(int) - 1

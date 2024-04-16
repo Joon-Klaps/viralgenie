@@ -14,31 +14,32 @@ workflow BAM_STATS_METRICS {
     ch_multiqc  = Channel.empty()
 
     sort_bam    = sort_bam_ref.map{meta, bam, ref -> [ meta, bam ]}
-    reference   = sort_bam_ref.map{meta, bam, ref -> [ meta, ref ]}
 
     SAMTOOLS_INDEX ( sort_bam )
     ch_versions = ch_versions.mix(SAMTOOLS_INDEX.out.versions.first())
 
-    sort_bam
+    input_metics = sort_bam_ref
         .join(SAMTOOLS_INDEX.out.bai, by: [0], remainder: true)
-        .set{ch_sort_bam_bai}
+        .multiMap{
+            meta, bam, ref, bai ->
+            bam_bai : [meta, bam, bai]
+            ref: [meta, ref]
+            bam_bai_bed: [meta, bam, bai, []]
+        }
 
-    PICARD_COLLECTMULTIPLEMETRICS ( ch_sort_bam_bai, reference, [[:], []] )
+    PICARD_COLLECTMULTIPLEMETRICS ( input_metics.bam_bai, input_metics.ref, [[:], []] )
     ch_versions  = ch_versions.mix(PICARD_COLLECTMULTIPLEMETRICS.out.versions)
 
-    ch_sort_bam_bai
-        .map{meta, bam, bai -> [meta, bam, bai, []]}
-        .set{ch_sort_bam_bai_bed}
-
-    MOSDEPTH(ch_sort_bam_bai_bed, reference)
+    MOSDEPTH(input_metics.bam_bai_bed, input_metics.ref)
     ch_versions  = ch_versions.mix(MOSDEPTH.out.versions)
     ch_multiqc   = ch_multiqc.mix(MOSDEPTH.out.global_txt)
+    ch_multiqc   = ch_multiqc.mix(MOSDEPTH.out.summary_txt)
 
-    BAM_STATS_SAMTOOLS ( ch_sort_bam_bai, reference )
+    BAM_STATS_SAMTOOLS ( input_metics.bam_bai, input_metics.ref )
     ch_versions  = ch_versions.mix(BAM_STATS_SAMTOOLS.out.versions)
     ch_multiqc   = ch_multiqc.mix(BAM_STATS_SAMTOOLS.out.stats)
     ch_multiqc   = ch_multiqc.mix(BAM_STATS_SAMTOOLS.out.flagstat)
-    ch_multiqc   = ch_multiqc.mix(BAM_STATS_SAMTOOLS.out.idxstats)
+    // ch_multiqc   = ch_multiqc.mix(BAM_STATS_SAMTOOLS.out.idxstats)
 
 
     emit:
