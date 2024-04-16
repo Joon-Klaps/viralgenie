@@ -17,7 +17,7 @@ Viralgenie offers an elaborate workflow for the assembly and polishing of viral 
 
 The consensus genome of all clusters are then send to the [variant analysis & iterative refinement](variant_and_refinement.md) step.
 
-## Assembly
+## De-novo Assembly
 Three assemblers are used, [SPAdes](http://cab.spbu.ru/software/spades/), [Megahit](https://github.com/voutcn/megahit), and [Trinity](https://github.com/trinityrnaseq/trinityrnaseq). The resulting contigs of all specified assemblers, are combined and processed further together.
 > Modify the spades mode with `--spades_mode [default: rnaviral]` and supply specific params with `--spades_yml` or a hmm model with `--spades_hmm`.
 

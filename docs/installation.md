@@ -3,7 +3,7 @@
 Viralgenie uses Nextflow, and a [package/container management system](https://www.nextflow.io/docs/latest/container.html#containers) ([Docker](https://www.docker.com/resources/what-container/), [singularity](https://docs.sylabs.io/guides/latest/user-guide/introduction.html) or [conda](https://docs.conda.io/en/latest/)) so both need to be installed on the system where you launch your analysis.
 
 !!! Tip "New to bioinformatics?"
-    If the word "terminal" brings to mind an airport boarding area, you can become a little lost. [This blogpost](https://www.nextflow.io/blog/2021/setup-nextflow-on-windows.html) (up until Configuring an Xserver ...) will help you setup nextflow and docker on a windows computer, if you are new to bioinformatics.
+    If the word "terminal" brings to mind an airport boarding area, you can become a little lost. [This blogpost](https://www.nextflow.io/blog/2021/setup-nextflow-on-windows.html) (up until Configuring an Xserver ...) will help people with little bioinformatic experience setup nextflow and docker on a windows computer.
 
 ## Software managers: Docker, singularity, and conda
 
@@ -26,6 +26,8 @@ When using these containers, Nextflow will use the manager for each process that
 
     To install Singularity, follow the instructions on the [Singularity website](https://sylabs.io/guides/latest/user-guide/quick_start.html).
 
+    !!! warning
+        Singularity is a great alternative to Docker but can be challenging to setup on a Apple silicon chip or any other ARM device. If you are using an ARM device, consider using Docker instead.
 
 === "Conda | Mamba"
 
@@ -36,8 +38,6 @@ When using these containers, Nextflow will use the manager for each process that
 
     !!! warning Containter systems are better then Conda
         Conda environments are great! However, conda tools can easily become broken or incompatible due to dependency issues. For this reason, conda is not as reproducible as Docker or Singularity containers. If you encounter issues with Conda, please try running the pipeline with Docker or Singularity first to see if the issue persists. In other words, if you have a container system, use it over conda!
-
-
 
 ## Nextflow
 

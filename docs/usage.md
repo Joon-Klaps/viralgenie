@@ -86,26 +86,29 @@ An example samplesheet file consisting of both single- and paired-end data may l
 Viralgenie can in addition to constructing denovo consensus genomes map the sample reads to a series of references. These references are provided through the parameter `--mapping_constrains`.
 
 An example mapping constrain samplesheet file consisting of 5 references, may look something like the one below.
-> This is for 5 references, 2 of them being a multi-fasta file
+> This is for 5 references, 2 of them being a multi-fasta file, only one of the multi-fasta needs to undergo [reference selection](./workflow/variant_and_refinement.md#selection-of-reference).
+
 
 === "TSV"
     ```tsv title="constrains-samplesheet.tsv"
-    id	species	segment	samples	sequence	definition
-    Lassa-L-dataset	LASV	L		LASV_L.multi.fasta	Collection of LASV sequences used for hybrid capture bait design, all publicly availble sequences of the L segment clustered at 99.5% similarity
-    Lassa-S-dataset	LASV	S	sample1;sample3	LASV_S.multi.fasta	Collection of LASV sequences used for hybrid capture bait design, all publicly availble sequences of the S segment clustered at 99.5% similarity
-    NC038709.1	HAZV	L	sample1;sample2	L-NC_038709.1.fasta	Hazara virus isolate JC280 segment L, complete sequence.
-    NC038710.1	HAZV	M		M-NC_038710.1.fasta	Hazara virus isolate JC280 segment M, complete sequence.
-    NC038711.1	HAZV	S		S-NC_038711.1.fasta	Hazara virus isolate JC280 segment S, complete sequence.
+    id	species	segment	selection	samples	sequence	definition
+    Lassa-L-dataset	LASV	L	true		LASV_L.multi.fasta	Collection of LASV sequences used for hybrid capture bait design, all publicly availble sequences of the L segment clustered at 99.5% similarity
+    Lassa-S-dataset	LASV	S	false	sample1;sample3	LASV_S.multi.fasta	Collection of LASV sequences used for hybrid capture bait design, all publicly availble sequences of the S segment clustered at 99.5% similarity
+    NC038709.1	HAZV	L	false	sample1;sample2	L-NC_038709.1.fasta	Hazara virus isolate JC280 segment L, complete sequence.
+    NC038710.1	HAZV	M	false		M-NC_038710.1.fasta	Hazara virus isolate JC280 segment M, complete sequence.
+    NC038711.1	HAZV	S	false		S-NC_038711.1.fasta	Hazara virus isolate JC280 segment S, complete sequence.
+
     ```
 
 === "CSV"
     ```csv title="constrains-samplesheet.csv"
-    'id','species','segment','samples','sequence','definition'
-    'Lassa-L-dataset','LASV','L','','LASV_L.multi.fasta','Collection of LASV sequences used for hybrid capture bait design, all publicly availble sequences of the L segment clustered at 99.5% similarity'
-    'Lassa-S-dataset','LASV','S','sample1;sample3','LASV_S.multi.fasta','Collection of LASV sequences used for hybrid capture bait design, all publicly availble sequences of the S segment clustered at 99.5% similarity'
-    'NC038709.1','HAZV','L','sample1;sample2','L-NC_038709.1.fasta','Hazara virus isolate JC280 segment L, complete sequence.'
-    'NC038710.1','HAZV','M','','M-NC_038710.1.fasta','Hazara virus isolate JC280 segment M, complete sequence.'
-    'NC038711.1','HAZV','S','','S-NC_038711.1.fasta','Hazara virus isolate JC280 segment S, complete sequence.'
+    id,species,segment,selection,samples,sequence,definition
+    Lassa-L-dataset,LASV,L,true,,LASV_L.multi.fasta,"Collection of LASV sequences used for hybrid capture bait design, all publicly availble sequences of the L segment clustered at 99.5% similarity"
+    Lassa-S-dataset,LASV,S,false,"sample1;sample3",LASV_S.multi.fasta,"Collection of LASV sequences used for hybrid capture bait design, all publicly availble sequences of the S segment clustered at 99.5% similarity"
+    NC038709.1,HAZV,L,false,"sample1;sample2",L-NC_038709.1.fasta,"Hazara virus isolate JC280 segment L, complete sequence."
+    NC038710.1,HAZV,M,false,,M-NC_038710.1.fasta,"Hazara virus isolate JC280 segment M, complete sequence."
+    NC038711.1,HAZV,S,false,,S-NC_038711.1.fasta,"Hazara virus isolate JC280 segment S, complete sequence."
+
     ```
 
 === "YAML"
@@ -114,28 +117,33 @@ An example mapping constrain samplesheet file consisting of 5 references, may lo
     - id: Lassa-L-dataset
     species: LASV
     segment: L
+    selection: true
     sequence: LASV_L.multi.fasta
     definition: 'Collection of LASV sequences used for hybrid capture bait design, all publicly availble sequences of the L segment clustered at 99.5% similarity'
     - id: Lassa-S-dataset
     species: LASV
     segment: S
+    selection: false
     samples: sample1;sample3
     sequence: LASV_S.multi.fasta
             definition: 'Collection of LASV sequences used for hybrid capture bait design, all publicly availble sequences of the S segment clustered at 99.5% similarity'
     - id: NC038709.1
     species: HAZV
     segment: L
+    selection: false
     samples: sample1;sample2
     sequence: L-NC_038709.1.fasta
             definition: 'Hazara virus isolate JC280 segment L, complete sequence.'
     - id: NC038710.1
     species: HAZV
     segment: M
+    selection: false
     sequence: M-NC_038710.1.fasta
     definition: 'Hazara virus isolate JC280 segment M, complete sequence.'
     - id: NC038711.1
     species: HAZV
     segment: S
+    selection: false
     sequence: S-NC_038711.1.fasta
     definition: 'Hazara virus isolate JC280 segment S, complete sequence.'
     ```
@@ -151,6 +159,7 @@ An example mapping constrain samplesheet file consisting of 5 references, may lo
 | `id`         | Reference identifier, needs to be unique'                                                           |
 | `species`    | [Optional] Species name of the reference                                                            |
 | `segment`    | [Optional] Segment name of the reference                                                            |
+| `selection`  | [Optional] Specify if the multiFasta reference file needs to undergo [reference selection](./workflow/variant_and_refinement.md#selection-of-reference)            |
 | `samples`    | [Optional] List of samples that need to be mapped towards the reference. If empty, map all samples. |
 | `sequence`   | Full path (_not_ relative paths) to the reference sequence file.                                    |
 | `definition` | [Optional] Definition of the reference sequence file.                                               |

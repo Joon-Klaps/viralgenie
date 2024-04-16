@@ -1,4 +1,4 @@
-id,species,segment,samples,definition,sequence
-MN908947,SARS-COV-2,Wuhan-hu-1,SRR11140744;SRR11140748,Original Wuhan strain sequenced in 2019,https://raw.githubusercontent.com/Joon-Klaps/nextclade_data/old_datasets/data/nextstrain/sars-cov-2/MN908947/reference.fasta
-BA2,,,SRR11140744,,https://github.com/Joon-Klaps/nextclade_data/raw/old_datasets/data/nextstrain/sars-cov-2/BA.2/reference.fasta
-BA24,,,,,https://github.com/Joon-Klaps/nextclade_data/raw/old_datasets/data/nextstrain/sars-cov-2/BA.2/reference.fasta
+id,species,segment,samples,definition,selection,sequence
+MN908947,SARS-COV-2,Wuhan-hu-1,SRR11140744;SRR11140748,Original Wuhan strain sequenced in 2019,false,https://raw.githubusercontent.com/Joon-Klaps/nextclade_data/old_datasets/data/nextstrain/sars-cov-2/MN908947/reference.fasta
+BA2,,,SRR11140744,,false,https://github.com/Joon-Klaps/nextclade_data/raw/old_datasets/data/nextstrain/sars-cov-2/BA.2/reference.fasta
+BA24,,,,,true,https://github.com/Joon-Klaps/nextclade_data/raw/old_datasets/data/nextstrain/sars-cov-2/MN908947/sequences.fasta

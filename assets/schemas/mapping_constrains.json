@@ -64,6 +64,12 @@
                     }
                 ]
             },
+            "selection": {
+                "errorMessage": "Selection can only be true or false",
+                "meta": ["selection"],
+                "type": "boolean",
+                "default": false
+            },
             "definition": {
                 "errorMessage": "Give a definition of the sequence for metadata annotation purposes only",
                 "meta": ["definition"],
