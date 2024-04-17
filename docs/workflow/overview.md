@@ -18,4 +18,4 @@ By default all analyses are run.
 
 ![viralgenie-workflow](../images/metromap_style_pipeline_workflow_viralgenie.png)
 
---8<-- "README.md:31:66"
+--8<-- "README.md:31:67"

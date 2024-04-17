@@ -65,6 +65,8 @@ module_order:
       name: "SAMPLE: fastp"
   - "trimmomatic":
       name: "SAMPLE: trimmomatic"
+  - "humid":
+      name: "SAMPLE: humid"
   - "bbduk":
       name: "SAMPLE: bbduk"
   - "kraken":

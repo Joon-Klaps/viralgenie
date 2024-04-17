@@ -19,7 +19,7 @@
                     "mimetype": "text/csv",
                     "pattern": "^\\S+\\.csv$",
                     "description": "Path to comma-separated file containing information about the samples in the experiment.",
-                    "help_text": "You will need to create a design file with information about the samples in your experiment before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row. See [usage docs](https://nf-co.re/viralgenie/usage#samplesheet-input).",
+                    "help_text": "You will need to create a design file with information about the samples in your experiment before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row. See [usage docs](https://joon-klaps.github.io/viralgenie/latest/usage/#input).",
                     "fa_icon": "fas fa-file-csv",
                     "schema": "assets/schemas/input.json"
                 },
@@ -81,12 +81,6 @@
                     "default": true,
                     "fa_icon": "fas fa-forward",
                     "description": "With or without umi extraction"
-                },
-                "umi_discard_read": {
-                    "type": "integer",
-                    "default": 0,
-                    "description": "Discard R1 / R2 if required",
-                    "fa_icon": "fas fa-filter"
                 },
                 "trim_tool": {
                     "type": "string",
@@ -865,5 +859,15 @@
         {
             "$ref": "#/definitions/generic_options"
         }
-    ]
+    ],
+    "properties": {
+        "skip_humid": {
+            "type": "string",
+            "default": "false"
+        },
+        "humid_mismatches": {
+            "type": "integer",
+            "default": 2
+        }
+    }
 }

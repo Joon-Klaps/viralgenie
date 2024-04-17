@@ -31,6 +31,7 @@
 1. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/))
 2. Performs optional read pre-processing
     - Adapter trimming([`fastp`](https://github.com/OpenGene/fastp), [`Trimmomatic`](https://github.com/usadellab/Trimmomatic))
+    - Read UMI deduplication ([`HUMID`](https://humid.readthedocs.io/en/latest/usage.html))
     - Low complexity and quality filtering ([`bbduk`](https://jgi.doe.gov/data-and-tools/software-tools/bbtools/))
     - Host-read removal ([`BowTie2`](http://bowtie-bio.sourceforge.net/bowtie2/))
 3. Metagenomic diveristy mapping
