@@ -58,6 +58,23 @@ By default viralgenie will only provide the report and log files if fastp is sel
 
 By default viralgenie will only provide the report and log files if Trimmomatic is selected. The trimmed reads can be saved by specifying `--save_intermediate_reads` or `--save_final_reads 'trimming'`.
 
+### UMI-deduplication
+
+UMI-deduplication can be done at the read level using [`HUMID`](https://humid.readthedocs.io/en/latest/usage.html). Viralgenie also uses provides the opportunity to extract the UMI from the read using [`UMI-tools extract`](https://umi-tools.readthedocs.io/en/latest/QUICK_START.html#step-3--extract-the-umis) if the UMI is not in the header. Results will be stored in the `preprocessing/umi` directory.
+
+???- abstract "Output files"
+
+    - `umi/`
+        - `humid/`
+            - `log/<sample-id>.log`: log file of humid.
+            - `annotated/<sample-id>_annotated_*.fastq.gz`: annotated FastQ files, reads will have their assigned cluster in the read header.
+            - `deduplicated/<sample-id>_deduplicated_*.fastq.gz`: deduplicated FastQ files.
+        - `umitools/`
+            - `log/<sample-id>.log`: log file of umi-tools.
+            - `extracts/<sample-id>.umi_extract*.fastq.gz`: fastq file where UMI's have been removed from the read and moved to the read header.
+
+<!-- TODO --> Provide short explanation of parameters to use.
+
 ### BBDuk
 
 [BBDuk](https://jgi.doe.gov/data-and-tools/software-tools/bbtools/bb-tools-user-guide/bbduk-guide/) stands for Decontamination Using Kmers. BBDuk was developed to combine most common data-quality-related trimming, filtering, and masking operations into a single high-performance tool.
