@@ -80,7 +80,7 @@ workflow PREPROCESSING_ILLUMINA {
         .set { failed_reads }
 
     // deduplicate UMI's with HUMID
-    if (params.with_umi && !params.skip_humid) {
+    if (params.with_umi && ['read', 'both'].contains(params.umi_deduplicate) && params.deduplicate ) {
         HUMID (
             ch_reads_trim,
             [[:],[]]

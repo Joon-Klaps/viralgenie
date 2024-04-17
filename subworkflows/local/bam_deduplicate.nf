@@ -18,7 +18,7 @@ workflow BAM_DEDUPLICATE {
     reference   = bam_ref_fai.map{meta, bam, fasta, fai -> [ meta, fasta ] }
     faidx       = bam_ref_fai.map{meta, bam, fasta, fai -> [ meta, fai ] }
 
-    if ( umi ) {
+    if ( params.with_umi && ['mapping','both'].contains(params.umi_deduplicate) ) {
             SAMTOOLS_INDEX( bam )
             ch_bam_bai  = bam.join(SAMTOOLS_INDEX.out.bai, by: [0])
             ch_versions = ch_versions.mix(SAMTOOLS_INDEX.out.versions)
