@@ -73,7 +73,7 @@ UMI-deduplication can be done at the read level using [`HUMID`](https://humid.re
             - `log/<sample-id>.log`: log file of umi-tools.
             - `extracts/<sample-id>.umi_extract*.fastq.gz`: fastq file where UMI's have been removed from the read and moved to the read header.
 
-<!-- TODO --> Provide short explanation of parameters to use.
+By default viralgenie will not assume reads have UMI's. To enable this use the parameter `--with_umi`. Specify where UMI deduplication should occur with `--umi_deduplicate` if at a `read` level, on a `mapping` level or `both` at a read and mapping level. The deduplicated reads can be saved by specifying `--save_intermediate_reads` or `--save_final_reads 'deduplication'`.
 
 ### BBDuk
 

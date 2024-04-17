@@ -82,6 +82,25 @@
                     "fa_icon": "fas fa-forward",
                     "description": "With or without umi extraction"
                 },
+                "umi_deduplicate": {
+                    "type": "string",
+                    "default": "read",
+                    "fa_icon": "fas fa-toolbox",
+                    "description": "Specify at what level UMI deduplication should occur.",
+                    "enum": ["read", "mapping", "both"]
+                },
+                "humid_mismatches": {
+                    "type": "integer",
+                    "default": 2,
+                    "fa_icon": "fas fa-sort-numeric-down",
+                    "description": "Specify the maximum number of mismatches between reads for them to still be considered neighbors."
+                },
+                "umi_discard_read": {
+                    "type": "integer",
+                    "default": 0,
+                    "fa_icon": "far fa-trash-alt",
+                    "description": "Discard R1 / R2 if required 0, meaning not to discard"
+                },
                 "trim_tool": {
                     "type": "string",
                     "default": "fastp",
@@ -157,9 +176,9 @@
                 },
                 "skip_host_fastqc": {
                     "type": "boolean",
-                    "default": true,
                     "fa_icon": "fas fa-forward",
-                    "description": "Skip the fastqc step after host & contaminants were removed"
+                    "description": "Skip the fastqc step after host & contaminants were removed",
+                    "default": true
                 }
             },
             "fa_icon": "fas fa-bahai"
@@ -859,15 +878,5 @@
         {
             "$ref": "#/definitions/generic_options"
         }
-    ],
-    "properties": {
-        "skip_humid": {
-            "type": "string",
-            "default": "false"
-        },
-        "humid_mismatches": {
-            "type": "integer",
-            "default": 2
-        }
-    }
+    ]
 }

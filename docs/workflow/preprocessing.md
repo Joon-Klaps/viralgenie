@@ -28,11 +28,19 @@ graph LR;
     G --> H["`**FastQC**`"];
 ```
 
-## Read processing
+## Adapter trimming
 
 Raw sequencing read processing in the form of adapter clipping and paired-end read merging is performed by the tools [`fastp`](https://github.com/OpenGene/fastp) or [`Trimmomatic`](https://github.com/usadellab/Trimmomatic). The tool `fastp` is a fast all-in-one tool for preprocessing fastq files. The tool `Trimmomatic` is a flexible read trimming tool for Illumina NGS data. Both tools can be used to remove adapters and low-quality reads from the raw sequencing reads. An adapter file can be provided through the argument `--adapter_fasta`.
 
 > Specify the tool to use for read processing with the `--trim_tool` parameter, the default is `fastp`.
+
+## UMI deduplication
+
+Unique Molecular Identifiers (UMIs) are short sequences that are added during library preparation. They are used to identify and remove PCR duplicates. The tool [`HUMID`](https://humid.readthedocs.io/en/latest/usage.html) is used to remove PCR duplicates based on the UMI sequences. By default, HUMID uses the directional method, which takes into account the expected errors based on the PCR process, specify the allowed amount of errors to see reads coming from the same original fragment with `--humid_mismatches`.
+
+Viralgenie supports both deduplication on a read level as well as a mapping level, specify the `--umi_deduplication` with `read` or `mapping` to choose between the two or specify `both` to both deduplicate on a read as well as on a mapping level.
+
+> By default viralgenie doesn't assume UMIs are present in the reads. If UMIs are present, specify the `--with_umi` parameter and `--deduplicate`.
 
 ## Complexity filtering
 
