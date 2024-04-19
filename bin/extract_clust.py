@@ -253,17 +253,28 @@ def get_taxid(file_in):
     Extract taxid from file name.
 
     Parameters:
-    file_in (str): The file name from which to extract the taxid.
+    file_in (str or file-like object): The file name or file object from which to extract the taxid.
 
     Returns:
     str or None: The extracted taxid if found, None otherwise.
     """
+    # If file_in is a string, directly use it as file name
+    if isinstance(file_in, str):
+        file_name = file_in
+    else:
+        # If file_in is a file-like object, read its contents
+        try:
+            file_name = file_in.name
+            file_in = file_in.read()
+        except AttributeError:
+            # If file_in is neither a string nor a file-like object, return None
+            return None
+
     pattern = r'_taxid(\d+)_'
-    match = re.search(pattern, file_in)
+    match = re.search(pattern, file_name)
 
     # If match is found, return the extracted taxid, otherwise return None
     return match.group(1) if match else None
-
 
 
 def get_first_not_match(regex_pattern, data_list):
