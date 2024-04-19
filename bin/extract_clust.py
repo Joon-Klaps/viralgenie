@@ -110,7 +110,7 @@ class Cluster:
 
     def _to_line(self, prefix):
         return "\t".join(
-            [str(prefix), str(taxid), str(self.cluster_id), str(self.centroid), str(self.cluster_size), ",".join(self.members)]
+            [str(prefix), str(self.taxid), str(self.cluster_id), str(self.centroid), str(self.cluster_size), ",".join(self.members)]
         )
 
 def parse_clusters_chdit(file_in):
@@ -258,24 +258,15 @@ def get_taxid(file_in):
     Returns:
     str or None: The extracted taxid if found, None otherwise.
     """
-    # If file_in is a string, directly use it as file name
-    if isinstance(file_in, str):
-        file_name = file_in
-    else:
-        # If file_in is a file-like object, read its contents
-        try:
-            file_name = file_in.name
-            file_in = file_in.read()
-        except AttributeError:
-            # If file_in is neither a string nor a file-like object, return None
-            return None
 
     pattern = r'_taxid(\d+)_'
-    match = re.search(pattern, file_name)
-
-    # If match is found, return the extracted taxid, otherwise return None
-    return match.group(1) if match else None
-
+    match = re.search(pattern, file_in.name)
+    if match:
+        logger.debug(f"Reading {file_in} with taxon id {match.group(1)}...")
+        return match.group(1)
+    else :
+        logger.debug(f"No taxon id found for {file_in} ")
+        return None
 
 def get_first_not_match(regex_pattern, data_list):
     """
@@ -418,6 +409,7 @@ def main(argv=None):
 
     cluster_list = []
     for cluster_file in args.clusters:
+        logger.debug(f"Reading {cluster_file}...")
         if not cluster_file.is_file():
             logger.error(f"The given input file {cluster_file} was not found!")
             sys.exit(2)
