@@ -1,9 +1,12 @@
-include { CHECKV_ENDTOEND                 } from '../../modules/nf-core/checkv/endtoend/main'
-include { CAT_CAT as CAT_CAT_QC           } from '../../modules/nf-core/cat/cat/main'
-include { QUAST  as QUAST_QC              } from '../../modules/nf-core/quast/main'
-include { BLAST_BLASTN as BLAST_BLASTN_QC } from '../../modules/nf-core/blast/blastn/main'
-include { MAFFT as MAFFT_ITERATIONS       } from '../../modules/nf-core/mafft/main'
-include { MAFFT as MAFFT_QC               } from '../../modules/nf-core/mafft/main'
+include { CHECKV_DOWNLOADDATABASE           } from '../../modules/nf-core/checkv/downloaddatabase/main'
+include { CHECKV_ENDTOEND                   } from '../../modules/nf-core/checkv/endtoend/main'
+include { CAT_CAT as CAT_CAT_QC             } from '../../modules/nf-core/cat/cat/main'
+include { CAT_CAT as CAT_CAT_MMSEQS         } from '../../modules/nf-core/cat/cat/main'
+include { QUAST  as QUAST_QC                } from '../../modules/nf-core/quast/main'
+include { BLAST_BLASTN as BLASTN_QC         } from '../../modules/nf-core/blast/blastn/main'
+include { MAFFT as MAFFT_ITERATIONS         } from '../../modules/nf-core/mafft/main'
+include { MAFFT as MAFFT_QC                 } from '../../modules/nf-core/mafft/main'
+include { MMSEQS_ANNOTATE                   } from './mmseqs_annotate.nf'
 
 workflow CONSENSUS_QC  {
 
@@ -11,11 +14,9 @@ workflow CONSENSUS_QC  {
     ch_genome              // channel: [ val(meta), [ genome ] ]
     ch_aligned_raw_contigs // channel: [ val(meta), [ genome ] ]
     checkv_db              // channel: [ checkv_db ]
-    blast_db               // channel: [ val(meta), [blast_db] ]
-    skip_checkv            // boolean
-    skip_quast             // boolean
-    skip_blast_qc          // boolean
-    skip_alignment_qc      // boolean
+    refpool_db             // channel: [ val(meta), [refpool_db] ]
+    annotation_db          // channel: [ val(meta), [annotation_db] ]
+
     main:
 
     ch_versions      = Channel.empty()
@@ -23,14 +24,17 @@ workflow CONSENSUS_QC  {
     blast_txt        = Channel.empty()
     checkv_summary   = Channel.empty()
     quast_summary    = Channel.empty()
+    annotation_txt  = Channel.empty()
 
-    if ( !skip_checkv || !skip_alignment_qc) {
+    if ( !params.skip_checkv || !params.skip_alignment_qc) {
         ch_genome
             .map{meta, genome -> [meta.subMap('id','cluster_id','sample'), genome]}
             .groupTuple()
             .set{ch_genome_grouped}
 
-        CAT_CAT_QC(ch_genome_grouped)
+        CAT_CAT_QC(
+            ch_genome_grouped
+        )
 
         CAT_CAT_QC
             .out
@@ -39,15 +43,24 @@ workflow CONSENSUS_QC  {
         ch_versions = ch_versions.mix(CAT_CAT_QC.out.versions)
     }
 
-    if ( !skip_checkv ) {
+    if ( !params.skip_checkv ) {
+        if ( !params.checkv_db ) {
+            CHECKV_DOWNLOADDATABASE()
+            checkv_db   = CHECKV_DOWNLOADDATABASE.out.checkv_db
+            ch_versions = ch_versions.mix(CHECKV_DOWNLOADDATABASE.out.versions)
+        }
+
         // uses HMM and AA alignment to deterimine completeness
-        CHECKV_ENDTOEND ( ch_genome_collapsed, checkv_db )
+        CHECKV_ENDTOEND (
+            ch_genome_collapsed,
+            checkv_db
+        )
         checkv_summary = CHECKV_ENDTOEND.out.quality_summary
         ch_versions    = ch_versions.mix(CHECKV_ENDTOEND.out.versions)
     }
 
     // Align the different steps to each other to see how the sequences have changed
-    if ( !skip_alignment_qc){
+    if ( !params.skip_alignment_qc){
 
         // MAFFT doesn't like those that have only one sequence
         ch_genome_collapsed
@@ -63,7 +76,8 @@ workflow CONSENSUS_QC  {
             [[:],[]],
             [[:],[]],
             [[:],[]],
-            [[:],[]]
+            [[:],[]],
+            false
         )
         ch_versions = ch_versions.mix(MAFFT_ITERATIONS.out.versions)
 
@@ -99,12 +113,13 @@ workflow CONSENSUS_QC  {
             [[:],[]],
             [[:],[]],
             [[:],[]],
+            false
         )
         ch_versions = ch_versions.mix(MAFFT_QC.out.versions)
     }
 
-    if ( !skip_quast ) {
-        // Basic summary statistics
+    if ( !params.skip_quast ) {
+        // Contig summary statistics
         QUAST_QC (
             ch_genome,
             [[:],[]],
@@ -114,20 +129,36 @@ workflow CONSENSUS_QC  {
         quast_summary = QUAST_QC.out.tsv
     }
 
-    if ( !skip_blast_qc ){
-        // Identify closest reference from the database
-        BLAST_BLASTN_QC (
+    if ( !params.skip_blast_qc ){
+        // Identify closest reference from the reference pool database using blast
+        BLASTN_QC (
             ch_genome,
-            blast_db
+            refpool_db
         )
-        ch_versions = ch_versions.mix(BLAST_BLASTN_QC.out.versions)
-        blast_txt   = BLAST_BLASTN_QC.out.txt
+        blast_txt   = BLASTN_QC.out.txt
+        ch_versions = ch_versions.mix(BLASTN_QC.out.versions)
     }
+
+    if ( !params.skip_annotation){
+        ch_genomes_collect = ch_genome.collect{it[1]}.map{files -> [[id:"all_genomes_annotation.hits"], files]}
+        CAT_CAT_MMSEQS(
+            ch_genomes_collect
+        )
+        // use MMSEQS easy search to find best hits against annotation db
+        MMSEQS_ANNOTATE(
+            CAT_CAT_MMSEQS.out.file_out,
+            annotation_db
+        )
+        annotation_txt = MMSEQS_ANNOTATE.out.tsv
+        ch_versions = ch_versions.mix(MMSEQS_ANNOTATE.out.versions)
+    }
+
 
     emit:
     blast_txt       = blast_txt         // channel: [ val(meta), [ txt ] ]
     checkv_summary  = checkv_summary    // channel: [ val(meta), [ tsv ] ]
     quast_summary   = quast_summary     // channel: [ val(meta), [ tsv ] ]
+    annotation_txt  = annotation_txt   // channel: [ val(meta), [ txt ] ]
     mqc             = ch_multiqc_files  // channel: [ tsv ]
     versions        = ch_versions       // channel: [ versions.yml ]
 }

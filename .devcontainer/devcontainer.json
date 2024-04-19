@@ -33,5 +33,5 @@
         }
     },
 
-    "postCreateCommand": "pre-commit install --install-hooks && nextflow self-update"
+    "postCreateCommand": "pre-commit install --install-hooks && nextflow self-update && pip install mkdocs-material"
 }

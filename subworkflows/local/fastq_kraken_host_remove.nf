@@ -26,7 +26,7 @@ workflow FASTQ_KRAKEN_HOST_REMOVE {
     ch_multiqc_files = Channel.empty()
 
     // build kraken2 host db if needed
-    if (!kraken2_host_db) {
+    if (!params.host_k2_db) {
         KRAKEN2_HOST_BUILD (
             library
         )

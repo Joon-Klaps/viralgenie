@@ -1,3 +1,4 @@
+include { filterContigs; failedContigsToMultiQC   } from '../../modules/local/functions'
 include { MAP_READS                               } from './map_reads'
 include { BAM_DEDUPLICATE                         } from './bam_deduplicate'
 include { SAMTOOLS_SORT as SAMTOOLS_SORT_DEDUPPED } from '../../modules/nf-core/samtools/sort/main'
@@ -5,7 +6,6 @@ include { SAMTOOLS_FAIDX                          } from '../../modules/nf-core/
 include { BAM_STATS_METRICS                       } from './bam_stats_metrics'
 include { BAM_CALL_VARIANTS                       } from './bam_call_variants'
 include { BAM_CALL_CONSENSUS                      } from './bam_call_consensus'
-include { FASTA_CONTIG_FILTERING                  } from './fasta_contig_filtering'
 include { BAM_FLAGSTAT_FILTER                     } from './bam_flagstat_filter'
 
 workflow FASTQ_FASTA_MAP_CONSENSUS {
@@ -19,7 +19,7 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
     variant_caller       // val: [ bcftools | ivar ]
     call_consensus       // val: [ true | false ]
     consensus_caller     // val: [ bcftools | ivar ]
-    get_stats            // val: [ true | false ]
+    mapping_stats            // val: [ true | false ]
     min_mapped_reads     // integer: min_mapped_reads
     min_len              // integer: min_length
     n_100                // integer: n_100
@@ -43,7 +43,7 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
     SAMTOOLS_FAIDX ( ch_reference, [[],[]])
     ch_versions  = ch_versions.mix(SAMTOOLS_FAIDX.out.versions)
 
-    // remove
+    // remove references-read combinations with low mapping rates
     BAM_FLAGSTAT_FILTER ( ch_bam, min_mapped_reads )
     ch_multiqc   = ch_multiqc.mix(BAM_FLAGSTAT_FILTER.out.bam_fail_mqc.ifEmpty([]))
     ch_versions  = ch_versions.mix(BAM_FLAGSTAT_FILTER.out.versions)
@@ -57,7 +57,7 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
 
     // deduplicate bam using umitools (if UMI) or picard
     if (deduplicate) {
-        BAM_DEDUPLICATE ( ch_bam_fa_fai, umi, get_stats)
+        BAM_DEDUPLICATE ( ch_bam_fa_fai, umi, mapping_stats)
 
         ch_dedup_bam = BAM_DEDUPLICATE.out.bam
         ch_multiqc   = ch_multiqc.mix(BAM_DEDUPLICATE.out.mqc.collect{it[1]}.ifEmpty([]))
@@ -69,14 +69,14 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
 
     // sort bam
     SAMTOOLS_SORT_DEDUPPED ( ch_dedup_bam )
-    ch_versions = ch_versions.mix(SAMTOOLS_SORT_DEDUPPED.out.versions.first())
+    ch_versions = ch_versions.mix(SAMTOOLS_SORT_DEDUPPED.out.versions)
     ch_dedup_bam_sort = SAMTOOLS_SORT_DEDUPPED.out.bam
 
     ch_dedup_bam_ref = ch_dedup_bam_sort.
         join(ch_reference, by: [0])
 
     // report summary statistics of alignment
-    if (get_stats) {
+    if (mapping_stats) {
         BAM_STATS_METRICS ( ch_dedup_bam_ref )
         ch_multiqc   = ch_multiqc.mix(BAM_STATS_METRICS.out.mqc.collect{it[1]}.ifEmpty([]))
         ch_versions  = ch_versions.mix(BAM_STATS_METRICS.out.versions)
@@ -91,9 +91,9 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
         BAM_CALL_VARIANTS (
             ch_dedup_bam_ref,
             variant_caller,
-            get_stats
+            mapping_stats
         )
-        ch_versions   = ch_versions.mix(BAM_CALL_VARIANTS.out.versions.first())
+        ch_versions   = ch_versions.mix(BAM_CALL_VARIANTS.out.versions)
         ch_multiqc    = ch_multiqc.mix(BAM_CALL_VARIANTS.out.mqc.collect{it[1]}.ifEmpty([]))
         ch_vcf_filter = BAM_CALL_VARIANTS.out.vcf_filter
         ch_vcf        = BAM_CALL_VARIANTS.out.vcf
@@ -107,19 +107,17 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
         ch_dedup_bam_ref,
         ch_vcf_filter,
         consensus_caller,
-        get_stats
+        mapping_stats
     )
-    ch_versions = ch_versions.mix(BAM_CALL_CONSENSUS.out.versions.first())
+    ch_versions = ch_versions.mix(BAM_CALL_CONSENSUS.out.versions)
     consensus_all   = BAM_CALL_CONSENSUS.out.consensus
 
-    FASTA_CONTIG_FILTERING (
-        consensus_all,
-        min_len,
-        n_100
-    )
+    contigs = filterContigs ( consensus_all, min_len, n_100 )
 
-    consensus_filtered = FASTA_CONTIG_FILTERING.out.contigs
-    ch_multiqc         = ch_multiqc.mix(FASTA_CONTIG_FILTERING.out.contig_qc_fail_mqc.collect().ifEmpty([]))
+    contig_qc_fail_mqc = failedContigsToMultiQC ( contigs.fail, min_len, n_100 )
+
+    consensus_filtered = contigs.pass
+    ch_multiqc         = ch_multiqc.mix(contig_qc_fail_mqc.collectFile(name:'failed_contig_quality_mqc.tsv').ifEmpty([]))
 
     consensus_reads    = consensus_filtered.join(reads_in, by: [0])
     bam_out            = ch_dedup_bam_ref.map{meta,bam,ref -> [meta,bam] }

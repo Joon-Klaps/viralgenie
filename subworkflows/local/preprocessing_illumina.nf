@@ -1,8 +1,9 @@
 // modules
-include { BBMAP_BBDUK                          } from '../../modules/nf-core/bbmap/bbduk/main'
-include { FASTQ_FASTQC_UMITOOLS_TRIMMOMATIC    } from './fastq_fastqc_umitools_trimmomatic'
-include { FASTQ_FASTQC_UMITOOLS_FASTP          } from '../nf-core/fastq_fastqc_umitools_fastp/main'
-include { FASTQ_KRAKEN_HOST_REMOVE             } from './fastq_kraken_host_remove'
+include { lowReadSamplesToMultiQC            } from '../../modules/local/functions'
+include { BBMAP_BBDUK                        } from '../../modules/nf-core/bbmap/bbduk/main'
+include { FASTQ_FASTQC_UMITOOLS_TRIMMOMATIC  } from './fastq_fastqc_umitools_trimmomatic'
+include { FASTQ_FASTQC_UMITOOLS_FASTP        } from '../nf-core/fastq_fastqc_umitools_fastp/main'
+include { FASTQ_KRAKEN_HOST_REMOVE           } from './fastq_kraken_host_remove'
 
 workflow PREPROCESSING_ILLUMINA {
 
@@ -30,7 +31,7 @@ workflow PREPROCESSING_ILLUMINA {
             params.save_merged,
             params.min_trimmed_reads
             )
-        ch_versions = ch_versions.mix(FASTQ_FASTQC_UMITOOLS_TRIMMOMATIC.out.versions.first())
+        ch_versions = ch_versions.mix(FASTQ_FASTQC_UMITOOLS_TRIMMOMATIC.out.versions)
 
         ch_multiqc_files = ch_multiqc_files.mix(FASTQ_FASTQC_UMITOOLS_TRIMMOMATIC.out.fastqc_raw_zip)
         ch_multiqc_files = ch_multiqc_files.mix(FASTQ_FASTQC_UMITOOLS_TRIMMOMATIC.out.fastqc_trim_html)
@@ -55,7 +56,7 @@ workflow PREPROCESSING_ILLUMINA {
             params.min_trimmed_reads
             )
 
-        ch_versions = ch_versions.mix(FASTQ_FASTQC_UMITOOLS_FASTP.out.versions.first())
+        ch_versions = ch_versions.mix(FASTQ_FASTQC_UMITOOLS_FASTP.out.versions)
 
         ch_multiqc_files = ch_multiqc_files.mix(FASTQ_FASTQC_UMITOOLS_FASTP.out.fastqc_raw_zip)
         ch_multiqc_files = ch_multiqc_files.mix(FASTQ_FASTQC_UMITOOLS_FASTP.out.fastqc_trim_zip)
@@ -79,7 +80,8 @@ workflow PREPROCESSING_ILLUMINA {
     if (!params.skip_complexity_filtering) {
         BBMAP_BBDUK ( ch_reads_trim, ch_contaminants )
         ch_reads_decomplexified = BBMAP_BBDUK.out.reads
-        ch_multiqc_files = ch_multiqc_files.mix(BBMAP_BBDUK.out.log)
+        ch_multiqc_files        = ch_multiqc_files.mix(BBMAP_BBDUK.out.log)
+        ch_versions             = ch_versions.mix(BBMAP_BBDUK.out.versions)
     } else {
         ch_reads_decomplexified = ch_reads_trim
     }
@@ -106,22 +108,7 @@ workflow PREPROCESSING_ILLUMINA {
     //
     // Create a section that reports failed samples and their read counts
     //
-    failed_reads
-        .map { meta, read_count -> ["$meta.sample\t$read_count"] }
-        .collect()
-        .map {
-            tsv_data ->
-                def comments = [
-                    "id: 'samples_low_reads'",
-                    "anchor: 'WARNING: Filtered samples'",
-                    "section_name: 'Samples with to few reads'",
-                    "format: 'tsv'",
-                    "description: 'Samples that did not have the minimum number of reads (<${params.min_trimmed_reads}) after trimming, complexity filtering & host removal'",
-                    "plot_type: 'table'"
-                ]
-                def header = ['Sample', "Number of reads"]
-                return WorkflowCommons.multiqcTsvFromList(tsv_data, header, comments) // make it compatible with the other mqc files
-        }
+    lowReadSamplesToMultiQC(failed_reads, params.min_trimmed_reads)
         .collectFile(name:'samples_low_reads_mqc.tsv')
         .set{low_reads_mqc}
 

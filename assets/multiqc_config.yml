@@ -59,7 +59,7 @@ module_order:
   - "fastqc":
       name: "SAMPLE: FastQC (post-Host-removal)"
       path_filters:
-        - "*_trim*fastqc.zip"
+        - "*_host*fastqc.zip"
   - "fastp":
       name: "SAMPLE: fastp"
   - "trimmomatic":
@@ -82,29 +82,29 @@ module_order:
       name: "SAMPLE: Kaiju (Diversity)"
   - "quast":
       name: "SAMPLE: Quast (Spades)"
-      anchor: "quast"
+      anchor: "quast_spades"
       path_filters:
         - "*_spades.tsv"
   - "quast":
       name: "SAMPLE: Quast (Megahit)"
-      anchor: "quast"
+      anchor: "quast_megahit"
       path_filters:
         - "*_megahit.tsv"
   - "quast":
       name: "SAMPLE: Quast (Trinity)"
-      anchor: "quast"
+      anchor: "quast_trinity"
       path_filters:
         - "*_trinity.tsv"
-  - "samtools":
-      name: "CLUSTER: Samtools Stats"
-  - "bcftools":
-      name: "CLUSTER: Bcftools"
   - "picard":
       name: "CLUSTER: Picard"
   - "umitools":
       name: "CLUSTER: UMI-tools"
+  - "samtools":
+      name: "CLUSTER: Samtools Stats"
   - "mosdepth":
       name: "CLUSTER: mosdepth"
+  - "bcftools":
+      name: "CLUSTER: Bcftools"
   - "custom_content"
 
 # Summary table names
@@ -142,6 +142,15 @@ table_columns_name:
     L50: "L50 (Trinity)"
     Largest contig: "Largest contig (Trinity)"
     Total length: "Total length (Trinity)"
+  "SAMPLE: Kraken2 (Host-removal)":
+    pct_top_n: "% reads of top 5 host/contaminants"
+    pct_unclassified: "% non-host reads"
+  "SAMPLE: Kraken2 (Diversity)":
+    pct_top_n: "% reads top 5 Species (Kraken2)"
+  "SAMPLE: KAIJU (Diversity)":
+    "% Assigned": "% Reads assigned (Kaiju)"
+    assigned: "M reads assigned (Kaiju)"
+    "% Unclassified": "% Reads unassigned (Kaiju)"
 
 # Summary table visible columns
 table_columns_visible:
@@ -163,9 +172,13 @@ table_columns_visible:
     percent_gc: True
     percent_duplicates: True
     percent_fails: True
-  "SAMPLE: Kraken2 (Host-removal)": True
-  "CLUSTER: Samtools Stats": False
+  "SAMPLE: fastp":
+    filtering_result_passed_filter_reads: False
+    after_filtering_q30_rate: True
+  "CLUSTER: Samtools Stats: stats": False
+  "CLUSTER: Samtools Stats: flagstat": False
   "CLUSTER: Bcftools: Stats": False
+  "CLUSTER: Samtools Stats": False
   "CLUSTER: Picard: Mark Duplicates": False
   "CLUSTER: UMI-tools": False
   "CLUSTER: mosdepth": False
@@ -189,53 +202,12 @@ table_columns_visible:
     Largest contig: True
     Total length: False
 
-# TODO
-# TRIED Give them all negative numbers so all columns from sample metadata are displayed first
-# table_columns_placement:
-#   "SAMPLE: FastQC (pre-Trimming)":
-#     total_sequences: 500
-#     avg_sequence_length: 501
-#     percent_gc: 502
-#     percent_duplicates: 503
-#     percent_fails: 504
-#   "SAMPLE: FastQC (post-Trimming)":
-#     total_sequences: 505
-#     avg_sequence_length: 506
-#     percent_gc: 507
-#     percent_duplicates: 508
-#     percent_fails: 508
-#   "SAMPLE: FastQC (post-Host-removal)":
-#     total_sequences: 509
-#     avg_sequence_length: 509
-#     percent_gc: 509
-#     percent_duplicates: 509
-#     percent_fails: 509
-#   "SAMPLE: BBDuk":
-#     Total Removed bases percent: 510
-#     Total Removed reads percent: 510
-#     Total Removed reads: 510
-#   "SAMPLE: Quast (Spades)":
-#     N50: 511
-#     L50: 512
-#     Largest contig: 513
-#     Total length: 514
-#   "SAMPLE: Quast (Megahit)":
-#     N50: 515
-#     L50: 516
-#     Largest contig: 517
-#     Total length: 518
-#   "SAMPLE: Quast (Trinity)":
-#     N50: 519
-#     L50: 520
-#     Largest contig: 521
-#     Total length: 522
-#   "Custom content: clusters_summary":
-#     "# Clusters": 523
-#     "Average cluster size": 523
-#     "Number of singletons": 523
+skip_versions_section: true
 
-section_comments:
-  general_stats: "By default, all read count columns are displayed as millions (M) of reads."
+# Viral reads are not so big
+read_count_multiplier: 1
+read_count_prefix: ""
+read_count_desc: ""
 
 sp:
   fastp:
@@ -251,6 +223,7 @@ extra_fn_clean_exts:
   - "_raw_2"
   - "_trim_1"
   - "_trim_2"
+  - "_trim"
   - "_1"
   - "_2"
   - "_host"
@@ -261,3 +234,8 @@ extra_fn_clean_exts:
   - "_megahit"
   - "_trinity"
   - ".filtered"
+  - ".norm"
+  - ".consensus_bcftools"
+  - ".consensus_ivar"
+  - "-CONSTRAIN_constrain"
+  - "-CONSTRAIN_itvariant_calling"

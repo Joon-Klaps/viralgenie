@@ -16,7 +16,7 @@ logger = logging.getLogger()
 def parse_args(argv=None):
     """Define and immediately parse command line arguments."""
     parser = argparse.ArgumentParser(
-        description="Provide a command line tool to extract sequence names from cdhit's cluster files.",
+        description="Provide a command line tool to filter blast results.",
         epilog="Example: python blast_filter.py in.clstr prefix",
     )
 
@@ -106,8 +106,10 @@ def read_blast(blast):
     df.columns = [
         "query",
         "subject",
+        "subject_title",  # "stitle
         "pident",
         "qlen",
+        "slen",
         "length",
         "mismatch",
         "gapopen",
@@ -166,7 +168,9 @@ def write_hits(df, contigs, references, prefix):
     # Write unique hits to file
     unique_hits = df["subject"].unique()
     unique_series = pd.Series(unique_hits)
-    unique_series.to_csv(prefix + ".filter.hits.txt", sep="\t", index=False, header=False)
+    unique_series.to_csv(
+        prefix + ".filter.hits.txt", sep="\t", index=False, header=False
+    )
 
 
 def main(argv=None):

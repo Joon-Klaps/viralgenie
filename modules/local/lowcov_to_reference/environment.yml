@@ -1,0 +1,7 @@
+name: lowcov_to_reference
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - conda-forge::bioframe=0.4.1

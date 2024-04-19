@@ -8,7 +8,6 @@ include { MMSEQS_CREATETSV         } from '../../modules/nf-core/mmseqs/createts
 include { VRHYME_VRHYME            } from '../../modules/nf-core/vrhyme/vrhyme/main'
 include { MASH_DIST                } from '../../modules/nf-core/mash/dist/main'
 include { NETWORK_CLUSTER          } from '../../modules/local/network_cluster/main'
-include { GUNZIP as GUNZIP_CONTIGS } from '../../modules/nf-core/gunzip/main'
 
 workflow FASTA_FASTQ_CLUST {
 
@@ -84,7 +83,7 @@ workflow FASTA_FASTQ_CLUST {
     // Calculate clusters for distance based methods (mash)
     if (cluster_method in ["mash"] ) {
         // Calculate clusters using leidenalg
-        NETWORK_CLUSTER(ch_dist, cluster_method)
+        NETWORK_CLUSTER(ch_dist, cluster_method, params.network_clustering)
         ch_clusters = NETWORK_CLUSTER.out.clusters
         ch_versions = ch_versions.mix(NETWORK_CLUSTER.out.versions.first())
     }
