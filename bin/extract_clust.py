@@ -21,12 +21,13 @@ class Cluster:
     A cluster contains the centroid sequence, members of the cluster, cluster_size of centroid.
     """
 
-    def __init__(self, cluster_id, centroid, members):
+    def __init__(self, cluster_id, centroid, members, taxid=None):
         # Having only a number get's removed by multiqc which causes merging errors downstream
         self.cluster_id = cluster_id
         self.centroid = centroid
         self.members = members
         self.external_reference = None
+        self.taxid = taxid
         if members is not None:
             self.cluster_size = len(members)
         else:
@@ -56,9 +57,10 @@ class Cluster:
         yield "centroid", self.centroid
         yield "members", self.members
         yield "cluster_size", self.cluster_size
+        yield "taxid", self.taxid
 
     def __str__(self):
-        return f"Cluster {self.cluster_id} with centroid {self.centroid}, external {self.external_reference} and {self.cluster_size} members {self.members}"
+        return f"Cluster {self.cluster_id}, taxid {self.taxid} with centroid {self.centroid}, external {self.external_reference} and {self.cluster_size} members {self.members}"
 
     def _save_cluster_members(self, prefix):
         """
@@ -108,9 +110,8 @@ class Cluster:
 
     def _to_line(self, prefix):
         return "\t".join(
-            [str(prefix), str(self.cluster_id), str(self.centroid), str(self.cluster_size), ",".join(self.members)]
+            [str(prefix), str(taxid), str(self.cluster_id), str(self.centroid), str(self.cluster_size), ",".join(self.members)]
         )
-
 
 def parse_clusters_chdit(file_in):
     """
@@ -123,12 +124,13 @@ def parse_clusters_chdit(file_in):
     current_cluster_id = None
     current_members = []
     current_centroid = None
+    taxid = get_taxid(file_in)
 
     for line in lines:
         if line.startswith(">Cluster"):
             # New cluster detected, add previous Cluster object to the list
             if current_cluster_id is not None:
-                cluster = Cluster(current_cluster_id, current_centroid, current_members)
+                cluster = Cluster(current_cluster_id, current_centroid, current_members, taxid=taxid)
                 clusters.append(cluster)
 
             # Extract the cluster cluster_id from the line and reset the members and centroid
@@ -149,7 +151,7 @@ def parse_clusters_chdit(file_in):
 
     # Create a Cluster object for the last cluster
     if current_cluster_id is not None:
-        cluster = Cluster(current_cluster_id, current_centroid, current_members)
+        cluster = Cluster(current_cluster_id, current_centroid, current_members, taxid=taxid)
         clusters.append(cluster)
 
     return clusters.copy()
@@ -162,6 +164,7 @@ def parse_clusters_mmseqs(file_in):
 
     # Dictionary to store clusters {cluster_id: Cluster}
     clusters = {}
+    taxid = get_taxid(file_in)
 
     with open(file_in, "rt") as file:
         for line in file:
@@ -175,7 +178,7 @@ def parse_clusters_mmseqs(file_in):
                 existing_cluster.members.append(member_name)
                 existing_cluster.cluster_size = len(existing_cluster.members)
             else:
-                new_cluster = Cluster(cluster_id, centroid_name, [])
+                new_cluster = Cluster(cluster_id, centroid_name, [], taxid=taxid)
                 clusters[cluster_id] = new_cluster
     return list(clusters.values())
 
@@ -186,6 +189,7 @@ def parse_clusters_vsearch(file_in):
     """
     # Dictionary to store clusters {cluster_id: Cluster}
     clusters = {}
+    taxid = get_taxid(file_in)
 
     with gzip.open(file_in, "rt") as file:
         for line in file:
@@ -201,7 +205,7 @@ def parse_clusters_vsearch(file_in):
 
             # Create a new cluster object if the cluster cluster_id is not present in the dictionary
             if cluster_id not in clusters.keys():
-                clusters[cluster_id] = Cluster(cluster_id, None, [])
+                clusters[cluster_id] = Cluster(cluster_id, None, [], taxid=taxid)
 
             # Set the centroid of the corresponding cluster
             if line.startswith("S\t"):
@@ -227,6 +231,7 @@ def parse_clusters_vrhyme(file_in, pattern, skip_header=True):
     clusters = {}  # Dictionary to store clusters {cluster_id: Cluster}
     grouped = defaultdict(list)
     pattern_regex = re.compile(pattern)
+    taxid = get_taxid(file_in)
 
     with open(file_in, "r") as file:
         if skip_header:
@@ -239,9 +244,26 @@ def parse_clusters_vrhyme(file_in, pattern, skip_header=True):
             centroid = get_first_not_match(pattern_regex, values)
             members = [value for value in values if value != centroid]
             cluster_id = f"cl{key}"
-            clusters[cluster_id] = Cluster(cluster_id, centroid, members)
+            clusters[cluster_id] = Cluster(cluster_id, centroid, members, taxid=taxid)
 
     return list(clusters.values())
+
+def get_taxid(file_in):
+    """
+    Extract taxid from file name.
+
+    Parameters:
+    file_in (str): The file name from which to extract the taxid.
+
+    Returns:
+    str or None: The extracted taxid if found, None otherwise.
+    """
+    pattern = r'_taxid(\d+)_'
+    match = re.search(pattern, file_in)
+
+    # If match is found, return the extracted taxid, otherwise return None
+    return match.group(1) if match else None
+
 
 
 def get_first_not_match(regex_pattern, data_list):
@@ -272,7 +294,7 @@ def write_clusters_to_tsv(clusters, prefix):
     Write the clusters to a json file.
     """
     with open(f"{prefix}.clusters.tsv", "w") as file:
-        file.write("\t".join(["sample", "cluster_id", "centroid", "size", "members"]))
+        file.write("\t".join(["sample", "taxon-id", "cluster-id", "centroid", "size", "members"]))
         file.write("\n")
         for cluster in clusters:
             file.write(cluster._to_line(prefix))
@@ -313,7 +335,7 @@ def filter_clusters(clusters, pattern):
         if cluster.members:
             matching_members = [member for member in cluster.members if regex.search(member)]
             if matching_members or regex.search(cluster.centroid):
-                filtered_clusters.append(Cluster(cluster.cluster_id, cluster.centroid, matching_members))
+                filtered_clusters.append(Cluster(cluster.cluster_id, cluster.centroid, matching_members, taxid=cluster.taxid))
         elif regex.search(cluster.centroid):
             filtered_clusters.append(cluster)
     return filtered_clusters

@@ -58,8 +58,8 @@
     > Chen, Shifu et al. “fastp: an ultra-fast all-in-one FASTQ preprocessor.” Bioinformatics (Oxford, England) vol. 34,17 (2018): i884-i890. doi:10.1093/bioinformatics/bty560
 
 - [HUMID](https://humid.readthedocs.io/en/latest/usage.html)
-<!-- TODO  CONTINUE HERE -->
-    > __Github__ https://github.com/jfjlaros/HUMID
+
+    > Laros J, van den Berg R, __Github__ https://github.com/jfjlaros/HUMID
 
 - [iVar](https://www.ncbi.nlm.nih.gov/pubmed/30621750/)
 

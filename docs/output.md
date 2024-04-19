@@ -237,7 +237,6 @@ The output files of each clustering method is directly put in te `assembly/polis
 ???- abstract "Output files"
 
     - `polishing/intermediate/cluster/`
-        - `<sample-id>/<sample-id>_cl#.json`: A json file containign information that is used by viralgenie internally like clusterID, centroid, members, cluster size, if the reference is external or a denovo contig.
         - `<sample-id>/<sample-id>.summary_mqc.tsv`: A tabular file with comments used for [Multiqc](#multiqc) with statistics on the number of identified clusters in a sample
         - `<sample-id>/<sample-id>.clusters.tsv`: A tabular file with metadata on all clusters in a samples. It's the json file of all clusters in a table format.
 

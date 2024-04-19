@@ -178,7 +178,7 @@
                     "type": "boolean",
                     "fa_icon": "fas fa-forward",
                     "description": "Skip the fastqc step after host & contaminants were removed",
-                    "default": true
+                    "default": false
                 }
             },
             "fa_icon": "fas fa-bahai"
