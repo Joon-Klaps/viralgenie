@@ -38,7 +38,7 @@ Raw sequencing read processing in the form of adapter clipping and paired-end re
 
 Unique Molecular Identifiers (UMIs) are short sequences that are added during library preparation. They are used to identify and remove PCR duplicates. The tool [`HUMID`](https://humid.readthedocs.io/en/latest/usage.html) is used to remove PCR duplicates based on the UMI sequences. By default, HUMID uses the directional method, which takes into account the expected errors based on the PCR process, specify the allowed amount of errors to see reads coming from the same original fragment with `--humid_mismatches`.
 
-Viralgenie supports both deduplication on a read level as well as a mapping level, specify the `--umi_deduplication` with `read` or `mapping` to choose between the two or specify `both` to both deduplicate on a read as well as on a mapping level.
+Viralgenie supports both deduplication on a read level as well as a mapping level, specify the `--umi_deduplication` with `read` or `mapping` to choose between the two or specify `both` to both deduplicate on a read level as well as on a mapping level (after read mapping with reference).
 
 > By default viralgenie doesn't assume UMIs are present in the reads. If UMIs are present, specify the `--with_umi` parameter and `--deduplicate`.
 
