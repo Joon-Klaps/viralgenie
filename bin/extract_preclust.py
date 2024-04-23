@@ -10,42 +10,6 @@ from Bio import SeqIO
 logger = logging.getLogger()
 
 
-def parse_args(argv=None):
-    """Define and immediately parse command line arguments."""
-    parser = argparse.ArgumentParser(
-        description="Extract the sequences based on the results of Kaiju, Kraken or both of them combined.",
-        epilog="Example: python extract_precluster.py input.tsv sequence.fa prefix",
-    )
-
-    parser.add_argument(
-        "classifications",
-        metavar="CLASSIFICATIONS",
-        type=Path,
-        help="Classified contigs using Kaiju, Kraken or both of them combined.",
-    )
-
-    parser.add_argument(
-        "sequences",
-        metavar="SEQUENCES",
-        type=Path,
-        help="Input sequence file used for looking up",
-    )
-
-    parser.add_argument(
-        "file_out_prefix",
-        metavar="FILE_OUT_PREFIX",
-        type=str,
-        help="Output file prefix",
-    )
-
-    parser.add_argument(
-        "-l",
-        "--log-level",
-        help="The desired log level (default WARNING).",
-        choices=("CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"),
-        default="WARNING",
-    )
-    return parser.parse_args(argv)
 
 
 def create_groups(file):
@@ -112,6 +76,142 @@ def extract_sequences(groups, sequences, file_out_prefix):
                 if seq_name in sequence_dict:
                     SeqIO.write(sequence_dict[seq_name], f_out, "fasta")
 
+class rankedTaxon:
+    """
+    A class to represent a ranked taxon of Kaiju and (/or) Kraken hit. Containing information on parent
+    """
+    def __init__(self, kaiju_taxid, kraken_taxid, classified, name):
+        self.kaiju_taxid = kaiju_taxid
+        self.kraken_taxid = kraken_taxid
+        self.classified = classified
+        self.name = name
+        self.taxon_rank = self._lookup_taxon_rank()
+
+    def _lookup_parent_taxa(self):
+        return 0
+
+    def _lookup_taxon_rank(self):
+        return 0
+
+    def _merge_classification(self, merge_strategy):
+        return 0
+
+    def _simplify_taxon_rank(self, simplification_level):
+        return 0
+
+def parse_args(argv=None):
+    """Define and immediately parse command line arguments."""
+    parser = argparse.ArgumentParser(
+        description="Extract the sequences based on the results of Kaiju, Kraken or both of them combined.",
+        epilog="Example: python extract_precluster.py input.tsv sequence.fa prefix",
+    )
+
+    parser.add_argument(
+        "classifications",
+        metavar="CLASSIFICATIONS",
+        type=Path,
+        help="Classified contigs using Kaiju, Kraken or both of them combined.",
+    )
+
+    parser.add_argument(
+        "sequences",
+        metavar="SEQUENCES",
+        type=Path,
+        help="Input sequence file used for looking up",
+    )
+
+    parser.add_argument(
+        "file_out_prefix",
+        metavar="FILE_OUT_PREFIX",
+        type=str,
+        help="Output file prefix",
+    )
+
+    parser.add_argument(
+        "kaiju_classifications",
+        metavar="KAIJU_CLASSIFICATIONS",
+        type=Path,
+        help="Classified contigs|reads using Kaiju with only the first 3 columns sorted by readID.",
+    )
+
+    parser.add_argument(
+        "kraken_classifications",
+        metavar="KRAKEN_CLASSIFICATIONS",
+        type=Path,
+        help="Classified contigs|reads using Kraken with only the first 3 columns sorted by readID.",
+    )
+
+    parser.add_argument(
+        "kaiju_nodes",
+        metavar="KAIJU_NODES",
+        type=Path,
+        help="Kaiju nodes file. `nodes.dmp`",
+    )
+
+    parser.add_argument(
+        "kraken_report",
+        metavar="KAIJU_NAMES",
+        type=Path,
+        help="Kraken's report `--report` containing information on the the parent taxa",
+    )
+
+    parser.add_argument(
+        "-c"
+        "--merge-classifications",
+        type=str,
+        help="Specify the merge strategy of the classifications of Kaiju and Kraken. '1' for Kaiju, '2' for Kraken, 'lca' for lowest common ancestor and 'lowest' for lowest ranking of the two taxon identifiers.",
+        choices=("1", "2", "lca", "lowest"),
+        default="lca",
+    )
+
+    parser.add_argument(
+        "-ic",
+        "--include-children",
+        nargs="+",
+        type=str,
+        help="A list of taxids to whitelist during filtering and include their children.",
+    )
+
+    parser.add_argument(
+        "-ec",
+        "--exclude-children",
+        nargs="+",
+        type=str,
+        help="A list of taxids to blacklist during filtering and exclude their children.",
+    )
+
+    parser.add_argument(
+        "-ip",
+        "--include-parents",
+        nargs="+",
+        type=str,
+        help="A list of taxids to whitelist during filtering and include their parents.",
+    )
+
+    parser.add_argument(
+        "-ep",
+        "--exclude-parents",
+        nargs="+",
+        type=str,
+        help="A list of taxids to blacklist during filtering and exclude their parents.",
+    )
+
+    parser.add_argument(
+        "-s",
+        "--simplification-level",
+        type= str,
+        help="The level of simplification of the taxonomic ranks. 'superkingdom', 'phylum', 'class', 'order', 'family', 'genus', 'species', 'strain'.",
+        choices=("superkingdom", "phylum", "class", "order", "family", "genus", "species", "strain"),
+    )
+
+    parser.add_argument(
+        "-l",
+        "--log-level",
+        help="The desired log level (default WARNING).",
+        choices=("CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"),
+        default="WARNING",
+    )
+    return parser.parse_args(argv)
 
 def main(argv=None):
     """Coordinate argument parsing and program execution."""
