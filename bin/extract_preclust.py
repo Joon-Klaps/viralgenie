@@ -279,7 +279,8 @@ class RankedTaxon:
         self.kraken_taxid = kraken_taxid
         self.classified = classified
         self.name = name
-        self.taxon_rank = self._lookup_taxon_rank()
+        self.taxon_rank = -1
+        self.result_taxid = -1 # can either be the result from the merging or the simplified version after where it is collapsed up to a specific taxon level.
 
     def _lookup_parent_taxa(self):
         return 0
