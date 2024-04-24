@@ -20,52 +20,51 @@ map_ranks = {
         'genus':'G',
         'species':'S'}
 
-def create_groups(file):
-    """
-    Create groups of sequence names based on classification.
+# def create_groups(file):
+#     """
+#     Create groups of sequence names based on classification.
 
-    Args:
-        file (str): The path to the input file.
+#     Args:
+#         file (str): The path to the input file.
 
-    Returns:
-        dict: A dictionary where the keys are taxids and the values are lists of sequence names.
-            The 'U' key represents unclassified sequences.
-    """
-    groups = {}
-    with open(file, "r") as f:
-        lines = f.readlines()
-        for line in lines:
-            parts = line.strip().split("\t")
-            classified = parts[0]
-            seq_name = parts[1]
-            taxid = parts[2]
-            if classified == "C":
-                if taxid not in groups:
-                    groups[taxid] = []
-                groups[taxid].append(seq_name)
-            elif classified == "U":
-                if "U" not in groups:
-                    groups["U"] = []
-                groups["U"].append(seq_name)
-    return groups
+#     Returns:
+#         dict: A dictionary where the keys are taxids and the values are lists of sequence names.
+#             The 'U' key represents unclassified sequences.
+#     """
+#     groups = {}
+#     with open(file, "r") as f:
+#         lines = f.readlines()
+#         for line in lines:
+#             parts = line.strip().split("\t")
+#             classified = parts[0]
+#             seq_name = parts[1]
+#             taxid = parts[2]
+#             if classified == "C":
+#                 if taxid not in groups:
+#                     groups[taxid] = []
+#                 groups[taxid].append(seq_name)
+#             elif classified == "U":
+#                 if "U" not in groups:
+#                     groups["U"] = []
+#                 groups["U"].append(seq_name)
+#     return groups
 
 
-def write_json(groups, file_out_prefix):
-    """
-    Write the groups to a json file.
+# def write_json(groups, file_out_prefix):
+#     """
+#     Write the groups to a json file.
 
-    Args:
-        groups (dict): A dictionary where the keys are taxids and the values are lists of sequence names.
-            The 'U' key represents unclassified sequences.
-        file_out_prefix (str): The prefix of the output file.
-    """
-    with open(f"{file_out_prefix}.json", "w") as f_out:
-        # Construct the JSON string manually
-        json_str = "{\n"
-        json_str += f'\t"ntaxa": {len(groups)},\n'
-        json_str = json_str.rstrip(",\n") + "\n}"
-        f_out.write(json_str)
-
+#     Args:
+#         groups (dict): A dictionary where the keys are taxids and the values are lists of sequence names.
+#             The 'U' key represents unclassified sequences.
+#         file_out_prefix (str): The prefix of the output file.
+#     """
+#     with open(f"{file_out_prefix}.json", "w") as f_out:
+#         # Construct the JSON string manually
+#         json_str = "{\n"
+#         json_str += f'\t"ntaxa": {len(groups)},\n'
+#         json_str = json_str.rstrip(",\n") + "\n}"
+#         f_out.write(json_str)
 
 def extract_sequences(groups, sequences, file_out_prefix):
     """
@@ -100,12 +99,67 @@ def handle_read_classifications(args, nodes, whitelist, blacklist):
         dict: A dictionary where the keys are read IDs and the values are lists of taxids.
     """
 
+    conflict = None
+
     if args.kaiju_classifications and args.kraken_classifications:
         if not args.kaiju_classifications.is_file():
             file_not_found(args.kaiju_classifications)
         if not args.kraken_classifications.is_file():
             file_not_found(args.kraken_classifications)
-        kaiju_classifications = args.kaiju_classifications
+
+        with open (args.kaiju_classifications, encoding="utf-8") as kaiju_file, open(args.kraken_classifications, encoding="utf-8") as kraken_file:
+            for line_number, (kaiju_line, kraken_line) in enumerate(zip(kaiju_file, kraken_file)):
+                kaiju_values =kaiju_line.strip().split("\t")[0:3]
+                kraken_values = kraken_line.strip().split("\t")[0:3]
+
+                conflict = ConflictTaxa(kaiju_values = kaiju_values, kraken_values = kraken_values)
+
+                if conflict.kaiju.name != conflict.kraken.name:
+                    logger.error (
+                        "The Kaiju - Kraken read names (%s - %s)  do not match at line %d",
+                        conflict.kaiju.name,
+                        conflict.kraken.name,
+                        line_number
+                    )
+                    sys.exit(1)
+
+                # specify merge strategy
+                match args.merge_strategy:
+                    case "1":
+                        conflict.use_kaiju()
+                    case "2":
+                        conflict.use_kraken()
+                    case "lca":
+                        conflict.use_lca(nodes)
+                    case "lowest":
+                        conflict.use_lowest(nodes)
+
+                # Taxon collapse
+
+                # whitelist and blacklist filtering
+
+    elif args.kaiju_classifications:
+        if not args.kaiju_classifications.is_file():
+            file_not_found(args.kaiju_classifications)
+        with open (args.kaiju_classifications, encoding="utf-8") as kaiju_file:
+            for line_number, kaiju_line in enumerate(kaiju_file):
+                kaiju_values =kaiju_line.strip().split("\t")[0:3]
+                conflict = ConflictTaxa(kaiju_values = kaiju_values, kraken_values = None)
+                conflict.use_kaiju()
+            # taxon collapse
+            # > whitelist and blacklist
+
+    else:
+        if not args.kraken_classifications.is_file():
+            file_not_found(args.kraken_classifications)
+        with open(args.kraken_classifications, encoding="utf-8") as kraken_file:
+            for line_number, kraken_line in enumerate(kraken_file):
+                kraken_values = kraken_line.strip().split("\t")[0:3]
+                conflict = ConflictTaxa(kaiju_values = None, kraken_values = kraken_values)
+                conflict.use_kraken()
+
+            # taxon collapse
+            # > whitelist and blacklist
 
     return 0
 
@@ -144,8 +198,6 @@ def define_lists(args, nodes):
                 logger.warning("The taxid %s was not found in the taxonomy file!", taxid)
             else:
                 whitelist.append(nodes[taxid].get_all_parent_taxids())
-    if whitelist:
-        logger.info("White list of taxids created, size: %d", len(whitelist))
 
     # blacklist
     if args.exclude_children:
@@ -163,10 +215,21 @@ def define_lists(args, nodes):
             else:
                 blacklist.append(nodes[taxid].get_all_parent_taxids())
 
+    whitelist = deduplicate(whitelist)
+    blacklist = deduplicate(blacklist)
+
+    overlap = set(whitelist) & set(blacklist)
+    if overlap:
+        logger.warning("Overlap between 'to include taxa' and 'to remove taxa', removing them from 'to remove list': %s", overlap)
+        whitelist = list(set(whitelist).difference(overlap))
+
+    if whitelist:
+        logger.info("White list of taxids created, size: %d", len(whitelist))
+
     if blacklist:
         logger.info("Black list of taxids created, size: %d", len(blacklist))
 
-    return deduplicate(whitelist), deduplicate(blacklist)
+    return whitelist, blacklist
 
 def process_kraken_report(report_line):
     """
@@ -429,29 +492,98 @@ class Tree:
         traverse_parents(self)
         return all_taxids
 
-
 class RankedTaxon:
+    def __init__(self, *values):
+        self.classified = values[0]
+        self.name = values[1]
+        self.taxid = values[2]
+
+    def __str__(self):
+        return f"classified:{self.classified} - taxid:{self.taxid} - name:{self.name}"
+class ConflictTaxa:
     """
     A class to represent a ranked taxon of Kaiju and (/or) Kraken hit. Containing information on parent
     """
-    def __init__(self, kaiju_taxid, kraken_taxid, classified, name):
-        self.kaiju_taxid = kaiju_taxid
-        self.kraken_taxid = kraken_taxid
-        self.classified = classified
-        self.name = name
-        self.taxon_rank = -1
-        self.result_taxid = -1 # can either be the result from the merging or the simplified version after where it is collapsed up to a specific taxon level.
+    def __init__(self, kaiju_values, kraken_values):
+        self.kaiju  = None
+        self.kraken = None
+        self.result = None
 
-    def _lookup_parent_taxa(self):
-        return 0
+        if kaiju_values:
+            self.kaiju = RankedTaxon(kaiju_values)
+        if kraken_values:
+            self.kraken = RankedTaxon(kraken_values)
 
-    def _lookup_taxon_rank(self):
-        return 0
+    def _check_conflict(self):
+        """
+        Check if the Kaiju and Kraken classifications are different.
+        """
+        if self.kaiju.classified == "U" and self.kraken.classified == "C":
+            self.result = self.kraken
+            return False
+        elif self.kaiju.classified == "C" and self.kraken.classified == "U":
+            self.result = self.kaiju
+            return False
+        elif self.kaiju.taxid == self.kraken.taxid:
+            self.result = self.kaiju
+            return False
+        return True
 
-    def _merge_classification(self, merge_strategy):
-        return 0
 
-    def _simplify_taxon_rank(self, simplification_level):
+    def use_kaiju(self):
+        """
+        Sets the result to the Kaiju classification.
+        """
+        # make it so we can use the kaiju classification as the result without checking the kraken classification
+        if not isinstance(self.kraken, RankedTaxon):
+            self.result = self.kaiju
+        elif self.kaiju.classified == "U" and self.kraken.classified == "C":
+            self.result = self.kraken
+        else:
+            self.result = self.kaiju
+
+    def use_kraken(self):
+        """
+        Sets the result to the Kraken classification.
+        """
+        # make it so we can use the kraken classification as the result without checking the kaiju classification
+        if not isinstance(self.kaiju, RankedTaxon):
+            self.result = self.kraken
+        elif self.kaiju.classified == "C" and self.kraken.classified == "U":
+            self.result = self.kaiju
+        else:
+            self.result = self.kraken
+
+
+    def use_lowest(self, nodes):
+        """
+        Sets the result to the lowest ranking of the two taxon identifiers.
+        """
+        if not self._check_conflict():
+            return
+
+
+            kaiju_node = nodes[self.kaiju.taxid]
+            kraken_node = nodes[self.kraken.taxid]
+            if kaiju_node.level_num < kraken_node.level_num:
+                self.result = self.kaiju
+            else:
+                self.result = self.kraken
+
+
+    def use_lca(self, nodes):
+        """
+        Sets the result to the lowest common ancestor of the two taxon identifiers.
+        """
+        if not self._check_conflict():
+            return
+        kaiju_node = nodes[self.kaiju.taxid]
+        kraken_node = nodes[self.kraken.taxid]
+        kaiju_parents = kaiju_node.get_all_parent_taxids()
+        kraken_parents = kraken_node.get_all_parent_taxids()
+
+        common = set(kaiju_parents) & set(kraken_parents)
+
         return 0
 
 
@@ -556,6 +688,13 @@ def parse_args(argv=None):
         type= str,
         help="The level of simplification of the taxonomic ranks. 'superkingdom', 'phylum', 'class', 'order', 'family', 'genus', 'species', 'strain'.",
         choices=("superkingdom", "phylum", "class", "order", "family", "genus", "species", "strain"),
+    )
+
+    parser.add_argument(
+        "-u",
+        "--keep-unclassified",
+        action="store_true",
+        help="Keep unclassified reads in the output.",
     )
 
     parser.add_argument(
