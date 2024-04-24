@@ -84,6 +84,90 @@ def extract_sequences(groups, sequences, file_out_prefix):
                 if seq_name in sequence_dict:
                     SeqIO.write(sequence_dict[seq_name], f_out, "fasta")
 
+def file_not_found(file):
+    logger.error("The given input file %s, was not found!", file)
+    sys.exit(2)
+
+def handle_read_classifications(args, nodes, whitelist, blacklist):
+    """
+    Handle the read classifications from Kaiju and Kraken.
+
+    Args:
+        args: The parsed command line arguments.
+        nodes: The dictionary of taxonomic nodes.
+
+    Returns:
+        dict: A dictionary where the keys are read IDs and the values are lists of taxids.
+    """
+
+    if args.kaiju_classifications and args.kraken_classifications:
+        if not args.kaiju_classifications.is_file():
+            file_not_found(args.kaiju_classifications)
+        if not args.kraken_classifications.is_file():
+            file_not_found(args.kraken_classifications)
+        kaiju_classifications = args.kaiju_classifications
+
+    return 0
+
+def deduplicate(x):
+    """
+    Remove duplicates from a list while preserving the order.
+    """
+    return list(set(x))
+
+def define_lists(args, nodes):
+    """
+    Define the whitelist and blacklist based on the command line arguments include|exclude children|parents.
+
+    Args:
+        args: The parsed command line arguments.
+        nodes: The dictionary of taxonomic nodes.
+
+    Returns:
+        tuple: A tuple containing the whitelist and blacklist.
+    """
+    whitelist = []
+    blacklist = []
+
+    # whitelist
+    if args.include_children:
+        whitelist.append(args.include_children)
+        for taxid in args.include_children:
+            if taxid not in nodes:
+                logger.warning("The taxid %s was not found in the taxonomy file!", taxid)
+            else:
+                whitelist.append(nodes[taxid].get_all_child_taxids())
+    if args.include_parents:
+        whitelist.append(args.include_parents)
+        for taxid in args.include_parents:
+            if taxid not in nodes:
+                logger.warning("The taxid %s was not found in the taxonomy file!", taxid)
+            else:
+                whitelist.append(nodes[taxid].get_all_parent_taxids())
+    if whitelist:
+        logger.info("White list of taxids created, size: %d", len(whitelist))
+
+    # blacklist
+    if args.exclude_children:
+        blacklist.append(args.exclude_children)
+        for taxid in args.exclude_children:
+            if taxid not in nodes:
+                logger.warning("The taxid %s was not found in the taxonomy file!", taxid)
+            else:
+                blacklist.append(nodes[taxid].get_all_child_taxids())
+    if args.exclude_parents:
+        blacklist.append(args.exclude_parents)
+        for taxid in args.exclude_parents:
+            if taxid not in nodes:
+                logger.warning("The taxid %s was not found in the taxonomy file!", taxid)
+            else:
+                blacklist.append(nodes[taxid].get_all_parent_taxids())
+
+    if blacklist:
+        logger.info("Black list of taxids created, size: %d", len(blacklist))
+
+    return deduplicate(whitelist), deduplicate(blacklist)
+
 def process_kraken_report(report_line):
     """
     Parses single line from report output and returns taxID, levelID
@@ -236,31 +320,59 @@ def parse_nodes_dmp(nodes_file):
 
     return nodes
 
+def process_taxonomy(args):
+    """
+    Process the taxonomy file based on the command line arguments.
+
+    Args:
+        args: The parsed command line arguments.
+
+    Returns:
+        dict: A dictionary where the keys are tax_ids and values are dictionaries containing information like parent_tax_id and rank (if provided).
+    """
+    if args.nodes:
+        if not args.nodes.is_file():
+            logger.error("The given input file %s was not found!", args.nodes)
+            sys.exit(2)
+        nodes = parse_nodes_dmp(args.nodes)
+    elif args.kraken_report:
+        if not args.kraken_report.is_file():
+            logger.error("The given input file %s was not found!", args.kraken_report)
+            sys.exit(2)
+        nodes = parse_kraken_report(args.kraken_report)
+    else:
+        logger.error("Please provide either an '--nodes' or '--kraken_report' as %s or %s was not found!", args.nodes, args.kraken_report)
+        sys.exit(2)
+    logger.info("Taxonomy read in with %d taxa", len(nodes))
+    return nodes
 
 # Taken and modified from https://github.com/jenniferlu717/KrakenTools/blob/master/make_ktaxonomy.py
 class Tree:
     """
     A class to represent a tree of taxonomic ranks. Containing information on parent and their children
     """
-    def __init__(self,  taxid, level_rank, level_num=-1, parent=None,children=None):
+
+    def __init__(self, taxid, level_rank, level_num=-1, parent=None, children=None):
         self.taxid = taxid
-        self.level_rank= level_rank
-        #Other attributes for later
-        self.name = ''
+        self.level_rank = level_rank
+        # Other attributes for later
+        self.name = ""
         self.level_num = level_num
         self.p_taxid = -1
-        #Parent/children attributes
+        # Parent/children attributes
         self.children = []
         self.parent = parent
         if children is not None:
             for child in children:
                 self.add_child(child)
+
     def add_child(self, node):
         """
         Extend the current child node list to the current node
         """
-        assert isinstance(node,Tree)
+        assert isinstance(node, Tree)
         self.children.append(node)
+
     def _get_taxid(self):
         """
         Return the taxid of the current node
@@ -268,7 +380,57 @@ class Tree:
         return self.taxid
 
     def __str__(self):
-        return f"taxid:{self.taxid} - rank:{self.level_rank} - parent:{self.parent._get_taxid()}"
+        parent_taxid = None
+        if self.parent:  # Check if parent exists before accessing its attribute
+            parent_taxid = self.parent._get_taxid()
+        return f"taxid:{self.taxid} - rank:{self.level_rank} - parent:{parent_taxid} - number of children: {len(self.children)}"
+
+    def get_all_child_taxids(self):
+        """
+        Traverses the tree structure recursively, collecting taxids of all child nodes.
+
+        Args:
+            self: The current node of the tree structure.
+
+        Returns:
+            A list containing all child taxids encountered during traversal.
+        """
+
+        all_taxids = []
+
+        def traverse_children(node):
+            if not node.children:
+                return  # Base case: Leaf node (no children)
+
+            for child in node.children:
+                all_taxids.append(child._get_taxid())  # Add child's taxid
+                traverse_children(child)  # Recursive call for each child
+
+        traverse_children(self)
+        return all_taxids
+
+    def get_all_parent_taxids(self):
+        """
+        Traverses the tree structure recursively, collecting taxids of all parent nodes.
+
+        Args:
+            self: The current node of the tree structure.
+
+        Returns:
+            A list containing all parent taxids encountered during traversal.
+        """
+
+        all_taxids = []
+
+        def traverse_parents(node):
+            all_taxids.append(node._get_taxid())
+            if not node.parent:
+                return
+            traverse_parents(node.parent)
+
+        traverse_parents(self)
+        return all_taxids
+
 
 class RankedTaxon:
     """
@@ -349,8 +511,10 @@ def parse_args(argv=None):
 
     parser.add_argument(
         "-c"
-        "--merge-classifications",
+        "--merge-strategy",
+        metavar="MERGE-STRATEGY",
         type=str,
+        dest="merge_strategy",
         help="Specify the merge strategy of the classifications of Kaiju and Kraken. '1' for Kaiju, '2' for Kraken, 'lca' for lowest common ancestor and 'lowest' for lowest ranking of the two taxon identifiers.",
         choices=("1", "2", "lca", "lowest"),
         default="lca",
@@ -401,7 +565,7 @@ def parse_args(argv=None):
         "--log-level",
         help="The desired log level (default WARNING).",
         choices=("CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"),
-        default="INFO",
+        default="DEBUG",
     )
     return parser.parse_args(argv)
 
@@ -414,21 +578,29 @@ def main(argv=None):
         datefmt='%Y-%m-%d %H:%M:%S',
     )
 
+    need_taxonomy = (
+        args.simplification_level or
+        args.exclude_children or
+        args.include_children or
+        args.exclude_parents or
+        args.include_parents or
+        args.merge_strategy in ['lower', 'lca']
+    )
+    nodes = {}
+    if need_taxonomy:
+        nodes = process_taxonomy(args)
+
     # if not args.kaiju_classifications.is_file() and not args.kraken_classifications.is_file():
     #     logger.error("Please provide either an '--kaiju_classifications' or '--kraken_classifications' as %s or %s was not found!", args.kaiju_classifications, args.kraken_classifications)
     #     sys.exit(2)
-    # if not args.classifications.is_file():
-    #     logger.error("The given input file %s was not found!", args.classifications)
-    #     sys.exit(2)
+
+    whitelist, blacklist = define_lists(args, nodes)
+
+    handle_read_classifications(args, nodes, whitelist, blacklist)
+
     # if not args.sequences.is_file():
     #     logger.error("The given input file %s was not found!", args.sequences)
     #     sys.exit(2)
-
-    if args.nodes:
-        nodes = parse_nodes_dmp(args.nodes)
-    if args.kraken_report:
-        nodes = parse_kraken_report(args.kraken_report)
-
 
     counter = 0
     for key, value in nodes.items():
