@@ -332,13 +332,11 @@ def process_taxonomy(args):
     """
     if args.nodes:
         if not args.nodes.is_file():
-            logger.error("The given input file %s was not found!", args.nodes)
-            sys.exit(2)
+            file_not_found(args.nodes)
         nodes = parse_nodes_dmp(args.nodes)
     elif args.kraken_report:
         if not args.kraken_report.is_file():
-            logger.error("The given input file %s was not found!", args.kraken_report)
-            sys.exit(2)
+            file_not_found(args.kraken_report)
         nodes = parse_kraken_report(args.kraken_report)
     else:
         logger.error("Please provide either an '--nodes' or '--kraken_report' as %s or %s was not found!", args.nodes, args.kraken_report)
@@ -578,6 +576,10 @@ def main(argv=None):
         datefmt='%Y-%m-%d %H:%M:%S',
     )
 
+    # if not args.kaiju_classifications.is_file() and not args.kraken_classifications.is_file():
+    #     logger.error("Please provide either an '--kaiju_classifications' or '--kraken_classifications' as %s or %s was not found!", args.kaiju_classifications, args.kraken_classifications)
+    #     sys.exit(2)
+
     need_taxonomy = (
         args.simplification_level or
         args.exclude_children or
@@ -590,17 +592,12 @@ def main(argv=None):
     if need_taxonomy:
         nodes = process_taxonomy(args)
 
-    # if not args.kaiju_classifications.is_file() and not args.kraken_classifications.is_file():
-    #     logger.error("Please provide either an '--kaiju_classifications' or '--kraken_classifications' as %s or %s was not found!", args.kaiju_classifications, args.kraken_classifications)
-    #     sys.exit(2)
-
     whitelist, blacklist = define_lists(args, nodes)
 
     handle_read_classifications(args, nodes, whitelist, blacklist)
 
     # if not args.sequences.is_file():
-    #     logger.error("The given input file %s was not found!", args.sequences)
-    #     sys.exit(2)
+    #     file_not_found(args.sequences)
 
     counter = 0
     for key, value in nodes.items():
