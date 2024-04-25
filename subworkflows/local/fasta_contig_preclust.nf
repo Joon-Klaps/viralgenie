@@ -29,7 +29,7 @@ workflow FASTA_CONTIG_PRECLUST {
     if (!params.skip_kraken2){
         KRAKEN2_CONTIG ( ch_contigs, ch_kraken2_db, false, true )
         kraken        = KRAKEN2_CONTIG.out.classified_reads_assignment
-        kraken_report = RAKEN2_CONTIG.out.report
+        kraken_report = KRAKEN2_CONTIG.out.report
         ch_versions   = ch_versions.mix( KRAKEN2_CONTIG.out.versions.first() )
     }
 
@@ -89,8 +89,6 @@ workflow FASTA_CONTIG_PRECLUST {
         .map{ sample, meta_contig, fasta, meta_reads, reads -> [meta_contig, fasta, reads] }            // select only meta of contigs
         .map{ meta, fasta, reads -> [meta + [single_end:meta.og_single_end], fasta, reads]}             // set original single_end back
         .set{sequences_reads}
-
-    classifications = classifications.map{ meta, txt -> [meta + [single_end:meta.og_single_end], txt] }
 
     emit:
     sequences_reads  = sequences_reads  // channel: [ [ meta ], [ fasta ], [ fastq ]

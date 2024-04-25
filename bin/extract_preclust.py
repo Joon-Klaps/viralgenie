@@ -24,36 +24,49 @@ taxon_map = {
 TAXON_RANKED = {'R':9, 'D':8 , 'K':7, 'P':6, 'C':5, 'O':4, 'F':3, 'G':2, 'S':1}
 
 
-def write_json(groups, file_out_prefix):
+def write_json(groups, prefix):
     """
     Write the groups to a json file.
 
     Args:
         groups (dict): A dictionary where the keys are taxids and the values are lists of rankedTaxon names.
-        file_out_prefix (str): The prefix of the output file.
+        prefix (str): The prefix of the output file.
     """
-    with open(f"{file_out_prefix}.json", "w", encoding="utf-8") as f_out:
+    with open(f"{prefix}.json", "w", encoding="utf-8") as f_out:
         # Construct the JSON string manually
         json_str = "{\n"
         json_str += f'\t"ntaxa": {len(groups)},\n'
         json_str = json_str.rstrip(",\n") + "\n}"
         f_out.write(json_str)
 
-def write_sequences(groups, sequences, file_out_prefix):
+def write_sequences(groups, sequences, prefix):
     """
     Extract the sequences from the input file based on the groups.
 
     Args:
         groups (dict): A dictionary where the keys are taxids and the values are lists of rankedTaxon objects.
         sequences (str): The path to the input sequence file.
-        file_out_prefix (str): The prefix of the output file.
+        prefix (str): The prefix of the output file.
     """
     sequence_dict = SeqIO.to_dict(SeqIO.parse(sequences, "fasta"))
     for taxid, ranked_taxon_list in groups.items():
-        with open(f"{file_out_prefix}_taxid{taxid}.fa", "w", encoding='utf-8') as f_out:
+        with open(f"{prefix}_taxid{taxid}.fa", "w", encoding='utf-8') as f_out:
             for ranked_taxon in ranked_taxon_list:
                 if ranked_taxon.name in sequence_dict:
                     SeqIO.write(sequence_dict[ranked_taxon.name], f_out, "fasta")
+                else:
+                    logger.warning("The sequence %s was not found in the input sequence file %s!", ranked_taxon.name, sequences)
+
+def write_report(groups, prefix):
+    """
+    Write the groups to a report file.
+    """
+
+    with open(f"{prefix}.resolved.txt", "w", encoding="utf-8") as f_out:
+        f_out.write("classified\tname\ttaxid\n")
+        for taxid, ranked_taxon_list in groups.items():
+            for ranked_taxon in ranked_taxon_list:
+                f_out.write(f"{ranked_taxon}\n")
 
 def simplify_taxonomic_ranks(dic, nodes, rank):
     """
@@ -74,6 +87,7 @@ def simplify_taxonomic_ranks(dic, nodes, rank):
         result = node.get_parent_of_rank(rank)
 
         if taxid != result.taxid:
+            logger.debug("Simplifying taxonomic ranks of taxid %s to %s", taxid, result.taxid)
             # update all the taxon ids to the simplified taxid
             for ranked_taxon in ranked_taxon_list:
                 ranked_taxon.taxid = result.taxid
@@ -123,16 +137,17 @@ def resolve_read_classifications(args, nodes):
 
     # Use Kaiju and Kraken
     if args.kaiju_classifications and args.kraken_classifications:
-        if not args.kaiju_classifications.is_file():
-            file_not_found(args.kaiju_classifications)
-        if not args.kraken_classifications.is_file():
-            file_not_found(args.kraken_classifications)
 
-        # Ope files and iterate over every line
+        # Open files and iterate over every line
         with open (args.kaiju_classifications, encoding="utf-8") as kaiju_file, open(args.kraken_classifications, encoding="utf-8") as kraken_file:
             for line_number, (kaiju_line, kraken_line) in enumerate(zip(kaiju_file, kraken_file)):
                 kaiju_values =kaiju_line.strip().split("\t")[0:3]
                 kraken_values = kraken_line.strip().split("\t")[0:3]
+
+                # logger.debug("Looking at Kaiju - Kraken read classifications (%s - %s) at line %d", kaiju_values, kraken_values, line_number)
+                if len(kaiju_values) != 3 or len(kraken_values) != 3:
+                    logger.error("The Kaiju - Kraken read classifications (%s - %s) do not have the same number of columns at line %d", kaiju_values, kraken_values, line_number)
+                    sys.exit(1)
 
                 # Define a new conflict object
                 conflict = ConflictTaxa(kaiju_values = kaiju_values, kraken_values = kraken_values)
@@ -148,30 +163,37 @@ def resolve_read_classifications(args, nodes):
                     sys.exit(1)
 
                 # Resolve the read using the specified mere strategy
-                match args.merge_strategy:
-                    case "1":
-                        conflict.use_kaiju()
-                    case "2":
-                        conflict.use_kraken()
-                    case "lca":
-                        conflict.use_lca(nodes)
-                    case "lowest":
-                        conflict.use_lowest(nodes)
+                if args.merge_strategy == "1":
+                    conflict.use_kaiju()
+                elif args.merge_strategy == "2":
+                    conflict.use_kraken()
+                elif args.merge_strategy == "lca":
+                    conflict.use_lca(nodes)
+                elif args.merge_strategy == "lowest":
+                    conflict.use_lowest(nodes)
+                else :
+                    logger.error("Unknown merge strategy specified %s", args.merge_strategy )
 
                 # Store result
                 if not conflict.result:
                     logger.error("Something went wrong, no result found for the conflict at line %d", line_number)
                     sys.exit(1)
                 else: # append the result to the resolved results
+                    # logger.debug("Resolved read classification %s for line %d", conflict.result, line_number)
                     resolved_results[conflict.result.taxid].append(conflict.result)
 
     # Use Kaiju
     elif args.kaiju_classifications:
-        if not args.kaiju_classifications.is_file():
-            file_not_found(args.kaiju_classifications)
         with open (args.kaiju_classifications, encoding="utf-8") as kaiju_file:
             for line_number, kaiju_line in enumerate(kaiju_file):
                 kaiju_values =kaiju_line.strip().split("\t")[0:3]
+
+                logger.debug("Looking at Kaiju read classifications (%s) at line %d", kaiju_values, line_number)
+                if len(kaiju_values) != 3:
+                    logger.error("The Kaiju read classifications (%s) do not have the same number of columns at line %d", kaiju_values, line_number)
+                    sys.exit(1)
+
+                # Define a new conflict object
                 conflict = ConflictTaxa(kaiju_values = kaiju_values, kraken_values = None)
                 conflict.use_kaiju()
 
@@ -179,15 +201,21 @@ def resolve_read_classifications(args, nodes):
                     logger.error("Something went wrong, no result found for the conflict at line %d", line_number)
                     sys.exit(1)
                 else: # append the result to the resolved results
+                    logger.debug("Resolved read classification %s for line %d", conflict.result, line_number)
                     resolved_results[conflict.result.taxid].append(conflict.result)
 
     # Use Kraken
     else:
-        if not args.kraken_classifications.is_file():
-            file_not_found(args.kraken_classifications)
         with open(args.kraken_classifications, encoding="utf-8") as kraken_file:
             for line_number, kraken_line in enumerate(kraken_file):
                 kraken_values = kraken_line.strip().split("\t")[0:3]
+
+                logger.debug("Looking at Kraken read classifications (%s) at line %d", kraken_values, line_number)
+                if len(kraken_values) != 3:
+                    logger.error("The Kraken read classifications (%s) do not have the same number of columns at line %d", kraken_values, line_number)
+                    sys.exit(1)
+
+                # Define a new conflict object
                 conflict = ConflictTaxa(kaiju_values = None, kraken_values = kraken_values)
                 conflict.use_kraken()
 
@@ -195,9 +223,10 @@ def resolve_read_classifications(args, nodes):
                     logger.error("Something went wrong, no result found for the conflict at line %d", line_number)
                     sys.exit(1)
                 else: # append the result to the resolved results
+                    logger.debug("Resolved read classification %s for line %d", conflict.result, line_number)
                     resolved_results[conflict.result.taxid].append(conflict.result)
 
-    logger.info("Classifications resolved successfully of %d hits!", len(resolved_results))
+    logger.info("Classifications resolved successfully of %d hit(s)!", get_group_size(resolved_results))
     return resolved_results
 
 def deduplicate(x):
@@ -288,6 +317,7 @@ def process_kraken_report(report_line):
             - level number (number of spaces before name)
             - level_rank (type of taxonomy level - U, R, D, P, C, O, F, G, S, etc)
     """
+
     l_vals = report_line.strip().split('\t')
     if len(l_vals) < 5:
         return []
@@ -327,6 +357,9 @@ def parse_kraken_report(kraken_report):
     Returns:
         A dictionary where keys are tax_ids and values are dictionaries containing information like parent_tax_id and rank (if provided).
     """
+
+    logger.warning("Using kraken report to reconstruct taxonomy tree, consider providing a nodes.dmp file with --nodes for complete taxonomy tree.")
+
     nodes = {}
     with open(kraken_report, encoding="utf-8") as f:
         prev_node = -1
@@ -344,7 +377,7 @@ def parse_kraken_report(kraken_report):
 
             if taxid == 1:
                 level_rank = 'R'
-                root_node = Tree(taxid = taxid, level_rank= level_rank, level_num= level_num)
+                root_node = Tree(taxid = str(taxid), level_rank= level_rank[0], level_num= level_num)
                 prev_node = root_node
                 continue
 
@@ -360,12 +393,27 @@ def parse_kraken_report(kraken_report):
                     num = int(prev_node.level_rank[-1]) + 1
                     level_rank = prev_node.level_rank[:-1] + str(num)
 
-            curr_node = Tree(taxid = taxid, level_rank = level_rank, level_num=level_num, parent=prev_node)
+            curr_node = Tree(taxid = str(taxid), level_rank = level_rank[0], level_num=level_num, parent=prev_node)
             prev_node.add_child(curr_node)
             prev_node = curr_node
-            nodes[taxid] = curr_node
+            nodes[str(taxid)] = curr_node
 
     return nodes
+
+def get_group_size(group):
+    """
+    Get the size of a group of reads.
+
+    Args:
+        group: A list of reads.
+
+    Returns:
+        The size of the group.
+    """
+    size = 0
+    for key, taxon_list in group.items():
+        size += len(taxon_list)
+    return size
 
 def parse_nodes_dmp(nodes_file):
     """
@@ -380,12 +428,15 @@ def parse_nodes_dmp(nodes_file):
     nodes = {}
     p_notsaved = {}
     count_nodes = 0
+
+    nodes['0'] = Tree(taxid = '0', level_rank = 'R')
+
     with open(nodes_file, encoding= 'utf-8') as f:
-        logger.debug("0 nodes read")
+        logger.info("0 nodes read")
         for line in f:
             count_nodes += 1
             if (count_nodes % 500000) == 0:
-                logger.debug("%d nodes read", count_nodes)
+                logger.info("%d nodes read", count_nodes)
 
             [curr_taxid,parent_taxid,rank] = line.strip().split('\t|\t')[0:3]
 
@@ -553,7 +604,7 @@ class Tree:
 
         # Should normally never happen that we simplify up to root
         if self.parent is None:
-            logger.debug("Reached non-existend parent of %s", self.taxid)
+            logger.warning("Reached non-existend parent of %s", self.taxid)
             return self  # Reached the root node, no higher parent
 
         return self.parent.get_parent_of_rank(rank)
@@ -562,13 +613,14 @@ class RankedTaxon:
     """
     A class to represent the first three elements of a Kaiju or Kraken hit.
     """
-    def __init__(self, *values):
+    def __init__(self, values):
+        logger.debug("Parsing values %s", values)
         self.classified = values[0]
         self.name = values[1]
         self.taxid = values[2]
 
     def __str__(self):
-        return f"classified:{self.classified} - taxid:{self.taxid} - name:{self.name}"
+        return f"{self.classified}\t{self.name}\t{self.taxid}"
 class ConflictTaxa:
     """
     A class to represent the combination of Kaiju & Kraken and their result.
@@ -633,11 +685,13 @@ class ConflictTaxa:
 
         # check if kaiju parent of Kraken
         if self.kaiju.taxid in nodes[self.kraken.taxid].get_all_parent_taxids():
+            logger.debug("Kraken is lower: %s - %s", nodes[self.kraken.taxid] , nodes[self.kaiju.taxid])
             self.result = self.kraken
             return
 
         # check if kraken parent of Kaiju
         if self.kraken.taxid in nodes[self.kaiju.taxid].get_all_parent_taxids():
+            logger.debug("Kaiju is lower: %s - %s", nodes[self.kaiju.taxid] , nodes[self.kraken.taxid])
             self.result = self.kaiju
             return
 
@@ -656,7 +710,7 @@ class ConflictTaxa:
 
         common_parent = first_common_element(kaiju_parents, kraken_parents)
         if common_parent:
-            result = RankedTaxon(["C", common_parent, self.kaiju.name])
+            result = RankedTaxon(["C", self.kaiju.name, common_parent])
             self.result = result
         else:
             logger.error("No common parent found between Kaiju and Kraken classifications: %s - %s", self.kaiju, self.kraken)
@@ -679,7 +733,7 @@ def parse_args(argv=None):
     )
 
     parser.add_argument(
-        "-p"
+        "-p",
         "--prefix",
         metavar="PREFIX",
         type=str,
@@ -712,7 +766,7 @@ def parse_args(argv=None):
         "-db",
         "--database",
         metavar="DATABASE",
-        target="database",
+        dest="database",
         type=Path,
         help="A database directory containing an NCBI nodes file. `nodes.dmp`",
     )
@@ -725,7 +779,7 @@ def parse_args(argv=None):
     )
 
     parser.add_argument(
-        "-c"
+        "-c",
         "--merge-strategy",
         metavar="MERGE-STRATEGY",
         type=str,
@@ -740,7 +794,7 @@ def parse_args(argv=None):
         "--include-children",
         nargs="+",
         type=str,
-        target = "include_children",
+        dest = "include_children",
         help="A list of taxids to whitelist during filtering and include their children.",
     )
 
@@ -749,7 +803,7 @@ def parse_args(argv=None):
         "--exclude-children",
         nargs="+",
         type=str,
-        target = "exclude_children",
+        dest = "exclude_children",
         help="A list of taxids to blacklist during filtering and exclude their children.",
     )
 
@@ -758,7 +812,7 @@ def parse_args(argv=None):
         "--include-parents",
         nargs="+",
         type=str,
-        target = "include_parents",
+        dest = "include_parents",
         help="A list of taxids to whitelist during filtering and include their parents.",
     )
 
@@ -767,7 +821,7 @@ def parse_args(argv=None):
         "--exclude-parents",
         nargs="+",
         type=str,
-        target = "exclude_parents",
+        dest = "exclude_parents",
         help="A list of taxids to blacklist during filtering and exclude their parents.",
     )
 
@@ -775,7 +829,7 @@ def parse_args(argv=None):
         "-s",
         "--simplification-level",
         type= str,
-        target = "simplification_level",
+        dest = "simplification_level",
         help="The level of simplification of the taxonomic ranks. 'superkingdom', 'phylum', 'class', 'order', 'family', 'genus', 'species', 'strain'.",
         choices=("superkingdom", "phylum", "class", "order", "family", "genus", "species", "strain"),
     )
@@ -784,7 +838,7 @@ def parse_args(argv=None):
         "-u",
         "--keep-unclassified",
         action="store_true",
-        default= False,
+        default= True,
         help="Keep unclassified reads in the output.",
     )
 
@@ -793,7 +847,7 @@ def parse_args(argv=None):
         "--log-level",
         help="The desired log level (default WARNING).",
         choices=("CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"),
-        default="DEBUG",
+        default="INFO",
     )
     return parser.parse_args(argv)
 
@@ -806,7 +860,7 @@ def main(argv=None):
         datefmt='%Y-%m-%d %H:%M:%S',
     )
 
-    if not args.kaiju_classifications.is_file() and not args.kraken_classifications.is_file():
+    if not args.kaiju_classifications and not args.kraken_classifications:
         logger.error("Please provide either an '--kaiju_classifications' or '--kraken_classifications' as %s or %s was not found!", args.kaiju_classifications, args.kraken_classifications)
         sys.exit(2)
 
@@ -820,6 +874,7 @@ def main(argv=None):
     )
     nodes = {}
     if need_taxonomy:
+        logger.info("Processing taxonomy file")
         if args.database:
             args.nodes = args.database / "nodes.dmp"
         nodes = process_taxonomy(args.nodes, args.kraken_report)
@@ -827,30 +882,39 @@ def main(argv=None):
     # A dictionary of taxid and a list containing RankedTaxon objects referring to the resolved merged reads of that taxid.
     results = resolve_read_classifications(args, nodes)
 
+    # TODO: Somewhere along the way hit's get removed when they shouldn't
+
     # Keeping only the specified taxids
     whitelist, blacklist = define_lists(args, nodes)
     if whitelist:
         logger.info("Keeping only whitlisted taxids")
         results = {key: value for key, value in results.items() if key in whitelist}
-        logger.info("Kept only %d taxids", len(results))
+        logger.info("Kept only %d taxids", get_group_size(results))
 
     if blacklist:
         logger.info("Removing blacklisted taxids")
         results = {key: value for key, value in results.items() if key not in blacklist}
-        logger.info("Kept only %d taxids", len(results))
+        logger.info("Kept only %d taxids", get_group_size(results))
 
     if not args.keep_unclassified:
         logger.info("Removing unclassified hits")
+        tmp = get_group_size(results)
         results = {key: value for key, value in results.items() if key != "0"}
+        logger.info("Removed %d hits", (tmp-get_group_size(results)))
 
     # Reduce the taxonomic ranks up to a certain level
     if args.simplification_level:
         logger.info("Simplifying taxonomic ranks to %s", args.simplification_level)
+        tmp  = len(results)
         results = simplify_taxonomic_ranks(results, nodes, taxon_map[args.simplification_level])
+        logger.info("Simplified from %d to %d taxonomie(s)", tmp, len(results))
 
-    write_sequences(results, args.sequences, args.file_out_prefix)
-    write_json(results, args.file_out_prefix)
+    logger.info("Writing sequences and json file")
+    write_sequences(results, args.sequences, args.prefix)
+    write_json(results, args.prefix)
+    write_report(results, args.prefix)
 
+    logger.info("All done!")
     return 0
 
 

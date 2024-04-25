@@ -15,6 +15,7 @@ process EXTRACT_PRECLUSTER {
 
     output:
     tuple val(meta), path("*.fa"), path("*.json") , emit: sequences
+    tuple val(meta), path("*.resolved.txt")       , emit: resolved
     path "versions.yml"                           , emit: versions
     when:
     task.ext.when == null || task.ext.when
