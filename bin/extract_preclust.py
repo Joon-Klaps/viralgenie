@@ -3,22 +3,25 @@
 import argparse
 import logging
 import sys
+from collections import defaultdict
 from pathlib import Path
 
 # from Bio import SeqIO
 
 logger = logging.getLogger()
 
-map_ranks = {
+taxon_map = {
         'Root':'R',
-        'kingdom':'K',
         'superkingdom':'D',
+        'kingdom':'K',
         'phylum':'P',
         'class':'C',
         'order':'O',
         'family':'F',
         'genus':'G',
         'species':'S'}
+
+TAXON_RANKED = {'R':9, 'D':8 , 'K':7, 'P':6, 'C':5, 'O':4, 'F':3, 'G':2, 'S':1}
 
 # def create_groups(file):
 #     """
@@ -83,37 +86,89 @@ def extract_sequences(groups, sequences, file_out_prefix):
                 if seq_name in sequence_dict:
                     SeqIO.write(sequence_dict[seq_name], f_out, "fasta")
 
+def simplify_taxonomic_ranks(dic, nodes, rank):
+    """
+    Simplify the taxonomic ranks of the given dictionary up to a certain level.
+
+    Args:
+        dic: The dictionary of taxids and a list of RankedTaxon objects.
+        nodes: The dictionary of taxonomic nodes.
+        rank: The rank to simplify the taxonomic ranks up to.
+
+    Returns:
+        Dict: A dictionary with taxid and a list containing RankedTaxon objects referring to the resolved merged reads of that taxid.
+    """
+
+    results_dic = {}
+    for taxid, ranked_taxon_list in dic.items():
+        node = nodes[taxid]
+        result = node.get_parent_of_rank(rank)
+
+        if taxid != result.taxid:
+            # update all the taxon ids to the simplified taxid
+            for ranked_taxon in ranked_taxon_list:
+                ranked_taxon.taxid = result.taxid
+
+        results_dic[result.taxid] = ranked_taxon_list
+
+    return results_dic
+
 def file_not_found(file):
+    """
+    Log an error message and exit the program if a file is not found.
+    """
     logger.error("The given input file %s, was not found!", file)
     sys.exit(2)
 
-def handle_read_classifications(args, nodes, whitelist, blacklist):
+def first_common_element(x,y):
     """
-    Handle the read classifications from Kaiju and Kraken.
+    Find the first common element between two lists.
+
+    Args:
+        x: The first list.
+        y: The second list.
+
+    Returns:
+        The first common element between the two lists.
+    """
+    for i in x:
+        if i in y:
+            return i
+    return None
+
+def resolve_read_classifications(args, nodes):
+    """
+    resolve the read classifications from Kaiju and Kraken.
 
     Args:
         args: The parsed command line arguments.
         nodes: The dictionary of taxonomic nodes.
 
     Returns:
-        dict: A dictionary where the keys are read IDs and the values are lists of taxids.
+        Dict: A dictionary with taxid and a list containing RankedTaxon objects referring to the resolved merged reads of that taxid.
     """
 
-    conflict = None
+    resolved_results = defaultdict(list)
 
+    logger.info("Resolving the classifications ...")
+
+    # Use Kaiju and Kraken
     if args.kaiju_classifications and args.kraken_classifications:
         if not args.kaiju_classifications.is_file():
             file_not_found(args.kaiju_classifications)
         if not args.kraken_classifications.is_file():
             file_not_found(args.kraken_classifications)
 
+        # Ope files and iterate over every line
         with open (args.kaiju_classifications, encoding="utf-8") as kaiju_file, open(args.kraken_classifications, encoding="utf-8") as kraken_file:
             for line_number, (kaiju_line, kraken_line) in enumerate(zip(kaiju_file, kraken_file)):
                 kaiju_values =kaiju_line.strip().split("\t")[0:3]
                 kraken_values = kraken_line.strip().split("\t")[0:3]
 
+                # Define a new conflict object
                 conflict = ConflictTaxa(kaiju_values = kaiju_values, kraken_values = kraken_values)
 
+                # Check if it's about the same read
                 if conflict.kaiju.name != conflict.kraken.name:
                     logger.error (
                         "The Kaiju - Kraken read names (%s - %s)  do not match at line %d",
@@ -123,7 +178,7 @@ def handle_read_classifications(args, nodes, whitelist, blacklist):
                     )
                     sys.exit(1)
 
-                # specify merge strategy
+                # Resolve the read using the specified mere strategy
                 match args.merge_strategy:
                     case "1":
                         conflict.use_kaiju()
@@ -134,10 +189,14 @@ def handle_read_classifications(args, nodes, whitelist, blacklist):
                     case "lowest":
                         conflict.use_lowest(nodes)
 
-                # Taxon collapse
+                # Store result
+                if not conflict.result:
+                    logger.error("Something went wrong, no result found for the conflict at line %d", line_number)
+                    sys.exit(1)
+                else: # append the result to the resolved results
+                    resolved_results[conflict.result.taxid].append(conflict.result)
 
-                # whitelist and blacklist filtering
-
+    # Use Kaiju
     elif args.kaiju_classifications:
         if not args.kaiju_classifications.is_file():
             file_not_found(args.kaiju_classifications)
@@ -146,9 +205,14 @@ def handle_read_classifications(args, nodes, whitelist, blacklist):
                 kaiju_values =kaiju_line.strip().split("\t")[0:3]
                 conflict = ConflictTaxa(kaiju_values = kaiju_values, kraken_values = None)
                 conflict.use_kaiju()
-            # taxon collapse
-            # > whitelist and blacklist
 
+                if not conflict.result:
+                    logger.error("Something went wrong, no result found for the conflict at line %d", line_number)
+                    sys.exit(1)
+                else: # append the result to the resolved results
+                    resolved_results[conflict.result.taxid].append(conflict.result)
+
+    # Use Kraken
     else:
         if not args.kraken_classifications.is_file():
             file_not_found(args.kraken_classifications)
@@ -158,10 +222,14 @@ def handle_read_classifications(args, nodes, whitelist, blacklist):
                 conflict = ConflictTaxa(kaiju_values = None, kraken_values = kraken_values)
                 conflict.use_kraken()
 
-            # taxon collapse
-            # > whitelist and blacklist
+                if not conflict.result:
+                    logger.error("Something went wrong, no result found for the conflict at line %d", line_number)
+                    sys.exit(1)
+                else: # append the result to the resolved results
+                    resolved_results[conflict.result.taxid].append(conflict.result)
 
-    return 0
+    logger.info("Classifications resolved successfully of %d hits!", len(resolved_results))
+    return resolved_results
 
 def deduplicate(x):
     """
@@ -262,10 +330,10 @@ def process_kraken_report(report_line):
     try:
         taxid = int(l_vals[-3])
         level_rank = l_vals[-2]
-        if level_rank not in map_ranks:
+        if level_rank not in taxon_map:
             level_rank = '-'
         else:
-            level_rank = map_ranks[level_rank]
+            level_rank = taxon_map[level_rank]
     except ValueError:
         taxid = int(l_vals[-2])
         level_rank = l_vals[-3]
@@ -317,7 +385,7 @@ def parse_kraken_report(kraken_report):
 
             #determine correct level ID
             if level_rank == '-' or len(level_rank) > 1:
-                if prev_node.level_rank in map_ranks.values():
+                if prev_node.level_rank in taxon_map.values():
                     level_rank = prev_node.level_rank + '1'
                 else:
                     num = int(prev_node.level_rank[-1]) + 1
@@ -353,8 +421,8 @@ def parse_nodes_dmp(nodes_file):
             [curr_taxid,parent_taxid,rank] = line.strip().split('\t|\t')[0:3]
 
             new_rank = '-'
-            if rank in map_ranks:
-                new_rank = map_ranks[rank]
+            if rank in taxon_map:
+                new_rank = taxon_map[rank]
 
             curr_node = Tree(taxid = curr_taxid, level_rank = new_rank)
             nodes[curr_taxid] = curr_node
@@ -492,7 +560,38 @@ class Tree:
         traverse_parents(self)
         return all_taxids
 
+    def get_parent_of_rank(self, rank):
+        """
+        Traverses the tree structure recursively, collecting taxids of all parent nodes.
+
+        Args:
+            self: The current node of the tree structure.
+            rank: The rank of the parent node to search for.
+
+        Returns:
+            The parent Tree object that holds the specified rank or self if the rank is not found or if self is higher then rank.
+        """
+        self_level = TAXON_RANKED.get(self.level_rank, -1)
+        rank_level = TAXON_RANKED.get(rank, -1) #Should never return -1 though
+
+        if rank_level == -1:
+            logger.error("The rank %s is not a valid rank", rank)
+            sys.exit(1)
+
+        if rank_level <= self_level:
+            return self
+
+        # Should normally never happen that we simplify up to root
+        if self.parent is None:
+            logger.debug("Reached non-existend parent of %s", self.taxid)
+            return self  # Reached the root node, no higher parent
+
+        return self.parent.get_parent_of_rank(rank)
+
 class RankedTaxon:
+    """
+    A class to represent the first three elements of a Kaiju or Kraken hit.
+    """
     def __init__(self, *values):
         self.classified = values[0]
         self.name = values[1]
@@ -502,7 +601,7 @@ class RankedTaxon:
         return f"classified:{self.classified} - taxid:{self.taxid} - name:{self.name}"
 class ConflictTaxa:
     """
-    A class to represent a ranked taxon of Kaiju and (/or) Kraken hit. Containing information on parent
+    A class to represent the combination of Kaiju & Kraken and their result.
     """
     def __init__(self, kaiju_values, kraken_values):
         self.kaiju  = None
@@ -514,7 +613,7 @@ class ConflictTaxa:
         if kraken_values:
             self.kraken = RankedTaxon(kraken_values)
 
-    def _check_conflict(self):
+    def _has_conflict(self):
         """
         Check if the Kaiju and Kraken classifications are different.
         """
@@ -559,32 +658,39 @@ class ConflictTaxa:
         """
         Sets the result to the lowest ranking of the two taxon identifiers.
         """
-        if not self._check_conflict():
+        if not self._has_conflict():
             return
 
+        # check if kaiju parent of Kraken
+        if self.kaiju.taxid in nodes[self.kraken.taxid].get_all_parent_taxids():
+            self.result = self.kraken
+            return
 
-            kaiju_node = nodes[self.kaiju.taxid]
-            kraken_node = nodes[self.kraken.taxid]
-            if kaiju_node.level_num < kraken_node.level_num:
-                self.result = self.kaiju
-            else:
-                self.result = self.kraken
+        # check if kraken parent of Kaiju
+        if self.kraken.taxid in nodes[self.kaiju.taxid].get_all_parent_taxids():
+            self.result = self.kaiju
+            return
+
+        # if one is not a parent of the other, use LCA
+        self.use_lca(nodes)
 
 
     def use_lca(self, nodes):
         """
         Sets the result to the lowest common ancestor of the two taxon identifiers.
         """
-        if not self._check_conflict():
+        if not self._has_conflict():
             return
-        kaiju_node = nodes[self.kaiju.taxid]
-        kraken_node = nodes[self.kraken.taxid]
-        kaiju_parents = kaiju_node.get_all_parent_taxids()
-        kraken_parents = kraken_node.get_all_parent_taxids()
+        kaiju_parents = nodes[self.kaiju.taxid].get_all_parent_taxids()
+        kraken_parents = nodes[self.kraken.taxid].get_all_parent_taxids()
 
-        common = set(kaiju_parents) & set(kraken_parents)
-
-        return 0
+        common_parent = first_common_element(kaiju_parents, kraken_parents)
+        if common_parent:
+            result = RankedTaxon(["C", common_parent, self.kaiju.name])
+            self.result = result
+        else:
+            logger.error("No common parent found between Kaiju and Kraken classifications: %s - %s", self.kaiju, self.kraken)
+            sys.exit(1)
 
 
 def parse_args(argv=None):
@@ -694,6 +800,7 @@ def parse_args(argv=None):
         "-u",
         "--keep-unclassified",
         action="store_true",
+        default= False,
         help="Keep unclassified reads in the output.",
     )
 
@@ -731,19 +838,38 @@ def main(argv=None):
     if need_taxonomy:
         nodes = process_taxonomy(args)
 
+    # A dictionary of taxid and a list containing RankedTaxon objects referring to the resolved merged reads of that taxid.
+    results = resolve_read_classifications(args, nodes)
+
+    # Keeping only the specified taxids
     whitelist, blacklist = define_lists(args, nodes)
+    if whitelist:
+        logger.info("Keeping only whitlisted taxids")
+        results = {key: value for key, value in results.items() if key in whitelist}
+        logger.info("Kept only %d taxids", len(results))
 
-    handle_read_classifications(args, nodes, whitelist, blacklist)
+    if blacklist:
+        logger.info("Removing blacklisted taxids")
+        results = {key: value for key, value in results.items() if key not in blacklist}
+        logger.info("Kept only %d taxids", len(results))
 
-    # if not args.sequences.is_file():
-    #     file_not_found(args.sequences)
+    if not args.keep_unclassified:
+        logger.info("Removing unclassified hits")
+        results = {key: value for key, value in results.items() if key != "0"}
 
+    # Reduce the taxonomic ranks up to a certain level
+    if args.simplification_level:
+        logger.info("Simplifying taxonomic ranks to %s", args.simplification_level)
+        results = simplify_taxonomic_ranks(results, nodes, taxon_map[args.simplification_level])
+
+    # Writing to output files
     counter = 0
     for key, value in nodes.items():
         counter+=1
         print(f"Key: {key}, Value: {value}")
         if counter == 5:  # Check if we've iterated through 5 elements based on the size of OrderedDict
             break
+
 
     # groups = create_groups(args.classifications)
 
