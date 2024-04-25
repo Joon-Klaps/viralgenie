@@ -3,10 +3,10 @@
 import argparse
 import logging
 import sys
+
+from Bio import SeqIO
 from collections import defaultdict
 from pathlib import Path
-
-# from Bio import SeqIO
 
 logger = logging.getLogger()
 
@@ -23,68 +23,37 @@ taxon_map = {
 
 TAXON_RANKED = {'R':9, 'D':8 , 'K':7, 'P':6, 'C':5, 'O':4, 'F':3, 'G':2, 'S':1}
 
-# def create_groups(file):
-#     """
-#     Create groups of sequence names based on classification.
 
-#     Args:
-#         file (str): The path to the input file.
+def write_json(groups, file_out_prefix):
+    """
+    Write the groups to a json file.
 
-#     Returns:
-#         dict: A dictionary where the keys are taxids and the values are lists of sequence names.
-#             The 'U' key represents unclassified sequences.
-#     """
-#     groups = {}
-#     with open(file, "r") as f:
-#         lines = f.readlines()
-#         for line in lines:
-#             parts = line.strip().split("\t")
-#             classified = parts[0]
-#             seq_name = parts[1]
-#             taxid = parts[2]
-#             if classified == "C":
-#                 if taxid not in groups:
-#                     groups[taxid] = []
-#                 groups[taxid].append(seq_name)
-#             elif classified == "U":
-#                 if "U" not in groups:
-#                     groups["U"] = []
-#                 groups["U"].append(seq_name)
-#     return groups
+    Args:
+        groups (dict): A dictionary where the keys are taxids and the values are lists of rankedTaxon names.
+        file_out_prefix (str): The prefix of the output file.
+    """
+    with open(f"{file_out_prefix}.json", "w", encoding="utf-8") as f_out:
+        # Construct the JSON string manually
+        json_str = "{\n"
+        json_str += f'\t"ntaxa": {len(groups)},\n'
+        json_str = json_str.rstrip(",\n") + "\n}"
+        f_out.write(json_str)
 
-
-# def write_json(groups, file_out_prefix):
-#     """
-#     Write the groups to a json file.
-
-#     Args:
-#         groups (dict): A dictionary where the keys are taxids and the values are lists of sequence names.
-#             The 'U' key represents unclassified sequences.
-#         file_out_prefix (str): The prefix of the output file.
-#     """
-#     with open(f"{file_out_prefix}.json", "w") as f_out:
-#         # Construct the JSON string manually
-#         json_str = "{\n"
-#         json_str += f'\t"ntaxa": {len(groups)},\n'
-#         json_str = json_str.rstrip(",\n") + "\n}"
-#         f_out.write(json_str)
-
-def extract_sequences(groups, sequences, file_out_prefix):
+def write_sequences(groups, sequences, file_out_prefix):
     """
     Extract the sequences from the input file based on the groups.
 
     Args:
-        groups (dict): A dictionary where the keys are taxids and the values are lists of sequence names.
-            The 'U' key represents unclassified sequences.
+        groups (dict): A dictionary where the keys are taxids and the values are lists of rankedTaxon objects.
         sequences (str): The path to the input sequence file.
         file_out_prefix (str): The prefix of the output file.
     """
     sequence_dict = SeqIO.to_dict(SeqIO.parse(sequences, "fasta"))
-    for taxid, seq_names in groups.items():
-        with open(f"{file_out_prefix}_taxid{taxid}.fa", "w") as f_out:
-            for seq_name in seq_names:
-                if seq_name in sequence_dict:
-                    SeqIO.write(sequence_dict[seq_name], f_out, "fasta")
+    for taxid, ranked_taxon_list in groups.items():
+        with open(f"{file_out_prefix}_taxid{taxid}.fa", "w", encoding='utf-8') as f_out:
+            for ranked_taxon in ranked_taxon_list:
+                if ranked_taxon.name in sequence_dict:
+                    SeqIO.write(sequence_dict[ranked_taxon.name], f_out, "fasta")
 
 def simplify_taxonomic_ranks(dic, nodes, rank):
     """
@@ -451,26 +420,27 @@ def parse_nodes_dmp(nodes_file):
 
     return nodes
 
-def process_taxonomy(args):
+def process_taxonomy(nodes_file, kraken_report):
     """
     Process the taxonomy file based on the command line arguments.
 
     Args:
-        args: The parsed command line arguments.
+        nodes_file: the parsed NCBI nodes file location
+        kraken_report: the parsed Kraken report file location
 
     Returns:
         dict: A dictionary where the keys are tax_ids and values are dictionaries containing information like parent_tax_id and rank (if provided).
     """
-    if args.nodes:
-        if not args.nodes.is_file():
-            file_not_found(args.nodes)
-        nodes = parse_nodes_dmp(args.nodes)
-    elif args.kraken_report:
-        if not args.kraken_report.is_file():
-            file_not_found(args.kraken_report)
-        nodes = parse_kraken_report(args.kraken_report)
+    if nodes_file:
+        if not nodes_file.is_file():
+            file_not_found(nodes_file)
+        nodes = parse_nodes_dmp(nodes_file)
+    elif kraken_report:
+        if not kraken_report.is_file():
+            file_not_found(kraken_report)
+        nodes = parse_kraken_report(kraken_report)
     else:
-        logger.error("Please provide either an '--nodes' or '--kraken_report' as %s or %s was not found!", args.nodes, args.kraken_report)
+        logger.error("Please provide either an '--nodes' or '--database' or '--kraken_report' as %s or %s was not found!", nodes, kraken_report)
         sys.exit(2)
     logger.info("Taxonomy read in with %d taxa", len(nodes))
     return nodes
@@ -739,6 +709,15 @@ def parse_args(argv=None):
     )
 
     parser.add_argument(
+        "-db",
+        "--database",
+        metavar="DATABASE",
+        target="database",
+        type=Path,
+        help="A database directory containing an NCBI nodes file. `nodes.dmp`",
+    )
+
+    parser.add_argument(
         "--kraken-report",
         metavar="KRAKEN_REPORT",
         type=Path,
@@ -761,6 +740,7 @@ def parse_args(argv=None):
         "--include-children",
         nargs="+",
         type=str,
+        target = "include_children",
         help="A list of taxids to whitelist during filtering and include their children.",
     )
 
@@ -769,6 +749,7 @@ def parse_args(argv=None):
         "--exclude-children",
         nargs="+",
         type=str,
+        target = "exclude_children",
         help="A list of taxids to blacklist during filtering and exclude their children.",
     )
 
@@ -777,6 +758,7 @@ def parse_args(argv=None):
         "--include-parents",
         nargs="+",
         type=str,
+        target = "include_parents",
         help="A list of taxids to whitelist during filtering and include their parents.",
     )
 
@@ -785,6 +767,7 @@ def parse_args(argv=None):
         "--exclude-parents",
         nargs="+",
         type=str,
+        target = "exclude_parents",
         help="A list of taxids to blacklist during filtering and exclude their parents.",
     )
 
@@ -792,6 +775,7 @@ def parse_args(argv=None):
         "-s",
         "--simplification-level",
         type= str,
+        target = "simplification_level",
         help="The level of simplification of the taxonomic ranks. 'superkingdom', 'phylum', 'class', 'order', 'family', 'genus', 'species', 'strain'.",
         choices=("superkingdom", "phylum", "class", "order", "family", "genus", "species", "strain"),
     )
@@ -822,9 +806,9 @@ def main(argv=None):
         datefmt='%Y-%m-%d %H:%M:%S',
     )
 
-    # if not args.kaiju_classifications.is_file() and not args.kraken_classifications.is_file():
-    #     logger.error("Please provide either an '--kaiju_classifications' or '--kraken_classifications' as %s or %s was not found!", args.kaiju_classifications, args.kraken_classifications)
-    #     sys.exit(2)
+    if not args.kaiju_classifications.is_file() and not args.kraken_classifications.is_file():
+        logger.error("Please provide either an '--kaiju_classifications' or '--kraken_classifications' as %s or %s was not found!", args.kaiju_classifications, args.kraken_classifications)
+        sys.exit(2)
 
     need_taxonomy = (
         args.simplification_level or
@@ -836,7 +820,9 @@ def main(argv=None):
     )
     nodes = {}
     if need_taxonomy:
-        nodes = process_taxonomy(args)
+        if args.database:
+            args.nodes = args.database / "nodes.dmp"
+        nodes = process_taxonomy(args.nodes, args.kraken_report)
 
     # A dictionary of taxid and a list containing RankedTaxon objects referring to the resolved merged reads of that taxid.
     results = resolve_read_classifications(args, nodes)
@@ -862,19 +848,8 @@ def main(argv=None):
         logger.info("Simplifying taxonomic ranks to %s", args.simplification_level)
         results = simplify_taxonomic_ranks(results, nodes, taxon_map[args.simplification_level])
 
-    # Writing to output files
-    counter = 0
-    for key, value in nodes.items():
-        counter+=1
-        print(f"Key: {key}, Value: {value}")
-        if counter == 5:  # Check if we've iterated through 5 elements based on the size of OrderedDict
-            break
-
-
-    # groups = create_groups(args.classifications)
-
-    # extract_sequences(groups, args.sequences, args.file_out_prefix)
-    # write_json(groups, args.file_out_prefix)
+    write_sequences(results, args.sequences, args.file_out_prefix)
+    write_json(results, args.file_out_prefix)
 
     return 0
 
