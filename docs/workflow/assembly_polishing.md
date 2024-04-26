@@ -55,33 +55,38 @@ graph LR;
     E --> F["Taxon simplification"];
 ```
 
-!!! Tip "Having very complex metagenomes"
+!!! Tip annotate "Having very complex metagenomes"
     The pre-clustering step can be used to simplify the taxonomy of the contigs. This can be done in several ways:
+
     - Make sure your contamination database is up to date and removes the relevant taxa.
     - Exclude unclassified contigs with `--keep_unclassified false` parameter.
     - Simplify the taxonomy of the contigs to a higher rank using `--precluster_simplify_taxa` parameter (1).
-    - Specify the taxa to include or exclude with `--precluster_include_children`(2), `--precluster_include_parents`(3), `--precluster_exclude_children`(2), `--precluster_exclude_parents`(3), `--precluster_exclude_taxa` parameters.
+    - Specify the taxa to include or exclude with `--precluster_include_children`(2), `--precluster_include_parents`(3), `--precluster_exclude_children`, `--precluster_exclude_parents`, `--precluster_exclude_taxa` parameters.
     !!! warning
         Providing lists to nextflow is done by encapsulating values with `"` and separating them with a space. For example: `--precluster_exclude_taxa "taxon1 taxon2 taxon3"`.
 
 1. Options here are 'species', 'genus', 'family', 'order', 'class', 'phylum', 'kingdom' or 'superkingdom'.
-2. `--precluster_include_childeren "genus1"` :
+
+2. `--precluster_include_childeren`__"genus1"__ :
+
     ```mermaid
-    flowchart TD:
-        A[family] -.- B[genus1 (included)]
-        A -.- C[genus2]
-        B -- D[species1]
-        B -- E[species2]
-        C -.- F[species3]
+    graph TD;
+        A[family] -.- B["genus1 (included)"];
+        A -.- C[genus2];
+        B --- D[species1];
+        B --- E[species2];
+        C -.- F[species3];
     ```
-3. `--precluster_include_parents "species3"` :
+
+3. `--precluster_include_parents` __"species3"__ :
+
     ```mermaid
-    flowchart TD:
-        A[family] -.- B[genus1 (included)]
-        A -- C[genus2]
+    graph TD;
+        A["family (included)"] -.- B["genus1"]
+        A --- C[genus2]
         B -.- D[species1]
         B -.- E[species2]
-        C -- F[species3]
+        C --- F[species3]
     ```
 
 > The pre-clustering step will be run by default but can be skipped with the argument `--skip_preclustering`.
