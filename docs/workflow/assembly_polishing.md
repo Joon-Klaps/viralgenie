@@ -65,7 +65,6 @@ graph LR;
 
 !!! Tip
     Specify the strategy to resolve inconsistencies with `--taxon_merge_strategy` options:
-
     - _'1'_ the taxon id from Kaiju is used.
     - _'2'_ the taxon id from Kraken is used.
     - _'lca'_ the least common ancestor of the two taxon ids from both input files is used.
