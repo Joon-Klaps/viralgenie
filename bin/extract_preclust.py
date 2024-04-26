@@ -864,7 +864,7 @@ def parse_args(argv=None):
         "-u",
         "--keep-unclassified",
         action="store_true",
-        default= True,
+        default= False,
         help="Keep unclassified reads in the output.",
     )
 

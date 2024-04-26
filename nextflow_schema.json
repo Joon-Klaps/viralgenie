@@ -338,13 +338,54 @@
                     "description": "Keep the contigs that could not be classified with the taxonomic databases (`kaiju_db` & `kraken2_db`)",
                     "help_text": "Within the preclustering step, all contigs will get a taxonomic classification using the provided databases for the metagenomic tools. In some cases, the number of unclassified contigs, can be very large if the database is restrictive. This will result in large clusters in downstream processing that can take up a lot of resources despite not being a priority in some analyses. So set it to `True` if you want to keep unclassified contigs and set it to `False` if you don't want to keep them. "
                 },
-                "taxon_merge_strategy": {
+                "precluster_merge_strategy": {
                     "type": "string",
                     "default": "lca",
                     "fa_icon": "far fa-object-ungroup",
                     "description": "Taxon conflict resolution mode, must be 1 (Kaiju), 2 (Kraken),  lca, or lowest.",
                     "help_text": "The option -c determines the method of resolving conflicts in the taxonomic assignment for a read.\nPossible values are '1', '2', 'lca', 'lowest':\n  '1' -> the taxon id from Kaiju is used.\n  '2' -> the taxon id from Kraken is used.\n  'lca' -> the least common ancestor of the two taxon ids from both input files is used.\n  'lowest' -> the lower rank of the two taxa is used if they are within the same lineage. Otherwise the LCA is used.",
                     "enum": ["1", "2", "lca", "lowest"]
+                },
+                "precluster_simplification_level": {
+                    "type": "string",
+                    "description": "Level of taxonomic simplification",
+                    "help_text": "The taxonomic classification of the contigs can be simplified to a certain level. This can be done by specifying the taxonomic rank to which the classification should be simplified.",
+                    "enum": ["species", "genus", "family", "order", "class", "phylum", "kingdom", "superkingdom"]
+                },
+                "precluster_exclude_taxa": {
+                    "type": "string",
+                    "fa_icon": "fas fa-filter",
+                    "description": "Hard constrain for taxa to exclude from the preclustering, if multiple given make sure to enclose with '\"' and separate with a space.",
+                    "help_text": "The taxonomic classification of the contigs can be filtered. This can be done by specifying a list of taxa that should be excluded from the results.",
+                    "pattern": "^\\S+[\\d +]+$"
+                },
+                "precluster_exclude_children": {
+                    "type": "string",
+                    "fa_icon": "fas fa-filter",
+                    "description": "Taxon ids to exclude along with all their children from the preclustering, if multiple given make sure to enclose with '\"' and separate with a space.",
+                    "help_text": "The taxonomic classification of the contigs can be filtered. This can be done by specifying a list of taxa that should be excluded along with all their children from the results.",
+                    "pattern": "^\\S+[\\d +]+$"
+                },
+                "precluster_exclude_parents": {
+                    "type": "string",
+                    "fa_icon": "fas fa-filter",
+                    "description": "Taxon ids to exclude along with all their parents from the preclustering, if multiple given make sure to enclose with '\"' and separate with a space.",
+                    "help_text": "The taxonomic classification of the contigs can be filtered. This can be done by specifying a list of taxa that should be excluded along with all their parents from the results.",
+                    "pattern": "^\\S+[\\d +]+$"
+                },
+                "precluster_include_children": {
+                    "type": "string",
+                    "fa_icon": "fas fa-filter",
+                    "description": "Taxon ids to include along with all their children from the preclustering, if multiple given make sure to enclose with '\"' and separate with a space.",
+                    "help_text": "The taxonomic classification of the contigs can be filtered. This can be done by specifying a list of taxa that should be included along with all their children from the results.",
+                    "pattern": "^\\S+[\\d +]+$"
+                },
+                "precluster_include_parents": {
+                    "type": "string",
+                    "fa_icon": "fas fa-filter",
+                    "description": "Taxon ids to include along with all their parents from the preclustering, if multiple given make sure to enclose with '\"' and separate with a space.",
+                    "help_text": "The taxonomic classification of the contigs can be filtered. This can be done by specifying a list of taxa that should be included along with all their parents from the results.",
+                    "pattern": "^\\S+[\\d +]+$"
                 },
                 "cluster_method": {
                     "type": "string",

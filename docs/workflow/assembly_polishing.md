@@ -3,7 +3,7 @@
 
 Viralgenie offers an elaborate workflow for the assembly and polishing of viral genomes:
 
-- [Assembly](#assembly): combining the results of multiple assemblers.
+- [Assembly](#de-novo-assembly): combining the results of multiple assemblers.
 - [Reference Matching](#reference-matching): comparing the newly assembled contigs to a reference sequence pool.
 - [Clustering](#clustering): clustering the contigs based on taxonomy and similarity.
 - [Scaffolding](#scaffolding): scaffolding the contigs to the centroid of each bin.
@@ -55,20 +55,34 @@ graph LR;
     E --> F["Taxon simplification"];
 ```
 
-1. Specify with `--precluster_include_children`, `--precluster_include_parents`, `--precluster_exclude_children`, `--precluster_exclude_parents`, `--precluster_exclude_taxa`
-2. Specify with `--precluster_simplify_taxa` to 'species', 'genus', 'family', 'order', 'class', 'phylum', 'kingdom' or 'superkingdom'.
+!!! Tip "Having very complex metagenomes"
+    The pre-clustering step can be used to simplify the taxonomy of the contigs. This can be done in several ways:
+    - Make sure your contamination database is up to date and removes the relevant taxa.
+    - Exclude unclassified contigs with `--keep_unclassified false` parameter.
+    - Simplify the taxonomy of the contigs to a higher rank using `--precluster_simplify_taxa` parameter (1).
+    - Specify the taxa to include or exclude with `--precluster_include_children`(2), `--precluster_include_parents`(3), `--precluster_exclude_children`(2), `--precluster_exclude_parents`(3), `--precluster_exclude_taxa` parameters.
+    !!! warning
+        Providing lists to nextflow is done by encapsulating values with `"` and separating them with a space. For example: `--precluster_exclude_taxa "taxon1 taxon2 taxon3"`.
 
-
-!!! Tip
-    Sometimes large metagenomic datasets, could still contain a large number of contigs that are not viral in origin and are 'unclassified' despite having accurate databases. These contigs can be removed with the `--keep_unclassified false` argument.
-
-
-!!! Tip
-    Specify the strategy to resolve inconsistencies with `--taxon_merge_strategy` options:
-    - _'1'_ the taxon id from Kaiju is used.
-    - _'2'_ the taxon id from Kraken is used.
-    - _'lca'_ the least common ancestor of the two taxon ids from both input files is used.
-    - _'lowest'_ the lower rank of the two taxa is used if they are within the same lineage. Otherwise the LCA is used.
+1. Options here are 'species', 'genus', 'family', 'order', 'class', 'phylum', 'kingdom' or 'superkingdom'.
+2. `--precluster_include_childeren "genus1"` :
+    ```mermaid
+    flowchart TD:
+        A[family] -.- B[genus1 (included)]
+        A -.- C[genus2]
+        B -- D[species1]
+        B -- E[species2]
+        C -.- F[species3]
+    ```
+3. `--precluster_include_parents "species3"` :
+    ```mermaid
+    flowchart TD:
+        A[family] -.- B[genus1 (included)]
+        A -- C[genus2]
+        B -.- D[species1]
+        B -.- E[species2]
+        C -- F[species3]
+    ```
 
 > The pre-clustering step will be run by default but can be skipped with the argument `--skip_preclustering`.
 
