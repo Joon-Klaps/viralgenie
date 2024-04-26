@@ -43,10 +43,25 @@ The contigs along with their references have their taxonomy assigned using [Krak
 > - Kraken2: viral refseq database, `--kraken2_db`
 > - Kaiju: clustered [RVDB](https://rvdb.dbi.udel.edu/), `--kaiju_db`
 
+As Kajiu and Kraken2 can have different taxonomic assignments, an additional step is performed to resolve potential inconsistencies in taxonomy and to identify the taxonomy of the contigs. The pre-clustering step is performed with [Kaiju-mergeOutputs](https://kaiju.binf.ku.dk/).
+
+```mermaid
+graph LR;
+    A[Contigs] --> B["`**Kraken2**`"];
+    A --> C["`**Kaiju**`"];
+    B --> D[Taxon merge resolving];
+    C --> D;
+    D --> E["Taxon filtering"];
+    E --> F["Taxon simplification"];
+```
+
+1. Specify with `--precluster_include_children`, `--precluster_include_parents`, `--precluster_exclude_children`, `--precluster_exclude_parents`, `--precluster_exclude_taxa`
+2. Specify with `--precluster_simplify_taxa` to 'species', 'genus', 'family', 'order', 'class', 'phylum', 'kingdom' or 'superkingdom'.
+
+
 !!! Tip
     Sometimes large metagenomic datasets, could still contain a large number of contigs that are not viral in origin and are 'unclassified' despite having accurate databases. These contigs can be removed with the `--keep_unclassified false` argument.
 
-As Kajiu and Kraken2 can have different taxonomic assignments, an additional step is performed to resolve potential inconsistencies in taxonomy and to identify the taxonomy of the contigs. The pre-clustering step is performed with [Kaiju-mergeOutputs](https://kaiju.binf.ku.dk/).
 
 !!! Tip
     Specify the strategy to resolve inconsistencies with `--taxon_merge_strategy` options:
