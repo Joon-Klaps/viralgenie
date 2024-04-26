@@ -63,7 +63,7 @@ def write_report(groups, prefix):
     """
 
     with open(f"{prefix}.resolved.txt", "w", encoding="utf-8") as f_out:
-        f_out.write("classified\tname\ttaxid\n")
+
         for taxid, ranked_taxon_list in groups.items():
             for ranked_taxon in ranked_taxon_list:
                 f_out.write(f"{ranked_taxon}\n")
@@ -81,19 +81,26 @@ def simplify_taxonomic_ranks(dic, nodes, rank):
         Dict: A dictionary with taxid and a list containing RankedTaxon objects referring to the resolved merged reads of that taxid.
     """
 
-    results_dic = {}
+    results_dic = defaultdict(list)
     for taxid, ranked_taxon_list in dic.items():
         node = nodes[taxid]
         result = node.get_parent_of_rank(rank)
 
         if taxid != result.taxid:
             logger.debug("Simplifying taxonomic ranks of taxid %s to %s", taxid, result.taxid)
-            # update all the taxon ids to the simplified taxid
-            for ranked_taxon in ranked_taxon_list:
+            # Create a copy of the ranked_taxon_list to avoid modifying the original
+            simplified_list = list(ranked_taxon_list)
+            # update all the taxon ids in the copy
+            for ranked_taxon in simplified_list:
                 ranked_taxon.taxid = result.taxid
 
-        results_dic[result.taxid] = ranked_taxon_list
+            results_dic[result.taxid].extend(simplified_list)
 
+        else:
+            # No change in taxa, simply copy the list (optional)
+            results_dic[result.taxid].extend(list(ranked_taxon_list))
+
+    logger.info("Classifications resolved successfully of %d hit(s)!", get_group_size(results_dic))
     return results_dic
 
 def file_not_found(file):
@@ -159,6 +166,9 @@ def resolve_read_classifications(args, nodes):
                         conflict.kaiju.name,
                         conflict.kraken.name,
                         line_number
+                    )
+                    logger.error (
+                        "PLEASE RESUBMIT with --kaiju-classifications <(sort -k2,2 <kaiju-file>) --kraken-classifications <(sort -k2,2 <kraken-file>)"
                     )
                     sys.exit(1)
 
@@ -233,7 +243,10 @@ def deduplicate(x):
     """
     Remove duplicates from a list while preserving the order.
     """
-    return list(set(x))
+    if x:
+        logger.debug(x)
+        return list(dict.fromkeys(tuple(x)))
+    return x
 
 def define_lists(args, nodes):
     """
@@ -251,43 +264,47 @@ def define_lists(args, nodes):
 
     # whitelist
     if args.include_children:
-        whitelist.append(args.include_children)
+        whitelist.extend(args.include_children)
         for taxid in args.include_children:
             if taxid not in nodes:
                 logger.warning("The taxid %s was not found in the taxonomy file!", taxid)
             else:
-                whitelist.append(nodes[taxid].get_all_child_taxids())
+                whitelist.extend(nodes[taxid].get_all_child_taxids())
     if args.include_parents:
-        whitelist.append(args.include_parents)
+        whitelist.extend(args.include_parents)
         for taxid in args.include_parents:
             if taxid not in nodes:
                 logger.warning("The taxid %s was not found in the taxonomy file!", taxid)
             else:
-                whitelist.append(nodes[taxid].get_all_parent_taxids())
+                whitelist.extend(nodes[taxid].get_all_parent_taxids())
 
     # blacklist
     if args.exclude_children:
-        blacklist.append(args.exclude_children)
+        blacklist.extend(args.exclude_children)
         for taxid in args.exclude_children:
             if taxid not in nodes:
                 logger.warning("The taxid %s was not found in the taxonomy file!", taxid)
             else:
-                blacklist.append(nodes[taxid].get_all_child_taxids())
+                blacklist.extend(nodes[taxid].get_all_child_taxids())
     if args.exclude_parents:
-        blacklist.append(args.exclude_parents)
+        blacklist.extend(args.exclude_parents)
         for taxid in args.exclude_parents:
             if taxid not in nodes:
                 logger.warning("The taxid %s was not found in the taxonomy file!", taxid)
             else:
-                blacklist.append(nodes[taxid].get_all_parent_taxids())
+                blacklist.extend(nodes[taxid].get_all_parent_taxids())
 
     whitelist = deduplicate(whitelist)
     blacklist = deduplicate(blacklist)
 
     overlap = set(whitelist) & set(blacklist)
     if overlap:
-        logger.warning("Overlap between 'to include taxa' and 'to remove taxa', removing them from 'to remove list': %s", overlap)
-        whitelist = list(set(whitelist).difference(overlap))
+        logger.warning("Overlap between 'to include taxa' and 'to remove taxa', removing them from 'to remove list': %s \n\t TIP: If you want to really remove this taxa, specify '--exclude-taxa' ", overlap)
+        blacklist = list(set(blacklist).difference(overlap))
+
+    if args.exclude_taxa:
+        blacklist.extend(args.exclude_taxa)
+        blacklist = deduplicate(blacklist)
 
     if whitelist:
         logger.info("White list of taxids created, size: %d", len(whitelist))
@@ -727,7 +744,7 @@ def parse_args(argv=None):
     parser.add_argument(
         "--sequences",
         metavar="SEQUENCES",
-        # required=True,
+        required=True,
         type=Path,
         help="Input sequence file used for looking up",
     )
@@ -826,6 +843,15 @@ def parse_args(argv=None):
     )
 
     parser.add_argument(
+        "-r",
+        "--exclude-taxa",
+        nargs="+",
+        type=str,
+        dest = "exclude_taxa",
+        help="A list of taxids to blacklist during filtering.",
+    )
+
+    parser.add_argument(
         "-s",
         "--simplification-level",
         type= str,
@@ -870,7 +896,7 @@ def main(argv=None):
         args.include_children or
         args.exclude_parents or
         args.include_parents or
-        args.merge_strategy in ['lower', 'lca']
+        args.merge_strategy in ['lowest', 'lca']
     )
     nodes = {}
     if need_taxonomy:
@@ -882,8 +908,6 @@ def main(argv=None):
     # A dictionary of taxid and a list containing RankedTaxon objects referring to the resolved merged reads of that taxid.
     results = resolve_read_classifications(args, nodes)
 
-    # TODO: Somewhere along the way hit's get removed when they shouldn't
-
     # Keeping only the specified taxids
     whitelist, blacklist = define_lists(args, nodes)
     if whitelist:
@@ -893,8 +917,9 @@ def main(argv=None):
 
     if blacklist:
         logger.info("Removing blacklisted taxids")
+        tmp = get_group_size(results)
         results = {key: value for key, value in results.items() if key not in blacklist}
-        logger.info("Kept only %d taxids", get_group_size(results))
+        logger.info("Removed %d hits", (tmp-get_group_size(results)))
 
     if not args.keep_unclassified:
         logger.info("Removing unclassified hits")
