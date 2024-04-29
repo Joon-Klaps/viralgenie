@@ -102,6 +102,13 @@
                     "description": "Specify the strategy for umi-deduplication directional vs cluster",
                     "enum": ["directional", "cluster"]
                 },
+                "umitools_dedup_strategy": {
+                    "type": "string",
+                    "fa_icon": "fas fa-project-diagram",
+                    "description": "Specify the strategy or method for umi-tools deduplication on mapping level",
+                    "enum": ["directional", "unique", "adjacency", "cluster", "percentile"],
+                    "default": "directional"
+                },
                 "umi_discard_read": {
                     "type": "integer",
                     "default": 0,
