@@ -95,6 +95,13 @@
                     "fa_icon": "fas fa-sort-numeric-down",
                     "description": "Specify the maximum number of mismatches between reads for them to still be considered neighbors."
                 },
+                "humid_strategy": {
+                    "type": "string",
+                    "default": "directional",
+                    "fa_icon": "fas fa-project-diagram",
+                    "description": "Specify the strategy for umi-deduplication directional vs cluster",
+                    "enum": ["directional", "cluster"]
+                },
                 "umi_discard_read": {
                     "type": "integer",
                     "default": 0,
@@ -177,8 +184,7 @@
                 "skip_host_fastqc": {
                     "type": "boolean",
                     "fa_icon": "fas fa-forward",
-                    "description": "Skip the fastqc step after host & contaminants were removed",
-                    "default": false
+                    "description": "Skip the fastqc step after host & contaminants were removed"
                 }
             },
             "fa_icon": "fas fa-bahai"

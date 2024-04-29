@@ -69,10 +69,14 @@ theme:
     - toc.follow
 extra_css:
   - stylesheets/extra.css
+  - https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/katex.min.css
 
 extra_javascript:
   - https://unpkg.com/tablesort@5.3.0/dist/tablesort.min.js
   - javascripts/tablesort.js
+  - javascripts/katex.js
+  - https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/katex.min.js
+  - https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/contrib/auto-render.min.js
 
 markdown_extensions:
   - admonition
@@ -100,6 +104,8 @@ markdown_extensions:
   - pymdownx.details
   - pymdownx.tasklist:
       custom_checkbox: true
+  - pymdownx.arithmatex:
+      generic: true
 # plugins:
 #   - search
 #   - social:
