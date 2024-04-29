@@ -91,7 +91,7 @@
                 },
                 "humid_mismatches": {
                     "type": "integer",
-                    "default": 2,
+                    "default": 1,
                     "fa_icon": "fas fa-sort-numeric-down",
                     "description": "Specify the maximum number of mismatches between reads for them to still be considered neighbors."
                 },
