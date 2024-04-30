@@ -50,6 +50,8 @@
     
       <link rel="stylesheet" href="../../stylesheets/extra.css">
     
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/katex.min.css">
+    
     <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -658,9 +660,18 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#read-processing" class="md-nav__link">
+  <a href="#adapter-trimming" class="md-nav__link">
     <span class="md-ellipsis">
-      Read processing
+      Adapter trimming
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#umi-deduplication" class="md-nav__link">
+    <span class="md-ellipsis">
+      UMI deduplication
     </span>
   </a>
   
@@ -949,9 +960,18 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#read-processing" class="md-nav__link">
+  <a href="#adapter-trimming" class="md-nav__link">
     <span class="md-ellipsis">
-      Read processing
+      Adapter trimming
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#umi-deduplication" class="md-nav__link">
+    <span class="md-ellipsis">
+      UMI deduplication
     </span>
   </a>
   
@@ -1024,10 +1044,26 @@ See the <a href="../../parameters/#preprocessing-options">parameters preprocessi
     D --&gt; E[Complexity filtering];
     E --&gt; G[Host read-removal];
     G --&gt; H["`**FastQC**`"];</code></pre>
-<h2 id="read-processing">Read processing</h2>
+<h2 id="adapter-trimming">Adapter trimming</h2>
 <p>Raw sequencing read processing in the form of adapter clipping and paired-end read merging is performed by the tools <a href="https://github.com/OpenGene/fastp"><code>fastp</code></a> or <a href="https://github.com/usadellab/Trimmomatic"><code>Trimmomatic</code></a>. The tool <code>fastp</code> is a fast all-in-one tool for preprocessing fastq files. The tool <code>Trimmomatic</code> is a flexible read trimming tool for Illumina NGS data. Both tools can be used to remove adapters and low-quality reads from the raw sequencing reads. An adapter file can be provided through the argument <code>--adapter_fasta</code>.</p>
 <blockquote>
 <p>Specify the tool to use for read processing with the <code>--trim_tool</code> parameter, the default is <code>fastp</code>.</p>
+</blockquote>
+<h2 id="umi-deduplication">UMI deduplication</h2>
+<p>Unique Molecular Identifiers (UMIs) are short sequences that are added during library preparation. They are used to identify and remove PCR duplicates. The tool <a href="https://humid.readthedocs.io/en/latest/usage.html"><code>HUMID</code></a> is used to remove PCR duplicates based on the UMI sequences. HUMID supports two ways to group reads using their UMI. By default, HUMID uses the directional method, which takes into account the expected errors based on the PCR process, specify the allowed amount of errors to see reads coming from the same original fragment with <code>--humid_mismatches</code>. Alternativly, HUMID supports the maximum clustering method, where all reads that are within the specified distance are grouped together</p>
+<div class="admonition tip">
+<p class="admonition-title">Directional vs maximum clustering</p>
+<p><img :=":" alt="HUMID UMI clustering" class="center" src="../../images/umi-clustering-humid.png" style="height:230px;width:450px" />
+<p style="text-align: center;"><em>Taken from <a href="https://umi-tools.readthedocs.io/en/latest/the_methods.html">UMI-tools: 'The network based deduplication methods'</a></em> </p></p>
+<ul>
+<li><strong>cluster</strong>: Form networks of connected UMIs with a mismatch distance of 1. Each connected component is a read group. In the above example, all the UMIs are contained in a single connected component and thus there is one read group containing all reads, with ACGT as the ‘selected’ UMI.</li>
+<li><strong>directional</strong> (default for both HUMID and UMI-tools): Form networks with edges defined based on distance threshold and $$ \text{ node A counts} \geq (2 \cdot \text{node B counts}) - 1$$
+Each connected component is a read group, with the node with the highest counts selected as the top node for the component. In the example above, the directional edges yield two connected components. One with AAAT by itself and the other with the remaining UMIs with ACGT as the selected node.</li>
+</ul>
+</div>
+<p>Viralgenie supports both deduplication on a read level as well as a mapping level, specify the <code>--umi_deduplication</code> with <code>read</code> or <code>mapping</code> to choose between the two or specify <code>both</code> to both deduplicate on a read level as well as on a mapping level (after read mapping with reference).</p>
+<blockquote>
+<p>By default viralgenie doesn't assume UMIs are present in the reads. If UMIs are present, specify the <code>--with_umi</code> parameter and <code>--deduplicate</code>.</p>
 </blockquote>
 <h2 id="complexity-filtering">Complexity filtering</h2>
 <p>Complexity filtering is primarily a run-time optimisation step. Low-complexity sequences are defined as having commonly found stretches of nucleotides with limited information content (e.g. the dinucleotide repeat CACACACACA). Such sequences can produce a large number of high-scoring but biologically insignificant results in database searches. Removing these reads therefore saves computational time and resources.</p>
@@ -1289,6 +1325,12 @@ See the <a href="../../parameters/#preprocessing-options">parameters preprocessi
         <script src="https://unpkg.com/tablesort@5.3.0/dist/tablesort.min.js"></script>
       
         <script src="../../javascripts/tablesort.js"></script>
+      
+        <script src="../../javascripts/katex.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/katex.min.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/contrib/auto-render.min.js"></script>
       
     
   </body>

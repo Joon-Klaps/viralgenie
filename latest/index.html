@@ -50,6 +50,8 @@
     
       <link rel="stylesheet" href="stylesheets/extra.css">
     
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/katex.min.css">
+    
     <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -907,6 +909,7 @@
 <li>Read QC (<a href="https://www.bioinformatics.babraham.ac.uk/projects/fastqc/"><code>FastQC</code></a>)</li>
 <li>Performs optional read pre-processing<ul>
 <li>Adapter trimming(<a href="https://github.com/OpenGene/fastp"><code>fastp</code></a>, <a href="https://github.com/usadellab/Trimmomatic"><code>Trimmomatic</code></a>)</li>
+<li>Read UMI deduplication (<a href="https://humid.readthedocs.io/en/latest/usage.html"><code>HUMID</code></a>)</li>
 <li>Low complexity and quality filtering (<a href="https://jgi.doe.gov/data-and-tools/software-tools/bbtools/"><code>bbduk</code></a>)</li>
 <li>Host-read removal (<a href="http://bowtie-bio.sourceforge.net/bowtie2/"><code>BowTie2</code></a>)</li>
 </ul>
@@ -988,11 +991,7 @@ For further information or help, don't hesitate to get in touch on the [Slack `#
 -->
 
 <h2 id="citations">Citations</h2>
-<!-- TODO nf-core: Add citation for pipeline after first release. Uncomment lines below and update Zenodo doi and badge at the top of this file. -->
-
-<!-- If you use  Joon-Klaps/viralgenie for your analysis, please cite it using the following doi: [10.5281/zenodo.XXXXXX](https://doi.org/10.5281/zenodo.XXXXXX) -->
-
-<!-- TODO nf-core: Add bibliography of tools and data used in your pipeline -->
+<!-- TODO: If you use  Joon-Klaps/viralgenie for your analysis, please cite it using the following doi: [10.5281/zenodo.XXXXXX](https://doi.org/10.5281/zenodo.XXXXXX) -->
 
 <p>An extensive list of references for the tools used by the pipeline can be found in the <a href="https://github.io/Joon-klaps/viralgenie/CITATIONS"><code>CITATIONS.md</code></a> file.</p>
 <p>You can cite the <code>nf-core</code> publication as follows:</p>
@@ -1230,6 +1229,12 @@ For further information or help, don't hesitate to get in touch on the [Slack `#
         <script src="https://unpkg.com/tablesort@5.3.0/dist/tablesort.min.js"></script>
       
         <script src="javascripts/tablesort.js"></script>
+      
+        <script src="javascripts/katex.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/katex.min.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/contrib/auto-render.min.js"></script>
       
     
   </body>

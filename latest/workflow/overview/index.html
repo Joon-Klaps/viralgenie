@@ -50,6 +50,8 @@
     
       <link rel="stylesheet" href="../../stylesheets/extra.css">
     
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/katex.min.css">
+    
     <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -973,11 +975,13 @@
 <p>All steps can be skipped and the pipeline can be run with only the desired steps. This can be done with the <code>--skip_preprocessing</code>, <code>--skip_read_classification</code>, <code>--skip_assembly</code>, <code>--skip_polishing</code>, <code>--skip_variant_analysis</code>, <code>--skip_iterative_refinement</code>, <code>--skip_consensus_qc</code> flags.</p>
 </div>
 <h2 id="subway-map">Subway map</h2>
+<!-- can't parse images with snippets -->
 <p><img alt="viralgenie-workflow" src="../../images/metromap_style_pipeline_workflow_viralgenie.png" /></p>
 <ol>
 <li>Read QC (<a href="https://www.bioinformatics.babraham.ac.uk/projects/fastqc/"><code>FastQC</code></a>)</li>
 <li>Performs optional read pre-processing<ul>
 <li>Adapter trimming(<a href="https://github.com/OpenGene/fastp"><code>fastp</code></a>, <a href="https://github.com/usadellab/Trimmomatic"><code>Trimmomatic</code></a>)</li>
+<li>Read UMI deduplication (<a href="https://humid.readthedocs.io/en/latest/usage.html"><code>HUMID</code></a>)</li>
 <li>Low complexity and quality filtering (<a href="https://jgi.doe.gov/data-and-tools/software-tools/bbtools/"><code>bbduk</code></a>)</li>
 <li>Host-read removal (<a href="http://bowtie-bio.sourceforge.net/bowtie2/"><code>BowTie2</code></a>)</li>
 </ul>
@@ -1269,6 +1273,12 @@
         <script src="https://unpkg.com/tablesort@5.3.0/dist/tablesort.min.js"></script>
       
         <script src="../../javascripts/tablesort.js"></script>
+      
+        <script src="../../javascripts/katex.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/katex.min.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/contrib/auto-render.min.js"></script>
       
     
   </body>

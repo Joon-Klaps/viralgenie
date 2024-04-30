@@ -50,6 +50,8 @@
     
       <link rel="stylesheet" href="../../stylesheets/extra.css">
     
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/katex.min.css">
+    
     <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -1103,7 +1105,7 @@
 <p>Read deduplication is an optional step that can be performed with <a href="https://broadinstitute.github.io/picard/"><code>Picard</code></a> or if UMI's are used <a href="https://umi-tools.readthedocs.io/en/latest/QUICK_START.html"><code>UMI-tools</code></a>. Unless you are using <a href="https://dnatech.genomecenter.ucdavis.edu/faqs/what-are-umis-and-why-are-they-used-in-high-throughput-sequencing/">UMIs</a> it is not possible to establish whether the fragments you have sequenced from your sample were derived via true biological duplication (i.e. sequencing independent template fragments) or as a result of PCR biases introduced during the library preparation. To correct your reads, use picard MarkDuplicates to mark the duplicate reads identified amongst the alignments to allow you to gauge the overall level of duplication in your samples.
 So if you have UMI’s, no need to use Picard, instead use UMI-tools to deduplicate your reads. Where instead of mapping location and read similarity, UMI-tools uses the UMI to identify PCR duplicates.</p>
 <blockquote>
-<p>Specify <code>--deduplicate</code> to enable deduplication, the default is <code>true</code>. If UMI's are used, specify <code>--with_umi</code> to enable UMI-tools deduplication. UMI's can be in the read header, if it is not in the header specify <code>--skip_umi_extract false</code>, the default is <code>true</code>.</p>
+<p>Specify <code>--deduplicate</code> to enable deduplication, the default is <code>true</code>. If UMI's are used, specify <code>--with_umi</code> and <code>--umi_deduplicate 'mapping' | 'both'</code> to enable UMI-tools deduplication. UMI's can be in the read header, if it is not in the header specify <code>--skip_umi_extract false</code>, the default is <code>true</code>.</p>
 <p>By default the UMI's are seperated in the header by ':' if this is different, specify with "--umi_separator 'YOUR_SEPARATOR'".</p>
 </blockquote>
 <h2 id="variant-calling">Variant calling</h2>
@@ -1405,6 +1407,12 @@ So if you have UMI’s, no need to use Picard, instead use UMI-tools to deduplic
         <script src="https://unpkg.com/tablesort@5.3.0/dist/tablesort.min.js"></script>
       
         <script src="../../javascripts/tablesort.js"></script>
+      
+        <script src="../../javascripts/katex.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/katex.min.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/contrib/auto-render.min.js"></script>
       
     
   </body>

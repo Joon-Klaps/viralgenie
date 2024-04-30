@@ -50,6 +50,8 @@
     
       <link rel="stylesheet" href="../stylesheets/extra.css">
     
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/katex.min.css">
+    
     <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -579,6 +581,15 @@
   <a href="#trimmomatic" class="md-nav__link">
     <span class="md-ellipsis">
       Trimmomatic
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#umi-deduplication" class="md-nav__link">
+    <span class="md-ellipsis">
+      UMI-deduplication
     </span>
   </a>
   
@@ -1385,6 +1396,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#umi-deduplication" class="md-nav__link">
+    <span class="md-ellipsis">
+      UMI-deduplication
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#bbduk" class="md-nav__link">
     <span class="md-ellipsis">
       BBDuk
@@ -1855,6 +1875,28 @@
 </ul>
 </details>
 <p>By default viralgenie will only provide the report and log files if Trimmomatic is selected. The trimmed reads can be saved by specifying <code>--save_intermediate_reads</code> or <code>--save_final_reads 'trimming'</code>.</p>
+<h3 id="umi-deduplication">UMI-deduplication</h3>
+<p>UMI-deduplication can be done at the read level using <a href="https://humid.readthedocs.io/en/latest/usage.html"><code>HUMID</code></a>. Viralgenie also uses provides the opportunity to extract the UMI from the read using <a href="https://umi-tools.readthedocs.io/en/latest/QUICK_START.html#step-3--extract-the-umis"><code>UMI-tools extract</code></a> if the UMI is not in the header. Results will be stored in the <code>preprocessing/umi</code> directory.</p>
+<details class="- abstract">
+<summary>Output files</summary>
+<ul>
+<li><code>umi/</code><ul>
+<li><code>humid/</code><ul>
+<li><code>log/&lt;sample-id&gt;.log</code>: log file of humid.</li>
+<li><code>annotated/&lt;sample-id&gt;_annotated_*.fastq.gz</code>: annotated FastQ files, reads will have their assigned cluster in the read header.</li>
+<li><code>deduplicated/&lt;sample-id&gt;_deduplicated_*.fastq.gz</code>: deduplicated FastQ files.</li>
+</ul>
+</li>
+<li><code>umitools/</code><ul>
+<li><code>log/&lt;sample-id&gt;.log</code>: log file of umi-tools.</li>
+<li><code>extracts/&lt;sample-id&gt;.umi_extract*.fastq.gz</code>: fastq file where UMI's have been removed from the read and moved to the read header.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</details>
+<p>By default viralgenie will not assume reads have UMI's. To enable this use the parameter <code>--with_umi</code>. Specify where UMI deduplication should occur with <code>--umi_deduplicate</code> if at a <code>read</code> level, on a <code>mapping</code> level or <code>both</code> at a read and mapping level. The deduplicated reads can be saved by specifying <code>--save_intermediate_reads</code> or <code>--save_final_reads 'deduplication'</code>.</p>
 <h3 id="bbduk">BBDuk</h3>
 <p><a href="https://jgi.doe.gov/data-and-tools/software-tools/bbtools/bb-tools-user-guide/bbduk-guide/">BBDuk</a> stands for Decontamination Using Kmers. BBDuk was developed to combine most common data-quality-related trimming, filtering, and masking operations into a single high-performance tool.</p>
 <p>It is used in viralgenie for complexity filtering using different algorithms. This means that it will remove reads with low sequence diversity (e.g. mono- or dinucleotide repeats).</p>
@@ -2032,7 +2074,6 @@
 <summary>Output files</summary>
 <ul>
 <li><code>polishing/intermediate/cluster/</code><ul>
-<li><code>&lt;sample-id&gt;/&lt;sample-id&gt;_cl#.json</code>: A json file containign information that is used by viralgenie internally like clusterID, centroid, members, cluster size, if the reference is external or a denovo contig.</li>
 <li><code>&lt;sample-id&gt;/&lt;sample-id&gt;.summary_mqc.tsv</code>: A tabular file with comments used for <a href="#multiqc">Multiqc</a> with statistics on the number of identified clusters in a sample</li>
 <li><code>&lt;sample-id&gt;/&lt;sample-id&gt;.clusters.tsv</code>: A tabular file with metadata on all clusters in a samples. It's the json file of all clusters in a table format.</li>
 </ul>
@@ -2882,6 +2923,12 @@
         <script src="https://unpkg.com/tablesort@5.3.0/dist/tablesort.min.js"></script>
       
         <script src="../javascripts/tablesort.js"></script>
+      
+        <script src="../javascripts/katex.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/katex.min.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/contrib/auto-render.min.js"></script>
       
     
   </body>
