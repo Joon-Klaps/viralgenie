@@ -8,7 +8,7 @@ workflow FASTA_CONTIG_PRECLUST {
 
     take:
     ch_contigs_reads   // channel: [ val(meta), [ fasta ], [ fastq ] ]
-    contig_classifiers // value [kaiju, kraken2]
+    contig_classifiers // value:   [ kaiju, kraken2 ]
     ch_kaiju_db        // channel: [ db ]
     ch_kraken2_db      // channel: [ db ]
 
@@ -63,6 +63,8 @@ workflow FASTA_CONTIG_PRECLUST {
                 kraken: [meta, kraken, kraken_report]
                 contig: [meta, contig]
             }
+    }  else {
+        error("No known classifiers found 'kaiju' and 'kraken2' ${contig_classifiers}")
     }
 
     EXTRACT_PRECLUSTER ( classifications.kaiju, classifications.kraken, classifications.contig, ch_kaiju_db )

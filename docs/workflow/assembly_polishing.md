@@ -56,7 +56,7 @@ graph LR;
 ```
 
 !!! Tip annotate "Having very complex metagenomes"
-    The pre-clustering step can be used to simplify the taxonomy of the contigs. This can be done in several ways:
+    The pre-clustering step can be used to simplify the taxonomy of the contigs, let [NCBI's taxonomy browser](https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi) help you identify taxon-id's for simplification. The simplification can be done in several ways:
 
     - Make sure your contamination database is up to date and removes the relevant taxa.
     - Exclude unclassified contigs with `--keep_unclassified false` parameter.

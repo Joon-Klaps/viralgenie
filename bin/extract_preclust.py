@@ -48,6 +48,7 @@ def write_sequences(groups, sequences, prefix):
         sequences (str): The path to the input sequence file.
         prefix (str): The prefix of the output file.
     """
+    # check if groups has anything:
     sequence_dict = SeqIO.to_dict(SeqIO.parse(sequences, "fasta"))
     for taxid, ranked_taxon_list in groups.items():
         with open(f"{prefix}_taxid{taxid}.fa", "w", encoding='utf-8') as f_out:
@@ -906,7 +907,8 @@ def main(argv=None):
         nodes = process_taxonomy(args.nodes, args.kraken_report)
 
     # A dictionary of taxid and a list containing RankedTaxon objects referring to the resolved merged reads of that taxid.
-    results = resolve_read_classifications(args, nodes)
+    resolved = resolve_read_classifications(args, nodes)
+    results = resolved.copy()
 
     # Keeping only the specified taxids
     whitelist, blacklist = define_lists(args, nodes)
@@ -933,6 +935,15 @@ def main(argv=None):
         tmp  = len(results)
         results = simplify_taxonomic_ranks(results, nodes, taxon_map[args.simplification_level])
         logger.info("Simplified from %d to %d taxonomie(s)", tmp, len(results))
+
+    if not results:
+        logger.error("No final taxon groups found, is it possible everything was removed? exiting!")
+        logger.error("Resolved taxons: %s ", resolved.keys())
+        if whitelist:
+            logger.error("Whitelist (keep only) taxons: %s", whitelist)
+        if blacklist:
+            logger.error("Blacklist (remove) taxons: %s", blacklist)
+        sys.exit(1)
 
     logger.info("Writing sequences and json file")
     write_sequences(results, args.sequences, args.prefix)

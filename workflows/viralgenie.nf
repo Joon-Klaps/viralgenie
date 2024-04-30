@@ -19,7 +19,7 @@ def valid_params = [
 
 def assemblers         = params.assemblers ? params.assemblers.split(',').collect{ it.trim().toLowerCase() } : []
 def read_classifiers   = params.read_classifiers ? params.read_classifiers.split(',').collect{ it.trim().toLowerCase() } : []
-def contig_classifiers = params.contig_classifiers ? params.contig_classifiers.split(',').collect{ it.trim().toLowerCase() } : []
+def contig_classifiers = params.precluster_classifiers ? params.precluster_classifiers.split(',').collect{ it.trim().toLowerCase() } : []
 
 def createFileChannel(param) {
     return param ? Channel.fromPath(param, checkIfExists: true).collect() : []

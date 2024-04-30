@@ -186,7 +186,7 @@
                     "default": "kraken2,kaiju",
                     "fa_icon": "fab fa-gitkraken",
                     "description": "Specify the taxonomic read classifiers, choices are 'kaiju,kraken2'",
-                    "pattern": "^[(kraken2),(kaiju)(bracken)]+$"
+                    "pattern": "^(kaiju|kraken2|bracken)(?:,(kaiju|kraken2|bracken)){0,2}$"
                 },
                 "save_databases": {
                     "type": "boolean",
@@ -255,7 +255,7 @@
                     "default": "spades,trinity,megahit",
                     "fa_icon": "fas fa-bezier-curve",
                     "description": "The specified tools for denovo assembly, multiple options are possible",
-                    "pattern": "^\\S+[(trinity)(spades)(megahit),]+$"
+                    "pattern": "^(trinity|spades|megahit)(?:,(trinity|spades|megahit)){0,2}$"
                 },
                 "spades_mode": {
                     "type": "string",
@@ -334,7 +334,7 @@
                     "default": "kraken2,kaiju",
                     "fa_icon": "fab fa-gitkraken",
                     "description": "Specify the metagenomic classifiers to use for contig taxonomy classification: 'kraken2,kaiju'",
-                    "pattern": "^[(kraken2),(kaiju)]+$"
+                    "pattern": "^(kaiju|kraken2)(,(kaiju|kraken2))?$"
                 },
                 "precluster_merge_strategy": {
                     "type": "string",
@@ -356,35 +356,35 @@
                     "fa_icon": "fas fa-filter",
                     "description": "Hard constrain for taxa to exclude from the preclustering, if multiple given make sure to enclose with '\"' and separate with a space.",
                     "help_text": "The taxonomic classification of the contigs can be filtered. This can be done by specifying a list of taxa that should be excluded from the results.",
-                    "pattern": "^\\S+[\\d +]+$"
+                    "pattern": "^[\\d +]+$"
                 },
                 "precluster_exclude_children": {
                     "type": "string",
                     "fa_icon": "fas fa-filter",
                     "description": "Taxon ids to exclude along with all their children from the preclustering, if multiple given make sure to enclose with '\"' and separate with a space.",
                     "help_text": "The taxonomic classification of the contigs can be filtered. This can be done by specifying a list of taxa that should be excluded along with all their children from the results.",
-                    "pattern": "^\\S+[\\d +]+$"
+                    "pattern": "^[\\d +]+$"
                 },
                 "precluster_exclude_parents": {
                     "type": "string",
                     "fa_icon": "fas fa-filter",
                     "description": "Taxon ids to exclude along with all their parents from the preclustering, if multiple given make sure to enclose with '\"' and separate with a space.",
                     "help_text": "The taxonomic classification of the contigs can be filtered. This can be done by specifying a list of taxa that should be excluded along with all their parents from the results.",
-                    "pattern": "^\\S+[\\d +]+$"
+                    "pattern": "^[\\d +]+$"
                 },
                 "precluster_include_children": {
                     "type": "string",
                     "fa_icon": "fas fa-filter",
                     "description": "Taxon ids to include along with all their children from the preclustering, if multiple given make sure to enclose with '\"' and separate with a space.",
                     "help_text": "The taxonomic classification of the contigs can be filtered. This can be done by specifying a list of taxa that should be included along with all their children from the results.",
-                    "pattern": "^\\S+[\\d +]+$"
+                    "pattern": "^[\\d +]+$"
                 },
                 "precluster_include_parents": {
                     "type": "string",
                     "fa_icon": "fas fa-filter",
                     "description": "Taxon ids to include along with all their parents from the preclustering, if multiple given make sure to enclose with '\"' and separate with a space.",
                     "help_text": "The taxonomic classification of the contigs can be filtered. This can be done by specifying a list of taxa that should be included along with all their parents from the results.",
-                    "pattern": "^\\S+[\\d +]+$"
+                    "pattern": "^[\\d +]+$"
                 },
                 "cluster_method": {
                     "type": "string",
