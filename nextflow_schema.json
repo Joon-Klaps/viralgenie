@@ -646,8 +646,7 @@
                     "help_text": "Only search-type 3 supports both forward and reverse search\n1 - BLASTP;\n2 - TBLASTN;\n3 - BLASTN;\n4 - TBLASTX"
                 }
             },
-            "fa_icon": "fas fa-balance-scale",
-            "required": ["skip_consensus_qc"]
+            "fa_icon": "fas fa-balance-scale"
         },
         "institutional_config_options": {
             "title": "Institutional config options",
@@ -730,8 +729,7 @@
                     "hidden": true,
                     "help_text": "Use to set an upper-limit for the time requirement for each process. Should be a string in the format integer-unit e.g. `--max_time '2.h'`"
                 }
-            },
-            "required": ["max_cpus"]
+            }
         },
         "generic_options": {
             "title": "Generic options",
@@ -876,8 +874,7 @@
                     "fa_icon": "fab fa-autoprefixer",
                     "description": "Global prefix set if you don't want metadata embedded in the prefix"
                 }
-            },
-            "required": ["help"]
+            }
         }
     },
     "allOf": [
