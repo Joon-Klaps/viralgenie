@@ -56,7 +56,7 @@ graph LR;
 ```
 
 !!! Tip annotate "Having very complex metagenomes"
-    The pre-clustering step can be used to simplify the taxonomy of the contigs. This can be done in several ways:
+    The pre-clustering step can be used to simplify the taxonomy of the contigs, let [NCBI's taxonomy browser](https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi) help you identify taxon-id's for simplification. The simplification can be done in several ways:
 
     - Make sure your contamination database is up to date and removes the relevant taxa.
     - Exclude unclassified contigs with `--keep_unclassified false` parameter.
@@ -89,17 +89,18 @@ graph LR;
         C --- F[species3]
     ```
 
-> The pre-clustering step will be run by default but can be skipped with the argument `--skip_preclustering`.
+> The pre-clustering step will be run by default but can be skipped with the argument `--skip_preclustering`. Specify which classifier to use with `--precluster_classifiers` parameter. The default is `kaiju,kraken2`. Contig taxon filtering is still enabled despite not having to solve for inconsistencies if only Kaiju or Kraken2 is ran.
 
 ### Actual clustering
 
 The clustering is performed with one of the following tools:
-    - [`cdhitest`](https://sites.google.com/view/cd-hit)
-    - [`vsearch`](https://github.com/torognes/vsearch/wiki/Clustering)
-    - [`mmseqs-linclust`](https://github.com/soedinglab/MMseqs2/wiki#linear-time-clustering-using-mmseqs-linclust)
-    - [`mmseqs-cluster`](https://github.com/soedinglab/MMseqs2/wiki#cascaded-clustering)
-    - [`vRhyme`](https://github.com/AnantharamanLab/vRhyme)
-    - [`mash`](https://github.com/marbl/Mash)
+
+- [`cdhitest`](https://sites.google.com/view/cd-hit)
+- [`vsearch`](https://github.com/torognes/vsearch/wiki/Clustering)
+- [`mmseqs-linclust`](https://github.com/soedinglab/MMseqs2/wiki#linear-time-clustering-using-mmseqs-linclust)
+- [`mmseqs-cluster`](https://github.com/soedinglab/MMseqs2/wiki#cascaded-clustering)
+- [`vRhyme`](https://github.com/AnantharamanLab/vRhyme)
+- [`mash`](https://github.com/marbl/Mash)
 
 
 These methods all come with their own advantages and disadvantages. For example, cdhitest is very fast but cannot be used for large viruses >10Mb and similarity threshold cannot go below 80% which is not preferable for highly diverse RNA viruses. Vsearch is slower but accurate. Mmseqs-linclust is the fastest but tends to create a large amount of bins. Mmseqs-cluster is slower but can handle larger datasets and is more accurate. vRhyme is a new method that is still under development but has shown promising results but can sometimes not output any bins when segments are small. Mash is a very fast comparison method is linked with a custom script that identifies communities within a network.

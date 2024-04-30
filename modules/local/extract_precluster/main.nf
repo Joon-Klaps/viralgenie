@@ -14,7 +14,7 @@ process EXTRACT_PRECLUSTER {
     path(kaiju_db)
 
     output:
-    tuple val(meta), path("*.fa"), path("*.json") , emit: sequences
+    tuple val(meta), path("*.fa"), path("*.json") , emit: sequences, optional: true
     tuple val(meta), path("*.resolved.txt")       , emit: resolved
     path "versions.yml"                           , emit: versions
     when:

@@ -18,7 +18,7 @@ workflow ALIGN_COLLAPSE_CONTIGS {
 
     CAT_CLUSTER(ch_sequences)
     ch_versions = ch_versions.mix(CAT_CLUSTER.out.versions.first())
-    // TODO:
+
     // if external_reference is false, we need to include the reference when mapping towards the reference (i.e. the reference is also a member)
     // if external_reference is true, we need to exclude the reference when mapping towards the reference
     // We align contigs to the reference using minimap2
