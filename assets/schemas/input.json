@@ -1,5 +1,5 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://raw.githubusercontent.com/Joon-Klaps/viralgenie/master/assets/schemas/input.json",
     "title": "Joon-Klaps/viralgenie pipeline - params.input schema",
     "description": "Schema for the file provided with params.input",
@@ -22,20 +22,16 @@
             },
             "fastq_2": {
                 "errorMessage": "FastQ file for reads 2 cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'",
-                "anyOf": [
-                    {
-                        "type": "string",
-                        "format": "file-path",
-                        "exists": true,
-                        "pattern": "^\\S+\\.f(ast)?q\\.gz$"
-                    },
-                    {
-                        "type": "string",
-                        "maxLength": 0
-                    }
-                ]
+                "type": "string",
+                "format": "file-path",
+                "exists": true,
+                "pattern": "^\\S+\\.f(ast)?q\\.gz$"
             }
         },
-        "required": ["sample", "fastq_1"]
+        "required": ["sample", "fastq_1"],
+        "dependentRequired": {
+            "fastq_2": ["fastq_1"]
+        },
+        "uniqueItems": true
     }
 }

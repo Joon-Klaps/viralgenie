@@ -4,7 +4,7 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { paramsSummaryLog; paramsSummaryMap; fromSamplesheet } from 'plugin/nf-validation'
+include { paramsSummaryLog; paramsSummaryMap; samplesheetToList } from 'plugin/nf-schema'
 
 def logo = NfcoreTemplate.logo(workflow, params.monochrome_logs)
 def citation = '\n' + WorkflowMain.citation(workflow) + '\n'
@@ -19,7 +19,7 @@ def valid_params = [
 
 def assemblers         = params.assemblers ? params.assemblers.split(',').collect{ it.trim().toLowerCase() } : []
 def read_classifiers   = params.read_classifiers ? params.read_classifiers.split(',').collect{ it.trim().toLowerCase() } : []
-def contig_classifiers = params.contig_classifiers ? params.contig_classifiers.split(',').collect{ it.trim().toLowerCase() } : []
+def contig_classifiers = params.precluster_classifiers ? params.precluster_classifiers.split(',').collect{ it.trim().toLowerCase() } : []
 
 def createFileChannel(param) {
     return param ? Channel.fromPath(param, checkIfExists: true).collect() : []
@@ -132,9 +132,10 @@ workflow VIRALGENIE {
     ch_multiqc_files = Channel.empty()
 
     // Importing samplesheet
-    ch_reads = Channel.fromSamplesheet(
-        'input'
-        ).map{
+    ch_reads = Channel.fromList(
+            samplesheetToList(params.input,"$projectDir/assets/schemas/input.json")
+        )
+        .map{
             meta, read1, read2 ->
             single_end = read1 && !read2
             if (single_end) {
@@ -392,7 +393,7 @@ workflow VIRALGENIE {
 
     if (params.mapping_constrains && !params.skip_variant_calling ) {
         // Importing samplesheet
-        Channel.fromSamplesheet('mapping_constrains')
+        Channel.fromList(samplesheetToList(params.mapping_constrains, "$projectDir/assets/schemas/mapping_constrains.json" ))
             .map{ meta, sequence ->
                 samples = meta.samples == null ? meta.samples: tuple(meta.samples.split(";"))  // Split up samples if meta.samples is not null
                 [meta, samples, sequence]
