@@ -13,10 +13,11 @@ include { KRONA_KTIMPORTTEXT             } from '../../modules/nf-core/krona/kti
 workflow FASTQ_KRAKEN_KAIJU {
 
     take:
-    reads           // channel: [ val(meta), [ fastq ] ]
-    kraken2_db      // channel: [ path(kraken2_db) ]
-    bracken_db      // channel: [ path(bracken_db) ]
-    kaiju_db        // channel: [ path(kaiju_db) ]
+    reads            // channel: [ val(meta), [ fastq ] ]
+    read_classifiers // value ['kraken2','kaiju','bracken']
+    kraken2_db       // channel: [ path(kraken2_db) ]
+    bracken_db       // channel: [ path(bracken_db) ]
+    kaiju_db         // channel: [ path(kaiju_db) ]
 
     main:
     ch_versions             = Channel.empty()
@@ -25,26 +26,28 @@ workflow FASTQ_KRAKEN_KAIJU {
     ch_raw_classifications  = Channel.empty()
 
     // Kraken
-    if (!params.skip_kraken2){
+    if ('kraken2' in read_classifiers){
         KRAKEN2_KRAKEN2 ( reads, kraken2_db, params.kraken2_save_reads, params.kraken2_save_readclassification )
         ch_raw_classifications = ch_raw_classifications.mix(KRAKEN2_KRAKEN2.out.classified_reads_assignment)
         kraken2_report         = KRAKEN2_KRAKEN2.out.report.map{ meta, report -> [meta + [tool: 'kraken2'], report]}
-        ch_multiqc_files       = ch_multiqc_files.mix( kraken2_report )
         ch_versions            = ch_versions.mix( KRAKEN2_KRAKEN2.out.versions.first() )
 
         // Bracken: get more accurate estimates of abundance
-        if (!params.skip_bracken){
+        if ('bracken' in read_classifiers){
             BRACKEN_BRACKEN ( kraken2_report, bracken_db )
-            ch_versions   = ch_versions.mix( BRACKEN_BRACKEN.out.versions.first() )
+            ch_versions    = ch_versions.mix( BRACKEN_BRACKEN.out.versions.first() )
+            kraken2_report = BRACKEN_BRACKEN.out.results.map{ meta, report -> [meta + [tool: 'bracken'], report]}
         }
 
+
         KRAKENTOOLS_KREPORT2KRONA ( kraken2_report )
-        ch_krona_text = ch_krona_text.mix( KRAKENTOOLS_KREPORT2KRONA.out.txt )
-        ch_versions   = ch_versions.mix( KRAKENTOOLS_KREPORT2KRONA.out.versions.first() )
+        ch_krona_text     = ch_krona_text.mix( KRAKENTOOLS_KREPORT2KRONA.out.txt )
+        ch_versions       = ch_versions.mix( KRAKENTOOLS_KREPORT2KRONA.out.versions.first() )
+        ch_multiqc_files  = ch_multiqc_files.mix( kraken2_report )
     }
 
     // Kaiju
-    if (!params.skip_kaiju){
+    if ('kaiju' in read_classifiers){
         KAIJU_KAIJU(reads, kaiju_db)
         kaiju_report     = KAIJU_KAIJU.out.results.map{ meta, report -> [meta + [tool: 'kaiju'], report]}
         ch_versions      = ch_versions.mix( KAIJU_KAIJU.out.versions.first() )

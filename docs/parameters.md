@@ -41,13 +41,13 @@ Options related to the trimming, low complexity and host removal steps of the re
 | `host_k2_library` | Kraken2 library(s) required to remove host and contamination <details><summary>Help</summary><small>Only used when no host kraken2 database is specified.</small></details>| human |
 | `skip_host_fastqc` | Skip the fastqc step after host & contaminants were removed | True |
 
-## Metagenomic diveristy
+## Read classification
 
 Parameters used to determine the metagenomic diversity of the sample
 
 | Parameter | Description | Default |
 |-----------|-----------|-----------|
-| `skip_metagenomic_diversity` | Skip determining the metagenomic diversity of the sample |  |
+| `skip_read_classification` | Skip determining the metagenomic diversity of the sample |  |
 | `save_databases` | Save the used databases |  |
 | `skip_kraken2` | Skip the use of Kraken2 to determine metagenomic diversity |  |
 | `kraken2_db` | Location of the Kraken2 database | https://genome-idx.s3.amazonaws.com/kraken/k2_viral_20230314.tar.gz |

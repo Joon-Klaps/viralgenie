@@ -43,7 +43,7 @@ The contigs along with their references have their taxonomy assigned using [Krak
 > - Kraken2: viral refseq database, `--kraken2_db`
 > - Kaiju: clustered [RVDB](https://rvdb.dbi.udel.edu/), `--kaiju_db`
 
-As Kajiu and Kraken2 can have different taxonomic assignments, an additional step is performed to resolve potential inconsistencies in taxonomy and to identify the taxonomy of the contigs. The pre-clustering step is performed with [Kaiju-mergeOutputs](https://kaiju.binf.ku.dk/).
+As Kajiu and Kraken2 can have different taxonomic assignments, an additional step is performed to resolve potential inconsistencies in taxonomy and to identify the taxonomy of the contigs. This is done with a custom script that is based on `KrakenTools extract_kraken_reads.py` and `kaiju-Merge-Outputs`.
 
 ```mermaid
 graph LR;

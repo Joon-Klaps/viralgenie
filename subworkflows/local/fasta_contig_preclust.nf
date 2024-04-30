@@ -8,6 +8,7 @@ workflow FASTA_CONTIG_PRECLUST {
 
     take:
     ch_contigs_reads   // channel: [ val(meta), [ fasta ], [ fastq ] ]
+    contig_classifiers // value [kaiju, kraken2]
     ch_kaiju_db        // channel: [ db ]
     ch_kraken2_db      // channel: [ db ]
 
@@ -18,7 +19,7 @@ workflow FASTA_CONTIG_PRECLUST {
     ch_contigs = ch_contigs_reads.map{ meta, fasta,reads -> [meta + [single_end:true, og_single_end:meta.single_end], fasta] }
 
     kaiju = Channel.empty()
-    if (!params.skip_kaiju){
+    if ('kaiju' in contig_classifiers){
         KAIJU_CONTIG ( ch_contigs, ch_kaiju_db)
         kaiju       = KAIJU_CONTIG.out.results
         ch_versions = ch_versions.mix( KAIJU_CONTIG.out.versions.first() )
@@ -26,7 +27,7 @@ workflow FASTA_CONTIG_PRECLUST {
 
     kraken        = Channel.empty()
     kraken_report = Channel.empty()
-    if (!params.skip_kraken2){
+    if ('kraken2' in contig_classifiers){
         KRAKEN2_CONTIG ( ch_contigs, ch_kraken2_db, false, true )
         kraken        = KRAKEN2_CONTIG.out.classified_reads_assignment
         kraken_report = KRAKEN2_CONTIG.out.report
@@ -35,7 +36,7 @@ workflow FASTA_CONTIG_PRECLUST {
 
     classifications = Channel.empty()
 
-    if (!(params.skip_kaiju || params.skip_kraken2)){
+    if ('kaiju' in contig_classifiers && 'kraken2' in contig_classifiers){
         classifications = kaiju
             .join(kraken, by:[0])
             .join(kraken_report, by:[0])
@@ -45,21 +46,21 @@ workflow FASTA_CONTIG_PRECLUST {
                 kraken: [meta, kraken, kraken_report]
                 contig: [meta, contig]
             }
-    } else if (!params.skip_kaiju){
+    } else if ('kaiju' in contig_classifiers){
         classifications = kaiju
             .join(ch_contigs, by:[0])
             .multiMap{ meta, kaiju, contig ->
                 kaiju: [meta, kaiju]
-                kraken: [[:], [], []]  // empty kraken
+                kraken: [meta, [], []]  // empty kraken
                 contig: [meta, contig]
             }
-    } else if (!params.skip_kraken2){
+    } else if ('kraken2' in contig_classifiers){
         classifications = kraken
             .join(kraken_report, by:[0])
             .join(ch_contigs, by:[0])
             .multiMap{ meta, kraken, kraken_report, contig ->
-                kaiju: [[:],[]]
-                kraken: [meta, kraken, kraken_report]  // empty kraken
+                kaiju: [meta,[]]    // empty kaiju
+                kraken: [meta, kraken, kraken_report]
                 contig: [meta, contig]
             }
     }
