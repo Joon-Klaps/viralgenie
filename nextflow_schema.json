@@ -19,7 +19,7 @@
                     "mimetype": "text/csv",
                     "pattern": "^\\S+\\.csv$",
                     "description": "Path to comma-separated file containing information about the samples in the experiment.",
-                    "help_text": "You will need to create a design file with information about the samples in your experiment before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row. See [usage docs](https://nf-co.re/viralgenie/usage#samplesheet-input).",
+                    "help_text": "You will need to create a design file with information about the samples in your experiment before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row. See [usage docs](https://joon-klaps.github.io/viralgenie/latest/usage/#input).",
                     "fa_icon": "fas fa-file-csv",
                     "schema": "assets/schemas/input.json"
                 },
@@ -82,11 +82,38 @@
                     "fa_icon": "fas fa-forward",
                     "description": "With or without umi extraction"
                 },
+                "umi_deduplicate": {
+                    "type": "string",
+                    "default": "read",
+                    "fa_icon": "fas fa-toolbox",
+                    "description": "Specify at what level UMI deduplication should occur.",
+                    "enum": ["read", "mapping", "both"]
+                },
+                "humid_mismatches": {
+                    "type": "integer",
+                    "default": 1,
+                    "fa_icon": "fas fa-sort-numeric-down",
+                    "description": "Specify the maximum number of mismatches between reads for them to still be considered neighbors."
+                },
+                "humid_strategy": {
+                    "type": "string",
+                    "default": "directional",
+                    "fa_icon": "fas fa-project-diagram",
+                    "description": "Specify the strategy for umi-deduplication directional vs cluster",
+                    "enum": ["directional", "cluster"]
+                },
+                "umitools_dedup_strategy": {
+                    "type": "string",
+                    "fa_icon": "fas fa-project-diagram",
+                    "description": "Specify the strategy or method for umi-tools deduplication on mapping level",
+                    "enum": ["directional", "unique", "adjacency", "cluster", "percentile"],
+                    "default": "directional"
+                },
                 "umi_discard_read": {
                     "type": "integer",
                     "default": 0,
-                    "description": "Discard R1 / R2 if required",
-                    "fa_icon": "fas fa-filter"
+                    "fa_icon": "far fa-trash-alt",
+                    "description": "Discard R1 / R2 if required 0, meaning not to discard"
                 },
                 "trim_tool": {
                     "type": "string",
@@ -163,7 +190,6 @@
                 },
                 "skip_host_fastqc": {
                     "type": "boolean",
-                    "default": true,
                     "fa_icon": "fas fa-forward",
                     "description": "Skip the fastqc step after host & contaminants were removed"
                 }

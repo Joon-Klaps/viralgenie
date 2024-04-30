@@ -57,6 +57,10 @@
 
     > Chen, Shifu et al. “fastp: an ultra-fast all-in-one FASTQ preprocessor.” Bioinformatics (Oxford, England) vol. 34,17 (2018): i884-i890. doi:10.1093/bioinformatics/bty560
 
+- [HUMID](https://humid.readthedocs.io/en/latest/usage.html)
+
+    > Laros J, van den Berg R, __Github__ https://github.com/jfjlaros/HUMID
+
 - [iVar](https://www.ncbi.nlm.nih.gov/pubmed/30621750/)
 
     > Grubaugh, Nathan D et al. “An amplicon-based sequencing framework for accurately measuring intrahost virus diversity using PrimalSeq and iVar.” Genome biology vol. 20,1 8. 8 Jan. 2019, doi:10.1186/s13059-018-1618-7

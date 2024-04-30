@@ -16,6 +16,8 @@ By default all analyses are run.
 
 ## Subway map
 
+<!-- can't parse images with snippets -->
 ![viralgenie-workflow](../images/metromap_style_pipeline_workflow_viralgenie.png)
 
 --8<-- "README.md:31:68"
+

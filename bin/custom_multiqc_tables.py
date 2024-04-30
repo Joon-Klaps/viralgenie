@@ -393,6 +393,9 @@ def read_file_to_dataframe(file, **kwargs):
         pandas.DataFrame: The dataframe read from the file.
     """
     file_path = Path(file)
+    if os.path.getsize(file_path) == 0:
+        logger.debug("File is empty %s", file_path)
+        return pd.DataFrame()
     if file_path.suffix in [".tsv", ".txt"]:  # mqc calls tsv's txts
         df = read_dataframe_from_tsv(file_path, **kwargs)
     elif file_path.suffix == ".csv":
@@ -476,6 +479,8 @@ def filter_files_of_interest(multiqc_data, files_of_interest):
         list: Filtered list of file paths.
     """
     file_list = [file for file in multiqc_data if files_of_interest in file.stem]
+    if file_list:
+        logger.debug ("Files of interest found: %s", file_list)
     if len(file_list) > 1:
         logger.warning(
             "Multiple files of interest were found: %s for %s",
@@ -505,16 +510,20 @@ def read_data(directory, file_columns, process_dataframe):
     multiqc_data = [file for file in directory.glob("multiqc_*.txt")]
 
     multiqc_samples_df = pd.DataFrame()
-    for file_name, sub_dic in file_columns.items():
+    for file_name, column_names in file_columns.items():
         files_of_interest = filter_files_of_interest(multiqc_data, file_name)
         if not files_of_interest:
             logger.info(
                 "No files of interest were found for %s in %s", file_name, directory
             )
             continue
-        df = read_dataframe_from_tsv(files_of_interest)
+
+        df = read_file_to_dataframe(files_of_interest)
+        if df.empty:
+            logger.warning("The file %s was empty!", files_of_interest)
+            continue
         df = process_dataframe(df)
-        df = filter_and_rename_columns(df, sub_dic)
+        df = filter_and_rename_columns(df, column_names)
         multiqc_samples_df = join_dataframes(multiqc_samples_df, df)
 
     return multiqc_samples_df
