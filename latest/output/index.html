@@ -18,7 +18,7 @@
       
       
       <link rel="icon" href="../images/ViralGenie-nf-core-theme.png">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.18">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.20">
     
     
       
@@ -2017,7 +2017,7 @@
 <li><code>kaiju/&lt;sample-id&gt;_kaiju.tsv</code>: Raw output from Kaiju with taxonomic rank, read ID and taxonic ID</li>
 <li><code>kraken2/&lt;sample-id&gt;_kraken2_reports.txt</code>: A Kraken2 report that summarises the fraction abundance, taxonomic ID, number of Kmers, taxonomic path of all the hits in the Kraken2 run for a given sample. Will be 6 column rather than 8 if <code>--save_minimizers</code> specified.</li>
 <li><code>kraken2/&lt;sample-id&gt;_kraken2.classifiedreads.txt</code>: A list of read IDs and the hits each read had against the database for a given sample.</li>
-<li><code>merged_classifications/&lt;sample-id&gt;_merged.tsv</code>: Taxonomy merged based on the specified strategy with the columns being taxonomic rank, read ID and taxonic ID.</li>
+<li><code>merged_classifications/&lt;sample-id&gt;.txt</code>: Taxonomy merged based on the specified strategy, filtered based on specified filters and simplified up to a certain taxonomy with the columns being taxonomic rank, read ID and taxonic ID.</li>
 <li><code>sequences/&lt;sample-id&gt;/&lt;sample-id&gt;_taxid&lt;taxonic ID&gt;.fa</code>: Fasta file with the contigs that were classified to that specific taxonomic ID.</li>
 </ul>
 </li>
@@ -2877,7 +2877,7 @@
     <script id="__config" type="application/json">{"base": "..", "features": ["announce.dismiss", "content.action.edit", "content.code.annotate", "content.code.copy", "header.autohide", "navigation.footer", "navigation.instant", "navigation.sections", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.tracking", "search.share", "search.suggest", "toc.follow"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.3220b9d7.min.js"></script>
+      <script src="../assets/javascripts/bundle.dd8806f2.min.js"></script>
       
         <script src="https://unpkg.com/tablesort@5.3.0/dist/tablesort.min.js"></script>
       

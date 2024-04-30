@@ -18,7 +18,7 @@
       
       
       <link rel="icon" href="../images/ViralGenie-nf-core-theme.png">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.18">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.20">
     
     
       
@@ -1284,18 +1284,18 @@
 </thead>
 <tbody>
 <tr>
-<td><code>skip_metagenomic_diversity</code></td>
+<td><code>skip_read_classification</code></td>
 <td>Skip determining the metagenomic diversity of the sample</td>
 <td></td>
 </tr>
 <tr>
-<td><code>save_databases</code></td>
-<td>Save the used databases</td>
-<td></td>
+<td><code>read_classifiers</code></td>
+<td>Specify the taxonomic read classifiers, choices are 'kaiju,kraken2'</td>
+<td>kraken2,kaiju</td>
 </tr>
 <tr>
-<td><code>skip_kraken2</code></td>
-<td>Skip the use of Kraken2 to determine metagenomic diversity</td>
+<td><code>save_databases</code></td>
+<td>Save the used databases</td>
 <td></td>
 </tr>
 <tr>
@@ -1319,19 +1319,9 @@
 <td></td>
 </tr>
 <tr>
-<td><code>skip_bracken</code></td>
-<td>Skip recalculation of taxa abundance using bracken</td>
-<td>True</td>
-</tr>
-<tr>
 <td><code>bracken_db</code></td>
 <td>Location of bracken database</td>
 <td>https://genome-idx.s3.amazonaws.com/kraken/k2_viral_20230314.tar.gz</td>
-</tr>
-<tr>
-<td><code>skip_kaiju</code></td>
-<td>kip the use of Kaiju to determine metagenomic diversity</td>
-<td></td>
 </tr>
 <tr>
 <td><code>kaiju_db</code></td>
@@ -1425,9 +1415,44 @@
 <td>True</td>
 </tr>
 <tr>
-<td><code>taxon_merge_strategy</code></td>
+<td><code>precluster_classifiers</code></td>
+<td>Specify the metagenomic classifiers to use for contig taxonomy classification: 'kraken2,kaiju'</td>
+<td>kraken2,kaiju</td>
+</tr>
+<tr>
+<td><code>precluster_merge_strategy</code></td>
 <td>Taxon conflict resolution mode, must be 1 (Kaiju), 2 (Kraken),  lca, or lowest. <details><summary>Help</summary><small>The option -c determines the method of resolving conflicts in the taxonomic assignment for a read.<br>Possible values are '1', '2', 'lca', 'lowest':<br>  '1' -&gt; the taxon id from Kaiju is used.<br>  '2' -&gt; the taxon id from Kraken is used.<br>  'lca' -&gt; the least common ancestor of the two taxon ids from both input files is used.<br>  'lowest' -&gt; the lower rank of the two taxa is used if they are within the same lineage. Otherwise the LCA is used.</small></details></td>
 <td>lca</td>
+</tr>
+<tr>
+<td><code>precluster_simplification_level</code></td>
+<td>Level of taxonomic simplification <details><summary>Help</summary><small>The taxonomic classification of the contigs can be simplified to a certain level. This can be done by specifying the taxonomic rank to which the classification should be simplified.</small></details></td>
+<td></td>
+</tr>
+<tr>
+<td><code>precluster_exclude_taxa</code></td>
+<td>Hard constrain for taxa to exclude from the preclustering, if multiple given make sure to enclose with '"' and separate with a space. <details><summary>Help</summary><small>The taxonomic classification of the contigs can be filtered. This can be done by specifying a list of taxa that should be excluded from the results.</small></details></td>
+<td></td>
+</tr>
+<tr>
+<td><code>precluster_exclude_children</code></td>
+<td>Taxon ids to exclude along with all their children from the preclustering, if multiple given make sure to enclose with '"' and separate with a space. <details><summary>Help</summary><small>The taxonomic classification of the contigs can be filtered. This can be done by specifying a list of taxa that should be excluded along with all their children from the results.</small></details></td>
+<td></td>
+</tr>
+<tr>
+<td><code>precluster_exclude_parents</code></td>
+<td>Taxon ids to exclude along with all their parents from the preclustering, if multiple given make sure to enclose with '"' and separate with a space. <details><summary>Help</summary><small>The taxonomic classification of the contigs can be filtered. This can be done by specifying a list of taxa that should be excluded along with all their parents from the results.</small></details></td>
+<td></td>
+</tr>
+<tr>
+<td><code>precluster_include_children</code></td>
+<td>Taxon ids to include along with all their children from the preclustering, if multiple given make sure to enclose with '"' and separate with a space. <details><summary>Help</summary><small>The taxonomic classification of the contigs can be filtered. This can be done by specifying a list of taxa that should be included along with all their children from the results.</small></details></td>
+<td></td>
+</tr>
+<tr>
+<td><code>precluster_include_parents</code></td>
+<td>Taxon ids to include along with all their parents from the preclustering, if multiple given make sure to enclose with '"' and separate with a space. <details><summary>Help</summary><small>The taxonomic classification of the contigs can be filtered. This can be done by specifying a list of taxa that should be included along with all their parents from the results.</small></details></td>
+<td></td>
 </tr>
 <tr>
 <td><code>cluster_method</code></td>
@@ -1461,7 +1486,7 @@
 </tr>
 <tr>
 <td><code>max_n_perc</code></td>
-<td></td>
+<td>Define the maximum percentage of ambiguous bases in a contig</td>
 <td>50</td>
 </tr>
 <tr>
@@ -1552,7 +1577,7 @@
 </tr>
 <tr>
 <td><code>variant_caller</code></td>
-<td></td>
+<td>Define the variant caller to use: 'ivar' or 'bcftools'</td>
 <td>ivar</td>
 </tr>
 <tr>
@@ -1577,7 +1602,7 @@
 </tr>
 <tr>
 <td><code>min_mapped_reads</code></td>
-<td></td>
+<td>Define the minimum number of mapped reads in order to continue the variant and consensus calling</td>
 <td>200</td>
 </tr>
 <tr>
@@ -2081,7 +2106,7 @@
     <script id="__config" type="application/json">{"base": "..", "features": ["announce.dismiss", "content.action.edit", "content.code.annotate", "content.code.copy", "header.autohide", "navigation.footer", "navigation.instant", "navigation.sections", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.tracking", "search.share", "search.suggest", "toc.follow"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.3220b9d7.min.js"></script>
+      <script src="../assets/javascripts/bundle.dd8806f2.min.js"></script>
       
         <script src="https://unpkg.com/tablesort@5.3.0/dist/tablesort.min.js"></script>
       

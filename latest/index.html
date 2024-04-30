@@ -18,7 +18,7 @@
       
       
       <link rel="icon" href="images/ViralGenie-nf-core-theme.png">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.18">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.20">
     
     
       
@@ -914,6 +914,7 @@
 <li>Metagenomic diveristy mapping<ul>
 <li>Performs taxonomic classification and/or profiling using one or more of:<ul>
 <li><a href="https://ccb.jhu.edu/software/kraken2/"><code>Kraken2</code></a></li>
+<li><a href="https://ccb.jhu.edu/software/bracken/"><code>Bracken</code></a>[optional]</li>
 <li><a href="https://kaiju.binf.ku.dk/"><code>Kaiju</code></a></li>
 </ul>
 </li>
@@ -927,8 +928,8 @@
 </ul>
 </li>
 <li>[Optional] Precluster contigs based on taxonomy<ul>
-<li>Identify taxonomy <a href="https://ccb.jhu.edu/software/kraken2/"><code>Kraken2</code></a> and <a href="https://kaiju.binf.ku.dk/"><code>Kaiju</code></a></li>
-<li>Resolve potential incosistencies in taxonomy <a href="https://kaiju.binf.ku.dk/"><code>Kaiju-mergeOutputs</code></a></li>
+<li>Identify taxonomy <a href="https://ccb.jhu.edu/software/kraken2/"><code>Kraken2</code></a> and\or <a href="https://kaiju.binf.ku.dk/"><code>Kaiju</code></a></li>
+<li>Resolve potential inconsistencies in taxonomy &amp; taxon filtering | simplification <code>bin/extract_precluster.py</code></li>
 </ul>
 </li>
 <li>Cluster contigs (or every taxonomic bin) of samples, options are:<ul>
@@ -941,7 +942,7 @@
 </ul>
 </li>
 <li>Scaffolding of contigs to centroid (<a href="https://github.com/lh3/minimap2"><code>Minimap2</code></a>, <a href="https://andersen-lab.github.io/ivar/html/manualpage.html"><code>iVar-consensus</code></a>)</li>
-<li>[Optional] Annotate 0-depth regions with external reference <code>custom-script</code>.</li>
+<li>[Optional] Annotate 0-depth regions with external reference <code>bin/lowcov_to_reference.py</code>.</li>
 <li>[Optional] Select best reference from <code>--mapping_constrains</code>:<ul>
 <li><a href="https://github.com/marbl/Mash"><code>Mash sketch</code></a></li>
 <li><a href="https://github.com/marbl/Mash"><code>Mash screen</code></a></li>
@@ -1224,7 +1225,7 @@ For further information or help, don't hesitate to get in touch on the [Slack `#
     <script id="__config" type="application/json">{"base": ".", "features": ["announce.dismiss", "content.action.edit", "content.code.annotate", "content.code.copy", "header.autohide", "navigation.footer", "navigation.instant", "navigation.sections", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.tracking", "search.share", "search.suggest", "toc.follow"], "search": "assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="assets/javascripts/bundle.3220b9d7.min.js"></script>
+      <script src="assets/javascripts/bundle.dd8806f2.min.js"></script>
       
         <script src="https://unpkg.com/tablesort@5.3.0/dist/tablesort.min.js"></script>
       

@@ -18,7 +18,7 @@
       
       
       <link rel="icon" href="../../images/ViralGenie-nf-core-theme.png">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.18">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.20">
     
     
       
@@ -1067,7 +1067,7 @@
 <h1 id="assembly-polishing">Assembly &amp; polishing</h1>
 <p>Viralgenie offers an elaborate workflow for the assembly and polishing of viral genomes:</p>
 <ul>
-<li><a href="#assembly">Assembly</a>: combining the results of multiple assemblers.</li>
+<li><a href="#de-novo-assembly">Assembly</a>: combining the results of multiple assemblers.</li>
 <li><a href="#reference-matching">Reference Matching</a>: comparing the newly assembled contigs to a reference sequence pool.</li>
 <li><a href="#clustering">Clustering</a>: clustering the contigs based on taxonomy and similarity.</li>
 <li><a href="#scaffolding">Scaffolding</a>: scaffolding the contigs to the centroid of each bin.</li>
@@ -1100,32 +1100,64 @@
 - Kraken2: viral refseq database, <code>--kraken2_db</code>
 - Kaiju: clustered <a href="https://rvdb.dbi.udel.edu/">RVDB</a>, <code>--kaiju_db</code></p>
 </blockquote>
-<div class="admonition tip">
-<p class="admonition-title">Tip</p>
-<p>Sometimes large metagenomic datasets, could still contain a large number of contigs that are not viral in origin and are 'unclassified' despite having accurate databases. These contigs can be removed with the <code>--keep_unclassified false</code> argument.</p>
-</div>
-<p>As Kajiu and Kraken2 can have different taxonomic assignments, an additional step is performed to resolve potential inconsistencies in taxonomy and to identify the taxonomy of the contigs. The pre-clustering step is performed with <a href="https://kaiju.binf.ku.dk/">Kaiju-mergeOutputs</a>.</p>
-<div class="admonition tip">
-<p class="admonition-title">Tip</p>
-<p>Specify the strategy to resolve inconsistencies with <code>--taxon_merge_strategy</code> options:</p>
+<p>As Kajiu and Kraken2 can have different taxonomic assignments, an additional step is performed to resolve potential inconsistencies in taxonomy and to identify the taxonomy of the contigs. This is done with a custom script that is based on <code>KrakenTools extract_kraken_reads.py</code> and <code>kaiju-Merge-Outputs</code>.</p>
+<pre class="mermaid"><code>graph LR;
+    A[Contigs] --&gt; B["`**Kraken2**`"];
+    A --&gt; C["`**Kaiju**`"];
+    B --&gt; D[Taxon merge resolving];
+    C --&gt; D;
+    D --&gt; E["Taxon filtering"];
+    E --&gt; F["Taxon simplification"];</code></pre>
+<div class="admonition tip annotate">
+<p class="admonition-title">Having very complex metagenomes</p>
+<p>The pre-clustering step can be used to simplify the taxonomy of the contigs, let <a href="https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi">NCBI's taxonomy browser</a> help you identify taxon-id's for simplification. The simplification can be done in several ways:</p>
 <ul>
-<li><em>'1'</em> the taxon id from Kaiju is used.</li>
-<li><em>'2'</em> the taxon id from Kraken is used.</li>
-<li><em>'lca'</em> the least common ancestor of the two taxon ids from both input files is used.</li>
-<li><em>'lowest'</em> the lower rank of the two taxa is used if they are within the same lineage. Otherwise the LCA is used.</li>
+<li>Make sure your contamination database is up to date and removes the relevant taxa.</li>
+<li>Exclude unclassified contigs with <code>--keep_unclassified false</code> parameter.</li>
+<li>Simplify the taxonomy of the contigs to a higher rank using <code>--precluster_simplify_taxa</code> parameter (1).</li>
+<li>Specify the taxa to include or exclude with <code>--precluster_include_children</code>(2), <code>--precluster_include_parents</code>(3), <code>--precluster_exclude_children</code>, <code>--precluster_exclude_parents</code>, <code>--precluster_exclude_taxa</code> parameters.</li>
 </ul>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Providing lists to nextflow is done by encapsulating values with <code>"</code> and separating them with a space. For example: <code>--precluster_exclude_taxa "taxon1 taxon2 taxon3"</code>.</p>
 </div>
+</div>
+<ol>
+<li>
+<p>Options here are 'species', 'genus', 'family', 'order', 'class', 'phylum', 'kingdom' or 'superkingdom'.</p>
+</li>
+<li>
+<p><code>--precluster_include_childeren</code><strong>"genus1"</strong> :</p>
+<pre class="mermaid"><code>graph TD;
+    A[family] -.- B["genus1 (included)"];
+    A -.- C[genus2];
+    B --- D[species1];
+    B --- E[species2];
+    C -.- F[species3];</code></pre>
+</li>
+<li>
+<p><code>--precluster_include_parents</code> <strong>"species3"</strong> :</p>
+<pre class="mermaid"><code>graph TD;
+    A["family (included)"] -.- B["genus1"]
+    A --- C[genus2]
+    B -.- D[species1]
+    B -.- E[species2]
+    C --- F[species3]</code></pre>
+</li>
+</ol>
 <blockquote>
-<p>The pre-clustering step will be run by default but can be skipped with the argument <code>--skip_preclustering</code>.</p>
+<p>The pre-clustering step will be run by default but can be skipped with the argument <code>--skip_preclustering</code>. Specify which classifier to use with <code>--precluster_classifiers</code> parameter. The default is <code>kaiju,kraken2</code>. Contig taxon filtering is still enabled despite not having to solve for inconsistencies if only Kaiju or Kraken2 is ran.</p>
 </blockquote>
 <h3 id="actual-clustering">Actual clustering</h3>
-<p>The clustering is performed with one of the following tools:
-    - <a href="https://sites.google.com/view/cd-hit"><code>cdhitest</code></a>
-    - <a href="https://github.com/torognes/vsearch/wiki/Clustering"><code>vsearch</code></a>
-    - <a href="https://github.com/soedinglab/MMseqs2/wiki#linear-time-clustering-using-mmseqs-linclust"><code>mmseqs-linclust</code></a>
-    - <a href="https://github.com/soedinglab/MMseqs2/wiki#cascaded-clustering"><code>mmseqs-cluster</code></a>
-    - <a href="https://github.com/AnantharamanLab/vRhyme"><code>vRhyme</code></a>
-    - <a href="https://github.com/marbl/Mash"><code>mash</code></a></p>
+<p>The clustering is performed with one of the following tools:</p>
+<ul>
+<li><a href="https://sites.google.com/view/cd-hit"><code>cdhitest</code></a></li>
+<li><a href="https://github.com/torognes/vsearch/wiki/Clustering"><code>vsearch</code></a></li>
+<li><a href="https://github.com/soedinglab/MMseqs2/wiki#linear-time-clustering-using-mmseqs-linclust"><code>mmseqs-linclust</code></a></li>
+<li><a href="https://github.com/soedinglab/MMseqs2/wiki#cascaded-clustering"><code>mmseqs-cluster</code></a></li>
+<li><a href="https://github.com/AnantharamanLab/vRhyme"><code>vRhyme</code></a></li>
+<li><a href="https://github.com/marbl/Mash"><code>mash</code></a></li>
+</ul>
 <p>These methods all come with their own advantages and disadvantages. For example, cdhitest is very fast but cannot be used for large viruses &gt;10Mb and similarity threshold cannot go below 80% which is not preferable for highly diverse RNA viruses. Vsearch is slower but accurate. Mmseqs-linclust is the fastest but tends to create a large amount of bins. Mmseqs-cluster is slower but can handle larger datasets and is more accurate. vRhyme is a new method that is still under development but has shown promising results but can sometimes not output any bins when segments are small. Mash is a very fast comparison method is linked with a custom script that identifies communities within a network.</p>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
@@ -1380,7 +1412,7 @@
     <script id="__config" type="application/json">{"base": "../..", "features": ["announce.dismiss", "content.action.edit", "content.code.annotate", "content.code.copy", "header.autohide", "navigation.footer", "navigation.instant", "navigation.sections", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.tracking", "search.share", "search.suggest", "toc.follow"], "search": "../../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.3220b9d7.min.js"></script>
+      <script src="../../assets/javascripts/bundle.dd8806f2.min.js"></script>
       
         <script src="https://unpkg.com/tablesort@5.3.0/dist/tablesort.min.js"></script>
       
