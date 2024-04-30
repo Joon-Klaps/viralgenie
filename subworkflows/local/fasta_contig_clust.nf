@@ -6,11 +6,12 @@ include { EXTRACT_CLUSTER         } from '../../modules/local/extract_cluster/ma
 workflow FASTA_CONTIG_CLUST {
 
     take:
-    fasta_fastq     // channel: [ val(meta), [ fasta ],  [ fastq ] ]
-    blast_db        // channel: [ val(meta), path(db) ]
-    blast_db_fasta  // channel: [ val(meta), path(fasta) ]
-    kraken2_db      // channel: [ val(meta), path(db) ]
-    kaiju_db        // channel: [ val(meta), path(db) ]
+    fasta_fastq        // channel: [ val(meta), [ fasta ],  [ fastq ] ]
+    blast_db           // channel: [ val(meta), path(db) ]
+    blast_db_fasta     // channel: [ val(meta), path(fasta) ]
+    contig_classifiers // value:   [ kaiju, kraken2 ]
+    kraken2_db         // channel: [ val(meta), path(db) ]
+    kaiju_db           // channel: [ val(meta), path(db) ]
 
     main:
     ch_versions = Channel.empty()
@@ -36,6 +37,7 @@ workflow FASTA_CONTIG_CLUST {
     if (!params.skip_precluster) {
         FASTA_CONTIG_PRECLUST (
             ch_contigs_reads,
+            contig_classifiers,
             kaiju_db,
             kraken2_db
         )

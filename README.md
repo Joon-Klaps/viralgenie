@@ -37,6 +37,7 @@
 3. Metagenomic diveristy mapping
     - Performs taxonomic classification and/or profiling using one or more of:
         - [`Kraken2`](https://ccb.jhu.edu/software/kraken2/)
+        - [`Bracken`](https://ccb.jhu.edu/software/bracken/)[optional]
         - [`Kaiju`](https://kaiju.binf.ku.dk/)
     - Plotting Kraken2 and Kaiju ([`Krona`](https://hpc.nih.gov/apps/kronatools.html))
 4. Denovo assembly ([`SPAdes`](http://cab.spbu.ru/software/spades/), [`TRINITY`](https://github.com/trinityrnaseq/trinityrnaseq), [`megahit`](https://github.com/voutcn/megahit)), combine contigs.
@@ -44,8 +45,8 @@
     -   Identify top 5 blast hits
     -   Merge blast hit and all contigs of a sample
 6. [Optional] Precluster contigs based on taxonomy
-    - Identify taxonomy [`Kraken2`](https://ccb.jhu.edu/software/kraken2/) and [`Kaiju`](https://kaiju.binf.ku.dk/)
-    - Resolve potential incosistencies in taxonomy [`Kaiju-mergeOutputs`](https://kaiju.binf.ku.dk/)
+    - Identify taxonomy [`Kraken2`](https://ccb.jhu.edu/software/kraken2/) and\or [`Kaiju`](https://kaiju.binf.ku.dk/)
+    - Resolve potential inconsistencies in taxonomy & taxon filtering | simplification `bin/extract_precluster.py`
 7. Cluster contigs (or every taxonomic bin) of samples, options are:
     - [`cdhitest`](https://sites.google.com/view/cd-hit)
     - [`vsearch`](https://github.com/torognes/vsearch/wiki/Clustering)
@@ -54,7 +55,7 @@
     - [`vRhyme`](https://github.com/AnantharamanLab/vRhyme)
     - [`Mash`](https://github.com/marbl/Mash)
 8. Scaffolding of contigs to centroid ([`Minimap2`](https://github.com/lh3/minimap2), [`iVar-consensus`](https://andersen-lab.github.io/ivar/html/manualpage.html))
-9. [Optional] Annotate 0-depth regions with external reference `custom-script`.
+9. [Optional] Annotate 0-depth regions with external reference `bin/lowcov_to_reference.py`.
 10. [Optional] Select best reference from `--mapping_constrains`:
     - [`Mash sketch`](https://github.com/marbl/Mash)
     - [`Mash screen`](https://github.com/marbl/Mash)

@@ -11,7 +11,7 @@ Viralgenie takes in a set of reads and performs 5 major analyses, each of them a
 By default all analyses are run.
 
 !!! Tip "Skipping steps"
-    All steps can be skipped and the pipeline can be run with only the desired steps. This can be done with the `--skip_preprocessing`, `--skip_metagenomic_diversity`, `--skip_assembly`, `--skip_polishing`, `--skip_variant_analysis`, `--skip_iterative_refinement`, `--skip_consensus_qc` flags.
+    All steps can be skipped and the pipeline can be run with only the desired steps. This can be done with the `--skip_preprocessing`, `--skip_read_classification`, `--skip_assembly`, `--skip_polishing`, `--skip_variant_analysis`, `--skip_iterative_refinement`, `--skip_consensus_qc` flags.
 
 
 ## Subway map
@@ -19,4 +19,5 @@ By default all analyses are run.
 <!-- can't parse images with snippets -->
 ![viralgenie-workflow](../images/metromap_style_pipeline_workflow_viralgenie.png)
 
---8<-- "README.md:31:67"
+--8<-- "README.md:31:68"
+

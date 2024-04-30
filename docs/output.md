@@ -224,7 +224,7 @@ By default, viralgenie will only provide the BLAST results in a tabular format. 
         - `kaiju/<sample-id>_kaiju.tsv`: Raw output from Kaiju with taxonomic rank, read ID and taxonic ID
         - `kraken2/<sample-id>_kraken2_reports.txt`: A Kraken2 report that summarises the fraction abundance, taxonomic ID, number of Kmers, taxonomic path of all the hits in the Kraken2 run for a given sample. Will be 6 column rather than 8 if `--save_minimizers` specified.
         - `kraken2/<sample-id>_kraken2.classifiedreads.txt`: A list of read IDs and the hits each read had against the database for a given sample.
-        - `merged_classifications/<sample-id>_merged.tsv`: Taxonomy merged based on the specified strategy with the columns being taxonomic rank, read ID and taxonic ID.
+        - `merged_classifications/<sample-id>.txt`: Taxonomy merged based on the specified strategy, filtered based on specified filters and simplified up to a certain taxonomy with the columns being taxonomic rank, read ID and taxonic ID.
         - `sequences/<sample-id>/<sample-id>_taxid<taxonic ID>.fa`: Fasta file with the contigs that were classified to that specific taxonomic ID.
 
 > By default viralgenie will not provide any preclustering file. The intermediate files can be saved by specifying `--save_intermediate_polishing`.
