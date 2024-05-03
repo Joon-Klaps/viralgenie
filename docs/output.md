@@ -58,6 +58,23 @@ By default viralgenie will only provide the report and log files if fastp is sel
 
 By default viralgenie will only provide the report and log files if Trimmomatic is selected. The trimmed reads can be saved by specifying `--save_intermediate_reads` or `--save_final_reads 'trimming'`.
 
+### UMI-deduplication
+
+UMI-deduplication can be done at the read level using [`HUMID`](https://humid.readthedocs.io/en/latest/usage.html). Viralgenie also uses provides the opportunity to extract the UMI from the read using [`UMI-tools extract`](https://umi-tools.readthedocs.io/en/latest/QUICK_START.html#step-3--extract-the-umis) if the UMI is not in the header. Results will be stored in the `preprocessing/umi` directory.
+
+???- abstract "Output files"
+
+    - `umi/`
+        - `humid/`
+            - `log/<sample-id>.log`: log file of humid.
+            - `annotated/<sample-id>_annotated_*.fastq.gz`: annotated FastQ files, reads will have their assigned cluster in the read header.
+            - `deduplicated/<sample-id>_deduplicated_*.fastq.gz`: deduplicated FastQ files.
+        - `umitools/`
+            - `log/<sample-id>.log`: log file of umi-tools.
+            - `extracts/<sample-id>.umi_extract*.fastq.gz`: fastq file where UMI's have been removed from the read and moved to the read header.
+
+By default viralgenie will not assume reads have UMI's. To enable this use the parameter `--with_umi`. Specify where UMI deduplication should occur with `--umi_deduplicate` if at a `read` level, on a `mapping` level or `both` at a read and mapping level. The deduplicated reads can be saved by specifying `--save_intermediate_reads` or `--save_final_reads 'deduplication'`.
+
 ### BBDuk
 
 [BBDuk](https://jgi.doe.gov/data-and-tools/software-tools/bbtools/bb-tools-user-guide/bbduk-guide/) stands for Decontamination Using Kmers. BBDuk was developed to combine most common data-quality-related trimming, filtering, and masking operations into a single high-performance tool.
@@ -207,7 +224,7 @@ By default, viralgenie will only provide the BLAST results in a tabular format. 
         - `kaiju/<sample-id>_kaiju.tsv`: Raw output from Kaiju with taxonomic rank, read ID and taxonic ID
         - `kraken2/<sample-id>_kraken2_reports.txt`: A Kraken2 report that summarises the fraction abundance, taxonomic ID, number of Kmers, taxonomic path of all the hits in the Kraken2 run for a given sample. Will be 6 column rather than 8 if `--save_minimizers` specified.
         - `kraken2/<sample-id>_kraken2.classifiedreads.txt`: A list of read IDs and the hits each read had against the database for a given sample.
-        - `merged_classifications/<sample-id>_merged.tsv`: Taxonomy merged based on the specified strategy with the columns being taxonomic rank, read ID and taxonic ID.
+        - `merged_classifications/<sample-id>.txt`: Taxonomy merged based on the specified strategy, filtered based on specified filters and simplified up to a certain taxonomy with the columns being taxonomic rank, read ID and taxonic ID.
         - `sequences/<sample-id>/<sample-id>_taxid<taxonic ID>.fa`: Fasta file with the contigs that were classified to that specific taxonomic ID.
 
 > By default viralgenie will not provide any preclustering file. The intermediate files can be saved by specifying `--save_intermediate_polishing`.
@@ -220,7 +237,6 @@ The output files of each clustering method is directly put in te `assembly/polis
 ???- abstract "Output files"
 
     - `polishing/intermediate/cluster/`
-        - `<sample-id>/<sample-id>_cl#.json`: A json file containign information that is used by viralgenie internally like clusterID, centroid, members, cluster size, if the reference is external or a denovo contig.
         - `<sample-id>/<sample-id>.summary_mqc.tsv`: A tabular file with comments used for [Multiqc](#multiqc) with statistics on the number of identified clusters in a sample
         - `<sample-id>/<sample-id>.clusters.tsv`: A tabular file with metadata on all clusters in a samples. It's the json file of all clusters in a table format.
 

@@ -142,6 +142,11 @@
                         "git_sha": "3a5fef109d113b4997c9822198664ca5f2716208",
                         "installed_by": ["modules"]
                     },
+                    "humid": {
+                        "branch": "master",
+                        "git_sha": "c4174581360d2bc32c08cd39cb6a1d1c82212ff6",
+                        "installed_by": ["modules"]
+                    },
                     "ivar/consensus": {
                         "branch": "master",
                         "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",

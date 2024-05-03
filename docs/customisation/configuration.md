@@ -1,10 +1,10 @@
 # Custom configuration of modules
 
-Within viralgenie, all modules or runned tools can be configured with additional arguments, or these arguments can be modified. This can be done by supplying viralgenie a custom configuration file. This file can be provided to viralgenie using the `-c` Nextflow option.
+Within viralgenie, all modules (tools, eg. `FASTP`, `FASTQC`) can be ran with specific arguments. The pipeline has a default configuration but this can be overwritten by supplying a custom configuration file. This file can be provided to viralgenie using the `-c` Nextflow option.
 
 To see which specific arguments or variables are used for a module or tool, have a look at the [`modules.config` file](https://github.com/Joon-Klaps/viralgenie/blob/dev/conf/modules.config). Here the arguments of a module is specified as followed:
 
-```groovy
+```groovy hl_lines="3-6 9-13"
 withName: IVAR_CONSENSUS {
     ext.args = [
         '-t 0.75',          // frequency to call consensus: 0.75 just the majority rule
@@ -27,7 +27,8 @@ In this example, the `IVAR_CONSENSUS` module is configured with the arguments `-
 
 !!! Tip
     The `ext.args` and `ext.args2` are used to specify the arguments for the tool. If unsure which tools uses which arguments (`ivar:ext.args`and `samtools:ext.args2`), have a look at the nextflow module file directly! For example, at [`modules/nf-core/ivar/consensus.nf`](https://github.com/Joon-Klaps/viralgenie/blob/dev/modules/nf-core/ivar/consensus/main.nf), "$args" and "$args2" are used to specify the arguments for the tools:
-    ```groovy
+    ```groovy hl_lines="5 10"
+
     """
     samtools \\
         mpileup \\
@@ -44,7 +45,7 @@ In this example, the `IVAR_CONSENSUS` module is configured with the arguments `-
     ```
 
 In case we do want to modify the arguments of a module, we can do so by providing a custom configuration file, the easiest way to do this would to then just copy a segment from the modules.config and modify the arguments. This way, none of the other configuration will get lost or modified. For example, setting the minimum depth to call consensus to 5 and the minimum quality score of base to 30 for the `IVAR_CONSENSUS` module:
-```groovy title='custom.config'
+```groovy title='custom.config' hl_lines="5-6 12"
 process {
     withName: IVAR_CONSENSUS {
         ext.args = [

@@ -19,7 +19,7 @@
                     "mimetype": "text/csv",
                     "pattern": "^\\S+\\.csv$",
                     "description": "Path to comma-separated file containing information about the samples in the experiment.",
-                    "help_text": "You will need to create a design file with information about the samples in your experiment before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row. See [usage docs](https://nf-co.re/viralgenie/usage#samplesheet-input).",
+                    "help_text": "You will need to create a design file with information about the samples in your experiment before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row. See [usage docs](https://joon-klaps.github.io/viralgenie/latest/usage/#input).",
                     "fa_icon": "fas fa-file-csv",
                     "schema": "assets/schemas/input.json"
                 },
@@ -82,11 +82,38 @@
                     "fa_icon": "fas fa-forward",
                     "description": "With or without umi extraction"
                 },
+                "umi_deduplicate": {
+                    "type": "string",
+                    "default": "read",
+                    "fa_icon": "fas fa-toolbox",
+                    "description": "Specify at what level UMI deduplication should occur.",
+                    "enum": ["read", "mapping", "both"]
+                },
+                "humid_mismatches": {
+                    "type": "integer",
+                    "default": 1,
+                    "fa_icon": "fas fa-sort-numeric-down",
+                    "description": "Specify the maximum number of mismatches between reads for them to still be considered neighbors."
+                },
+                "humid_strategy": {
+                    "type": "string",
+                    "default": "directional",
+                    "fa_icon": "fas fa-project-diagram",
+                    "description": "Specify the strategy for umi-deduplication directional vs cluster",
+                    "enum": ["directional", "cluster"]
+                },
+                "umitools_dedup_strategy": {
+                    "type": "string",
+                    "fa_icon": "fas fa-project-diagram",
+                    "description": "Specify the strategy or method for umi-tools deduplication on mapping level",
+                    "enum": ["directional", "unique", "adjacency", "cluster", "percentile"],
+                    "default": "directional"
+                },
                 "umi_discard_read": {
                     "type": "integer",
                     "default": 0,
-                    "description": "Discard R1 / R2 if required",
-                    "fa_icon": "fas fa-filter"
+                    "fa_icon": "far fa-trash-alt",
+                    "description": "Discard R1 / R2 if required 0, meaning not to discard"
                 },
                 "trim_tool": {
                     "type": "string",
@@ -163,7 +190,6 @@
                 },
                 "skip_host_fastqc": {
                     "type": "boolean",
-                    "default": true,
                     "fa_icon": "fas fa-forward",
                     "description": "Skip the fastqc step after host & contaminants were removed"
                 }
@@ -176,20 +202,22 @@
             "description": "Parameters used to determine the metagenomic diversity of the sample",
             "default": "",
             "properties": {
-                "skip_metagenomic_diversity": {
+                "skip_read_classification": {
                     "type": "boolean",
                     "fa_icon": "fas fa-forward",
                     "description": "Skip determining the metagenomic diversity of the sample"
+                },
+                "read_classifiers": {
+                    "type": "string",
+                    "default": "kraken2,kaiju",
+                    "fa_icon": "fab fa-gitkraken",
+                    "description": "Specify the taxonomic read classifiers, choices are 'kaiju,kraken2'",
+                    "pattern": "^(kaiju|kraken2|bracken)(?:,(kaiju|kraken2|bracken)){0,2}$"
                 },
                 "save_databases": {
                     "type": "boolean",
                     "fa_icon": "fas fa-cloud-download-alt",
                     "description": "Save the used databases"
-                },
-                "skip_kraken2": {
-                    "type": "boolean",
-                    "fa_icon": "fas fa-forward",
-                    "description": "Skip the use of Kraken2 to determine metagenomic diversity"
                 },
                 "kraken2_db": {
                     "type": "string",
@@ -213,23 +241,12 @@
                     "fa_icon": "fab fa-gitkraken",
                     "description": "Save kraken2's used minimizers"
                 },
-                "skip_bracken": {
-                    "type": "boolean",
-                    "default": true,
-                    "fa_icon": "fas fa-forward",
-                    "description": "Skip recalculation of taxa abundance using bracken"
-                },
                 "bracken_db": {
                     "type": "string",
                     "fa_icon": "fas fa-database",
                     "format": "path",
                     "description": "Location of bracken database",
                     "default": "https://genome-idx.s3.amazonaws.com/kraken/k2_viral_20230314.tar.gz"
-                },
-                "skip_kaiju": {
-                    "type": "boolean",
-                    "fa_icon": "fas fa-forward",
-                    "description": "kip the use of Kaiju to determine metagenomic diversity"
                 },
                 "kaiju_db": {
                     "type": "string",
@@ -264,7 +281,7 @@
                     "default": "spades,trinity,megahit",
                     "fa_icon": "fas fa-bezier-curve",
                     "description": "The specified tools for denovo assembly, multiple options are possible",
-                    "pattern": "^\\S+[(trinity)(spades)(megahit),]+$"
+                    "pattern": "^(trinity|spades|megahit)(?:,(trinity|spades|megahit)){0,2}$"
                 },
                 "spades_mode": {
                     "type": "string",
@@ -338,13 +355,62 @@
                     "description": "Keep the contigs that could not be classified with the taxonomic databases (`kaiju_db` & `kraken2_db`)",
                     "help_text": "Within the preclustering step, all contigs will get a taxonomic classification using the provided databases for the metagenomic tools. In some cases, the number of unclassified contigs, can be very large if the database is restrictive. This will result in large clusters in downstream processing that can take up a lot of resources despite not being a priority in some analyses. So set it to `True` if you want to keep unclassified contigs and set it to `False` if you don't want to keep them. "
                 },
-                "taxon_merge_strategy": {
+                "precluster_classifiers": {
+                    "type": "string",
+                    "default": "kraken2,kaiju",
+                    "fa_icon": "fab fa-gitkraken",
+                    "description": "Specify the metagenomic classifiers to use for contig taxonomy classification: 'kraken2,kaiju'",
+                    "pattern": "^(kaiju|kraken2)(,(kaiju|kraken2))?$"
+                },
+                "precluster_merge_strategy": {
                     "type": "string",
                     "default": "lca",
                     "fa_icon": "far fa-object-ungroup",
                     "description": "Taxon conflict resolution mode, must be 1 (Kaiju), 2 (Kraken),  lca, or lowest.",
                     "help_text": "The option -c determines the method of resolving conflicts in the taxonomic assignment for a read.\nPossible values are '1', '2', 'lca', 'lowest':\n  '1' -> the taxon id from Kaiju is used.\n  '2' -> the taxon id from Kraken is used.\n  'lca' -> the least common ancestor of the two taxon ids from both input files is used.\n  'lowest' -> the lower rank of the two taxa is used if they are within the same lineage. Otherwise the LCA is used.",
                     "enum": ["1", "2", "lca", "lowest"]
+                },
+                "precluster_simplification_level": {
+                    "type": "string",
+                    "description": "Level of taxonomic simplification",
+                    "help_text": "The taxonomic classification of the contigs can be simplified to a certain level. This can be done by specifying the taxonomic rank to which the classification should be simplified.",
+                    "enum": ["species", "genus", "family", "order", "class", "phylum", "kingdom", "superkingdom"],
+                    "fa_icon": "fas fa-compress-alt"
+                },
+                "precluster_exclude_taxa": {
+                    "type": "string",
+                    "fa_icon": "fas fa-filter",
+                    "description": "Hard constrain for taxa to exclude from the preclustering, if multiple given make sure to enclose with '\"' and separate with a space.",
+                    "help_text": "The taxonomic classification of the contigs can be filtered. This can be done by specifying a list of taxa that should be excluded from the results.",
+                    "pattern": "^[\\d +]+$"
+                },
+                "precluster_exclude_children": {
+                    "type": "string",
+                    "fa_icon": "fas fa-filter",
+                    "description": "Taxon ids to exclude along with all their children from the preclustering, if multiple given make sure to enclose with '\"' and separate with a space.",
+                    "help_text": "The taxonomic classification of the contigs can be filtered. This can be done by specifying a list of taxa that should be excluded along with all their children from the results.",
+                    "pattern": "^[\\d +]+$"
+                },
+                "precluster_exclude_parents": {
+                    "type": "string",
+                    "fa_icon": "fas fa-filter",
+                    "description": "Taxon ids to exclude along with all their parents from the preclustering, if multiple given make sure to enclose with '\"' and separate with a space.",
+                    "help_text": "The taxonomic classification of the contigs can be filtered. This can be done by specifying a list of taxa that should be excluded along with all their parents from the results.",
+                    "pattern": "^[\\d +]+$"
+                },
+                "precluster_include_children": {
+                    "type": "string",
+                    "fa_icon": "fas fa-filter",
+                    "description": "Taxon ids to include along with all their children from the preclustering, if multiple given make sure to enclose with '\"' and separate with a space.",
+                    "help_text": "The taxonomic classification of the contigs can be filtered. This can be done by specifying a list of taxa that should be included along with all their children from the results.",
+                    "pattern": "^[\\d +]+$"
+                },
+                "precluster_include_parents": {
+                    "type": "string",
+                    "fa_icon": "fas fa-filter",
+                    "description": "Taxon ids to include along with all their parents from the preclustering, if multiple given make sure to enclose with '\"' and separate with a space.",
+                    "help_text": "The taxonomic classification of the contigs can be filtered. This can be done by specifying a list of taxa that should be included along with all their parents from the results.",
+                    "pattern": "^[\\d +]+$"
                 },
                 "cluster_method": {
                     "type": "string",
@@ -388,7 +454,10 @@
                 "max_n_perc": {
                     "type": "integer",
                     "default": 50,
-                    "fa_icon": "fas fa-expand-alt"
+                    "fa_icon": "fas fa-expand-alt",
+                    "description": "Define the maximum percentage of ambiguous bases in a contig",
+                    "minimum": 0,
+                    "maximum": 100
                 },
                 "skip_singleton_filtering": {
                     "type": "boolean",
@@ -486,7 +555,8 @@
                     "type": "string",
                     "fa_icon": "fas fa-layer-group",
                     "default": "ivar",
-                    "enum": ["ivar", "bcftools"]
+                    "enum": ["ivar", "bcftools"],
+                    "description": "Define the variant caller to use: 'ivar' or 'bcftools'"
                 },
                 "consensus_caller": {
                     "type": "string",
@@ -519,7 +589,9 @@
                 "min_mapped_reads": {
                     "type": "integer",
                     "default": 200,
-                    "fa_icon": "fas fa-align-center"
+                    "fa_icon": "fas fa-align-center",
+                    "description": "Define the minimum number of mapped reads in order to continue the variant and consensus calling",
+                    "minimum": 1
                 },
                 "mapping_stats": {
                     "type": "boolean",

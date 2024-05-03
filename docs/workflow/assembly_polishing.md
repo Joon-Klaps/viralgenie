@@ -3,7 +3,7 @@
 
 Viralgenie offers an elaborate workflow for the assembly and polishing of viral genomes:
 
-- [Assembly](#assembly): combining the results of multiple assemblers.
+- [Assembly](#de-novo-assembly): combining the results of multiple assemblers.
 - [Reference Matching](#reference-matching): comparing the newly assembled contigs to a reference sequence pool.
 - [Clustering](#clustering): clustering the contigs based on taxonomy and similarity.
 - [Scaffolding](#scaffolding): scaffolding the contigs to the centroid of each bin.
@@ -43,30 +43,64 @@ The contigs along with their references have their taxonomy assigned using [Krak
 > - Kraken2: viral refseq database, `--kraken2_db`
 > - Kaiju: clustered [RVDB](https://rvdb.dbi.udel.edu/), `--kaiju_db`
 
-!!! Tip
-    Sometimes large metagenomic datasets, could still contain a large number of contigs that are not viral in origin and are 'unclassified' despite having accurate databases. These contigs can be removed with the `--keep_unclassified false` argument.
+As Kajiu and Kraken2 can have different taxonomic assignments, an additional step is performed to resolve potential inconsistencies in taxonomy and to identify the taxonomy of the contigs. This is done with a custom script that is based on `KrakenTools extract_kraken_reads.py` and `kaiju-Merge-Outputs`.
 
-As Kajiu and Kraken2 can have different taxonomic assignments, an additional step is performed to resolve potential inconsistencies in taxonomy and to identify the taxonomy of the contigs. The pre-clustering step is performed with [Kaiju-mergeOutputs](https://kaiju.binf.ku.dk/).
+```mermaid
+graph LR;
+    A[Contigs] --> B["`**Kraken2**`"];
+    A --> C["`**Kaiju**`"];
+    B --> D[Taxon merge resolving];
+    C --> D;
+    D --> E["Taxon filtering"];
+    E --> F["Taxon simplification"];
+```
 
-!!! Tip
-    Specify the strategy to resolve inconsistencies with `--taxon_merge_strategy` options:
+!!! Tip annotate "Having very complex metagenomes"
+    The pre-clustering step can be used to simplify the taxonomy of the contigs, let [NCBI's taxonomy browser](https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi) help you identify taxon-id's for simplification. The simplification can be done in several ways:
 
-    - _'1'_ the taxon id from Kaiju is used.
-    - _'2'_ the taxon id from Kraken is used.
-    - _'lca'_ the least common ancestor of the two taxon ids from both input files is used.
-    - _'lowest'_ the lower rank of the two taxa is used if they are within the same lineage. Otherwise the LCA is used.
+    - Make sure your contamination database is up to date and removes the relevant taxa.
+    - Exclude unclassified contigs with `--keep_unclassified false` parameter.
+    - Simplify the taxonomy of the contigs to a higher rank using `--precluster_simplify_taxa` parameter (1).
+    - Specify the taxa to include or exclude with `--precluster_include_children`(2), `--precluster_include_parents`(3), `--precluster_exclude_children`, `--precluster_exclude_parents`, `--precluster_exclude_taxa` parameters.
+    !!! warning
+        Providing lists to nextflow is done by encapsulating values with `"` and separating them with a space. For example: `--precluster_exclude_taxa "taxon1 taxon2 taxon3"`.
 
-> The pre-clustering step will be run by default but can be skipped with the argument `--skip_preclustering`.
+1. Options here are 'species', 'genus', 'family', 'order', 'class', 'phylum', 'kingdom' or 'superkingdom'.
+
+2. `--precluster_include_childeren`__"genus1"__ :
+
+    ```mermaid
+    graph TD;
+        A[family] -.- B["genus1 (included)"];
+        A -.- C[genus2];
+        B --- D[species1];
+        B --- E[species2];
+        C -.- F[species3];
+    ```
+
+3. `--precluster_include_parents` __"species3"__ :
+
+    ```mermaid
+    graph TD;
+        A["family (included)"] -.- B["genus1"]
+        A --- C[genus2]
+        B -.- D[species1]
+        B -.- E[species2]
+        C --- F[species3]
+    ```
+
+> The pre-clustering step will be run by default but can be skipped with the argument `--skip_preclustering`. Specify which classifier to use with `--precluster_classifiers` parameter. The default is `kaiju,kraken2`. Contig taxon filtering is still enabled despite not having to solve for inconsistencies if only Kaiju or Kraken2 is ran.
 
 ### Actual clustering
 
 The clustering is performed with one of the following tools:
-    - [`cdhitest`](https://sites.google.com/view/cd-hit)
-    - [`vsearch`](https://github.com/torognes/vsearch/wiki/Clustering)
-    - [`mmseqs-linclust`](https://github.com/soedinglab/MMseqs2/wiki#linear-time-clustering-using-mmseqs-linclust)
-    - [`mmseqs-cluster`](https://github.com/soedinglab/MMseqs2/wiki#cascaded-clustering)
-    - [`vRhyme`](https://github.com/AnantharamanLab/vRhyme)
-    - [`mash`](https://github.com/marbl/Mash)
+
+- [`cdhitest`](https://sites.google.com/view/cd-hit)
+- [`vsearch`](https://github.com/torognes/vsearch/wiki/Clustering)
+- [`mmseqs-linclust`](https://github.com/soedinglab/MMseqs2/wiki#linear-time-clustering-using-mmseqs-linclust)
+- [`mmseqs-cluster`](https://github.com/soedinglab/MMseqs2/wiki#cascaded-clustering)
+- [`vRhyme`](https://github.com/AnantharamanLab/vRhyme)
+- [`mash`](https://github.com/marbl/Mash)
 
 
 These methods all come with their own advantages and disadvantages. For example, cdhitest is very fast but cannot be used for large viruses >10Mb and similarity threshold cannot go below 80% which is not preferable for highly diverse RNA viruses. Vsearch is slower but accurate. Mmseqs-linclust is the fastest but tends to create a large amount of bins. Mmseqs-cluster is slower but can handle larger datasets and is more accurate. vRhyme is a new method that is still under development but has shown promising results but can sometimes not output any bins when segments are small. Mash is a very fast comparison method is linked with a custom script that identifies communities within a network.

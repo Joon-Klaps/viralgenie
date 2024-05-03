@@ -61,7 +61,7 @@ workflow MAP_READS  {
         ch_bam      = BWA_MEM.out.bam
 
     } else {
-        Nextflow.error ("Unknown mapper: ${mapper}")
+        error ("Unknown mapper: ${mapper}")
     }
 
     emit:

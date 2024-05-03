@@ -17,7 +17,9 @@ def valid_params = [
     spades_modes     : ['rnaviral', 'corona', 'metaviral', 'meta', 'metaplasmid', 'plasmid', 'isolate', 'rna', 'bio']
 ]
 
-def assemblers = params.assemblers ? params.assemblers.split(',').collect{ it.trim().toLowerCase() } : []
+def assemblers         = params.assemblers ? params.assemblers.split(',').collect{ it.trim().toLowerCase() } : []
+def read_classifiers   = params.read_classifiers ? params.read_classifiers.split(',').collect{ it.trim().toLowerCase() } : []
+def contig_classifiers = params.precluster_classifiers ? params.precluster_classifiers.split(',').collect{ it.trim().toLowerCase() } : []
 
 def createFileChannel(param) {
     return param ? Channel.fromPath(param, checkIfExists: true).collect() : []
@@ -49,13 +51,15 @@ ch_contaminants  = createFileChannel(params.contaminants)
 ch_spades_yml    = createFileChannel(params.spades_yml)
 ch_spades_hmm    = createFileChannel(params.spades_hmm)
 ch_constrain_meta = createFileChannel(params.mapping_constrains)
-ch_ref_pool      = (!params.skip_assembly && !params.skip_polishing) || (!params.skip_consensus_qc && !params.skip_blast_qc)           ? createChannel( params.reference_pool, "reference", true )                    : Channel.empty()
-ch_kraken2_db    = (!params.skip_assembly && !params.skip_polishing && !params.skip_precluster) || !params.skip_metagenomic_diversity  ? createChannel( params.kraken2_db, "kraken2", !params.skip_kraken2 )          : Channel.empty()
-ch_kaiju_db      = (!params.skip_assembly && !params.skip_polishing && !params.skip_precluster) || !params.skip_metagenomic_diversity  ? createChannel( params.kaiju_db, "kaiju", !params.skip_kaiju )                : Channel.empty()
-ch_checkv_db     = !params.skip_consensus_qc                                                                                           ? createChannel( params.checkv_db, "checkv", !params.skip_checkv )             : Channel.empty()
-ch_bracken_db    = !params.skip_metagenomic_diversity                                                                                  ? createChannel( params.bracken_db, "bracken", !params.skip_bracken )          : Channel.empty()
-ch_k2_host       = !params.skip_preprocessing                                                                                          ? createChannel( params.host_k2_db, "k2_host", !params.skip_hostremoval )      : Channel.empty()
-ch_annotation_db = !params.skip_consensus_qc                                                                                           ? createChannel( params.annotation_db, "annotation", !params.skip_annotation ) : Channel.empty()
+
+// Databases, we really don't want to stage uncessary databases
+ch_ref_pool      = (!params.skip_assembly && !params.skip_polishing) || (!params.skip_consensus_qc && !params.skip_blast_qc)           ? createChannel( params.reference_pool, "reference", true )                                                         : Channel.empty()
+ch_kraken2_db    = (!params.skip_assembly && !params.skip_polishing && !params.skip_precluster) || !params.skip_read_classification    ? createChannel( params.kraken2_db, "kraken2", ('kraken2' in read_classifiers || 'kraken2' in contig_classifiers) ) : Channel.empty()
+ch_kaiju_db      = (!params.skip_assembly && !params.skip_polishing && !params.skip_precluster) || !params.skip_read_classification    ? createChannel( params.kaiju_db, "kaiju", ('kaiju' in read_classifiers || 'kaiju' in contig_classifiers) )         : Channel.empty()
+ch_checkv_db     = !params.skip_consensus_qc                                                                                           ? createChannel( params.checkv_db, "checkv", !params.skip_checkv )                                                  : Channel.empty()
+ch_bracken_db    = !params.skip_read_classification                                                                                    ? createChannel( params.bracken_db, "bracken", ('bracken' in read_classifiers) )                                    : Channel.empty()
+ch_k2_host       = !params.skip_preprocessing                                                                                          ? createChannel( params.host_k2_db, "k2_host", !params.skip_hostremoval )                                           : Channel.empty()
+ch_annotation_db = !params.skip_consensus_qc                                                                                           ? createChannel( params.annotation_db, "annotation", !params.skip_annotation )                                      : Channel.empty()
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -69,8 +73,6 @@ ch_multiqc_logo                       = params.multiqc_logo   ? Channel.fromPath
 ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
 ch_multiqc_comment_headers            = params.multiqc_comment_headers     ? Channel.fromPath(params.multiqc_comment_headers, checkIfExists:true ) : Channel.empty()
 ch_multiqc_custom_table_headers       = params.custom_table_headers        ? Channel.fromPath(params.custom_table_headers, checkIfExists:true ) : Channel.empty()
-
-
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -143,7 +145,7 @@ workflow VIRALGENIE {
 
     // Prepare Databases
     ch_db = Channel.empty()
-    if ((!params.skip_assembly && !params.skip_polishing) || !params.skip_consensus_qc || !params.skip_metagenomic_diversity || (!params.skip_preprocessing && !params.skip_hostremoval)){
+    if ((!params.skip_assembly && !params.skip_polishing) || !params.skip_consensus_qc || !params.skip_read_classification || (!params.skip_preprocessing && !params.skip_hostremoval)){
 
         ch_db_raw = ch_db.mix(ch_ref_pool,ch_kraken2_db, ch_kaiju_db, ch_checkv_db, ch_bracken_db, ch_k2_host, ch_annotation_db)
         UNPACK_DB (ch_db_raw)
@@ -227,9 +229,10 @@ workflow VIRALGENIE {
 
 
     // Determining metagenomic diversity
-    if (!params.skip_metagenomic_diversity) {
+    if (!params.skip_read_classification) {
         FASTQ_KRAKEN_KAIJU(
             ch_host_trim_reads,
+            read_classifiers,
             ch_kraken2_db,
             ch_bracken_db,
             ch_kaiju_db
@@ -287,6 +290,7 @@ workflow VIRALGENIE {
                 ch_contigs_reads,
                 ch_blast_refdb,
                 ch_ref_pool,
+                contig_classifiers,
                 ch_kraken2_db,
                 ch_kaiju_db
                 )
