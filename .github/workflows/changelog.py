@@ -1,14 +1,11 @@
 """
 Taken from https://github.com/MultiQC/MultiQC/blob/main/.github/workflows/changelog.py and taken from nf-core/tools, updated for viralgenie
-
 To be called by a CI action. Assumes the following environment variables are set:
 PR_TITLE, PR_NUMBER, GITHUB_WORKSPACE.
-
 Adds a line into the CHANGELOG.md:
 * Looks for the section to add the line to, based on the PR title, e.g. `Template:`, `Modules:`.
 * All other change will go under the "### General" section.
 * If an entry for the PR is already added, it will not run.
-
 Other assumptions:
 - CHANGELOG.md has a running section for an ongoing "dev" version
 """
@@ -51,18 +48,18 @@ if any(
 
 def _determine_change_type(pr_title) -> tuple[str, str]:
     """
-    Determine the type of the PR: Template, Download, Linting, Modules, Subworkflows, or General
+    Determine the type of the PR: Enhancement, Fixed, Parameters
     Returns a tuple of the section name and the module info.
     """
     sections = {
-        "Template": "### Template",
-        "Download": "### Download",
-        "Linting": "### Linting",
-        "Modules": "### Modules",
-        "Subworkflows": "### Subworkflows",
+        "Add": "### `Enhancement`",
+        "Fix": "### `Fixed`",
+        "Enhance": "### `Enhancement`",
+        "Param": "### `Parameters`",
+        "Include": "### `Enhancement`",
     }
-    current_section_header = "### General"
-    current_section = "General"
+    current_section_header = "### `Enhancement`"
+    current_section = "Add"
 
     # Check if the PR in any of the sections.
     for section, section_header in sections.items():
@@ -70,15 +67,15 @@ def _determine_change_type(pr_title) -> tuple[str, str]:
         if re.sub(r"s$", "", section.lower().replace("ing", "")) in pr_title.lower():
             current_section_header = section_header
             current_section = section
-    print(f"Detected section: {current_section}")
+    print(f"Detected section: {current_section}, header: {current_section_header}")
     return current_section, current_section_header
 
 
 # Determine the type of the PR
 section, section_header = _determine_change_type(pr_title)
 
-# Remove section indicator from the PR title.
-pr_title = re.sub(rf"{section}[:\s]*", "", pr_title, flags=re.IGNORECASE)
+# # Remove section indicator from the PR title.
+# pr_title = re.sub(rf"{section}[:\s]*", "", pr_title, flags=re.IGNORECASE)
 
 # Prepare the change log entry.
 pr_link = f"([#{pr_number}]({REPO_URL}/pull/{pr_number}))"
@@ -102,7 +99,7 @@ updated_lines: List[str] = []
 
 
 def _skip_existing_entry_for_this_pr(line: str, same_section: bool = True) -> str:
-    if line.strip().endswith(pr_link):
+    if pr_link in line.strip():
         print(f"Found existing entry for this pull request #{pr_number}:")
         existing_lines = [line]
         if new_lines and new_lines == existing_lines and same_section:
