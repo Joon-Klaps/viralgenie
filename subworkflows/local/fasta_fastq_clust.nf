@@ -44,7 +44,8 @@ workflow FASTA_FASTQ_CLUST {
             MMSEQS_LINCLUST ( MMSEQS_CREATEDB.out.db )
             db_cluster  = MMSEQS_LINCLUST.out.db_cluster
             ch_versions = ch_versions.mix(MMSEQS_LINCLUST.out.versions.first())
-        } else {
+        }
+        else {
             MMSEQS_CLUSTER ( MMSEQS_CREATEDB.out.db )
             db_cluster  = MMSEQS_CLUSTER.out.db_cluster
             ch_versions = ch_versions.mix(MMSEQS_CLUSTER.out.versions.first())
@@ -52,7 +53,7 @@ workflow FASTA_FASTQ_CLUST {
 
         createtsv_input = db_cluster
                 .join(MMSEQS_CREATEDB.out.db, by: [0])
-                .multiMap{ [meta, db_cluster, db_in] ->
+                .multiMap{ meta, db_cluster, db_in ->
                     result: [meta, db_cluster]
                     query: [meta, db_in]
                     target: [meta, db_in]

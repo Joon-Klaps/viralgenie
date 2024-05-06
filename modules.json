@@ -380,7 +380,7 @@
                     },
                     "fastq_fastqc_umitools_fastp": {
                         "branch": "master",
-                        "git_sha": "cabcc0dadf8366aa7a9930066a7b3dd90d9825d5",
+                        "git_sha": "e98edb838fb0072c0783139ed16723bbc5d48d23",
                         "installed_by": ["subworkflows"]
                     }
                 }
