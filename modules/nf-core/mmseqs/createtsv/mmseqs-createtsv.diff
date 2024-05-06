@@ -1,37 +1,18 @@
 Changes in module 'nf-core/mmseqs/createtsv'
 --- modules/nf-core/mmseqs/createtsv/main.nf
 +++ modules/nf-core/mmseqs/createtsv/main.nf
-@@ -9,9 +9,7 @@
+@@ -9,9 +9,9 @@
          'biocontainers/mmseqs2:15.6f452--pl5321h6a68c12_0' }"
  
      input:
 -    tuple val(meta), path(db_result)
 -    tuple val(meta2), path(db_query)
 -    tuple val(meta3), path(db_target)
-+    tuple val(meta), path(db_result), path(db_query)
++    tuple val(meta), path(db_result, stageAs: "result_*")
++    tuple val(meta2), path(db_query, stageAs: "query_*")
++    tuple val(meta3), path(db_target, stageAs: "target_*")
  
      output:
      tuple val(meta), path("*.tsv"), emit: tsv
-@@ -24,19 +22,16 @@
-     def args = task.ext.args ?: ''
-     def args2 = task.ext.args ?: "*.dbtype"
-     def args3 = task.ext.args ?: "*.dbtype"
--    def args4 = task.ext.args ?: "*.dbtype"
-     def prefix = task.ext.prefix ?: "${meta.id}"
--    db_target = db_target ?: "${db_query}" // optional argument db_target as in many cases, it's the same as db_query
-     """
-     # Extract files with specified args based suffix | remove suffix | isolate longest common substring of files
-     DB_RESULT_PATH_NAME=\$(find -L "$db_result/" -maxdepth 1 -name "$args2" | sed 's/\\.[^.]*\$//' | sed -e 'N;s/^\\(.*\\).*\\n\\1.*\$/\\1\\n\\1/;D' )
-     DB_QUERY_PATH_NAME=\$(find -L "$db_query/" -maxdepth 1 -name "$args3" | sed 's/\\.[^.]*\$//' | sed -e 'N;s/^\\(.*\\).*\\n\\1.*\$/\\1\\n\\1/;D' )
--    DB_TARGET_PATH_NAME=\$(find -L "$db_target/" -maxdepth 1 -name "$args4" | sed 's/\\.[^.]*\$//' | sed -e 'N;s/^\\(.*\\).*\\n\\1.*\$/\\1\\n\\1/;D' )
- 
-     mmseqs \\
-         createtsv \\
-         \$DB_QUERY_PATH_NAME \\
--        \$DB_TARGET_PATH_NAME \\
-+        \$DB_QUERY_PATH_NAME \\
-         \$DB_RESULT_PATH_NAME \\
-         ${prefix}.tsv \\
-         $args \\
 
 ************************************************************
