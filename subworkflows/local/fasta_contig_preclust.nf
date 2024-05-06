@@ -1,6 +1,5 @@
 include { KAIJU_KAIJU     as KAIJU_CONTIG      } from '../../modules/nf-core/kaiju/kaiju/main'
 include { KRAKEN2_KRAKEN2 as KRAKEN2_CONTIG    } from '../../modules/nf-core/kraken2/kraken2/main'
-include { KAIJU_MERGEOUTPUTS                   } from '../../modules/local/kaiju/mergeoutputs/main'
 include { EXTRACT_PRECLUSTER                   } from '../../modules/local/extract_precluster/main'
 
 // Classify contigs using kaiju and/or kraken2 and extract their sequences
