@@ -68,7 +68,7 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
     }
 
     // sort bam
-    SAMTOOLS_SORT_DEDUPPED ( ch_dedup_bam )
+    SAMTOOLS_SORT_DEDUPPED ( ch_dedup_bam, [[:],[]] )
     ch_versions = ch_versions.mix(SAMTOOLS_SORT_DEDUPPED.out.versions)
     ch_dedup_bam_sort = SAMTOOLS_SORT_DEDUPPED.out.bam
 

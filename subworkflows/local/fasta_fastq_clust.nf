@@ -42,27 +42,26 @@ workflow FASTA_FASTQ_CLUST {
 
         if (cluster_method == "mmseqs-linclust") {
             MMSEQS_LINCLUST ( MMSEQS_CREATEDB.out.db )
+            db_cluster  = MMSEQS_LINCLUST.out.db_cluster
             ch_versions = ch_versions.mix(MMSEQS_LINCLUST.out.versions.first())
-            MMSEQS_LINCLUST
-                .out
-                .db_cluster
-                .join(MMSEQS_CREATEDB.out.db, by: [0])
-                .set{ mmseqs_cluster } // channel: [ [ meta ], [ db_cluster ], [ db ] ]
         }
         else {
             MMSEQS_CLUSTER ( MMSEQS_CREATEDB.out.db )
+            db_cluster  = MMSEQS_CLUSTER.out.db_cluster
             ch_versions = ch_versions.mix(MMSEQS_CLUSTER.out.versions.first())
-            MMSEQS_CLUSTER
-                .out
-                .db_cluster
-                .join(MMSEQS_CREATEDB.out.db, by: [0])
-                .set{ mmseqs_cluster } // channel: [ [ meta ], [ db_cluster ], [ db ] ]
         }
 
-        MMSEQS_CREATETSV ( mmseqs_cluster )
-        ch_versions = ch_versions.mix(MMSEQS_CREATETSV.out.versions.first())
+        createtsv_input = db_cluster
+                .join(MMSEQS_CREATEDB.out.db, by: [0])
+                .multiMap{ meta, db_cluster, db_in ->
+                    result: [meta, db_cluster]
+                    query: [meta, db_in]
+                    target: [meta, db_in]
+                }
 
+        MMSEQS_CREATETSV (  createtsv_input.result, createtsv_input.query, createtsv_input.target)
         ch_clusters = MMSEQS_CREATETSV.out.tsv
+        ch_versions = ch_versions.mix(MMSEQS_CREATETSV.out.versions.first())
     }
     else if (cluster_method == "vrhyme") {
         VRHYME_VRHYME (fasta_fastq)

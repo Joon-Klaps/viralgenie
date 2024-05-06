@@ -144,6 +144,7 @@ workflow CONSENSUS_QC  {
         CAT_CAT_MMSEQS(
             ch_genomes_collect
         )
+        ch_versions = ch_versions.mix(CAT_CAT_MMSEQS.out.versions)
         // use MMSEQS easy search to find best hits against annotation db
         MMSEQS_ANNOTATE(
             CAT_CAT_MMSEQS.out.file_out,
