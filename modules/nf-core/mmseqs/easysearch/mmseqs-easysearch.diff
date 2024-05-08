@@ -1,0 +1,21 @@
+Changes in module 'nf-core/mmseqs/easysearch'
+--- modules/nf-core/mmseqs/easysearch/main.nf
++++ modules/nf-core/mmseqs/easysearch/main.nf
+@@ -23,6 +23,7 @@
+     def args = task.ext.args ?: ''
+     def args2 = task.ext.args2 ?: "*.dbtype"
+     prefix = task.ext.prefix ?: "${meta.id}"
++    strand_search = args.contains("--search-type 3") ? "--strand 2" : ""
+     """
+     mkdir -p ${prefix}
+ 
+@@ -36,6 +37,7 @@
+         ${prefix}.tsv \\
+         tmp1 \\
+         $args \\
++        $strand_search \\
+         --threads ${task.cpus} \\
+         --compressed 1
+ 
+
+************************************************************

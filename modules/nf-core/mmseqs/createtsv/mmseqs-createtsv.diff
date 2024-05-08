@@ -1,0 +1,18 @@
+Changes in module 'nf-core/mmseqs/createtsv'
+--- modules/nf-core/mmseqs/createtsv/main.nf
++++ modules/nf-core/mmseqs/createtsv/main.nf
+@@ -9,9 +9,9 @@
+         'biocontainers/mmseqs2:15.6f452--pl5321h6a68c12_0' }"
+ 
+     input:
+-    tuple val(meta), path(db_result)
+-    tuple val(meta2), path(db_query)
+-    tuple val(meta3), path(db_target)
++    tuple val(meta), path(db_result, stageAs: "result_*")
++    tuple val(meta2), path(db_query, stageAs: "query_*")
++    tuple val(meta3), path(db_target, stageAs: "target_*")
+ 
+     output:
+     tuple val(meta), path("*.tsv"), emit: tsv
+
+************************************************************

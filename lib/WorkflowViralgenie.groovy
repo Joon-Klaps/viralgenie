@@ -1,40 +1,11 @@
 //
-// This file holds several functions specific to the workflow/viralgenie.nf in the nf-core/viralgenie pipeline
+// This file holds several functions specific to the workflow/viralgenie.nf in the Joon-Klaps/viralgenie pipeline
 //
 
 import nextflow.Nextflow
 import groovy.text.SimpleTemplateEngine
 
 class WorkflowViralgenie {
-
-    //
-    // Check and validate parameters
-    //
-    public static void initialise(params, log) {
-
-        genomeExistsError(params, log)
-        //TODO:
-        // make similar functions for the given databases
-
-
-        // if (!valid_params['trim_tool'].contains(params.trim_tool)) {
-        //     Nextflow.error("Please specify a valid trimming tool: 'fastp' or 'trimmomatic' not ${params.trim_tool}.")
-        // }
-        // //check if all values of assembler are in valid_params.assemblers
-        // if (params.assemblers) {
-        //     for (assembler in params.assemblers.split(',').collect{ it.trim().toLowerCase() }) {
-        //         if (!(assembler in valid_params['assemblers'])) {
-        //             Nextflow.error("${assembler} is not a valid assembler. Please choose from ${valid_params['assemblers'].join(', ')}")
-        //         }
-        //     }
-        // }
-        // if (!valid_params['spades_modes'].contains(params.spades_mode)) {
-        //     Nextflow.error("${params.spades_modes} is not a valid spades mode. Please choose from ${valid_params['spades_mode'].join(', ')}")
-        // }
-        // if (!valid_params['cluster_method'].contains(params.cluster_method)) {
-        //     Nextflow.error("${params.cluster_method} is not a valid cluster mode. Please choose from ${valid_params['cluster_method'].join(', ')}")
-        // }
-    }
 
     //
     // Get workflow summary for MultiQC
@@ -69,7 +40,7 @@ class WorkflowViralgenie {
 
     public static String toolCitationText(params) {
 
-        // TODO Optionally add in-text citation tools to this list.
+        // TODO nf-core: Optionally add in-text citation tools to this list.
         // Can use ternary operators to dynamically construct based conditions, e.g. params["run_xyz"] ? "Tool (Foo et al. 2023)" : "",
         // Uncomment function in methodsDescriptionText to render in MultiQC report
         def citation_text = [
@@ -120,19 +91,5 @@ class WorkflowViralgenie {
         def description_html = engine.createTemplate(methods_text).make(meta)
 
         return description_html
-    }
-
-    //
-    // Exit pipeline if incorrect --genome key provided
-    //
-    private static void genomeExistsError(params, log) {
-        if ( !params.skip_hostremoval && !params.host_genome && !params.genomes.containsKey(params.host_genome)) {
-            def error_string = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-                "  Genome '${params.host_genome}' not found in any config files provided to the pipeline.\n" +
-                "  Currently, the available genome keys are:\n" +
-                "  ${params.genomes.keySet().join(", ")}\n" +
-                "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-            Nextflow.error(error_string)
-        }
     }
 }

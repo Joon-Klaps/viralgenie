@@ -1,27 +1,25 @@
 // modules
-include { BBMAP_BBDUK   } from '../../modules/nf-core/bbmap/bbduk/main'
-include { BOWTIE2_BUILD } from '../../modules/nf-core/bowtie2/build/main'
-include { BOWTIE2_ALIGN } from '../../modules/nf-core/bowtie2/align/main'
 
-// Subworkflows
-// > local
-include { FASTQ_FASTQC_UMITOOLS_TRIMMOMATIC } from './fastq_fastqc_umitools_trimmomatic'
-
-// > nf-core
-include { FASTQ_FASTQC_UMITOOLS_FASTP       } from '../nf-core/fastq_fastqc_umitools_fastp/main'
+include { lowReadSamplesToMultiQC            } from '../../modules/local/functions'
+// include { CALIB                              } from '../../modules/local/calib/main'
+include { HUMID                              } from '../../modules/nf-core/humid/main'
+include { BBMAP_BBDUK                        } from '../../modules/nf-core/bbmap/bbduk/main'
+include { FASTQ_FASTQC_UMITOOLS_TRIMMOMATIC  } from './fastq_fastqc_umitools_trimmomatic'
+include { FASTQ_FASTQC_UMITOOLS_FASTP        } from '../nf-core/fastq_fastqc_umitools_fastp/main'
+include { FASTQ_KRAKEN_HOST_REMOVE           } from './fastq_kraken_host_remove'
 
 workflow PREPROCESSING_ILLUMINA {
 
     take:
     ch_reads                   // channel: [ [ meta ], [ ch_reads ] ]
-    ch_host                    // channel: [ path(host_fasta) ]
-    ch_index                   // channel: [ [ meta ], path(index) ]
+    ch_kraken2_host_db         // channel: [ path(kraken2_host_db) ]
     ch_adapter_fasta           // channel: [ path(adapter_fasta) ]
     ch_contaminants            // channel: [ path(contaminants_fasta) ]
 
     main:
     ch_versions         = Channel.empty()
     ch_multiqc_files    = Channel.empty()
+    trim_read_count     = Channel.empty()
 
     // QC & UMI & Trimming with fastp or trimmomatic
     if (params.trim_tool == 'trimmomatic') {
@@ -36,12 +34,14 @@ workflow PREPROCESSING_ILLUMINA {
             params.save_merged,
             params.min_trimmed_reads
             )
-        ch_versions = ch_versions.mix(FASTQ_FASTQC_UMITOOLS_TRIMMOMATIC.out.versions.first())
+        ch_versions = ch_versions.mix(FASTQ_FASTQC_UMITOOLS_TRIMMOMATIC.out.versions)
 
         ch_multiqc_files = ch_multiqc_files.mix(FASTQ_FASTQC_UMITOOLS_TRIMMOMATIC.out.fastqc_raw_zip)
         ch_multiqc_files = ch_multiqc_files.mix(FASTQ_FASTQC_UMITOOLS_TRIMMOMATIC.out.fastqc_trim_html)
         ch_multiqc_files = ch_multiqc_files.mix(FASTQ_FASTQC_UMITOOLS_TRIMMOMATIC.out.trim_log)
         ch_multiqc_files = ch_multiqc_files.mix(FASTQ_FASTQC_UMITOOLS_TRIMMOMATIC.out.umi_log)
+
+        trim_read_count = trim_read_count.mix(FASTQ_FASTQC_UMITOOLS_TRIMMOMATIC.out.trim_read_count)
 
         ch_reads_trim = FASTQ_FASTQC_UMITOOLS_TRIMMOMATIC.out.reads
     }
@@ -59,12 +59,14 @@ workflow PREPROCESSING_ILLUMINA {
             params.min_trimmed_reads
             )
 
-        ch_versions = ch_versions.mix(FASTQ_FASTQC_UMITOOLS_FASTP.out.versions.first())
+        ch_versions = ch_versions.mix(FASTQ_FASTQC_UMITOOLS_FASTP.out.versions)
 
         ch_multiqc_files = ch_multiqc_files.mix(FASTQ_FASTQC_UMITOOLS_FASTP.out.fastqc_raw_zip)
-        ch_multiqc_files = ch_multiqc_files.mix(FASTQ_FASTQC_UMITOOLS_FASTP.out.fastqc_trim_html)
+        ch_multiqc_files = ch_multiqc_files.mix(FASTQ_FASTQC_UMITOOLS_FASTP.out.fastqc_trim_zip)
         ch_multiqc_files = ch_multiqc_files.mix(FASTQ_FASTQC_UMITOOLS_FASTP.out.trim_json)
         ch_multiqc_files = ch_multiqc_files.mix(FASTQ_FASTQC_UMITOOLS_FASTP.out.umi_log)
+
+        trim_read_count = trim_read_count.mix(FASTQ_FASTQC_UMITOOLS_FASTP.out.trim_read_count)
 
         ch_reads_trim = FASTQ_FASTQC_UMITOOLS_FASTP.out.reads
     }
@@ -72,42 +74,68 @@ workflow PREPROCESSING_ILLUMINA {
         throw new Exception("Unknown trim tool: ${trim_tool}")
     }
 
-    // Decomplexification with BBDuk
-    if (!params.skip_complexity_filtering) {
-        BBMAP_BBDUK ( ch_reads_trim, ch_contaminants )
-        ch_reads_decomplexified = BBMAP_BBDUK.out.reads
-        ch_multiqc_files = BBMAP_BBDUK.out.log
-    } else {
-        ch_reads_decomplexified = ch_reads_trim
+    // Keeping track of failed reads for reporting
+    trim_read_count
+        .filter{meta,num_reads -> num_reads < params.min_trimmed_reads.toLong() }
+        .set { failed_reads }
+
+    // deduplicate UMI's with HUMID
+    if (params.with_umi && ['read', 'both'].contains(params.umi_deduplicate) && params.deduplicate ) {
+        HUMID (
+            ch_reads_trim,
+            [[:],[]]
+        )
+        ch_reads_dedup   = HUMID.out.dedup
+        ch_multiqc_files = ch_multiqc_files.mix(HUMID.out.stats)
+        ch_versions      = ch_versions.mix(HUMID.out.versions)
+    }
+    else {
+        ch_reads_dedup = ch_reads_trim
     }
 
-    // Host removal with Bowtie2
+
+    // Decomplexification with BBDuk
+    if (!params.skip_complexity_filtering) {
+        BBMAP_BBDUK ( ch_reads_dedup, ch_contaminants )
+        ch_reads_decomplexified = BBMAP_BBDUK.out.reads
+        ch_multiqc_files        = ch_multiqc_files.mix(BBMAP_BBDUK.out.log)
+        ch_versions             = ch_versions.mix(BBMAP_BBDUK.out.versions)
+    } else {
+        ch_reads_decomplexified = ch_reads_dedup
+    }
+
+    // Host removal with kraken2
     if (!params.skip_hostremoval){
+        FASTQ_KRAKEN_HOST_REMOVE (
+            ch_reads_decomplexified,
+            ch_kraken2_host_db,
+            params.host_k2_library,
+            params.skip_host_fastqc,
+            params.min_trimmed_reads,
+        )
 
-        // check if index needs to be build
-        if ( !ch_index ) {
-            ch_bowtie2_index = BOWTIE2_BUILD ( [ [], ch_host ] ).index
-            ch_versions      = ch_versions.mix( BOWTIE2_BUILD.out.versions )
-        } else {
-            ch_bowtie2_index = ch_index.first()
-        }
-
-        BOWTIE2_ALIGN ( ch_reads_decomplexified, ch_bowtie2_index, true, false )
-
-        ch_reads_hostremoved   = BOWTIE2_ALIGN.out.fastq
-
-        ch_multiqc_files       = ch_multiqc_files.mix( BOWTIE2_ALIGN.out.log)
-        ch_versions            = ch_versions.mix(BOWTIE2_ALIGN.out.versions)
+        ch_reads_hostremoved   = FASTQ_KRAKEN_HOST_REMOVE.out.reads_hostremoved
+        failed_reads           = failed_reads.mix(FASTQ_KRAKEN_HOST_REMOVE.out.reads_hostremoved_fail)
+        ch_multiqc_files       = ch_multiqc_files.mix( FASTQ_KRAKEN_HOST_REMOVE.out.mqc )
+        ch_versions            = ch_versions.mix( FASTQ_KRAKEN_HOST_REMOVE.out.versions )
 
     } else {
         ch_reads_hostremoved = ch_reads_decomplexified
     }
 
+    //
+    // Create a section that reports failed samples and their read counts
+    //
+    lowReadSamplesToMultiQC(failed_reads, params.min_trimmed_reads)
+        .collectFile(name:'samples_low_reads_mqc.tsv')
+        .set{low_reads_mqc}
+
     emit:
     reads                   = ch_reads_hostremoved            // channel: [ [ meta ], [ reads ] ]
     reads_decomplexified    = ch_reads_decomplexified         // channel: [ [ meta ], [ reads ] ]
     reads_trimmed           = ch_reads_trim                   // channel: [ [ meta ], [ reads ] ]
-    mqc                     = ch_multiqc_files
+    mqc                     = ch_multiqc_files                // channel: [ [ meta ], [ mqc ] ]
+    low_reads_mqc           = low_reads_mqc                   // channel: [ mqc ]
     versions                = ch_versions                     // channel: [ versions.yml ]
 }
 

@@ -1,46 +1,81 @@
-include { BWAMEM2_MEM    } from '../../../modules/nf-core/bwamem2/mem/main'
-include { BWAMEM2_INDEX  } from '../../../modules/nf-core/bwamem2/index/main'
-include { BOWTIE2_ALIGN  } from '../../../modules/nf-core/bowtie2/align/main'
-include { BOWTIE2_INDEX  } from '../../../modules/nf-core/bowtie2/index/main'
+include { BWAMEM2_MEM       } from '../../modules/nf-core/bwamem2/mem/main'
+include { BWAMEM2_INDEX     } from '../../modules/nf-core/bwamem2/index/main'
+include { BOWTIE2_ALIGN     } from '../../modules/nf-core/bowtie2/align/main'
+include { BOWTIE2_BUILD     } from '../../modules/nf-core/bowtie2/build/main'
+include { BWA_MEM           } from '../../modules/nf-core/bwa/mem/main'
+include { BWA_INDEX         } from '../../modules/nf-core/bwa/index/main'
 
 workflow MAP_READS  {
 
     take:
-    reads     // channel: [ val(meta), [ reads ] ]
-    reference // channel: [ val(meta), [ reads ] ]
-    mapper       // val: 'bwamem2' or 'bowtie2'
+    reference_reads     // channel: [ val(meta), [ fasta ], [ reads ] ]
+    mapper              // val: 'bwamem2' or 'bowtie2' or 'bwa'
 
     main:
 
     ch_versions = Channel.empty()
     ch_multiqc  = Channel.empty()
 
+    reads       = reference_reads.map{meta, fasta,fastq -> [ meta, fastq ]}
+    reference   = reference_reads.map{meta, fasta,fastq -> [ meta, fasta ]}
+
     if ( mapper == 'bwamem2' ) {
         BWAMEM2_INDEX ( reference )
         ch_versions = ch_versions.mix(BWAMEM2_INDEX.out.versions.first())
 
-        BWAMEM2_MEM ( reads, BWAMEM2_INDEX.out.bwt, true )
+        bwamem2_input = reference_reads
+            .join(BWAMEM2_INDEX.out.index, by: [0])
+            .multiMap{meta, fasta, fastq, index ->
+                reads: [ meta, fastq]
+                index: [ meta, index ]
+                reference: [ meta, fasta ]
+            }
+
+        BWAMEM2_MEM ( bwamem2_input.reads, bwamem2_input.index, bwamem2_input.reference, true )
         ch_versions = ch_versions.mix(BWAMEM2_MEM.out.versions.first())
+        //no mqc for bwamem2
 
         ch_bam      = BWAMEM2_MEM.out.bam
     }
     else if ( mapper == 'bowtie2' ) {
-        BOWTIE2_INDEX ( reference )
-        ch_versions = ch_versions.mix(BOWTIE2_INDEX.out.versions.first())
+        BOWTIE2_BUILD ( reference )
+        ch_versions = ch_versions.mix(BOWTIE2_BUILD.out.versions.first())
 
-        BOWTIE2_ALIGN ( reads, BOWTIE2_INDEX.out.bt2, true)
+        bowtie2_input = reference_reads
+            .join(BOWTIE2_BUILD.out.index, by: [0])
+            .multiMap{meta, fasta, fastq, index ->
+                reads: [ meta, fastq]
+                index: [ meta, index ]
+                reference: [ meta, fasta ]
+            }
+
+        BOWTIE2_ALIGN ( bowtie2_input.reads, bowtie2_input.index, bowtie2_input.reference, false, true)
         ch_versions = ch_versions.mix(BOWTIE2_ALIGN.out.versions.first())
 
         ch_bam      = BOWTIE2_ALIGN.out.bam
-        ch_multiqc  = ch_multiqc.mix(BOWTIE2_ALIGN.out.log.map{it[1]})
+        ch_multiqc  = ch_multiqc.mix(BOWTIE2_ALIGN.out.log)
+    } else if ( mapper == "bwa") {
+        BWA_INDEX ( reference )
+        ch_versions = ch_versions.mix(BWA_INDEX.out.versions.first())
+
+        reads_index = reads.join(BWA_INDEX.out.index, by: [0])
+        reads_up    = reads_index.map{meta, reads, index -> [ meta, reads ]}
+        index       = reads_index.map{meta, reads, index -> [ meta, index ]}
+
+        BWA_MEM ( reads_up, index, true )
+        ch_versions = ch_versions.mix(BWA_MEM.out.versions.first())
+        //no mqc for bwa
+
+        ch_bam      = BWA_MEM.out.bam
 
     } else {
-        Nextflow.error ("Unknown mapper: ${mapper}")
+        error ("Unknown mapper: ${mapper}")
     }
 
     emit:
     bam      = ch_bam                          // channel: [ val(meta), [ bam ] ]
-    mqc      = ch_multiqc                      // channel: [ val(meta), [ multiqc ] ]
+    ref      = reference                       // channel: [ val(meta), [ fasta ] ]
+    mqc      = ch_multiqc                      // channel: [ multiqc ]
 
     versions = ch_versions                     // channel: [ versions.yml ]
 }
