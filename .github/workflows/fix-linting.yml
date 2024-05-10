@@ -1,35 +1,35 @@
 name: Fix linting from a comment
 on:
   issue_comment:
-    types: [created]
+    types: [created, edited, deleted]
 
 jobs:
-  fix-linting:
+  deploy:
     # Only run if comment is on a PR with the main repo, and if it contains the magic keywords
-    if: >
-      contains(github.event.comment.html_url, '/pull/') &&
-      contains(github.event.comment.body, '@nf-core-bot fix linting') &&
-      github.repository == 'nf-core/viralgenie'
+    if: |
+      github.event.issue.pull_request && (
+        contains(github.event.comment.body, '@Klaps-bot fix linting') ||
+        contains(github.event.comment.body, '@Klaps-bot fix-linting'))
     runs-on: ubuntu-latest
     steps:
-      # Use the @nf-core-bot token to check out so we can push later
+      # Use the @Klaps-bot token to check out so we can push later
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
         with:
-          token: ${{ secrets.nf_core_bot_auth_token }}
+          token: ${{ secrets.KLAPS_BOT_AUTH_TOKEN }}
 
-      # indication that the linting is being fixed
       - name: React on comment
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4
         with:
           comment-id: ${{ github.event.comment.id }}
           reactions: eyes
+          token: ${{ secrets.KLAPS_BOT_AUTH_TOKEN }}
 
       # Action runs on the issue comment, so we don't get the PR by default
       # Use the gh cli to check out the PR
       - name: Checkout Pull Request
         run: gh pr checkout ${{ github.event.issue.number }}
         env:
-          GITHUB_TOKEN: ${{ secrets.nf_core_bot_auth_token }}
+          GITHUB_TOKEN: ${{ secrets.KLAPS_BOT_AUTH_TOKEN }}
 
       # Install and run pre-commit
       - uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5
@@ -51,17 +51,17 @@ jobs:
         with:
           comment-id: ${{ github.event.comment.id }}
           reactions: "+1"
+          token: ${{ secrets.KLAPS_BOT_AUTH_TOKEN }}
 
       - name: Commit & push changes
-        id: commit-and-push
-        if: steps.pre-commit.outcome == 'failure'
+        if: steps.prettier_status.outputs.result == 'fail'
         run: |
-          git config user.email "core@nf-co.re"
-          git config user.name "nf-core-bot"
+          git config user.email "167566642+Klaps-bot@users.noreply.github.com"
+          git config user.name "Klaps-bot"
           git config push.default upstream
           git add .
           git status
-          git commit -m "[automated] Fix code linting"
+          git commit -m "[automated] Fix linting with Prettier"
           git push
 
       - name: react if linting errors were fixed
@@ -71,6 +71,7 @@ jobs:
         with:
           comment-id: ${{ github.event.comment.id }}
           reactions: hooray
+          token: ${{ secrets.KLAPS_BOT_AUTH_TOKEN }}
 
       - name: react if linting errors were not fixed
         if: steps.commit-and-push.outcome == 'failure'
@@ -78,6 +79,7 @@ jobs:
         with:
           comment-id: ${{ github.event.comment.id }}
           reactions: confused
+          token: ${{ secrets.KLAPS_BOT_AUTH_TOKEN }}
 
       - name: react if linting errors were not fixed
         if: steps.commit-and-push.outcome  == 'failure'
@@ -86,4 +88,5 @@ jobs:
           issue-number: ${{ github.event.issue.number }}
           body: |
             @${{ github.actor }} I tried to fix the linting errors, but it didn't work. Please fix them manually.
-            See [CI log](https://github.com/nf-core/viralgenie/actions/runs/${{ github.run_id }}) for more details.
+            See [CI log](https://github.com/Joon-Klaps/viralgenie/actions/runs/${{ github.run_id }}) for more details.
+          token: ${{ secrets.KLAPS_BOT_AUTH_TOKEN }}

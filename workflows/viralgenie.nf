@@ -29,9 +29,6 @@ def createChannel(dbPath, dbName, skipFlag) {
     return dbPath && skipFlag ? Channel.fromPath(dbPath, checkIfExists: true).map { db -> [[id: dbName], db] } : Channel.empty()
 }
 
-// Print parameter summary log to screen
-log.info logo + paramsSummaryLog(workflow) + citation
-
 // TODO nf-core: Add all file path parameters for the pipeline to the list below
 // Check input path parameters to see if they exist
 def checkPathParamList = [
@@ -39,7 +36,6 @@ def checkPathParamList = [
     params.spades_yml,params.spades_hmm
 ]
 for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
-
 
 // Check mandatory parameters
 if (params.input            ) { ch_input = file(params.input)                                      } else { exit 1, 'Input samplesheet not specified!'                              }
