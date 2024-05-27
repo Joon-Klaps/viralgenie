@@ -1,0 +1,7 @@
+name: sspace_basic
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - bioconda::sspace_basic=2.1.1
