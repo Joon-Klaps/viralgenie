@@ -316,6 +316,33 @@
                     "type": "string",
                     "description": "Regex pattern to identify contigs that have been made by the assemblers",
                     "fa_icon": "fab fa-behance"
+                },
+                "skip_sspace_basic": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward",
+                    "description": "Skip the contig extension with sspace_basic"
+                },
+                "read_distance": {
+                    "type": "integer",
+                    "default": 300,
+                    "fa_icon": "fas fa-arrows-alt-h",
+                    "description": "Specify the mean distance between the paired reads",
+                    "minimum": 1
+                },
+                "read_distance_sd": {
+                    "type": "number",
+                    "default": 0.75,
+                    "fa_icon": "fas fa-arrows-alt-h",
+                    "description": "Specify the a deviation of the mean distance that is allowed.",
+                    "minimum": 0.01,
+                    "maximum": 1,
+                    "help_text": "For instance, a mean of 200 and a sd of 0.75. This means that any pair having a distance between 150 and 250 is allowed."
+                },
+                "read_orientation": {
+                    "type": "string",
+                    "default": "FR",
+                    "fa_icon": "fas fa-exchange-alt",
+                    "description": "Specify the read orientation."
                 }
             },
             "fa_icon": "fas fa-bezier-curve"
@@ -644,7 +671,7 @@
                 },
                 "annotation_db": {
                     "type": "string",
-                    "default": "https://viralzone.expasy.org/resources/Virosaurus/2020%5F4/virosaurus90%5Fvertebrate-20200330.fas.gz",
+                    "default": "https://viralzone.expasy.org/resources/Virosaurus/2020_4/virosaurus90_vertebrate-20200330.fas.gz",
                     "fa_icon": "fas fa-database",
                     "description": "Database used for annotation of the cosensus constructs",
                     "help_text": "The metada fields are stored in the fasta comment as `key1:\"value1\"|key2:\"value2\"|...` see docs/databases.md for more information."
