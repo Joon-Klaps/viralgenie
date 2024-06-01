@@ -8,7 +8,7 @@ body:
         Before you post this issue, please check the documentation:
 
         - [nf-core website: troubleshooting](https://nf-co.re/usage/troubleshooting)
-        - [Viralgenie pipeline documentation](https://joon-klaps.github.io/viralgenie/latest/latest/usage)
+        - [Viralgenie pipeline documentation](https://joon-klaps.github.io/viralgenie/latest/usage)
 
   - type: textarea
     id: description
