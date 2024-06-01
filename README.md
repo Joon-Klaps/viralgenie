@@ -18,7 +18,7 @@
 <!-- [![Get help on Slack](http://img.shields.io/badge/slack-nf--core%20%23viralgenie-4A154B?labelColor=000000&logo=slack)](https://nfcore.slack.com/channels/viralgenie)-->
 
 > [!TIP]
-> Make sure to checkout the [viralgenie website](https://joon-klaps.github.io/viralgenie/) for more elaborate documentation!
+> Make sure to checkout the [viralgenie website](https://joon-klaps.github.io/viralgenie/latest/) for more elaborate documentation!
 
 ## Introduction
 
@@ -86,7 +86,7 @@ nextflow run Joon-Klaps/viralgenie \
      Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_;
      see [docs](https://nf-co.re/usage/configuration#custom-configuration-files).
 
-For more details and further functionality, please refer to the [usage documentation](https://github.io/Joon-klaps/viralgenie/usage) and the [parameter documentation](https://github.io/Joon-klaps/viralgenie/parameters).
+For more details and further functionality, please refer to the [usage documentation](https://joon-klaps.github.io/viralgenie/latest/usage) and the [parameter documentation](https://joon-klaps.github.io/viralgenie/latest/parameters).
 
 ## Credits
 
@@ -101,7 +101,7 @@ We thank the following people for their extensive assistance in the development 
 
 ## Contributions and Support
 
-If you would like to contribute to this pipeline, please see the [contributing guidelines](https://github.io/Joon-klaps/viralgenie/CONTRIBUTING).
+If you would like to contribute to this pipeline, please see the [contributing guidelines](https://joon-klaps.github.io/viralgenie/latest/CONTRIBUTING).
 
 <!--
 For further information or help, don't hesitate to get in touch on the [Slack `#viralgenie` channel](https://nfcore.slack.com/channels/viralgenie) (you can join with [this invite](https://nf-co.re/join/slack)).
@@ -111,7 +111,7 @@ For further information or help, don't hesitate to get in touch on the [Slack `#
 
 <!-- TODO: If you use  Joon-Klaps/viralgenie for your analysis, please cite it using the following doi: [10.5281/zenodo.XXXXXX](https://doi.org/10.5281/zenodo.XXXXXX) -->
 
-An extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](https://github.io/Joon-klaps/viralgenie/CITATIONS) file.
+An extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](https://joon-klaps.github.io/viralgenie/latest/CITATIONS) file.
 
 You can cite the `nf-core` publication as follows:
 

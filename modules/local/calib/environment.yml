@@ -1,7 +1,0 @@
-name: calib
-channels:
-  - conda-forge
-  - bioconda
-  - defaults
-dependencies:
-  - bioconda::calib=0.3.4

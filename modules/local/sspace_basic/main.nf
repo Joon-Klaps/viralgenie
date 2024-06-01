@@ -13,10 +13,10 @@ process SSPACE_BASIC {
     tuple val(distance), val(deviation), val(complement)
 
     output:
-    tuple val(meta), path("*.{fa,fasta}"), emit: fasta
+    tuple val(meta), path("*.{fa,fasta}") , emit: fasta
     tuple val(meta), path("*.library.txt"), emit: library
-    tuple val(meta), path("*.dot"), emit: dot
-    path "versions.yml"                  , emit: versions
+    tuple val(meta), path("*.dot")        , optional:true, emit: dot
+    path "versions.yml"                   , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
