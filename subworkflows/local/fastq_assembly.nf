@@ -10,7 +10,7 @@ include { QUAST as QUAST_MEGAHIT    } from '../../modules/nf-core/quast/main'
 include { CAT_CAT as CAT_ASSEMBLERS } from '../../modules/nf-core/cat/cat/main'
 include { SSPACE_BASIC              } from '../../modules/local/sspace_basic/main'
 
-workflow FASTQ_SPADES_TRINITY_MEGAHIT  {
+workflow FASTQ_ASSEMBLY {
 
     take:
     reads           // channel: [ val(meta), [ reads ] ]
@@ -111,6 +111,7 @@ workflow FASTQ_SPADES_TRINITY_MEGAHIT  {
             ch_sspace_input.scaffolds,
             ch_sspace_input.settings
         )
+
     }
 
 
