@@ -4,8 +4,8 @@ process SSPACE_BASIC {
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/sspace_basic:2.1.1--hdfd78af_0':
-        'biocontainers/sspace_basic:2.1.1--hdfd78af_0' }"
+        'https://depot.galaxyproject.org/singularity/sspace_basic:2.1.1--hdfd78af_1':
+        'biocontainers/sspace_basic:2.1.1--hdfd78af_1' }"
 
     input:
     tuple val(meta), path(reads)
