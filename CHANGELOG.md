@@ -9,6 +9,8 @@ Initial release of Joon-Klaps/viralgenie, created with the [nf-core](https://nf-
 
 ### `Enhancement`
 
+- Switch PairwiseAligner by pymuscle5 ([#125](https://github.com/Joon-Klaps/viralgenie/pull/125))
+
 ### `Fixed`
 
 ### `Parameters`
