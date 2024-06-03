@@ -5,8 +5,8 @@ process LOWCOV_TO_REFERENCE {
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/mulled-v2-949aaaddebd054dc6bded102520daff6f0f93ce6:aa2a3707bfa0550fee316844baba7752eaab7802-0':
-        'biocontainers/mulled-v2-949aaaddebd054dc6bded102520daff6f0f93ce6:aa2a3707bfa0550fee316844baba7752eaab7802-0' }"
+        'oras://docker.io/jklaps/viralgenie:4be7b5d404272a48':
+        'docker.io/jklaps/viralgenie:4be7b5d404272a48' }"
 
     input:
     tuple val(meta), path(reference), path(consensus), path(mpileup)
@@ -35,6 +35,7 @@ process LOWCOV_TO_REFERENCE {
         python: \$(python --version | sed 's/Python //g')
         numpy: \$(pip show numpy | grep Version | sed 's/Version: //g')
         biopython: \$(pip show biopython | grep Version | sed 's/Version: //g')
+        pymuscle5: \$
     END_VERSIONS
     """
 

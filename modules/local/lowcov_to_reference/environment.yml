@@ -4,4 +4,7 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - conda-forge::bioframe=0.4.1
+  - conda-forge::cython=3.0.10
+  - conda-forge::biopython=1.83
+  - pip:
+      - git+https://github.com/althonos/pymuscle5

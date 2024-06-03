@@ -2,6 +2,7 @@
 
 import argparse
 import logging
+import pymuscle5
 import sys
 from pathlib import Path
 
@@ -131,20 +132,30 @@ def alignment_replacement(reference_record, consensus_record, regions):
     Returns:
         str: The updated consensus sequence.
     """
-    aligner = Align.PairwiseAligner()
-    aligner.match_score = 1.0
-    aligner.mismatch_score = -2.0
-    aligner.open_gap_score = -7.0
-    aligner.extend_gap_score = -2.0
+    aligner = pymuscle5.Aligner()
+    # aligner.match_score = 1.0
+    # aligner.mismatch_score = -2.0
+    # aligner.open_gap_score = -7.0
+    # aligner.extend_gap_score = -2.0
 
     logger.debug(aligner)
 
     logger.info("> Aligning reference and consensus sequences")
+    sequences = [
+        pymuscle5.Sequence(reference_record.id.encode(), bytes(reference_record.seq)),
+        pymuscle5.Sequence(consensus_record.id.encode(), bytes(consensus_record.seq))
+        ]
     alignments = aligner.align(str(reference_record.seq), str(consensus_record.seq))
     alignment = alignments[0]
 
-    target_locations = alignment.aligned[0] # Reference locations
-    query_locations = alignment.aligned[1]  # Consensus locations
+    target_locations = alignment[0].sequence.decode() # Reference locations
+    query_locations = alignment[1].sequence.decode() # Consensus locations
+
+    # # Assert that the target_locations ID matches the reference_record ID
+    # assert alignment[0].id.decode() == reference_record.id, "Target ID does not match reference record ID"
+
+    # # Assert that the query_locations ID matches the consensus_record ID
+    # assert alignment[1].id.decode() == consensus_record.id, "Query ID does not match consensus record ID"
 
     logger.debug(alignment.aligned)
 
@@ -152,6 +163,7 @@ def alignment_replacement(reference_record, consensus_record, regions):
         f.write(str(alignment))
 
     # Account for the gaps in the alignment, by updating the consensus indexes
+    # Needs to be double checked if the object is a tuple.
     logger.info("> Finding target tuples")
     indexes_differences = find_target_tuples_sorted(regions, target_locations)
 
