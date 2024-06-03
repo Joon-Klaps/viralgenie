@@ -5,8 +5,8 @@ process LOWCOV_TO_REFERENCE {
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'oras://docker.io/jklaps/viralgenie:4be7b5d404272a48':
-        'docker.io/jklaps/viralgenie:4be7b5d404272a48' }"
+        'oras://docker.io/jklaps/viralgenie:d798fb8053c52a91':
+        'docker.io/jklaps/viralgenie:d798fb8053c52a91' }"
 
     input:
     tuple val(meta), path(reference), path(consensus), path(mpileup)
