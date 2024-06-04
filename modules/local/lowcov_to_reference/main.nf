@@ -35,7 +35,6 @@ process LOWCOV_TO_REFERENCE {
         python: \$(python --version | sed 's/Python //g')
         numpy: \$(pip show numpy | grep Version | sed 's/Version: //g')
         biopython: \$(pip show biopython | grep Version | sed 's/Version: //g')
-        pymuscle5: \$
     END_VERSIONS
     """
 
