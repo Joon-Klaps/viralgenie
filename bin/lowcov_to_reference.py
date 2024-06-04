@@ -143,8 +143,8 @@ def alignment_replacement(reference_record, consensus_record, regions):
     alignments = aligner.align(str(reference_record.seq), str(consensus_record.seq))
     alignment = alignments[0]
 
-    target_locations = alignment[0].sequence.decode() # Reference locations
-    query_locations = alignment[1].sequence.decode() # Consensus locations
+    target_locations = alignment.aligned[0] # Reference locations
+    query_locations = alignment.aligned[1]  # Consensus locations
 
     logger.debug(alignment.aligned)
 
