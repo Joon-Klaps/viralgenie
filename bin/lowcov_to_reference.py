@@ -185,6 +185,9 @@ def find_target_tuples_sorted(regions, target_tuple_list):
     target_tuple_index = None
     difference = None
 
+    # Convert NumPy array to a list
+    target_tuple_list = list(target_tuple_list)
+
     for start, end in target_tuple_list:
         while region_index < len(regions) and regions[region_index] <= end:
             region = regions[region_index]
