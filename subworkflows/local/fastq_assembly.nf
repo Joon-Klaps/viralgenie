@@ -112,6 +112,7 @@ workflow FASTQ_ASSEMBLY {
             ch_sspace_input.settings
         )
 
+        ch_scaffolds = SSPACE_BASIC.out.fasta
     }
 
 

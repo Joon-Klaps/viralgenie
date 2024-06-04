@@ -115,6 +115,9 @@
 
     > Bankevich, Anton et al. “SPAdes: a new genome assembly algorithm and its applications to single-cell sequencing.” Journal of computational biology : a journal of computational molecular cell biology vol. 19,5 (2012): 455-77. doi:10.1089/cmb.2012.0021
 
+- [SSPACE Basic](https://pubmed.ncbi.nlm.nih.gov/21149342/)
+
+    > Boetzer, Marten et al. “Scaffolding pre-assembled contigs using SSPACE.” Bioinformatics (Oxford, England) vol. 27,4 (2011): 578-9. doi:10.1093/bioinformatics/btq683
 - [Trimmomatic](https://pubmed.ncbi.nlm.nih.gov/24695404/)
 
     > Bolger, Anthony M et al. “Trimmomatic: a flexible trimmer for Illumina sequence data.” Bioinformatics (Oxford, England) vol. 30,15 (2014): 2114-20. doi:10.1093/bioinformatics/btu170
