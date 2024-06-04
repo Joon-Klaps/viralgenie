@@ -1,12 +1,12 @@
 process LOWCOV_TO_REFERENCE {
     tag "$meta.id"
-    label 'process_single'
+    label 'process_medium'
     errorStrategy { task.exitStatus == 4 ? 'ignore' : 'retry' } // can fail if mpileup empty
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'oras://docker.io/jklaps/viralgenie:d798fb8053c52a91':
-        'docker.io/jklaps/viralgenie:d798fb8053c52a91' }"
+        'https://depot.galaxyproject.org/singularity/biopython:1.81':
+        'biocontainers/biopython:1.81' }"
 
     input:
     tuple val(meta), path(reference), path(consensus), path(mpileup)
