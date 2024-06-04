@@ -5,8 +5,8 @@ process LOWCOV_TO_REFERENCE {
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/biopython:1.81':
-        'biocontainers/biopython:1.81' }"
+        'https://depot.galaxyproject.org/singularity/mulled-v2-949aaaddebd054dc6bded102520daff6f0f93ce6:aa2a3707bfa0550fee316844baba7752eaab7802-0':
+        'biocontainers/mulled-v2-949aaaddebd054dc6bded102520daff6f0f93ce6:aa2a3707bfa0550fee316844baba7752eaab7802-0' }"
 
     input:
     tuple val(meta), path(reference), path(consensus), path(mpileup)
