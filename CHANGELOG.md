@@ -9,6 +9,8 @@ Initial release of Joon-Klaps/viralgenie, created with the [nf-core](https://nf-
 
 ### `Enhancement`
 
+- 119 include sspace cobra for contig extension ([#123](https://github.com/Joon-Klaps/viralgenie/pull/123))
+
 ### `Fixed`
 
 ### `Parameters`

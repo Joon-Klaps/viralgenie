@@ -1,7 +1,7 @@
-name: calib
+name: sspace_basic
 channels:
   - conda-forge
   - bioconda
   - defaults
 dependencies:
-  - bioconda::calib=0.3.4
+  - bioconda::sspace_basic=2.1.1

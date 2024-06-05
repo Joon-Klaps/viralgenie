@@ -8,8 +8,9 @@ include { QUAST as QUAST_TRINITY    } from '../../modules/nf-core/quast/main'
 include { MEGAHIT                   } from '../../modules/nf-core/megahit/main'
 include { QUAST as QUAST_MEGAHIT    } from '../../modules/nf-core/quast/main'
 include { CAT_CAT as CAT_ASSEMBLERS } from '../../modules/nf-core/cat/cat/main'
+include { SSPACE_BASIC              } from '../../modules/local/sspace_basic/main'
 
-workflow FASTQ_SPADES_TRINITY_MEGAHIT  {
+workflow FASTQ_ASSEMBLY {
 
     take:
     reads           // channel: [ val(meta), [ reads ] ]
@@ -91,14 +92,37 @@ workflow FASTQ_SPADES_TRINITY_MEGAHIT  {
         .set{ch_scaffolds_combined}
 
     CAT_ASSEMBLERS(ch_scaffolds_combined)
-    ch_versions = CAT_ASSEMBLERS.out.versions.first()
+    ch_scaffolds = CAT_ASSEMBLERS.out.file_out
+    ch_versions  = CAT_ASSEMBLERS.out.versions.first()
+
+
+    if (!params.skip_sspace_basic){
+        ch_scaffolds
+            .join(reads)
+            .multiMap { meta, scaffolds, reads ->
+                reads : [meta, reads]
+                scaffolds : [meta, scaffolds]
+                settings: [params.read_distance, params.read_distance_sd, params.read_orientation]
+            }
+            .set{ch_sspace_input}
+
+        SSPACE_BASIC(
+            ch_sspace_input.reads,
+            ch_sspace_input.scaffolds,
+            ch_sspace_input.settings
+        )
+
+        ch_scaffolds = SSPACE_BASIC.out.fasta
+    }
+
+
 
 
 
     emit:
-    scaffolds            = CAT_ASSEMBLERS.out.file_out      // channel: [ val(meta), [ scaffolds] ]
-    mqc                  = ch_multiqc                       // channel: [ val(meta), [ mqc ] ]
-    versions             = ch_versions                      // channel: [ versions.yml ]
+    scaffolds            = ch_scaffolds  // channel: [ val(meta), [ scaffolds] ]
+    mqc                  = ch_multiqc    // channel: [ val(meta), [ mqc ] ]
+    versions             = ch_versions   // channel: [ versions.yml ]
     // there are not any MQC files available for spades, trinity and megahit
 }
 

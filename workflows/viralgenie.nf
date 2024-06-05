@@ -83,7 +83,7 @@ include { PREPROCESSING_ILLUMINA          } from '../subworkflows/local/preproce
 include { FASTQ_KRAKEN_KAIJU              } from '../subworkflows/local/fastq_kraken_kaiju'
 
 // Assembly
-include { FASTQ_SPADES_TRINITY_MEGAHIT    } from '../subworkflows/local/fastq_spades_trinity_megahit'
+include { FASTQ_ASSEMBLY    } from '../subworkflows/local/fastq_assembly'
 include { noContigSamplesToMultiQC        } from '../modules/local/functions'
 
 // Consensus polishing of genome
@@ -248,17 +248,17 @@ workflow VIRALGENIE {
 
     if (!params.skip_assembly) {
         // run different assemblers and combine contigs
-        FASTQ_SPADES_TRINITY_MEGAHIT(
+        FASTQ_ASSEMBLY(
             ch_host_trim_reads,
             assemblers,
             ch_spades_yml,
             ch_spades_hmm)
 
-        ch_versions      = ch_versions.mix(FASTQ_SPADES_TRINITY_MEGAHIT.out.versions)
-        ch_multiqc_files = ch_multiqc_files.mix(FASTQ_SPADES_TRINITY_MEGAHIT.out.mqc.collect{it[1]}.ifEmpty([]))
+        ch_versions      = ch_versions.mix(FASTQ_ASSEMBLY.out.versions)
+        ch_multiqc_files = ch_multiqc_files.mix(FASTQ_ASSEMBLY.out.mqc.collect{it[1]}.ifEmpty([]))
 
         // Filter out empty scaffolds
-        FASTQ_SPADES_TRINITY_MEGAHIT
+        FASTQ_ASSEMBLY
             .out
             .scaffolds
             .branch { meta, scaffolds ->
