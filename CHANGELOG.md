@@ -9,6 +9,8 @@ Initial release of Joon-Klaps/viralgenie, created with the [nf-core](https://nf-
 
 ### `Enhancement`
 
+- set default umitools dedup strategy to cluster ([#126](https://github.com/Joon-Klaps/viralgenie/pull/126))
+
 ### `Fixed`
 
 ### `Parameters`
