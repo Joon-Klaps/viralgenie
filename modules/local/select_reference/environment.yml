@@ -1,4 +1,4 @@
-name: blast_filter
+name: select_reference
 channels:
   - conda-forge
   - bioconda

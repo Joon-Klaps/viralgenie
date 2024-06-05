@@ -9,7 +9,8 @@ Initial release of Joon-Klaps/viralgenie, created with the [nf-core](https://nf-
 
 ### `Enhancement`
 
-- set default umitools dedup strategy to cluster ([#126](https://github.com/Joon-Klaps/viralgenie/pull/126))
+- Set default umitools dedup strategy to cluster ([#126](https://github.com/Joon-Klaps/viralgenie/pull/126))
+- Include sspace for contig extension ([#123](https://github.com/Joon-Klaps/viralgenie/pull/123))
 
 ### `Fixed`
 

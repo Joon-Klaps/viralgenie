@@ -386,7 +386,7 @@ def parse_args(argv=None):
         metavar="PATTERN",
         type=str,
         help="Regex pattern to filter clusters by centroid sequence name.",
-        default="^(TRINITY)|(NODE)|(k\d+)",  # Default pattern matches Trinity, SPADes and MEGAHIT assembly names
+        default="^(TRINITY)|(NODE)|(k\d+)|(scaffold\d+)",  # Default pattern matches Trinity, SPADes, MEGAHIT, sspace_basice assembly names
     )
     parser.add_argument(
         "-l",
