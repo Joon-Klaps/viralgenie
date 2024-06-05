@@ -87,38 +87,9 @@ def annotate_ambiguous(reference, consensus, regions, args):
     ID = f"{args.prefix}"
     DESCRIPTION = f"Hybrid construct of the {args.reference} and {args.consensus} sequences where regions with depth lower then {args.minimum_depth} have been replaced"
 
-    # If lengths are the same, then we can use the fast replacement ie no alignment, use mpileup positions
-    # if len(reference) == len(consensus):
-    #     logger.info("> Lengths are the same, using fast replacement")
-    #     seq = fast_replacement(reference, consensus, regions)
-    # FAST REPLACEMENT CAN BE INCORRECT IF THERE ARE AN INSERT AND A DELETION CLOSE TO EACH OTHER
-    # else:
-    #     logger.info(
-    #         f"> Lengths are NOT the same  {args.reference}: {len(reference)} vs. {args.consensus}: {len(consensus)}, using alignment replacement"
-    #     )
     seq = alignment_replacement(reference, consensus, regions)
 
     return SeqRecord(seq=Seq(seq), id=ID, description=DESCRIPTION)
-
-
-# def fast_replacement(reference_record, consensus_record, regions):
-#     """
-#     Annotates ambiguous bases in the consensus sequence with the corresponding bases from the reference sequence.
-
-#     Args:
-#         reference_record (SeqRecord): The reference sequence record.
-#         consensus_record (SeqRecord): The consensus sequence record.
-#         regions (list): A list of indices representing the regions where annotation should be performed.
-
-#     Returns:
-#         string
-#     """
-#     ref_seq = np.array(list(str(reference_record.seq)))
-#     cons_seq = np.array(list(str(consensus_record.seq)))
-
-#     cons_seq[regions] = ref_seq[regions]
-#     return "".join(cons_seq)
-
 
 def alignment_replacement(reference_record, consensus_record, regions):
     """
