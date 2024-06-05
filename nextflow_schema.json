@@ -644,7 +644,7 @@
                 },
                 "annotation_db": {
                     "type": "string",
-                    "default": "https://viralzone.expasy.org/resources/Virosaurus/2020%5F4/virosaurus90%5Fvertebrate-20200330.fas.gz",
+                    "default": "ftp://ftp.expasy.org/databases/viralzone/2020_4/virosaurus90_vertebrate-20200330.fas.gz",
                     "fa_icon": "fas fa-database",
                     "description": "Database used for annotation of the cosensus constructs",
                     "help_text": "The metada fields are stored in the fasta comment as `key1:\"value1\"|key2:\"value2\"|...` see docs/databases.md for more information."
