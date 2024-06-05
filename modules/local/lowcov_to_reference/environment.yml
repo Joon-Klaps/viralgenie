@@ -4,4 +4,4 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - conda-forge::bioframe=0.4.1
+  - conda-forge::biopython=1.81

@@ -87,37 +87,9 @@ def annotate_ambiguous(reference, consensus, regions, args):
     ID = f"{args.prefix}"
     DESCRIPTION = f"Hybrid construct of the {args.reference} and {args.consensus} sequences where regions with depth lower then {args.minimum_depth} have been replaced"
 
-    # If lengths are the same, then we can use the fast replacement ie no alignment, use mpileup positions
-    if len(reference) == len(consensus):
-        logger.info("> Lengths are the same, using fast replacement")
-        seq = fast_replacement(reference, consensus, regions)
-    else:
-        logger.info(
-            f"> Lengths are NOT the same  {args.reference}: {len(reference)} vs. {args.consensus}: {len(consensus)}, using alignment replacement"
-        )
-        seq = alignment_replacement(reference, consensus, regions)
+    seq = alignment_replacement(reference, consensus, regions)
 
     return SeqRecord(seq=Seq(seq), id=ID, description=DESCRIPTION)
-
-
-def fast_replacement(reference_record, consensus_record, regions):
-    """
-    Annotates ambiguous bases in the consensus sequence with the corresponding bases from the reference sequence.
-
-    Args:
-        reference_record (SeqRecord): The reference sequence record.
-        consensus_record (SeqRecord): The consensus sequence record.
-        regions (list): A list of indices representing the regions where annotation should be performed.
-
-    Returns:
-        string
-    """
-    ref_seq = np.array(list(str(reference_record.seq)))
-    cons_seq = np.array(list(str(consensus_record.seq)))
-
-    cons_seq[regions] = ref_seq[regions]
-    return "".join(cons_seq)
-
 
 def alignment_replacement(reference_record, consensus_record, regions):
     """
@@ -146,12 +118,13 @@ def alignment_replacement(reference_record, consensus_record, regions):
     target_locations = alignment.aligned[0] # Reference locations
     query_locations = alignment.aligned[1]  # Consensus locations
 
-    logger.debug(alignment.aligned)
+    logger.debug("ALIGNMENT: %s", alignment.aligned)
 
     with open("alignment.txt", "w") as f:
         f.write(str(alignment))
 
     # Account for the gaps in the alignment, by updating the consensus indexes
+    # Needs to be double checked if the object is a tuple.
     logger.info("> Finding target tuples")
     indexes_differences = find_target_tuples_sorted(regions, target_locations)
 
@@ -167,49 +140,43 @@ def alignment_replacement(reference_record, consensus_record, regions):
     return "".join(cons_seq)
 
 
-def find_target_tuples_sorted(regions, target_tuple_list):
+def find_target_tuples_sorted(regions, target_matrix):
     """
     Finds the target tuples sorted based on the regions.
 
     Args:
-        regions (list): A list of regions.
-        target_tuple_list (list): A list of target tuples.
+        regions (list): A sorted list of regions.
+        target_matrix (matrix): A n x 2 matrix of [[start1,end1], [start2,end2], ...] alignment positions of the target query
 
     Returns:
         list: A list of tuples containing the index of the target tuple and the difference between the region and the start of the target tuple.
     """
     result = []
 
-    region_index = 0
-    target_tuple_index = None
-    difference = None
+    for block_index, (start, end) in enumerate(target_matrix):
+        logger.debug("target_matrix[%s]: start: %s - end: %s", block_index, start, end)
 
-    for start, end in target_tuple_list:
-        while region_index < len(regions) and regions[region_index] <= end:
-            region = regions[region_index]
-
-            if start <= region <= end:
-                # If the region falls within the start and end of the target tuple,
-                # calculate the index of the target tuple and the difference between the region and the start of the target tuple.
-                target_tuple_index = target_tuple_list.index((start, end))
-                difference = region - start
-                result.append((target_tuple_index, difference))
-                region_index += 1
-            elif region < start:
-                # If the region is before the start of the target tuple, move to the next region.
-                region_index += 1
-            else:
-                # If the region is after the end of the target tuple, break the loop.
+        # Iterate through regions while they are less than or equal to the end of the target tuple
+        for region in regions:
+            if region > end:
+                logger.error("Region %s is greater than the end of the target tuple %s", region, end)
+                logger.error("Please report this issue to the developers with your data from the current workdir.")
                 break
+            elif start <= region <= end:
+                # If the region falls within the start and end of the target tuple,
+                # Store the alignment block's index & the difference between the target position and the start alignment block.
+                difference = region - start
+                logger.debug("In alignment block (0-based) %s at postion %s (of that block), the consensus should be updated.", block_index, difference)
+                result.append((block_index, difference))
     return result
 
 
-def update_query_tuple_with_difference(query_tuple_list, results):
+def update_query_tuple_with_difference(query_matrix, results):
     updated_query_tuples = []
 
-    for target_tuple_index, difference in results:
-        if target_tuple_index is not None:
-            query_tuple = query_tuple_list[target_tuple_index]
+    for block_index, difference in results:
+        if block_index is not None:
+            query_tuple = query_matrix[block_index]
             updated_query_tuple = query_tuple[0] + difference
             updated_query_tuples.append(updated_query_tuple)
 
