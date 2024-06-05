@@ -18,7 +18,7 @@
 <!-- [![Get help on Slack](http://img.shields.io/badge/slack-nf--core%20%23viralgenie-4A154B?labelColor=000000&logo=slack)](https://nfcore.slack.com/channels/viralgenie)-->
 
 > [!TIP]
-> Make sure to checkout the [viralgenie website](https://joon-klaps.github.io/viralgenie/) for more elaborate documentation!
+> Make sure to checkout the [viralgenie website](https://joon-klaps.github.io/viralgenie/latest/) for more elaborate documentation!
 
 ## Introduction
 
@@ -41,31 +41,32 @@
         - [`Kaiju`](https://kaiju.binf.ku.dk/)
     - Plotting Kraken2 and Kaiju ([`Krona`](https://hpc.nih.gov/apps/kronatools.html))
 4. Denovo assembly ([`SPAdes`](http://cab.spbu.ru/software/spades/), [`TRINITY`](https://github.com/trinityrnaseq/trinityrnaseq), [`megahit`](https://github.com/voutcn/megahit)), combine contigs.
-5. Contig reference idententification ([`blastn`](https://blast.ncbi.nlm.nih.gov/Blast.cgi?PAGE_TYPE=BlastSearch))
+5. [Optional] extend the contigs with [sspace_basic](https://github.com/nsoranzo/sspace_basic)
+6. Contig reference idententification ([`blastn`](https://blast.ncbi.nlm.nih.gov/Blast.cgi?PAGE_TYPE=BlastSearch))
     -   Identify top 5 blast hits
     -   Merge blast hit and all contigs of a sample
-6. [Optional] Precluster contigs based on taxonomy
+7. [Optional] Precluster contigs based on taxonomy
     - Identify taxonomy [`Kraken2`](https://ccb.jhu.edu/software/kraken2/) and\or [`Kaiju`](https://kaiju.binf.ku.dk/)
     - Resolve potential inconsistencies in taxonomy & taxon filtering | simplification `bin/extract_precluster.py`
-7. Cluster contigs (or every taxonomic bin) of samples, options are:
+8. Cluster contigs (or every taxonomic bin) of samples, options are:
     - [`cdhitest`](https://sites.google.com/view/cd-hit)
     - [`vsearch`](https://github.com/torognes/vsearch/wiki/Clustering)
     - [`mmseqs-linclust`](https://github.com/soedinglab/MMseqs2/wiki#linear-time-clustering-using-mmseqs-linclust)
     - [`mmseqs-cluster`](https://github.com/soedinglab/MMseqs2/wiki#cascaded-clustering)
     - [`vRhyme`](https://github.com/AnantharamanLab/vRhyme)
     - [`Mash`](https://github.com/marbl/Mash)
-8. Scaffolding of contigs to centroid ([`Minimap2`](https://github.com/lh3/minimap2), [`iVar-consensus`](https://andersen-lab.github.io/ivar/html/manualpage.html))
-9. [Optional] Annotate 0-depth regions with external reference `bin/lowcov_to_reference.py`.
-10. [Optional] Select best reference from `--mapping_constrains`:
+9. Scaffolding of contigs to centroid ([`Minimap2`](https://github.com/lh3/minimap2), [`iVar-consensus`](https://andersen-lab.github.io/ivar/html/manualpage.html))
+10. [Optional] Annotate 0-depth regions with external reference `bin/lowcov_to_reference.py`.
+11. [Optional] Select best reference from `--mapping_constrains`:
     - [`Mash sketch`](https://github.com/marbl/Mash)
     - [`Mash screen`](https://github.com/marbl/Mash)
-11. Mapping filtered reads to supercontig and mapping constrains([`BowTie2`](http://bowtie-bio.sourceforge.net/bowtie2/),[`BWAmem2`](https://github.com/bwa-mem2/bwa-mem2) and [`BWA`](https://github.com/lh3/bwa))
-12. [Optional] Deduplicate reads ([`Picard`](https://broadinstitute.github.io/picard/) or if UMI's are used [`UMI-tools`](https://umi-tools.readthedocs.io/en/latest/QUICK_START.html))
-13. Variant calling and filtering ([`BCFTools`](http://samtools.github.io/bcftools/bcftools.html),[`iVar`](https://andersen-lab.github.io/ivar/html/manualpage.html))
-14. Create consensus genome ([`BCFTools`](http://samtools.github.io/bcftools/bcftools.html),[`iVar`](https://andersen-lab.github.io/ivar/html/manualpage.html))
-15. Repeat step 11-14 multiple times for the denovo contig route
-16. Consensus evaluation and annotation ([`QUAST`](http://quast.sourceforge.net/quast),[`CheckV`](https://bitbucket.org/berkeleylab/checkv/src/master/),[`blastn`](https://blast.ncbi.nlm.nih.gov/Blast.cgi), [`mmseqs-search`](https://github.com/soedinglab/MMseqs2/wiki#batch-sequence-searching-using-mmseqs-search))
-17. Result summary visualisation for raw read, alignment, assembly, variant calling and consensus calling results ([`MultiQC`](http://multiqc.info/))
+12. Mapping filtered reads to supercontig and mapping constrains([`BowTie2`](http://bowtie-bio.sourceforge.net/bowtie2/),[`BWAmem2`](https://github.com/bwa-mem2/bwa-mem2) and [`BWA`](https://github.com/lh3/bwa))
+13. [Optional] Deduplicate reads ([`Picard`](https://broadinstitute.github.io/picard/) or if UMI's are used [`UMI-tools`](https://umi-tools.readthedocs.io/en/latest/QUICK_START.html))
+14. Variant calling and filtering ([`BCFTools`](http://samtools.github.io/bcftools/bcftools.html),[`iVar`](https://andersen-lab.github.io/ivar/html/manualpage.html))
+15. Create consensus genome ([`BCFTools`](http://samtools.github.io/bcftools/bcftools.html),[`iVar`](https://andersen-lab.github.io/ivar/html/manualpage.html))
+16. Repeat step 12-15 multiple times for the denovo contig route
+17. Consensus evaluation and annotation ([`QUAST`](http://quast.sourceforge.net/quast),[`CheckV`](https://bitbucket.org/berkeleylab/checkv/src/master/),[`blastn`](https://blast.ncbi.nlm.nih.gov/Blast.cgi), [`mmseqs-search`](https://github.com/soedinglab/MMseqs2/wiki#batch-sequence-searching-using-mmseqs-search))
+18. Result summary visualisation for raw read, alignment, assembly, variant calling and consensus calling results ([`MultiQC`](http://multiqc.info/))
 
 
 ## Usage
@@ -86,7 +87,7 @@ nextflow run Joon-Klaps/viralgenie \
      Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_;
      see [docs](https://nf-co.re/usage/configuration#custom-configuration-files).
 
-For more details and further functionality, please refer to the [usage documentation](https://github.io/Joon-klaps/viralgenie/usage) and the [parameter documentation](https://github.io/Joon-klaps/viralgenie/parameters).
+For more details and further functionality, please refer to the [usage documentation](https://joon-klaps.github.io/viralgenie/latest/usage) and the [parameter documentation](https://joon-klaps.github.io/viralgenie/latest/parameters).
 
 ## Credits
 
@@ -101,7 +102,7 @@ We thank the following people for their extensive assistance in the development 
 
 ## Contributions and Support
 
-If you would like to contribute to this pipeline, please see the [contributing guidelines](https://github.io/Joon-klaps/viralgenie/CONTRIBUTING).
+If you would like to contribute to this pipeline, please see the [contributing guidelines](https://joon-klaps.github.io/viralgenie/latest/CONTRIBUTING).
 
 <!--
 For further information or help, don't hesitate to get in touch on the [Slack `#viralgenie` channel](https://nfcore.slack.com/channels/viralgenie) (you can join with [this invite](https://nf-co.re/join/slack)).
@@ -111,7 +112,7 @@ For further information or help, don't hesitate to get in touch on the [Slack `#
 
 <!-- TODO: If you use  Joon-Klaps/viralgenie for your analysis, please cite it using the following doi: [10.5281/zenodo.XXXXXX](https://doi.org/10.5281/zenodo.XXXXXX) -->
 
-An extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](https://github.io/Joon-klaps/viralgenie/CITATIONS) file.
+An extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](https://joon-klaps.github.io/viralgenie/latest/CITATIONS) file.
 
 You can cite the `nf-core` publication as follows:
 

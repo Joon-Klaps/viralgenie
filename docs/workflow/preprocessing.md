@@ -3,7 +3,8 @@
 Viralgenie offers three main preprocessing steps for the preprocessing of raw sequencing reads:
 
 - [Read quality control](#read-quality-control): read quality assessment and filtering.
-- [Read processing](#read-processing): adapter clipping and pair-merging.
+- [Adapter trimming](#adapter-trimming): adapter clipping and pair-merging.
+- [UMI deduplication](#umi-deduplication): removal of PCR duplicates based on Unique Molecular Identifiers (UMIs) on a read level.
 - [Complexity filtering](#complexity-filtering): removal of low-sequence complexity reads.
 - [Host read-removal](#host-read-removal): removal of reads aligning to reference genome(s) of a host.
 
