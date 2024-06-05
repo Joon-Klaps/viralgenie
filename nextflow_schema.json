@@ -107,7 +107,7 @@
                     "fa_icon": "fas fa-project-diagram",
                     "description": "Specify the strategy or method for umi-tools deduplication on mapping level",
                     "enum": ["directional", "unique", "adjacency", "cluster", "percentile"],
-                    "default": "directional"
+                    "default": "cluster"
                 },
                 "umi_discard_read": {
                     "type": "integer",
