@@ -27,6 +27,7 @@ process EXTRACT_PRECLUSTER {
     def kaiju_db = kaiju_db ? "--database ${kaiju_db}" : ''
     def kraken = kraken_classifications ? "--kraken-classifications <(sort -k2,2  ${kraken_classifications})" : ''
     def kraken_report = kraken_report ? "--kraken-report ${kraken_report}" : ''
+
     """
     extract_preclust.py \\
         $args \\

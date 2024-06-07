@@ -37,11 +37,13 @@
             },
             "pident": {
                 "errorMessage": "Specify a pidentity to use as a treshhold for clustering",
-                "type": "string"
+                "type": "string",
+                "meta": ["pident"]
             },
             "collapse": {
                 "errorMessage": "Specify a collapse level clustering simplification",
-                "type": "string"
+                "type": "string",
+                "meta": ["collapse"]
             }
         },
         "required": ["sample", "fastq_1"]
