@@ -42,12 +42,11 @@ jobs:
       - name: Read parameter tip
         id: read_tip
         run: |
-          tip=$(cat docs/template/parameter_tip.md)
-          echo "::set-output name=tip_content::$tip"
+          tip=$(cat docs/parameter_tip.txt)
+          echo "tip_content=$tip" >> $GITHUB_ENV
       - name: Append content to parameters.md
         run: |
-          tip_content=${{ steps.read_tip.outputs.tip_content }}
-          modified_content=$(awk '/^#/ { print; print "$tip_content"; exit } 1' docs/parameters.md)
+          modified_content=$(awk '/^#/ { print; print "${{ env.tip_content }}"; exit } 1' docs/parameters.md)
           echo "$modified_content" > docs/parameters.md
       - name: Build docs
         run: |
