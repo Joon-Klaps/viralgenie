@@ -1,3 +1,5 @@
-sample,fastq_1,fastq_2
-SRR11140744,https://raw.githubusercontent.com/nf-core/test-datasets/viralrecon/illumina/sispa/SRR11140744_R1.fastq.gz,https://raw.githubusercontent.com/nf-core/test-datasets/viralrecon/illumina/sispa/SRR11140744_R2.fastq.gz
-SRR11140748,https://raw.githubusercontent.com/nf-core/test-datasets/viralrecon/illumina/sispa/SRR11140748_R1.fastq.gz,https://raw.githubusercontent.com/nf-core/test-datasets/viralrecon/illumina/sispa/SRR11140748_R2.fastq.gz
+sample,fastq_1,fastq_2,pident,collapse
+SRR11140744,https://raw.githubusercontent.com/nf-core/test-datasets/viralrecon/illumina/sispa/SRR11140744_R1.fastq.gz,https://raw.githubusercontent.com/nf-core/test-datasets/viralrecon/illumina/sispa/SRR11140744_R2.fastq.gz,,
+SRR11140744_80_genus,https://raw.githubusercontent.com/nf-core/test-datasets/viralrecon/illumina/sispa/SRR11140744_R1.fastq.gz,https://raw.githubusercontent.com/nf-core/test-datasets/viralrecon/illumina/sispa/SRR11140744_R2.fastq.gz,80,genus
+SRR11140748,https://raw.githubusercontent.com/nf-core/test-datasets/viralrecon/illumina/sispa/SRR11140748_R1.fastq.gz,https://raw.githubusercontent.com/nf-core/test-datasets/viralrecon/illumina/sispa/SRR11140748_R2.fastq.gz,,
+SRR11140748_50_species,https://raw.githubusercontent.com/nf-core/test-datasets/viralrecon/illumina/sispa/SRR11140748_R1.fastq.gz,https://raw.githubusercontent.com/nf-core/test-datasets/viralrecon/illumina/sispa/SRR11140748_R2.fastq.gz,50,species

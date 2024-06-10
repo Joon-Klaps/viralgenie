@@ -37,13 +37,14 @@
             },
             "pident": {
                 "errorMessage": "Specify a pidentity to use as a treshhold for clustering",
-                "type": "string",
+                "type": "number",
                 "meta": ["pident"]
             },
             "collapse": {
                 "errorMessage": "Specify a collapse level clustering simplification",
                 "type": "string",
-                "meta": ["collapse"]
+                "meta": ["collapse"],
+                "enum": ["species", "genus", "family", "order", "class", "phylum", "kingdom", "superkingdom"]
             }
         },
         "required": ["sample", "fastq_1"]
