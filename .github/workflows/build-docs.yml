@@ -39,6 +39,15 @@ jobs:
         run: pip install mkdocs-material pymdown-extensions pillow cairosvg mike nf-core
       - name: Build parameter docs
         run: nf-core schema docs --format markdown --columns parameter,description,default --output docs/parameters.md --force
+      - name: Read parameter tip
+        id: read_tip
+        run: |
+          tip=$(cat docs/parameter_tip.txt)
+          echo "tip_content=$tip" >> $GITHUB_ENV
+      - name: Append content to parameters.md
+        run: |
+          modified_content=$(awk '/^#/ { print; print "${{ env.tip_content }}"; exit } 1' docs/parameters.md)
+          echo "$modified_content" > docs/parameters.md
       - name: Build docs
         run: |
           RELEASE=$(curl -sL https://api.github.com/repos/Joon-Klaps/viralgenie/releases | jq -r '.[0].tag_name')
