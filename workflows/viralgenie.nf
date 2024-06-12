@@ -483,10 +483,10 @@ workflow VIRALGENIE {
             )
         ch_versions           = ch_versions.mix(CONSENSUS_QC.out.versions)
         ch_multiqc_files      = ch_multiqc_files.mix(CONSENSUS_QC.out.mqc.collect{it[1]}.ifEmpty([]))
-        ch_checkv_summary     = CONSENSUS_QC.out.checkv_summary.collect{it[1]}.ifEmpty([])
-        ch_quast_summary      = CONSENSUS_QC.out.quast_summary.collect{it[1]}.ifEmpty([])
-        ch_blast_summary      = CONSENSUS_QC.out.blast_txt.collect{it[1]}.ifEmpty([])
-        ch_annotation_summary = CONSENSUS_QC.out.annotation_txt.collect{it[1]}.ifEmpty([])
+        ch_checkv_summary     = CONSENSUS_QC.out.checkv.collect{it[1]}.ifEmpty([])
+        ch_quast_summary      = CONSENSUS_QC.out.quast.collect{it[1]}.ifEmpty([])
+        ch_blast_summary      = CONSENSUS_QC.out.blast.collect{it[1]}.ifEmpty([])
+        ch_annotation_summary = CONSENSUS_QC.out.annotation.collect{it[1]}.ifEmpty([])
 
     }
 

@@ -15,26 +15,23 @@ import yaml
 
 logger = logging.getLogger()
 
-
-class BlastConstants:
-    COLUMNS = [
-        "query",
-        "subject",
-        "subject title",
-        "pident",
-        "qlen",
-        "slen",
-        "length",
-        "mismatch",
-        "gapopen",
-        "qstart",
-        "qend",
-        "sstart",
-        "send",
-        "evalue",
-        "bitscore",
-    ]
-
+BLAST_COLUMNS = [
+    "query",
+    "subject",
+    "subject title",
+    "pident",
+    "qlen",
+    "slen",
+    "length",
+    "mismatch",
+    "gapopen",
+    "qstart",
+    "qend",
+    "sstart",
+    "send",
+    "evalue",
+    "bitscore",
+]
 
 def parse_args(argv=None):
     """Define and immediately parse command line arguments."""
@@ -295,6 +292,9 @@ def write_dataframe(df, file, comment):
     Returns:
         None
     """
+    if df.empty:
+        logger.warning(f"The DataFrame %s is empty, nothing will be written to the file!", file)
+        return
     df_tsv = df.to_csv(sep="\t", index=False, quoting=csv.QUOTE_NONNUMERIC)
     with open(file, "w") as f:
         if comment:
@@ -618,7 +618,7 @@ def process_blast_dataframe(blast_df, blast_header, output_file):
 
     try:
         # Set the column names
-        blast_df.columns = BlastConstants.COLUMNS
+        blast_df.columns = BLAST_COLUMNS
 
         # Filter for the best hit per contig and keep only the best hit
         blast_df = blast_df.sort_values("bitscore", ascending=False).drop_duplicates("query")
@@ -651,7 +651,7 @@ def process_annotation_dataframe(annotation_df, blast_header, output_file):
 
     try:
         # Set the column names
-        annotation_df.columns = BlastConstants.COLUMNS
+        annotation_df.columns = BLAST_COLUMNS
 
         # Filter for the best hit per contig and keep only the best hit
         annotation_df = annotation_df.sort_values("bitscore", ascending=False).drop_duplicates("query")
@@ -660,7 +660,7 @@ def process_annotation_dataframe(annotation_df, blast_header, output_file):
         annotation_df = extract_annotation_data(annotation_df)
 
         # Remove the blast columns (but not query), we only want annotation data (but not genome_name)
-        annotation_df = drop_columns(annotation_df, BlastConstants.COLUMNS[1:])
+        annotation_df = drop_columns(annotation_df, BLAST_COLUMNS[1:])
 
         # Process the DataFrame
         annotation_df = handle_dataframe(annotation_df, "annotation", "query", blast_header, output_file)
@@ -671,6 +671,12 @@ def process_annotation_dataframe(annotation_df, blast_header, output_file):
         logger.error(f"Error processing annotation DataFrame: {e}")
 
     return annotation_df
+
+def extract_annotation_data(df):
+    # Extract all key-value pairs into separate columns
+    df_extracted = ( df["subject title"].apply(parse_annotation_data).apply(pd.Series))
+    return pd.concat([df, df_extracted], axis=1)
+
 
 def parse_annotation_data(annotation_str):
     annotation_dict = {}
@@ -789,6 +795,21 @@ def drop_columns(df, columns):
     result = df.drop(columns=[column for column in columns if column in df.columns])
     return result.copy()
 
+def split_index_column(df):
+    """
+    Split the index column of the DataFrame into separate columns for sample name, cluster, and step.
+
+    Args:
+        df (pandas.DataFrame): The input DataFrame.
+
+    Returns:
+        pandas.DataFrame: The updated DataFrame with separate columns for sample name, cluster, and step.
+    """
+    df_copy = df.copy()
+    df_copy = df_copy.reset_index().rename(columns={df_copy.index.name: "index"})
+    df_copy = df_copy[df_copy["index"].str.contains("_", na=False)]
+    df_copy[["sample name", "cluster", "step"]] = df_copy["index"].str.split("_", n=3, expand=True)
+    return df_copy
 
 def reorder_columns(df, columns):
     """
@@ -806,6 +827,35 @@ def reorder_columns(df, columns):
         + df.columns.difference(columns, sort=False).tolist()
     ]
     return df
+
+def filter_contigs(df):
+    """
+    Filter contigs for each sample to only include those:
+        - latest step of each cluster
+        - Only annotated ones (if annotation is available)
+
+    Args:
+        df (pandas.DataFrame): The input DataFrame.
+
+    Returns:
+        pandas.DataFrame: The filtered DataFrame.
+    """
+    df = pd.read_csv("rmme.tsv", sep="\t",)
+    ordered_list = ([f'it{i}' for i in range(100, 0, -1)] + ['itvariant-calling', 'consensus', 'singleton'])
+    rank_dict = {step: rank for rank, step in enumerate(ordered_list, start=1)}
+
+    # Sort the DataFrame by 'step' based on the ranking dictionary
+    df['rank'] = df['step'].map(rank_dict)
+    df = df.sort_values(['sample name', 'cluster', 'rank'])
+
+    # Select the first occurrence of each group
+    df_snip = df.groupby(['sample name', 'cluster']).head(1).reset_index(drop=True)
+
+    if 'annotation' in df.columns:
+        # Filter for annotated contigs
+        df_snip = df_snip[df_snip['annotation'].notnull()]
+
+    return df_snip
 
 
 def create_constrain_summary(df_constrain, file_columns):
@@ -980,54 +1030,24 @@ def main(argv=None):
 
         # Keep only those rows we can split up in sample, cluster, step
         logger.info("Splitting up the index column in sample name, cluster, step")
-        mqc_contigs_sel = multiqc_contigs_df.reset_index().rename(
-            columns={multiqc_contigs_df.index.name: "index"}
-        )
-        mqc_contigs_sel = mqc_contigs_sel[
-            mqc_contigs_sel["index"].str.contains("_", na=False)
-        ]
-        mqc_contigs_sel[["sample name", "cluster", "step"]] = mqc_contigs_sel[
-            "index"
-        ].str.split("_", n=3, expand=True)
-
-        # # adding a tag saying that contig faild qc check
-        # logger.info("Adding failed contig QC check")
-        # failed_contigs = {"failed_mapped": {}, "failed_contig_quality": {}}
-        # failed_contig_df = read_data(
-        #     args.multiqc_dir, failed_contigs, process_failed_contig_dataframe
-        # )
-        # if not failed_contig_df.empty:
-        #     merged_df = pd.merge(mqc_contigs_sel.reset_index(), failed_contig_df, on=['sample name', 'cluster', 'step'], how='left', indicator=True)
-        #     merged_df['Contig failed QC check'] = merged_df['_merge'] == 'both'
-        #     mqc_contigs_sel['Contig failed QC check'] = merged_df['Contig failed QC check']
-
-
+        multiqc_contigs_df = split_index_column(multiqc_contigs_df)
 
         # Reorder the columns
         logger.info("Reordering columns")
         final_columns = (
-            ["index", "sample name", "cluster", "step"]
-            + [column for column in mqc_contigs_sel.columns if "annotation" in column]
-            + [column for column in mqc_contigs_sel.columns if "blast" in column]
-            + [column for column in mqc_contigs_sel.columns if "checkv" in column]
-            + [column for column in mqc_contigs_sel.columns if "QC check" in column]
-            + [column for column in mqc_contigs_sel.columns if "quast" in column]
-        )
-        mqc_contigs_sel = reorder_columns(mqc_contigs_sel, final_columns)
+            ["index", "sample name", "cluster", "step"] +
+            [ column for group in ["annotation", "blast", "checkv", "QC check", "quast"] for column in multiqc_contigs_df.columns if group in column ] )
+        multiqc_contigs_df = reorder_columns(multiqc_contigs_df, final_columns)
 
         # split up denovo constructs and mapping (-CONSTRAIN) results
         logger.info("Splitting up denovo constructs and mapping (-CONSTRAIN) results")
-        contigs_mqc, constrains_mqc = filter_constrain(
-            mqc_contigs_sel, "cluster", "-CONSTRAIN"
-        )
+        contigs_mqc, constrains_mqc = filter_constrain( multiqc_contigs_df, "cluster", "-CONSTRAIN")
 
         # Write the final dataframe to a file
         logger.info("Writing Denovo constructs table file: contigs_overview_mqc.tsv")
-        header_clusters_overview = get_header(
-            args.comment_dir, "contig_overview_mqc.txt"
-        )
-        write_dataframe(contigs_mqc, "contigs_overview_mqc.tsv", header_clusters_overview)
+        write_dataframe(contigs_mqc, "contigs_overview_mqc.tsv", get_header(args.comment_dir, "contig_overview_mqc.txt"))
 
+        contigs_sel = filter_contigs(contigs_mqc)
         # Minimize Contig report data for the final contigs
         # > Contig must be of final iteration
         # > Contig should have annotation (if annotation file was given originally)
@@ -1035,47 +1055,24 @@ def main(argv=None):
 
         # Separate table for mapping constrains
         if not constrains_mqc.empty:
-            header_mapping_seq = get_header(
-                args.comment_dir, "mapping_constrains_mqc.txt"
-            )
 
             # Add constrain metadata to the mapping constrain table
             constrain_meta = handle_tables([args.mapping_constrains])
+
             # drop unwanted columns & reorder
             constrain_meta = drop_columns(constrain_meta, ["sequence", "samples"])
-            constrains_mqc = constrains_mqc.merge(
-                constrain_meta, how="left", left_on="cluster", right_on="id"
-            )
-            constrains_mqc = reorder_columns(
-                constrains_mqc,
-                [
-                    "index",
-                    "sample name",
-                    "cluster",
-                    "step",
-                    "species",
-                    "segment",
-                    "definition",
-                ],
-            )
+            constrains_mqc = constrains_mqc.merge( constrain_meta, how="left", left_on="cluster", right_on="id")
+            constrains_mqc = reorder_columns( constrains_mqc,[ "index", "sample name", "cluster", "step", "species", "segment", "definition"])
+
             logger.info("Writing mapping long table: mapping_constrains_mqc.tsv")
-            write_dataframe(
-                constrains_mqc, "mapping_constrains_mqc.tsv", header_mapping_seq
-            )
+            write_dataframe( constrains_mqc, "mapping_constrains_mqc.tsv", get_header( args.comment_dir, "mapping_constrains_mqc.txt") )
 
             # add mapping summary to sample overview table in ... wide format with species & segment combination
             logger.info("Creating mapping constrain summary (wide) table")
-            constrains_summary_mqc = create_constrain_summary(
-                constrains_mqc, file_columns
-            )
-            if not constrains_summary_mqc.empty:
-                header_mapping_summary = get_header(
-                    args.comment_dir, "mapping_constrains_summary_mqc.txt"
-                )
-                write_dataframe(
-                    constrains_summary_mqc,
-                    "mapping_constrains_summary_mqc.tsv",
-                    header_mapping_summary,
+            write_dataframe(
+                create_constrain_summary( constrains_mqc, file_columns),
+                "mapping_constrains_summary_mqc.tsv",
+                get_header( args.comment_dir, "mapping_constrains_summary_mqc.txt")
                 )
     return 0
 
