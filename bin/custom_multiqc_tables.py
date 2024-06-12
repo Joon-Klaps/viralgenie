@@ -408,26 +408,26 @@ def read_file_to_dataframe(file, **kwargs):
     return df
 
 
-def join_dataframes(df1, df2):
+def join_dataframes(base_df, dataframes_to_join):
     """
-    Join two DataFrames or a DataFrame and a Series together.
+    Join multiple DataFrames or a DataFrame and a Series together.
 
     Args:
-        df1 (pd.DataFrame or pd.Series): The first DataFrame or Series to be joined.
-        df2 (pd.DataFrame): The second DataFrame to be joined.
+        base_df (pd.DataFrame or pd.Series): The base DataFrame or Series to start with.
+        dataframes_to_join (list): A list of DataFrames to be joined with the base DataFrame.
 
     Returns:
         pd.DataFrame: The joined DataFrame.
-
     """
-    if isinstance(df1, pd.Series):  # Check if df1 is a Series
-        df1 = df1.to_frame()  # Convert Series to DataFrame
-        return pd.concat([df1, df2], axis=1, join="outer")
-    elif df1.empty:
-        return df2
-    else:
-        return df1.join(df2, how="outer")
+    joined_df = base_df.copy()
 
+    for df in dataframes_to_join:
+        if df.empty:
+            continue
+        if isinstance(joined_df, pd.Series):
+            joined_df = joined_df.to_frame()
+        joined_df = pd.concat([joined_df, df], axis=1, join="outer")
+    return joined_df
 
 def process_multiqc_dataframe(df):
     """
@@ -524,7 +524,7 @@ def read_data(directory, file_columns, process_dataframe):
             continue
         df = process_dataframe(df)
         df = filter_and_rename_columns(df, column_names)
-        multiqc_samples_df = join_dataframes(multiqc_samples_df, df)
+        multiqc_samples_df = join_dataframes(multiqc_samples_df, [df])
 
     return multiqc_samples_df
 
@@ -562,6 +562,115 @@ def dynamic_split(row, delimiter="_"):
     parts = row.split(delimiter)
     return parts
 
+def compute_quast_metrics(quast_df):
+    """
+    Compute additional metrics based on QUAST output and add them to the DataFrame.
+
+    Args:
+        quast_df (pandas.DataFrame): The QUAST output DataFrame.
+
+    Returns:
+        pandas.DataFrame: The updated DataFrame with additional computed metrics.
+    """
+    if quast_df.empty:
+        return quast_df
+
+    try:
+        # Compute the number of N's based on the "# N's per 100 kbp" and "Largest contig" columns
+        quast_df["(quast) # N's"] = (
+            pd.to_numeric(quast_df["(quast) # N's per 100 kbp"])
+            * pd.to_numeric(quast_df["(quast) Largest contig"])
+            / 100000
+        )
+        quast_df["(quast) # N's"] = quast_df["(quast) # N's"].astype(int)
+
+        # Compute the percentage of N's based on the "# N's per 100 kbp" column
+        quast_df["(quast) % N's"] = round(
+            pd.to_numeric(quast_df["(quast) # N's per 100 kbp"]) / 1000, 2
+        )
+
+        # Keep only the relevant columns
+        quast_df = quast_df[
+            ["(quast) # N's", "(quast) % N's", "(quast) # N's per 100 kbp"]
+        ]
+    except KeyError as e:
+        logger.warning(f"Missing column in QUAST output: {e}")
+    except Exception as e:
+        logger.error(f"Error computing QUAST metrics: {e}")
+
+    return quast_df
+
+def process_blast_dataframe(blast_df, blast_header, output_file):
+    """
+    Process the BLAST output DataFrame.
+
+    Args:
+        blast_df (pandas.DataFrame): The BLAST output DataFrame.
+        blast_header (list): A list of strings representing the header for the output file.
+        output_file (str): The path to the output file.
+
+    Returns:
+        pandas.DataFrame: The processed BLAST DataFrame.
+    """
+    if blast_df.empty:
+        logger.warning("The BLAST DataFrame is empty.")
+        return blast_df
+
+    try:
+        # Set the column names
+        blast_df.columns = BlastConstants.COLUMNS
+
+        # Filter for the best hit per contig and keep only the best hit
+        blast_df = blast_df.sort_values("bitscore", ascending=False).drop_duplicates("query")
+
+        # Process the DataFrame
+        blast_df = handle_dataframe(blast_df, "blast", "query", blast_header, output_file)
+
+        # Make everything a string for the annotation
+        blast_df = blast_df.astype(str)
+    except Exception as e:
+        logger.error(f"Error processing BLAST DataFrame: {e}")
+
+    return blast_df
+
+def process_annotation_dataframe(annotation_df, blast_header, output_file):
+    """
+    Process the annotation DataFrame.
+
+    Args:
+        annotation_df (pandas.DataFrame): The annotation DataFrame.
+        blast_header (list): A list of strings representing the header for the output file.
+        output_file (str): The path to the output file.
+
+    Returns:
+        pandas.DataFrame: The processed annotation DataFrame.
+    """
+    if annotation_df.empty:
+        logger.warning("The annotation DataFrame is empty.")
+        return annotation_df
+
+    try:
+        # Set the column names
+        annotation_df.columns = BlastConstants.COLUMNS
+
+        # Filter for the best hit per contig and keep only the best hit
+        annotation_df = annotation_df.sort_values("bitscore", ascending=False).drop_duplicates("query")
+
+        # Extract all key-value pairs into separate columns
+        annotation_df = extract_annotation_data(annotation_df)
+
+        # Remove the blast columns (but not query), we only want annotation data (but not genome_name)
+        annotation_df = drop_columns(annotation_df, BlastConstants.COLUMNS[1:])
+
+        # Process the DataFrame
+        annotation_df = handle_dataframe(annotation_df, "annotation", "query", blast_header, output_file)
+
+        # Make everything a string for the annotation
+        annotation_df = annotation_df.astype(str)
+    except Exception as e:
+        logger.error(f"Error processing annotation DataFrame: {e}")
+
+    return annotation_df
 
 def parse_annotation_data(annotation_str):
     annotation_dict = {}
@@ -826,114 +935,45 @@ def main(argv=None):
     checkv_header = []
     if args.save_intermediate:
         checkv_header = get_header(args.comment_dir, "checkv_mqc.txt")
-    if not checkv_df.empty:
-        checkv_df = handle_dataframe(
-            checkv_df, "checkv", "contig_id", checkv_header, "summary_checkv_mqc.tsv"
-        )
+    checkv_df = handle_dataframe(checkv_df, "checkv", "contig_id", checkv_header, "summary_checkv_mqc.tsv")
 
-    # CLuster table - Quast summary
+    # Cluster table - Quast summary
     quast_df = read_in_quast(args.quast_files)
     quast_header = []
     if args.save_intermediate:
         quast_header = get_header(args.comment_dir, "quast_mqc.txt")
-    if not quast_df.empty:
-        quast_df = handle_dataframe(
-            quast_df, "quast", "Assembly", quast_header, "summary_quast_mqc.tsv"
-        )
-        # Most of the columns are not good for a single contig evaluation
-        quast_df["(quast) # N's"] = (
-            pd.to_numeric(quast_df["(quast) # N's per 100 kbp"])
-            * pd.to_numeric(quast_df["(quast) Largest contig"])
-            / 100000
-        )
-        quast_df = quast_df.astype({"(quast) # N's": int})
-        quast_df["(quast) % N's"] = round(
-            pd.to_numeric(quast_df["(quast) # N's per 100 kbp"]) / 1000, 2
-        )
-        quast_df = quast_df[
-            ["(quast) # N's", "(quast) % N's", "(quast) # N's per 100 kbp"]
-        ]
+    quast_df = handle_dataframe(quast_df, "quast", "Assembly", quast_header, "summary_quast_mqc.tsv")
+    quast_df = compute_quast_metrics(quast_df)
 
-    # CLuster table - Blast summary
+    # Cluster table - Blast summary
     blast_df = handle_tables(args.blast_files, header=None)
     blast_header = []
     if args.save_intermediate:
         blast_header = get_header(args.comment_dir, "blast_mqc.txt")
-    if not blast_df.empty:
-        # Read the blast summary file
-        blast_df.columns = BlastConstants.COLUMNS
+    blast_df = process_blast_dataframe(blast_df, blast_header, "summary_blast_mqc.tsv")
 
-        # Filter on best hit per contig and keep only the best hit
-        blast_df = blast_df.sort_values("bitscore", ascending=False).drop_duplicates(
-            "query"
-        )
-
-        blast_df = handle_dataframe(
-            blast_df, "blast", "query", blast_header, "summary_blast_mqc.tsv"
-        )
-
-    # CLuster table - mmseqs easysearch summary - annotation section
+    # Cluster table - mmseqs easysearch summary (annotation section)
     annotation_df = handle_tables(args.annotation_files, header=None)
-    if not annotation_df.empty:
-        annotation_df.columns = BlastConstants.COLUMNS
-        # Filter on best hit per contig and keep only the best hit
-        annotation_df = annotation_df.sort_values(
-            "bitscore", ascending=False
-        ).drop_duplicates("query")
-
-        # Extract all key-value pairs into separate columns
-        df_extracted = (
-            annotation_df["subject title"].apply(parse_annotation_data).apply(pd.Series)
-        )
-
-        # Concatenate the original DataFrame with the extracted columns
-        annotation_df = pd.concat([annotation_df, df_extracted], axis=1)
-
-        # Remove the blast columns (but not query), we only want annotation data (but not genome_name)
-        annotation_df = drop_columns(annotation_df, BlastConstants.COLUMNS[1:])
-        annotation_df = handle_dataframe(
-            annotation_df, "annotation", "query", blast_header, "summary_anno_mqc.tsv"
-        )
-        # Make everything a string for the annotation
-        annotation_df = annotation_df.astype(str)
-
+    annotation_df = process_annotation_dataframe(annotation_df, blast_header, "summary_anno_mqc.tsv")
 
     # CLuster table -  Multiqc output txt files
     if args.multiqc_dir:
-        # Check if the given files exist
         check_file_exists(args.multiqc_dir)
-
-        # Extract files & columns specified by the user through the table headers file
         file_columns = get_files_and_columns_of_interest(args.table_headers)
+        multiqc_contigs_df = read_data(args.multiqc_dir, file_columns, process_multiqc_dataframe)
 
-        # Read the multiqc data txt files & select & rename
-        multiqc_contigs_df = read_data(
-            args.multiqc_dir, file_columns, process_multiqc_dataframe
-        )
-
-        # If we are empty, just quit
         if multiqc_contigs_df.empty:
-            logger.warning(
-                "No data was found from MULTIQC to create the contig overview table!"
-            )
+            logger.warning("No data was found from MULTIQC to create the contig overview table!")
             return 0
 
         # Write the complete dataframe to a file
         logger.info("Writing intermediate file: contigs_intermediate.tsv")
-        write_dataframe(
-            multiqc_contigs_df.reset_index(inplace=False),
-            "contigs_intermediate.tsv",
-            [],
-        )
+        write_dataframe(multiqc_contigs_df.reset_index(inplace=False),"contigs_intermediate.tsv",[])
 
         # Join with the custom contig tables
         logger.info("Joining dataframes")
-        multiqc_contigs_df = multiqc_contigs_df.join(checkv_df, how="outer")
-        multiqc_contigs_df = multiqc_contigs_df.join(quast_df, how="outer")
-        multiqc_contigs_df = multiqc_contigs_df.join(blast_df, how="outer")
-        multiqc_contigs_df = multiqc_contigs_df.join(annotation_df, how="outer")
+        multiqc_contigs_df = join_dataframes(multiqc_contigs_df, [checkv_df, quast_df, blast_df, annotation_df])
 
-        # If we are empty, just quit
         if multiqc_contigs_df.empty:
             logger.warning("No data was found to create the contig overview table!")
             return 0
@@ -986,9 +1026,12 @@ def main(argv=None):
         header_clusters_overview = get_header(
             args.comment_dir, "contig_overview_mqc.txt"
         )
-        write_dataframe(
-            contigs_mqc, "contigs_overview_mqc.tsv", header_clusters_overview
-        )
+        write_dataframe(contigs_mqc, "contigs_overview_mqc.tsv", header_clusters_overview)
+
+        # Minimize Contig report data for the final contigs
+        # > Contig must be of final iteration
+        # > Contig should have annotation (if annotation file was given originally)
+
 
         # Separate table for mapping constrains
         if not constrains_mqc.empty:
