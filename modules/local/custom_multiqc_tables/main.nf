@@ -12,6 +12,7 @@ process CUSTOM_MULTIQC_TABLES {
     path checkv_files, stageAs: "?/checkv/*"
     path quast_files, stageAs: "?/quast/*"
     path blast_files, stageAs: "?/blast/*"
+    path bed_files, stageAs: "?/bed/*"
     path mapping_constrains
     path anno_files, stageAs: "?/annotation/*"
     path multiqc_dir
@@ -26,6 +27,7 @@ process CUSTOM_MULTIQC_TABLES {
     path("summary_quast_mqc.tsv")             , emit: summary_quast_mqc     , optional: true
     path("summary_blast_mqc.tsv")             , emit: summary_blast_mqc     , optional: true
     path("summary_anno_mqc.tsv")              , emit: summary_anno_mqc      , optional: true
+    // path("summary_anno_mqc.tsv")              , emit: summary_anno_mqc      , optional: true
     path("mapping_constrains_mqc.tsv")        , emit: mapping_constrains_mqc, optional: true
     path("mapping_constrains_summary_mqc.tsv"), emit: constrains_summary_mqc, optional: true
     path "versions.yml"                       , emit: versions
@@ -41,19 +43,21 @@ process CUSTOM_MULTIQC_TABLES {
     def quast_files            = quast_files            ? "--quast_files ${quast_files}"                 : ''
     def blast_files            = blast_files            ? "--blast_files ${blast_files}"                 : ''
     def annotation_files       = anno_files             ? "--annotation_files ${anno_files}"             : ''
+    def bed_files              = bed_files              ? "--bed_files ${bed_files}"                     : ''
     def mapping_constrains     = mapping_constrains     ? "--mapping_constrains ${mapping_constrains}"   : ''
     def multiqc_dir            = multiqc_dir            ? "--multiqc_dir ${multiqc_dir}"                 : ''
     def comment_headers        = comment_headers        ? "--comment_dir ${comment_headers}"             : ''
     def custom_table_headers   = custom_table_headers   ? "--table_headers ${custom_table_headers}"      : ''
 
     """
-    custom_multiqc_tables.py\\
+    custom_multiqc_tables.py \\
         $args \\
         $clusters_summary_files \\
         $sample_metadata \\
         $checkv_files \\
         $quast_files \\
         $blast_files \\
+        $bed_files \\
         $mapping_constrains \\
         $annotation_files \\
         $comment_headers \\

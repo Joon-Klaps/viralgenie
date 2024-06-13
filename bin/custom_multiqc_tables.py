@@ -12,6 +12,7 @@ from pathlib import Path
 
 import pandas as pd
 import yaml
+import plotly.graph_objs as go
 
 logger = logging.getLogger()
 
@@ -72,6 +73,13 @@ def parse_args(argv=None):
         metavar="FILE_OUT_PREFIX",
         type=str,
         help="Output file prefix",
+    )
+
+    parser.add_argument(
+        "--bed_files",
+        metavar="BED_FILES",
+        help="Bed (coverage) files for each sample",
+        type=lambda s: file_choices(("bed", "bed.gz"), s),
     )
 
     parser.add_argument(
@@ -675,15 +683,17 @@ def process_annotation_dataframe(annotation_df, blast_header, output_file):
 def extract_annotation_data(df):
     # Extract all key-value pairs into separate columns
     df_extracted = ( df["subject title"].apply(parse_annotation_data).apply(pd.Series))
+    logger.debug(f"df_extracted %s", df_extracted)
     return pd.concat([df, df_extracted], axis=1)
 
 
 def parse_annotation_data(annotation_str):
     annotation_dict = {}
-    pattern = r'(?P<key>\w+)\s*[:=]\s*"?([^";]+)"?'
+    pattern = r'(?P<key>\w+)\s*=\s*"?([^";]+)"?'
     matches = re.findall(pattern, annotation_str)
     for key, value in matches:
         annotation_dict[key] = value
+        logger.debug("Matched key: %s, value: %s", key, value)
     return annotation_dict
 
 
@@ -828,7 +838,7 @@ def reorder_columns(df, columns):
     ]
     return df
 
-def filter_contigs(df):
+def filter_contigs(dataframe):
     """
     Filter contigs for each sample to only include those:
         - latest step of each cluster
@@ -840,6 +850,7 @@ def filter_contigs(df):
     Returns:
         pandas.DataFrame: The filtered DataFrame.
     """
+    df = dataframe.copy()
     ordered_list = ([f'it{i}' for i in range(100, 0, -1)] + ['itvariant-calling', 'consensus', 'singleton'])
     rank_dict = {step: rank for rank, step in enumerate(ordered_list, start=1)}
 
@@ -854,6 +865,7 @@ def filter_contigs(df):
         # Filter for annotated contigs
         df_snip = df_snip[df_snip['annotation'].notnull()]
 
+    logger.debug("Removed %d rows", len(df.index) - len(df_snip.index))
     return df_snip
 
 
@@ -1051,9 +1063,37 @@ def main(argv=None):
         write_dataframe(contigs_mqc, "contigs_all.tsv", [])
 
         contigs_sel = filter_contigs(contigs_mqc)
-        # Minimize Contig report data for the final contigs
-        # > Contig must be of final iteration
-        # > Contig should have annotation (if annotation file was given originally)
+
+        # make_html-mini-table - contig_sel:
+        # XXXX here represents a metric for completeness of the strain.
+        # sample name - annotation species - annotation segment - XXXXXX - perc covered - reads mapped - median read depth - coverage plot
+
+        # For contig_sample in contigs_sel:
+        #   Read bed file (contig_sample.bed, args.bed_files)
+
+        # Create the table with sparkline plots
+        # fig = go.Figure(go.Table(
+        #     header=dict(values=list(combined_data[columns].columns),
+        #                 line_color='darkslategray',
+        #                 fill_color='lightskyblue',
+        #                 align='left'),
+        #     cells=dict(values=[combined_data[col].tolist() for col in columns],
+        #             line_color='darkslategray',
+        #             fill_color='lightcyan',
+        #             align='left',
+        #             format=[None, None, None, None, None, None, None, None, None, None, [{"type": "splicearray", "show": True, "mode": "lines", "line": {"width": 1, "color": "darkgreen"}}]]))
+        # )
+
+        # # Adjust the layout
+        # fig.update_layout(
+        #     title=f"{sys.argv[3]} Batch Detected Virus Summary",
+        #     width=1200,
+        #     height=800,
+        #     font=dict(family="Oswald")
+        # )
+
+        # # Save the HTML file
+        # fig.write_html(f"{sys.argv[3]}.batch_detected_viruses.html")
 
 
         # Separate table for mapping constrains
@@ -1077,6 +1117,8 @@ def main(argv=None):
                 "mapping_constrains_summary_mqc.tsv",
                 get_header( args.comment_dir, "mapping_constrains_summary_mqc.txt")
                 )
+
+            # Plot something similar for the mapping constrains instead of summary table
     return 0
 
 
