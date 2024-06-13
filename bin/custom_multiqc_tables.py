@@ -840,7 +840,6 @@ def filter_contigs(df):
     Returns:
         pandas.DataFrame: The filtered DataFrame.
     """
-    df = pd.read_csv("rmme.tsv", sep="\t",)
     ordered_list = ([f'it{i}' for i in range(100, 0, -1)] + ['itvariant-calling', 'consensus', 'singleton'])
     rank_dict = {step: rank for rank, step in enumerate(ordered_list, start=1)}
 
@@ -985,26 +984,30 @@ def main(argv=None):
     checkv_header = []
     if args.save_intermediate:
         checkv_header = get_header(args.comment_dir, "checkv_mqc.txt")
-    checkv_df = handle_dataframe(checkv_df, "checkv", "contig_id", checkv_header, "summary_checkv_mqc.tsv")
+    if not checkv_df.empty:
+        checkv_df = handle_dataframe(checkv_df, "checkv", "contig_id", checkv_header, "summary_checkv_mqc.tsv")
 
     # Cluster table - Quast summary
     quast_df = read_in_quast(args.quast_files)
     quast_header = []
     if args.save_intermediate:
         quast_header = get_header(args.comment_dir, "quast_mqc.txt")
-    quast_df = handle_dataframe(quast_df, "quast", "Assembly", quast_header, "summary_quast_mqc.tsv")
-    quast_df = compute_quast_metrics(quast_df)
+    if not quast_df.empty:
+        quast_df = handle_dataframe(quast_df, "quast", "Assembly", quast_header, "summary_quast_mqc.tsv")
+        quast_df = compute_quast_metrics(quast_df)
 
     # Cluster table - Blast summary
     blast_df = handle_tables(args.blast_files, header=None)
     blast_header = []
     if args.save_intermediate:
         blast_header = get_header(args.comment_dir, "blast_mqc.txt")
-    blast_df = process_blast_dataframe(blast_df, blast_header, "summary_blast_mqc.tsv")
+    if not blast_df.empty:
+        blast_df = process_blast_dataframe(blast_df, blast_header, "summary_blast_mqc.tsv")
 
     # Cluster table - mmseqs easysearch summary (annotation section)
     annotation_df = handle_tables(args.annotation_files, header=None)
-    annotation_df = process_annotation_dataframe(annotation_df, blast_header, "summary_anno_mqc.tsv")
+    if not annotation_df.empty:
+        annotation_df = process_annotation_dataframe(annotation_df, blast_header, "summary_anno_mqc.tsv")
 
     # CLuster table -  Multiqc output txt files
     if args.multiqc_dir:
@@ -1044,8 +1047,8 @@ def main(argv=None):
         contigs_mqc, constrains_mqc = filter_constrain( multiqc_contigs_df, "cluster", "-CONSTRAIN")
 
         # Write the final dataframe to a file
-        logger.info("Writing Denovo constructs table file: contigs_overview_mqc.tsv")
-        write_dataframe(contigs_mqc, "contigs_overview_mqc.tsv", get_header(args.comment_dir, "contig_overview_mqc.txt"))
+        logger.info("Writing Unfiltered Denovo constructs table file: contigs_all.tsv")
+        write_dataframe(contigs_mqc, "contigs_all.tsv", [])
 
         contigs_sel = filter_contigs(contigs_mqc)
         # Minimize Contig report data for the final contigs
