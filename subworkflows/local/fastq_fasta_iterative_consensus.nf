@@ -150,7 +150,7 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
     emit:
     consensus_reads      = ch_reference_reads_intermediate      // channel: [ val(meta), [ fasta ], [ fastq ] ]
     consensus_allsteps   = ch_consensus_allsteps                // channel: [ val(meta), [ fasta ] ]
-    ch_bed                  = ch_bed                                  // channel: [ val(meta), [ ch_bed ] ]
+    bed                  = ch_bed                                  // channel: [ val(meta), [ ch_bed ] ]
     bam                  = bam                                  // channel: [ val(meta), [ bam ] ]
     vcf                  = vcf                                  // channel: [ val(meta), [ vcf ] ]
     vcf_filter           = vcf_filter                           // channel: [ val(meta), [ vcf ] ]
