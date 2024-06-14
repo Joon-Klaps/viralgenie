@@ -11,8 +11,11 @@ import sys
 from pathlib import Path
 
 import pandas as pd
+import numpy as np
 import yaml
 import plotly.graph_objs as go
+import plotly.io as pio
+import plotly.express as px
 
 logger = logging.getLogger()
 
@@ -394,7 +397,7 @@ def read_file_to_dataframe(file, **kwargs):
     if os.path.getsize(file_path) == 0:
         logger.debug("File is empty %s", file_path)
         return pd.DataFrame()
-    if file_path.suffix in [".tsv", ".txt", ".gz"]:  # mqc calls tsv's txts, bed files are gzipped
+    if file_path.suffix in [".tsv", ".txt"]:  # mqc calls tsv's txts, bed files are gzipped
         df = read_dataframe_from_tsv(file_path, **kwargs)
     elif file_path.suffix == ".csv":
         df = read_dataframe_from_csv(file_path, **kwargs)
@@ -614,7 +617,7 @@ def process_blast_dataframe(blast_df, blast_header, output_file):
 
         # Filter for the best hit per contig and keep only the best hit
         blast_df = blast_df.sort_values("bitscore", ascending=False).drop_duplicates("query")
-        blast_df['% contig alignment'] = (blast_df['length'] / blast_df['qlen']) * 100
+        blast_df['% contig aligned'] = (blast_df['length'] / blast_df['qlen']) * 100
 
         # Process the DataFrame
         blast_df = handle_dataframe(blast_df, "blast", "query", blast_header, output_file)
@@ -668,7 +671,6 @@ def process_annotation_dataframe(annotation_df, blast_header, output_file):
 def extract_annotation_data(df):
     # Extract all key-value pairs into separate columns
     df_extracted = ( df["subject title"].apply(parse_annotation_data).apply(pd.Series))
-    logger.debug(f"df_extracted %s", df_extracted)
     return pd.concat([df, df_extracted], axis=1)
 
 def parse_annotation_data(annotation_str):
@@ -677,7 +679,6 @@ def parse_annotation_data(annotation_str):
     matches = re.findall(pattern, annotation_str)
     for key, value in matches:
         annotation_dict[key] = value
-        logger.debug("Matched key: %s, value: %s", key, value)
     return annotation_dict
 
 def handle_tables(table_files, header_name=False, output=False, **kwargs):
@@ -848,52 +849,6 @@ def filter_contigs(dataframe):
     logger.debug("Removed %d rows", len(df.index) - len(df_snip.index))
     return df_snip
 
-def bed_to_coverage(df):
-    """
-    Convert bed df to coverage df.
-        chromosome start end(non-incl) coverage
-        Chrom1	0	10	1
-        chrom1	10	55	2
-        to
-        chrom1 0 1
-        chrom1 1 2
-        ...
-        chrom1 10 2
-
-    Args:
-        df (pandas.DataFrame): The input DataFrame.
-
-    Returns:
-        pandas.DataFrame: The coverage DataFrame.
-    """
-
-    # Convert data types
-    df['end'] = df['end'].astype(int)
-    df['start'] = df['start'].astype(int)
-    df['coverage'] = df['coverage'].astype(float)
-    df['chromosome'] = df['chromosome'].astype(str)
-
-    # Calculate the unique chromosome value
-    unique_chromosome = df['chromosome'].unique()
-    if len(unique_chromosome) > 1:
-        raise ValueError("Input DataFrame must contain only one chromosome value.")
-    chromosome = unique_chromosome[0]
-
-    # Create a range of positions from start to end (excluding the last end)
-    positions = np.concatenate(df['start'].values[:-1], df['end'].values[1:])
-
-    # Repeat the coverage values for each position
-    coverages = np.repeat(df['coverage'].values[:-1], np.diff(np.insert(df['end'].values, 0, 0)))
-
-    # Create the coverage DataFrame
-    coverage_df = pd.DataFrame({
-        'chromosome': [chromosome] * len(positions),
-        'position': positions,
-        'coverage': coverages
-    })
-
-    return coverage_df
-
 def read_bed(bed_files, selection):
     """
     Read bed files and concatenate them into a single dataframe.
@@ -906,15 +861,17 @@ def read_bed(bed_files, selection):
         dict: {index: pd.Dataframe} dictionary of bed dataframes.
     """
     bed_data = {}
-    for bed_file in bed_files:
-        if bed_file.stem not in selection:
-            print("")
+    for sample in selection:
+        bed_sel = [bed_file for bed_file in bed_files if str(sample) in str(bed_file)]
+        logger.debug ("Bed files for %s: %s", sample, bed_sel)
+        if not bed_sel:
+            logger.warning("No bed files were found for %s", sample)
             continue
+        bed_file = bed_sel[0]
         if check_file_exists(bed_file):
-            logger.debug("Converting bed file %s to coverage", bed_file.stem)
-            df = read_file_to_dataframe(bed_file, compression='gzip')
-            df = bed_to_coverage(df)
-            bed_data[bed_file.stem] = df
+            logger.debug("Converting bed file %s to coverage", bed_file)
+            df = pd.read_csv(bed_file, sep="\t", compression="gzip", names= ['chromosome', 'position', 'end', 'coverage'])
+            bed_data[sample] = df[['position', 'coverage']].copy()
 
     if len(bed_data) != len(selection):
         logger.warning("Not all bed files were read!")
@@ -940,20 +897,27 @@ def custom_html_table(df, columns, bed_files, output_name):
 
     # Read the bed files
     logger.info("Reading bed files")
-    beds = read_bed(bed_files, df.index)
+    beds = read_bed(bed_files, df['index'])
 
     if not beds:
         logger.warning("No bed files were read, nothing will be written to the file!")
-
         return
-    # Merge the bed data with the input DataFrame
-    combined_data = pd.merge(df, pd.concat(beds, names=['sample']), on=['sample'], how='left')
 
-    # Create the sparkline plots
-    combined_data['sparkline'] = combined_data['coverage'].apply(lambda x: go.Scatter(x=list(range(len(x))), y=x, mode='lines').to_html(full_html=False, include_plotlyjs='cdn'))
+    # Append the bed coverage dictionary with the input DataFrame
+    df.set_index('index', inplace=True)
+    df = df[[column for column in columns if column in df.columns]]
+    combined_data = pd.concat([df, pd.Series(beds, name='bed_coverage')], axis=1)
+
+
+    # Create the sparkline plot within the table
+    logger.debug("Making the coverage plots")
+    combined_data['coverage plot'] = combined_data['bed_coverage'].apply(
+        lambda x: px.area(x, x='position', y='coverage').to_html(full_html=False, include_plotlyjs='cdn', default_height= '300px', default_width=f'600px'))
+
+    combined_data.drop(columns=['bed_coverage'], inplace=True)
 
     # Create the HTML table
-    html_table = reorder_columns(combined_data, [columns + ['sparkline']]).to_html(escape=False, render_links=True, index=False)
+    html_table = combined_data.to_html(escape=False, render_links=True, index=False)
 
     # Write the HTML table to a file
     with open(output_name, "w", encoding="utf-8") as file:
@@ -1159,46 +1123,13 @@ def main(argv=None):
         contigs_sel = filter_contigs(contigs_mqc)
 
         logger.info("Making the HMTL contig table report")
-        columns = ["sample name", "cluster", "step", "species", "segment", "length", "completeness"]
+        contig_columns = ["sample name", "cluster", "step", "(annotation) species", "(annotation) segment", "(blast) length", "(blast) % contig aligned", "(quast) % N's", "(multiqc) mosdepth Mean read depth", ]
         contig_html = custom_html_table(
             contigs_sel,
-            file_columns,
+            contig_columns,
             args.bed_files,
-            "contig_custom_table.html"
+            "contig_custom_table_mqc.html"
             )
-
-
-        # make_html-mini-table - contig_sel:
-        # XXXX here represents a metric for completeness of the strain.
-        # sample name - annotation species - annotation segment - XXXXXX - perc covered - reads mapped - median read depth - coverage plot
-
-        # For contig_sample in contigs_sel:
-        #   Read bed file (contig_sample.bed, args.bed_files)
-
-        # Create the table with sparkline plots
-        # fig = go.Figure(go.Table(
-        #     header=dict(values=list(combined_data[columns].columns),
-        #                 line_color='darkslategray',
-        #                 fill_color='lightskyblue',
-        #                 align='left'),
-        #     cells=dict(values=[combined_data[col].tolist() for col in columns],
-        #             line_color='darkslategray',
-        #             fill_color='lightcyan',
-        #             align='left',
-        #             format=[None, None, None, None, None, None, None, None, None, None, [{"type": "splicearray", "show": True, "mode": "lines", "line": {"width": 1, "color": "darkgreen"}}]]))
-        # )
-
-        # # Adjust the layout
-        # fig.update_layout(
-        #     title=f"{sys.argv[3]} Batch Detected Virus Summary",
-        #     width=1200,
-        #     height=800,
-        #     font=dict(family="Oswald")
-        # )
-
-        # # Save the HTML file
-        # fig.write_html(f"{sys.argv[3]}.batch_detected_viruses.html")
-
 
         # Separate table for mapping constrains
         if not constrains_mqc.empty:
