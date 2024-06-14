@@ -394,7 +394,7 @@ def read_file_to_dataframe(file, **kwargs):
     if os.path.getsize(file_path) == 0:
         logger.debug("File is empty %s", file_path)
         return pd.DataFrame()
-    if file_path.suffix in [".tsv", ".txt"]:  # mqc calls tsv's txts
+    if file_path.suffix in [".tsv", ".txt", ".gz"]:  # mqc calls tsv's txts, bed files are gzipped
         df = read_dataframe_from_tsv(file_path, **kwargs)
     elif file_path.suffix == ".csv":
         df = read_dataframe_from_csv(file_path, **kwargs)
@@ -912,9 +912,13 @@ def read_bed(bed_files, selection):
             continue
         if check_file_exists(bed_file):
             logger.debug("Converting bed file %s to coverage", bed_file.stem)
-            df = read_file_to_dataframe(bed_file)
+            df = read_file_to_dataframe(bed_file, compression='gzip')
             df = bed_to_coverage(df)
             bed_data[bed_file.stem] = df
+
+    if len(bed_data) != len(selection):
+        logger.warning("Not all bed files were read!")
+        logger.warning("Missing bed files: %s", set(selection) - set(bed_data.keys()))
     return bed_data
 
 def custom_html_table(df, columns, bed_files, output_name):
@@ -931,26 +935,29 @@ def custom_html_table(df, columns, bed_files, output_name):
         None
     """
     if df.empty:
-        logger.warning("The DataFrame is empty, nothing will be written to the file!")
+        logger.warning("The DataFrame for custom html is empty, nothing will be written to the file!")
         return
 
     # Read the bed files
     logger.info("Reading bed files")
     beds = read_bed(bed_files, df.index)
 
-    # # Filter for columns of interest
-    # df = df[columns]
+    if not beds:
+        logger.warning("No bed files were read, nothing will be written to the file!")
 
-    # # Create the HTML table
-    # html_table = df.to_html(
-    #     classes="table table-striped table-bordered table-hover",
-    #     index=False,
-    #     justify="left",
-    # )
+        return
+    # Merge the bed data with the input DataFrame
+    combined_data = pd.merge(df, pd.concat(beds, names=['sample']), on=['sample'], how='left')
 
-    # # Write the HTML table to a file
-    # with open(output_name, "w") as file:
-    #     file.write(html_table)
+    # Create the sparkline plots
+    combined_data['sparkline'] = combined_data['coverage'].apply(lambda x: go.Scatter(x=list(range(len(x))), y=x, mode='lines').to_html(full_html=False, include_plotlyjs='cdn'))
+
+    # Create the HTML table
+    html_table = reorder_columns(combined_data, [columns + ['sparkline']]).to_html(escape=False, render_links=True, index=False)
+
+    # Write the HTML table to a file
+    with open(output_name, "w", encoding="utf-8") as file:
+        file.write(html_table)
 
 def create_constrain_summary(df_constrain, file_columns):
     # Filter only for columns of interest
@@ -1154,7 +1161,7 @@ def main(argv=None):
         logger.info("Making the HMTL contig table report")
         columns = ["sample name", "cluster", "step", "species", "segment", "length", "completeness"]
         contig_html = custom_html_table(
-            contig_sel,
+            contigs_sel,
             file_columns,
             args.bed_files,
             "contig_custom_table.html"
