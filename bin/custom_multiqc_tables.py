@@ -48,7 +48,7 @@ def parse_args(argv=None):
             sys.exit(2)
         ext = fname_path.suffix[1:]
         if ext not in choices:
-            logger.error(f"File '{fname}' doesn't end with one of {choices}")
+            logger.error(f"File '{fname}' with {ext}, doesn't end with one of {choices}")
             sys.exit(2)
         return fname_path
 
@@ -57,7 +57,7 @@ def parse_args(argv=None):
         metavar="CLUSTER SUMMARY FILES",
         nargs="+",
         type=Path,
-        help=" list of cluster summary files from created by the module extract clust.",
+        help="List of cluster summary files from created by the module extract_clust.py",
     )
 
     parser.add_argument(
@@ -78,8 +78,9 @@ def parse_args(argv=None):
     parser.add_argument(
         "--bed_files",
         metavar="BED_FILES",
+        nargs="+",
         help="Bed (coverage) files for each sample",
-        type=lambda s: file_choices(("bed", "bed.gz"), s),
+        type=lambda s: file_choices(("bed", "gz"), s),
     )
 
     parser.add_argument(
@@ -159,7 +160,6 @@ def parse_args(argv=None):
     )
     return parser.parse_args(argv)
 
-
 def check_file_exists(file, throw_error=True):
     """Check if the given files exist.
 
@@ -183,7 +183,6 @@ def check_file_exists(file, throw_error=True):
         return False
     return True
 
-
 def read_header_file(file_path):
     """
     Read a file and return its content as a list of strings.
@@ -197,7 +196,6 @@ def read_header_file(file_path):
     with open(file_path, "r") as file:
         content = file.read().splitlines()
     return content
-
 
 def concat_table_files(table_files, **kwargs):
     """Concatenate all the cluster summary files into a single dataframe.
@@ -218,7 +216,6 @@ def concat_table_files(table_files, **kwargs):
     )
     return df
 
-
 def read_in_quast(table_files):
     """Concatenate all the cluster summary files into a single dataframe.
 
@@ -236,7 +233,6 @@ def read_in_quast(table_files):
                     d = dict(line.strip().split("\t") for line in f)
                     df = pd.concat([df, pd.DataFrame.from_dict(d, orient="index").T])
     return df
-
 
 def get_files_and_columns_of_interest(table_headers):
     """
@@ -287,7 +283,6 @@ def get_files_and_columns_of_interest(table_headers):
 
     return file_columns
 
-
 def write_dataframe(df, file, comment):
     """
     Write a pandas DataFrame to a file in TSV format.
@@ -309,7 +304,6 @@ def write_dataframe(df, file, comment):
             f.write("\n".join(comment))
             f.write("\n")
         f.write(df_tsv)
-
 
 def filter_and_rename_columns(df, columns_of_interest):
     """
@@ -343,7 +337,6 @@ def filter_and_rename_columns(df, columns_of_interest):
     else:
         return df
 
-
 def read_dataframe_from_tsv(file, **kwargs):
     """
     Read a dataframe from a tsv file.
@@ -357,7 +350,6 @@ def read_dataframe_from_tsv(file, **kwargs):
     with open(file, "r") as table:
         df = pd.read_csv(table, sep="\t", **kwargs)
     return df
-
 
 def read_dataframe_from_csv(file, **kwargs):
     """
@@ -373,7 +365,6 @@ def read_dataframe_from_csv(file, **kwargs):
         df = pd.read_csv(table, **kwargs)
     return df
 
-
 def read_dataframe_from_yaml(file, **kwargs):
     """
     Read a dataframe from a YAML file.
@@ -388,7 +379,6 @@ def read_dataframe_from_yaml(file, **kwargs):
         data = yaml.safe_load(yaml_file, **kwargs)
         df = pd.DataFrame(data)
     return df
-
 
 def read_file_to_dataframe(file, **kwargs):
     """
@@ -414,7 +404,6 @@ def read_file_to_dataframe(file, **kwargs):
         logger.error("The file format %s is not supported of file %s!", file_path.suffix, file_path)
         sys.exit(2)
     return df
-
 
 def join_dataframes(base_df, dataframes_to_join):
     """
@@ -456,7 +445,6 @@ def process_multiqc_dataframe(df):
     df.set_index(df.columns[0], inplace=True)
     return df
 
-
 def process_failed_contig_dataframe(df):
     """
     Process the failed contig dataframe by converting columns to string type,
@@ -473,7 +461,6 @@ def process_failed_contig_dataframe(df):
     df["id"] = df["sample name"] + "_" + df["cluster"] + "_" + df["step"]
     df.set_index("id", inplace=True)
     return df
-
 
 def filter_files_of_interest(multiqc_data, files_of_interest):
     """
@@ -500,7 +487,6 @@ def filter_files_of_interest(multiqc_data, files_of_interest):
     if len(file_list) == 0:
         return []
     return file_list[0]
-
 
 def read_data(directory, file_columns, process_dataframe):
     """
@@ -536,7 +522,6 @@ def read_data(directory, file_columns, process_dataframe):
 
     return multiqc_samples_df
 
-
 def get_header(comment_dir, header_file_name):
     """
     Get the header from a header file located in the specified comment directory.
@@ -554,7 +539,6 @@ def get_header(comment_dir, header_file_name):
         if check_file_exists(header_file_path):
             header = read_header_file(header_file_path)
     return header
-
 
 def dynamic_split(row, delimiter="_"):
     """
@@ -630,6 +614,7 @@ def process_blast_dataframe(blast_df, blast_header, output_file):
 
         # Filter for the best hit per contig and keep only the best hit
         blast_df = blast_df.sort_values("bitscore", ascending=False).drop_duplicates("query")
+        blast_df['% contig alignment'] = (blast_df['length'] / blast_df['qlen']) * 100
 
         # Process the DataFrame
         blast_df = handle_dataframe(blast_df, "blast", "query", blast_header, output_file)
@@ -686,7 +671,6 @@ def extract_annotation_data(df):
     logger.debug(f"df_extracted %s", df_extracted)
     return pd.concat([df, df_extracted], axis=1)
 
-
 def parse_annotation_data(annotation_str):
     annotation_dict = {}
     pattern = r'(?P<key>\w+)\s*=\s*"?([^";]+)"?'
@@ -695,7 +679,6 @@ def parse_annotation_data(annotation_str):
         annotation_dict[key] = value
         logger.debug("Matched key: %s, value: %s", key, value)
     return annotation_dict
-
 
 def handle_tables(table_files, header_name=False, output=False, **kwargs):
     """
@@ -717,7 +700,6 @@ def handle_tables(table_files, header_name=False, output=False, **kwargs):
     if output:
         write_dataframe(result_df, output, header_name)
     return result_df
-
 
 def handle_dataframe(df, prefix, column_to_split, header=False, output=False):
     """
@@ -766,7 +748,6 @@ def handle_dataframe(df, prefix, column_to_split, header=False, output=False):
     )
     return result_df
 
-
 def filter_constrain(df, column, value):
     """
     Filter a dataframe based on a column and a regex value.
@@ -789,7 +770,6 @@ def filter_constrain(df, column, value):
     df_with_value.loc[:, column] = df_with_value[column].str.replace(value, "")
     df_with_value.loc[:, "index"] = df_with_value["index"].str.replace(value, "")
     return df_without_value, df_with_value
-
 
 def drop_columns(df, columns):
     """
@@ -868,6 +848,109 @@ def filter_contigs(dataframe):
     logger.debug("Removed %d rows", len(df.index) - len(df_snip.index))
     return df_snip
 
+def bed_to_coverage(df):
+    """
+    Convert bed df to coverage df.
+        chromosome start end(non-incl) coverage
+        Chrom1	0	10	1
+        chrom1	10	55	2
+        to
+        chrom1 0 1
+        chrom1 1 2
+        ...
+        chrom1 10 2
+
+    Args:
+        df (pandas.DataFrame): The input DataFrame.
+
+    Returns:
+        pandas.DataFrame: The coverage DataFrame.
+    """
+
+    # Convert data types
+    df['end'] = df['end'].astype(int)
+    df['start'] = df['start'].astype(int)
+    df['coverage'] = df['coverage'].astype(float)
+    df['chromosome'] = df['chromosome'].astype(str)
+
+    # Calculate the unique chromosome value
+    unique_chromosome = df['chromosome'].unique()
+    if len(unique_chromosome) > 1:
+        raise ValueError("Input DataFrame must contain only one chromosome value.")
+    chromosome = unique_chromosome[0]
+
+    # Create a range of positions from start to end (excluding the last end)
+    positions = np.concatenate(df['start'].values[:-1], df['end'].values[1:])
+
+    # Repeat the coverage values for each position
+    coverages = np.repeat(df['coverage'].values[:-1], np.diff(np.insert(df['end'].values, 0, 0)))
+
+    # Create the coverage DataFrame
+    coverage_df = pd.DataFrame({
+        'chromosome': [chromosome] * len(positions),
+        'position': positions,
+        'coverage': coverages
+    })
+
+    return coverage_df
+
+def read_bed(bed_files, selection):
+    """
+    Read bed files and concatenate them into a single dataframe.
+
+    Args:
+        bed_files (list): List of bed file paths.
+        selection (list): List of approved bed_files.
+
+    Returns:
+        dict: {index: pd.Dataframe} dictionary of bed dataframes.
+    """
+    bed_data = {}
+    for bed_file in bed_files:
+        if bed_file.stem not in selection:
+            print("")
+            continue
+        if check_file_exists(bed_file):
+            logger.debug("Converting bed file %s to coverage", bed_file.stem)
+            df = read_file_to_dataframe(bed_file)
+            df = bed_to_coverage(df)
+            bed_data[bed_file.stem] = df
+    return bed_data
+
+def custom_html_table(df, columns, bed_files, output_name):
+    """
+    Create a custom HTML table for MultiQC.
+
+    Args:
+        df (pandas.DataFrame): The input DataFrame.
+        columns (list): The list of columns to include in the table.
+        bed_files (list): The list of bed files to include in the table.
+        output_name (str): The name of the output file.
+
+    Returns:
+        None
+    """
+    if df.empty:
+        logger.warning("The DataFrame is empty, nothing will be written to the file!")
+        return
+
+    # Read the bed files
+    logger.info("Reading bed files")
+    beds = read_bed(bed_files, df.index)
+
+    # # Filter for columns of interest
+    # df = df[columns]
+
+    # # Create the HTML table
+    # html_table = df.to_html(
+    #     classes="table table-striped table-bordered table-hover",
+    #     index=False,
+    #     justify="left",
+    # )
+
+    # # Write the HTML table to a file
+    # with open(output_name, "w") as file:
+    #     file.write(html_table)
 
 def create_constrain_summary(df_constrain, file_columns):
     # Filter only for columns of interest
@@ -967,7 +1050,6 @@ def create_constrain_summary(df_constrain, file_columns):
 
     return df_wide
 
-
 def main(argv=None):
     """
     Main function for creating custom tables for MultiQC.
@@ -979,7 +1061,11 @@ def main(argv=None):
         int: Exit code.
     """
     args = parse_args(argv)
-    logging.basicConfig(level=args.log_level, format="[%(levelname)s] %(message)s")
+    logging.basicConfig(
+        level=args.log_level,
+        format="[%(asctime)s - %(levelname)s] %(message)s",
+        datefmt='%Y-%m-%d %H:%M:%S',
+    )
 
     # General stats - Cluster summariesx
     if args.clusters_summary:
@@ -1062,7 +1148,18 @@ def main(argv=None):
         logger.info("Writing Unfiltered Denovo constructs table file: contigs_all.tsv")
         write_dataframe(contigs_mqc, "contigs_all.tsv", [])
 
+        logger.info("Selecting best representatives of groups")
         contigs_sel = filter_contigs(contigs_mqc)
+
+        logger.info("Making the HMTL contig table report")
+        columns = ["sample name", "cluster", "step", "species", "segment", "length", "completeness"]
+        contig_html = custom_html_table(
+            contig_sel,
+            file_columns,
+            args.bed_files,
+            "contig_custom_table.html"
+            )
+
 
         # make_html-mini-table - contig_sel:
         # XXXX here represents a metric for completeness of the strain.

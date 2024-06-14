@@ -510,7 +510,7 @@ workflow VIRALGENIE {
             ch_checkv_summary.ifEmpty([]),
             ch_quast_summary.ifEmpty([]),
             ch_blast_summary.ifEmpty([]),
-            ch_bed.ifEmpty([]),
+            ch_bed.collect{it[1]}.ifEmpty([]),
             ch_constrain_meta,
             ch_annotation_summary.ifEmpty([]),
             multiqc_data,

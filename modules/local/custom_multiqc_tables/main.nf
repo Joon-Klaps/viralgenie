@@ -3,8 +3,8 @@ process CUSTOM_MULTIQC_TABLES {
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/bioframe:0.5.1--pyhdfd78af_0':
-        'biocontainers/bioframe:0.5.1--pyhdfd78af_0' }"
+        'oras://community.wave.seqera.io/library/pip_dash_multiqc_pandas:9472df82fedd8448':
+        'community.wave.seqera.io/library/pip_dash_multiqc_pandas:1046792731cd7619' }"
 
     input:
     path clusters_summary_files
@@ -70,6 +70,7 @@ process CUSTOM_MULTIQC_TABLES {
         python: \$(python --version | sed 's/Python //g')
         pandas: \$(pip show pandas | grep Version | sed 's/Version: //g')
         yaml: \$(pip show pyyaml | grep Version | sed 's/Version: //g')
+        plotly: \$(pip show plotly | grep Version | sed 's/Version: //g')
     END_VERSIONS
     """
 
@@ -85,6 +86,7 @@ process CUSTOM_MULTIQC_TABLES {
         python: \$(python --version | sed 's/Python //g')
         pandas: \$(pip show pandas | grep Version | sed 's/Version: //g')
         yaml: \$(pip show pyyaml | grep Version | sed 's/Version: //g')
+        plotly: \$(pip show plotly | grep Version | sed 's/Version: //g')
     END_VERSIONS
     """
 }
