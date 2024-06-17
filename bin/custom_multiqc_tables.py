@@ -13,7 +13,6 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 import yaml
-import plotly.graph_objs as go
 import plotly.io as pio
 import plotly.express as px
 
@@ -35,6 +34,22 @@ BLAST_COLUMNS = [
     "send",
     "evalue",
     "bitscore",
+]
+
+SUMMARY_COLUMNS = [
+    "sample name",
+    "cluster",
+    "step",
+    "species",
+    "segment",
+    "definition",
+    "(annotation) species",
+    "(annotation) segment",
+    "(blast) length",
+    "(blast) % contig aligned",
+    "(quast) % N's",
+    "(bcftools_stats) number of SNPs",
+    "(multiqc) mosdepth Mean read depth",
 ]
 
 def parse_args(argv=None):
@@ -617,7 +632,7 @@ def process_blast_dataframe(blast_df, blast_header, output_file):
 
         # Filter for the best hit per contig and keep only the best hit
         blast_df = blast_df.sort_values("bitscore", ascending=False).drop_duplicates("query")
-        blast_df['% contig aligned'] = (blast_df['length'] / blast_df['qlen']) * 100
+        blast_df['% contig aligned'] = round((blast_df['length'] / blast_df['qlen']) * 100,2)
 
         # Process the DataFrame
         blast_df = handle_dataframe(blast_df, "blast", "query", blast_header, output_file)
@@ -819,6 +834,28 @@ def reorder_columns(df, columns):
     ]
     return df
 
+def reorder_rows(dataframe):
+    """
+    Reorder the rows in the DataFrame based on the ranking of the steps.
+
+    Args:
+        dataframe (pandas.DataFrame): The input DataFrame.
+
+    Returns:
+        pandas.DataFrame: The reordered DataFrame.
+    """
+
+    df = dataframe.copy()
+    ordered_list = (['constrain'] + [f'it{i}' for i in range(100, 0, -1)] + ['itvariant-calling', 'consensus', 'singleton'])
+    rank_dict = {step: rank for rank, step in enumerate(ordered_list, start=1)}
+
+    # Sort the DataFrame by 'step' based on the ranking dictionary
+    df['rank'] = df['step'].map(rank_dict)
+    df = df.sort_values(['sample name', 'cluster', 'rank'])
+
+    return df
+
+
 def filter_contigs(dataframe):
     """
     Filter contigs for each sample to only include those:
@@ -831,13 +868,7 @@ def filter_contigs(dataframe):
     Returns:
         pandas.DataFrame: The filtered DataFrame.
     """
-    df = dataframe.copy()
-    ordered_list = ([f'it{i}' for i in range(100, 0, -1)] + ['itvariant-calling', 'consensus', 'singleton'])
-    rank_dict = {step: rank for rank, step in enumerate(ordered_list, start=1)}
-
-    # Sort the DataFrame by 'step' based on the ranking dictionary
-    df['rank'] = df['step'].map(rank_dict)
-    df = df.sort_values(['sample name', 'cluster', 'rank'])
+    df = reorder_rows(dataframe)
 
     # Select the first occurrence of each group
     df_snip = df.groupby(['sample name', 'cluster']).head(1).reset_index(drop=True)
@@ -848,6 +879,28 @@ def filter_contigs(dataframe):
 
     logger.debug("Removed %d rows", len(df.index) - len(df_snip.index))
     return df_snip
+
+def coalesce_constrain(dataframe):
+    """
+    Fill missing values in the dataframe based on the group values.
+
+    Args:
+        dataframe (pandas.DataFrame): The input DataFrame.
+
+    Returns:
+        pandas.DataFrame: The DataFrame with filled missing values.
+    """
+
+    df = reorder_rows(dataframe)
+    grouping_cols = ['sample name', 'cluster']
+    coalesce_columns = df.columns.difference(grouping_cols)
+    result = df.copy()
+    result[coalesce_columns] = result.groupby(grouping_cols)[coalesce_columns].transform(fill_group_na)
+
+    return result.query('step == "constrain"')
+
+def fill_group_na(s):
+    return s.infer_objects(copy=False).ffill().bfill()
 
 def read_bed(bed_files, selection):
     """
@@ -862,7 +915,7 @@ def read_bed(bed_files, selection):
     """
     bed_data = {}
     for sample in selection:
-        bed_sel = [bed_file for bed_file in bed_files if str(sample) in str(bed_file)]
+        bed_sel = [bed_file for bed_file in bed_files if sample_in_file(sample, bed_file)]
         logger.debug ("Bed files for %s: %s", sample, bed_sel)
         if not bed_sel:
             logger.warning("No bed files were found for %s", sample)
@@ -878,7 +931,28 @@ def read_bed(bed_files, selection):
         logger.warning("Missing bed files: %s", set(selection) - set(bed_data.keys()))
     return bed_data
 
-def custom_html_table(df, columns, bed_files, output_name):
+def sample_in_file(sample, file_name) -> bool:
+    """
+    Check if the sample name is in the file name.
+
+    Args:
+        sample (str): The sample name.
+        file (str): The file name.
+
+    Returns:
+        bool: True if the sample name is in the file name, False otherwise.
+    """
+    sample_upper = sample.upper()
+    file_upper = str(file_name).upper()
+    logger.debug("sample: %s - file: %s",sample_upper, file_upper)
+
+    return (
+        sample_upper in file_upper
+        or sample_upper in file_upper.replace("_", "-")
+        or sample_upper in file_upper.replace("-", "_")
+    )
+
+def custom_html_table(df, columns, bed_files, header, output_name) -> None:
     """
     Create a custom HTML table for MultiQC.
 
@@ -891,6 +965,8 @@ def custom_html_table(df, columns, bed_files, output_name):
     Returns:
         None
     """
+    df_id = output_name.split(".")[0]
+
     if df.empty:
         logger.warning("The DataFrame for custom html is empty, nothing will be written to the file!")
         return
@@ -910,18 +986,38 @@ def custom_html_table(df, columns, bed_files, output_name):
 
 
     # Create the sparkline plot within the table
+    # TODO: Consider implementing VCF file reading as well and color them differently
+    # TODO: Update if annotation available, use species name and segment instead of constrain
     logger.debug("Making the coverage plots")
-    combined_data['coverage plot'] = combined_data['bed_coverage'].apply(
-        lambda x: px.area(x, x='position', y='coverage').to_html(full_html=False, include_plotlyjs='cdn', default_height= '300px', default_width=f'600px'))
-
+    config = {'displaylogo': False}
+    combined_data['coverage plot'] = combined_data.apply(
+        lambda row: px.area(row['bed_coverage'], x='position', y='coverage', title=f"{row['sample name']}-{row['cluster']}").to_html(config=config, full_html=False, include_plotlyjs='cdn', default_height='300px', default_width='600px'),
+        axis=1
+    )
     combined_data.drop(columns=['bed_coverage'], inplace=True)
 
     # Create the HTML table
-    html_table = combined_data.to_html(escape=False, render_links=True, index=False)
+    # pd.df.to_html (not pio.to_html)
+    html_table = combined_data.to_html(escape=False, render_links=True, index=False,table_id= df_id, classes = ['table', 'table-condensed', 'mqc_table'])
 
     # Write the HTML table to a file
+    html = ""
+    if header:
+        html += "\n".join(header)
+        html += "\n"
+    collapse_class = "mqc-table-collapse" if len(combined_data.index) > 10 else ""
+    html += f"""
+        <div id="{df_id}_container" class="mqc_table_container">
+            <div class="table-responsive mqc-table-responsive {collapse_class}">
+        """
+    html += html_table
+    html += f"""
+            </div>
+        </div>
+        """
+
     with open(output_name, "w", encoding="utf-8") as file:
-        file.write(html_table)
+        file.write(html)
 
 def create_constrain_summary(df_constrain, file_columns):
     # Filter only for columns of interest
@@ -1123,11 +1219,11 @@ def main(argv=None):
         contigs_sel = filter_contigs(contigs_mqc)
 
         logger.info("Making the HMTL contig table report")
-        contig_columns = ["sample name", "cluster", "step", "(annotation) species", "(annotation) segment", "(blast) length", "(blast) % contig aligned", "(quast) % N's", "(multiqc) mosdepth Mean read depth", ]
         contig_html = custom_html_table(
             contigs_sel,
-            contig_columns,
+            SUMMARY_COLUMNS,
             args.bed_files,
+            get_header(args.comment_dir, "contig_overview_mqc.html"),
             "contig_custom_table_mqc.html"
             )
 
@@ -1142,18 +1238,28 @@ def main(argv=None):
             constrains_mqc = constrains_mqc.merge( constrain_meta, how="left", left_on="cluster", right_on="id")
             constrains_mqc = reorder_columns( constrains_mqc,[ "index", "sample name", "cluster", "step", "species", "segment", "definition"])
 
-            logger.info("Writing mapping long table: mapping_constrains_mqc.tsv")
-            write_dataframe( constrains_mqc, "mapping_constrains_mqc.tsv", get_header( args.comment_dir, "mapping_constrains_mqc.txt") )
-
             # add mapping summary to sample overview table in ... wide format with species & segment combination
             logger.info("Creating mapping constrain summary (wide) table")
             write_dataframe(
                 create_constrain_summary( constrains_mqc, file_columns),
-                "mapping_constrains_summary_mqc.tsv",
+                "mapping_constrains_summary_mqc.txt",
                 get_header( args.comment_dir, "mapping_constrains_summary_mqc.txt")
                 )
 
-            # Plot something similar for the mapping constrains instead of summary table
+            logger.info("Coalescing columns")
+            coalesced_constrains = coalesce_constrain(constrains_mqc)
+
+            logger.info("Writing mapping long table: mapping_constrains.tsv")
+            write_dataframe( coalesced_constrains, "mapping_constrains.tsv", [] )
+
+            logger.info("Making the HMTL constrain table report")
+            custom_html_table(
+                coalesced_constrains,
+                SUMMARY_COLUMNS,
+                args.bed_files,
+                get_header( args.comment_dir, "mapping_constrains_mqc.html"),
+                "constrain_custom_table_mqc.html"
+                )
     return 0
 
 
