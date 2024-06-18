@@ -36,21 +36,22 @@ BLAST_COLUMNS = [
     "bitscore",
 ]
 
-SUMMARY_COLUMNS = [
-    "sample name",
-    "cluster",
-    "step",
-    "species",
-    "segment",
-    "definition",
-    "(annotation) species",
-    "(annotation) segment",
-    "(blast) length",
-    "(blast) % contig aligned",
-    "(quast) % N's",
-    "(bcftools_stats) number of SNPs",
-    "(multiqc) mosdepth Mean read depth",
-]
+SUMMARY_COLUMNS = {
+    "index": "index",
+    "sample name": "sample name",
+    "cluster": "cluster",
+    "step": "step",
+    "species": "species",
+    "segment": "segment",
+    "definition": "definition",
+    "(annotation) species": "(annotation) species",
+    "(annotation) segment": "(annotation) segment",
+    "(blast) length":"contig length",
+    "(annotation) % contig aligned":"% contig aligned",
+    "(quast) % N's":"% N's",
+    "(bcftools_stats) number of SNPs":"number of SNPs",
+    "(multiqc) mosdepth Median read depth":"Median read depth",
+}
 
 def parse_args(argv=None):
     """Define and immediately parse command line arguments."""
@@ -331,6 +332,7 @@ def filter_and_rename_columns(df, columns_of_interest):
     Args:
         df (pandas.DataFrame): The input DataFrame.
         columns_of_interest (dict): A dictionary mapping column names of interest to their desired new names.
+            {old_colname: new_colname}
 
     Returns:
         pandas.DataFrame: The filtered DataFrame with renamed columns.
@@ -632,7 +634,6 @@ def process_blast_dataframe(blast_df, blast_header, output_file):
 
         # Filter for the best hit per contig and keep only the best hit
         blast_df = blast_df.sort_values("bitscore", ascending=False).drop_duplicates("query")
-        blast_df['% contig aligned'] = round((blast_df['length'] / blast_df['qlen']) * 100,2)
 
         # Process the DataFrame
         blast_df = handle_dataframe(blast_df, "blast", "query", blast_header, output_file)
@@ -670,8 +671,7 @@ def process_annotation_dataframe(annotation_df, blast_header, output_file):
         # Extract all key-value pairs into separate columns
         annotation_df = extract_annotation_data(annotation_df)
 
-        # Remove the blast columns (but not query), we only want annotation data (but not genome_name)
-        annotation_df = drop_columns(annotation_df, BLAST_COLUMNS[1:])
+        annotation_df['% contig aligned'] = round((annotation_df['length'] / annotation_df['qlen']) * 100,2)
 
         # Process the DataFrame
         annotation_df = handle_dataframe(annotation_df, "annotation", "query", blast_header, output_file)
@@ -952,6 +952,19 @@ def sample_in_file(sample, file_name) -> bool:
         or sample_upper in file_upper.replace("-", "_")
     )
 
+def remove_keys(d, keys):
+    """
+    Remove keys from a dictionary.
+
+    Args:
+        d (dict): The dictionary to remove keys from.
+        keys (list): The list of keys to remove.
+
+    Returns:
+        dict: The dictionary with the specified keys removed.
+    """
+    return {k: v for k, v in d.items() if k not in keys}
+
 def custom_html_table(df, columns, bed_files, header, output_name) -> None:
     """
     Create a custom HTML table for MultiQC.
@@ -979,15 +992,18 @@ def custom_html_table(df, columns, bed_files, header, output_name) -> None:
         logger.warning("No bed files were read, nothing will be written to the file!")
         return
 
-    # Append the bed coverage dictionary with the input DataFrame
-    df.set_index('index', inplace=True)
-    df = df[[column for column in columns if column in df.columns]]
-    combined_data = pd.concat([df, pd.Series(beds, name='bed_coverage')], axis=1)
+    # Remove duplicated columns that aren't needed
+    if '(annotation) species' in df.columns and all(df['(annotation) species'].notnull()):
+        columns = remove_keys(columns, ["species", "segment"])
 
+    df = filter_and_rename_columns(df, columns)
+    df.set_index('index', inplace=True)
+
+    # Append the bed coverage dictionary with the input DataFrame
+    combined_data = pd.concat([df, pd.Series(beds, name='bed_coverage')], axis=1)
 
     # Create the sparkline plot within the table
     # TODO: Consider implementing VCF file reading as well and color them differently
-    # TODO: Update if annotation available, use species name and segment instead of constrain
     logger.debug("Making the coverage plots")
     config = {'displaylogo': False}
     combined_data['coverage plot'] = combined_data.apply(
@@ -998,7 +1014,7 @@ def custom_html_table(df, columns, bed_files, header, output_name) -> None:
 
     # Create the HTML table
     # pd.df.to_html (not pio.to_html)
-    html_table = combined_data.to_html(escape=False, render_links=True, index=False,table_id= df_id, classes = ['table', 'table-condensed', 'mqc_table'])
+    html_table = combined_data.to_html(escape=False, justify = "center", render_links=True, border=0, index=False,table_id= df_id, classes = ['table', 'table-condensed', 'mqc_table'])
 
     # Write the HTML table to a file
     html = ""
