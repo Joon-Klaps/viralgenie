@@ -13,6 +13,7 @@ Initial release of Joon-Klaps/viralgenie, created with the [nf-core](https://nf-
 - Include sspace for contig extension ([#123](https://github.com/Joon-Klaps/viralgenie/pull/123))
 - Include both krakenreport &nodes.dmp in taxonomy ([#128](https://github.com/Joon-Klaps/viralgenie/pull/128))
 - Include coverage plot & subset contig results in mqc report ([#129](https://github.com/Joon-Klaps/viralgenie/pull/129))
+- New variable mmseqs_cluster_mode default 0 ([#130](https://github.com/Joon-Klaps/viralgenie/pull/130))
 
 ### `Fixed`
 
