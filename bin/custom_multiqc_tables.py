@@ -53,6 +53,12 @@ SUMMARY_COLUMNS = {
     "(multiqc) mosdepth Median read depth":"Median read depth",
 }
 
+GROUPING_COLUMNS = [
+    "(annotation) species",
+    "(annotation) segment",
+    "(annotation) lineage",
+    ]
+
 def parse_args(argv=None):
     """Define and immediately parse command line arguments."""
     parser = argparse.ArgumentParser(
@@ -129,6 +135,14 @@ def parse_args(argv=None):
         nargs="+",
         help="Checkv summary files for each sample",
         type=Path,
+    )
+    parser.add_argument(
+        "--filter_level",
+        metavar="FILTER LEVEL",
+        choices= ["normal", "strict", "none"],
+        default="normal",
+        type=str,
+        help="Specify how strict the filtering should be, default is normal.",
     )
 
     parser.add_argument(
@@ -856,7 +870,7 @@ def reorder_rows(dataframe):
     return df
 
 
-def filter_contigs(dataframe):
+def filter_contigs(dataframe, str: level="normal" ) -> pd.DataFrame:
     """
     Filter contigs for each sample to only include those:
         - latest step of each cluster
@@ -872,10 +886,28 @@ def filter_contigs(dataframe):
 
     # Select the first occurrence of each group
     df_snip = df.groupby(['sample name', 'cluster']).head(1).reset_index(drop=True)
+    if not 'annotation' in df.columns:
+        logger.debug("Removed %d rows", len(df.index) - len(df_snip.index))
+        return df_snip
 
-    if 'annotation' in df.columns:
-        # Filter for annotated contigs
-        df_snip = df_snip[df_snip['annotation'].notnull()]
+    # Filter for annotated contigs
+    df_snip = df_snip[df_snip['annotation'].notnull()]
+
+    if level != "strict":
+        logger.debug("Removed %d rows", len(df.index) - len(df_snip.index))
+        return df_snip
+
+    if ["(annotation) % contig aligned" , "(annotation) bitscore"] not in df_snip.columns:
+        logger.warning("Columns for filtering are not present in the dataframe")
+        return df_snip
+
+    df_snip['sort'] = df_snip["(annotation) % contig aligned"] * df_snip["(annotation) bitscore"]
+    df_snip = df_snip.sort_values(['sample name', 'cluster', 'sort'], ascending=[True, True, False])
+
+    # Filter for the latest step of each cluster
+    group_cols = [col for col in df_snip.columns if col in GROUPING_COLUMNS]
+    logger.debug("Grouping columns for filtering: %s", group_cols)
+    df_snip = df_snip.groupby([['sample name' + group_cols ]]).tail(1).reset_index(drop=True)
 
     logger.debug("Removed %d rows", len(df.index) - len(df_snip.index))
     return df_snip
@@ -1231,8 +1263,10 @@ def main(argv=None):
         logger.info("Writing Unfiltered Denovo constructs table file: contigs_all.tsv")
         write_dataframe(contigs_mqc, "contigs_all.tsv", [])
 
-        logger.info("Selecting best representatives of groups")
-        contigs_sel = filter_contigs(contigs_mqc)
+        contig_sel = contigs_mqc
+        if args.filter_level != "none":
+            logger.info("Selecting best representatives of groups")
+            contigs_sel = filter_contigs(contigs_mqc, args.filter_level)
 
         logger.info("Making the HMTL contig table report")
         contig_html = custom_html_table(
