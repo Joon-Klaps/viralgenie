@@ -446,6 +446,15 @@
                     "enum": ["cdhitest", "vsearch", "mmseqs-linclust", "mmseqs-cluster", "vrhyme", "mash", "diamond"],
                     "fa_icon": "fas fa-bezier-curve"
                 },
+                "mmseqs_cluster_mode": {
+                    "type": "integer",
+                    "default": 0,
+                    "fa_icon": "fas fa-project-diagram",
+                    "description": "Specify the algorithm to partition the network graph from mmseqs",
+                    "help_text": "The Greedy Set cover (0) algorithm is an approximation for the NP-complete optimization problem called set cover.\nConnected component (1) uses transitive connection to cover more remote homologs.\nGreedy incremental (2) works analogous to CD-HIT clustering algorithm.",
+                    "minimum": 0,
+                    "maximum": 3
+                },
                 "network_clustering": {
                     "type": "string",
                     "default": "connected_components",
