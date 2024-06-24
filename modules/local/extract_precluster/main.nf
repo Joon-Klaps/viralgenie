@@ -23,13 +23,16 @@ process EXTRACT_PRECLUSTER {
     script:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
+    def simplificationLevel = meta.collapse ? "--simplification-level ${meta.collapse}" :  params.precluster_simplification_level ? "--simplification-level ${params.precluster_simplification_level}" : ''
     def kaiju = kaiju_classifications ? "--kaiju-classifications  <(sort -k2,2 ${kaiju_classifications})" : ''
     def kaiju_db = kaiju_db ? "--database ${kaiju_db}" : ''
     def kraken = kraken_classifications ? "--kraken-classifications <(sort -k2,2  ${kraken_classifications})" : ''
     def kraken_report = kraken_report ? "--kraken-report ${kraken_report}" : ''
+
     """
     extract_preclust.py \\
         $args \\
+        ${simplificationLevel} \\
         ${kaiju} \\
         ${kraken} \\
         ${kraken_report} \\

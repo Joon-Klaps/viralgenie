@@ -565,7 +565,7 @@ def dynamic_split(row, delimiter="_"):
 
 def parse_annotation_data(annotation_str):
     annotation_dict = {}
-    pattern = r'(?P<key>\w+)\s*[:=]\s*"?([^";]+)"?'
+    pattern = r'(?P<key>\w+)\s*=\s*"?([^";]+)"?'
     matches = re.findall(pattern, annotation_str)
     for key, value in matches:
         annotation_dict[key] = value
