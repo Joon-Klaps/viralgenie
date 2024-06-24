@@ -870,7 +870,7 @@ def reorder_rows(dataframe):
     return df
 
 
-def filter_contigs(dataframe, str: level="normal" ) -> pd.DataFrame:
+def filter_contigs(dataframe, level="normal") -> pd.DataFrame:
     """
     Filter contigs for each sample to only include those:
         - latest step of each cluster
