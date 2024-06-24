@@ -240,5 +240,6 @@ extra_fn_clean_exts:
   - "_trinity"
   - ".filtered"
   - ".norm"
+  - ".sort"
   - ".consensus_bcftools"
   - ".consensus_ivar"

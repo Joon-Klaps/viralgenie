@@ -3,8 +3,8 @@ process CUSTOM_MULTIQC_TABLES {
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/bioframe:0.5.1--pyhdfd78af_0':
-        'biocontainers/bioframe:0.5.1--pyhdfd78af_0' }"
+        'oras://community.wave.seqera.io/library/pip_dash_multiqc_pandas:9472df82fedd8448':
+        'community.wave.seqera.io/library/pip_dash_multiqc_pandas:1046792731cd7619' }"
 
     input:
     path clusters_summary_files
@@ -12,6 +12,7 @@ process CUSTOM_MULTIQC_TABLES {
     path checkv_files, stageAs: "?/checkv/*"
     path quast_files, stageAs: "?/quast/*"
     path blast_files, stageAs: "?/blast/*"
+    path bed_files, stageAs: "?/bed/*"
     path mapping_constrains
     path anno_files, stageAs: "?/annotation/*"
     path multiqc_dir
@@ -26,7 +27,8 @@ process CUSTOM_MULTIQC_TABLES {
     path("summary_quast_mqc.tsv")             , emit: summary_quast_mqc     , optional: true
     path("summary_blast_mqc.tsv")             , emit: summary_blast_mqc     , optional: true
     path("summary_anno_mqc.tsv")              , emit: summary_anno_mqc      , optional: true
-    path("mapping_constrains_mqc.tsv")        , emit: mapping_constrains_mqc, optional: true
+    path("contig_custom_table_mqc.html")      , emit: contig_html           , optional: true
+    path("constrain_custom_table_mqc.html")   , emit: mapping_constrains_mqc, optional: true
     path("mapping_constrains_summary_mqc.tsv"), emit: constrains_summary_mqc, optional: true
     path "versions.yml"                       , emit: versions
 
@@ -41,19 +43,21 @@ process CUSTOM_MULTIQC_TABLES {
     def quast_files            = quast_files            ? "--quast_files ${quast_files}"                 : ''
     def blast_files            = blast_files            ? "--blast_files ${blast_files}"                 : ''
     def annotation_files       = anno_files             ? "--annotation_files ${anno_files}"             : ''
+    def bed_files              = bed_files              ? "--bed_files ${bed_files}"                     : ''
     def mapping_constrains     = mapping_constrains     ? "--mapping_constrains ${mapping_constrains}"   : ''
     def multiqc_dir            = multiqc_dir            ? "--multiqc_dir ${multiqc_dir}"                 : ''
     def comment_headers        = comment_headers        ? "--comment_dir ${comment_headers}"             : ''
     def custom_table_headers   = custom_table_headers   ? "--table_headers ${custom_table_headers}"      : ''
 
     """
-    custom_multiqc_tables.py\\
+    custom_multiqc_tables.py \\
         $args \\
         $clusters_summary_files \\
         $sample_metadata \\
         $checkv_files \\
         $quast_files \\
         $blast_files \\
+        $bed_files \\
         $mapping_constrains \\
         $annotation_files \\
         $comment_headers \\
@@ -66,6 +70,7 @@ process CUSTOM_MULTIQC_TABLES {
         python: \$(python --version | sed 's/Python //g')
         pandas: \$(pip show pandas | grep Version | sed 's/Version: //g')
         yaml: \$(pip show pyyaml | grep Version | sed 's/Version: //g')
+        plotly: \$(pip show plotly | grep Version | sed 's/Version: //g')
     END_VERSIONS
     """
 
@@ -81,6 +86,7 @@ process CUSTOM_MULTIQC_TABLES {
         python: \$(python --version | sed 's/Python //g')
         pandas: \$(pip show pandas | grep Version | sed 's/Version: //g')
         yaml: \$(pip show pyyaml | grep Version | sed 's/Version: //g')
+        plotly: \$(pip show plotly | grep Version | sed 's/Version: //g')
     END_VERSIONS
     """
 }

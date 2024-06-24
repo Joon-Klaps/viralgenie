@@ -123,7 +123,7 @@ This annotation database can be specified using `--annotation_db`
 In case [Virosaurus](https://viralzone.expasy.org/8676) does not suffice your needs, a custom annotation dataset can be made. Creating a custom annotation dataset can easily be done as long as the annotation data is in the fasta header using this format: `(key)=(value)` or `(key):(value)`. For example, the following fasta headers are both valid:
 
 ```
->754189.6 species:"Ungulate tetraparvovirus 3"|segment:"nan"|host_common_name:"Pig"|genbank_accessions:"NC_038883"|taxon_id:"754189"
+>754189.6 species="Ungulate tetraparvovirus 3"|segment="nan"|host_common_name="Pig"|genbank_accessions="NC_038883"|taxon_id="754189"
 >NC_001731; usual name=Molluscum contagiosum virus; clinical level=SPECIES; clinical typing=unknown; species=Molluscum contagiosum virus; taxid=10279; acronym=MOCV; nucleic acid=DNA; circular=N; segment=N/A; host=Human,Vertebrate;
 ```
 
@@ -143,7 +143,7 @@ p3-all-genomes --eq superkingdom,Viruses --eq reference_genome,Reference --ne ho
     Any attribute can be downloaded and will be added to the final report if the formatting remains the same.
     For a complete list of attributes see `p3-all-genomes --fields` or read their [manual](https://www.bv-brc.org/docs/cli_tutorial/cli_getting_started.html)
 
-Next, the metadata and the genomic data is combined into a single fasta file where the metada fields are stored in the fasta comment as `key1:"value1"|key2:"value2"|...` using the following python code.
+Next, the metadata and the genomic data is combined into a single fasta file where the metada fields are stored in the fasta comment as `key1="value1"|key2="value2"|...` using the following python code.
 
 ```python
 import pandas as pd
@@ -160,9 +160,9 @@ df.columns = df.columns.str.replace("genome.", "")
 
 # create fasta header
 def create_fasta_header(row):
-    annotations = "|".join(
+    annotations = ";".join(
         [
-            f'{column}:"{value}"'
+            f'{column}="{value}"'
             for column, value in row.items()
             if column != "contig.sequence"
         ]
