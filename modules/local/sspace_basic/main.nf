@@ -11,14 +11,16 @@ process SSPACE_BASIC {
     tuple val(meta), path(reads)
     tuple val(meta2), path(contigs)
     tuple val(distance), val(deviation), val(complement)
+    val(name)
 
     output:
+    tuple val(meta), path("${prefix}.final.renamed.scaffolds.fasta"), emit: fasta
     tuple val(meta), path("${prefix}.final.scaffolds.fasta"), emit: fasta
-    tuple val(meta), path("${prefix}.library.txt")          , emit: library
-    tuple val(meta), path("${prefix}.logfile.txt")          , emit: log
-    tuple val(meta), path("${prefix}.summaryfile.txt")      , emit: summary
-    tuple val(meta), path("dot/*.dot")                      , optional:true, emit: dot
-    path "versions.yml"                                     , emit: versions
+    tuple val(meta), path("${prefix}.library.txt")                  , emit: library
+    tuple val(meta), path("${prefix}.logfile.txt")                  , emit: log
+    tuple val(meta), path("${prefix}.summaryfile.txt")              , emit: summary
+    tuple val(meta), path("dot/*.dot")                              , optional:true, emit: dot
+    path "versions.yml"                                             , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -26,6 +28,7 @@ process SSPACE_BASIC {
     script:
     def args = task.ext.args ?: ''
     prefix = task.ext.prefix ?: "${meta.id}"
+    rename = name ? "sed 's/>/>${name}_/g' ${prefix}.final.scaffolds.fasta > ${prefix}.final.renamed.scaffolds.fasta" : ''
     def version = "2.1.1" // version not available through CLI of tool
     """
     gunzip -f ${reads[0]}
@@ -40,6 +43,8 @@ process SSPACE_BASIC {
         -T $task.cpus \\
         -b ${prefix}
 
+    ${rename}
+
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         sspace_base: ${version}
@@ -52,7 +57,7 @@ process SSPACE_BASIC {
     def reads = reads.join('\t')
     def version = "2.1.1" // version not available through CLI of tool
     """
-    touch ${prefix}.fa
+    touch ${prefix}.final.scaffolds.fasta
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
