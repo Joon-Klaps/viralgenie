@@ -28,22 +28,24 @@ process SSPACE_BASIC {
     script:
     def args = task.ext.args ?: ''
     prefix = task.ext.prefix ?: "${meta.id}"
-    rename = name ? "sed 's/>/>${name}_/g' ${prefix}.final.scaffolds.fasta > ${prefix}.final.renamed.scaffolds.fasta" : ''
+    name = name ?: 'sspace'
+    unzip_contig = "${contigs.getExtension()}" == "gz" ? "gunzip -c ${contigs}": "cat ${contigs}"  // doesn't allow insertion with <() or accepts gunzipped input
     def version = "2.1.1" // version not available through CLI of tool
     """
     gunzip -f ${reads[0]}
     gunzip -f ${reads[1]}
+    ${unzip_contig} > "tmp.fasta"
 
     echo "${prefix} ${reads[0].baseName} ${reads[1].baseName} ${distance} ${deviation} ${complement}" > ${prefix}.library.txt
 
     sspace_basic \\
         -l ${prefix}.library.txt \\
-        -s ${contigs} \\
+        -s tmp.fasta \\
         $args \\
         -T $task.cpus \\
         -b ${prefix}
 
-    ${rename}
+    sed 's/>/>${name}_/g' ${prefix}.final.scaffolds.fasta > ${prefix}.final.renamed.scaffolds.fa
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -58,6 +60,7 @@ process SSPACE_BASIC {
     def version = "2.1.1" // version not available through CLI of tool
     """
     touch ${prefix}.final.scaffolds.fasta
+    touch ${prefix}.final.renamed.scaffolds.fa
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

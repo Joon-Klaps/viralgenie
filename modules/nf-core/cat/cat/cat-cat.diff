@@ -1,0 +1,14 @@
+Changes in module 'nf-core/cat/cat'
+--- modules/nf-core/cat/cat/main.nf
++++ modules/nf-core/cat/cat/main.nf
+@@ -8,7 +8,7 @@
+         'biocontainers/pigz:2.3.4' }"
+ 
+     input:
+-    tuple val(meta), path(files_in)
++    tuple val(meta), path(files_in, stageAs: "?/*")
+ 
+     output:
+     tuple val(meta), path("${prefix}"), emit: file_out
+
+************************************************************
