@@ -4,7 +4,7 @@
 include { QUAST         } from '../../modules/nf-core/quast/main'
 include { SSPACE_BASIC  } from '../../modules/local/sspace_basic/main'
 
-workflow FASTQ_ASSEMBLY {
+workflow FASTQ_FASTA_QUAST_SSPACE {
 
     take:
     reads       // channel: [ val(meta), [ reads ] ]
