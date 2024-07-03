@@ -470,7 +470,7 @@
                 },
                 "identity_threshold": {
                     "type": "number",
-                    "default": 0.6,
+                    "default": 0.85,
                     "description": "Identity threshold value used in clustering algorithms",
                     "fa_icon": "fas fa-list-ol"
                 },
