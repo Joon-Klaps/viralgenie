@@ -56,7 +56,7 @@ workflow FASTQ_ASSEMBLY {
         MEGAHIT(reads)
         ch_versions          = ch_versions.mix(MEGAHIT.out.versions.first())
 
-        EXTEND_MEGAHIT( reads, MEGAHIT.out.scaffolds, "megahit")
+        EXTEND_MEGAHIT( reads, MEGAHIT.out.contigs, "megahit")
         ch_scaffolds         = ch_scaffolds.mix(EXTEND_MEGAHIT.out.scaffolds)
         ch_versions          = ch_versions.mix(EXTEND_MEGAHIT.out.versions)
         ch_multiqc           = ch_multiqc.mix(EXTEND_MEGAHIT.out.mqc)

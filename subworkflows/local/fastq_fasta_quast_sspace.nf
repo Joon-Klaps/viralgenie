@@ -17,8 +17,8 @@ workflow FASTQ_FASTA_QUAST_SSPACE {
     ch_multiqc    = Channel.empty()
 
     scaffolds
-        .filter(meta, contigs -> contigs != null)
-        .filter(meta, contigs -> contigs.countFasta() > 0)
+        .filter{meta, contigs -> contigs != null}
+        .filter{meta, contigs -> contigs.countFasta() > 0}
         .set{ch_scaffolds}
 
     // QUAST
@@ -28,7 +28,7 @@ workflow FASTQ_FASTA_QUAST_SSPACE {
 
     // SSPACE_BASIC
     if (!params.skip_sspace_basic){
-        ch_scaffolds_filter
+        ch_scaffolds
             .join(reads)
             .multiMap { meta, scaffolds, reads ->
                 reads : [meta, reads]

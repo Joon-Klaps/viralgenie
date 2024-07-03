@@ -14,8 +14,8 @@ process SSPACE_BASIC {
     val(name)
 
     output:
-    tuple val(meta), path("${prefix}.final.renamed.scaffolds.fasta"), emit: fasta
-    tuple val(meta), path("${prefix}.final.scaffolds.fasta"), emit: fasta
+    tuple val(meta), path("${prefix}.final.renamed.scaffolds.fa")   , emit: scaffolds
+    tuple val(meta), path("${prefix}.final.scaffolds.fasta")        , emit: fasta
     tuple val(meta), path("${prefix}.library.txt")                  , emit: library
     tuple val(meta), path("${prefix}.logfile.txt")                  , emit: log
     tuple val(meta), path("${prefix}.summaryfile.txt")              , emit: summary
