@@ -11,7 +11,7 @@ process SSPACE_BASIC {
     tuple val(meta), path(reads)
     tuple val(meta2), path(contigs)
     tuple val(distance), val(deviation), val(complement)
-    val(name)
+    val name
 
     output:
     tuple val(meta), path("${prefix}.final.renamed.scaffolds.fa")   , emit: scaffolds

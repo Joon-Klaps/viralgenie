@@ -46,7 +46,7 @@ workflow FASTQ_FASTA_QUAST_SSPACE {
         )
         ch_versions = ch_versions.mix(SSPACE_BASIC.out.versions.first())
 
-        ch_scaffolds = SSPACE_BASIC.out.fasta
+        ch_scaffolds = SSPACE_BASIC.out.scaffolds
     }
 
 
