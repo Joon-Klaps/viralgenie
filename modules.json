@@ -231,7 +231,8 @@
                     "mmseqs/cluster": {
                         "branch": "master",
                         "git_sha": "151460db852d636979d9ff3ee631e2268060d4c3",
-                        "installed_by": ["modules"]
+                        "installed_by": ["modules"],
+                        "patch": "modules/nf-core/mmseqs/cluster/mmseqs-cluster.diff"
                     },
                     "mmseqs/createdb": {
                         "branch": "master",

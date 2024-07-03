@@ -34,7 +34,7 @@ workflow FASTQ_FASTA_QUAST_SSPACE {
                 reads : [meta, reads]
                 scaffolds : [meta, scaffolds]
                 settings: [params.read_distance, params.read_distance_sd, params.read_orientation]
-                name: [name]
+                name: name
             }
             .set{ch_sspace_input}
 
