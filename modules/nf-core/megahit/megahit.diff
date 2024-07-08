@@ -1,0 +1,23 @@
+Changes in module 'nf-core/megahit'
+--- modules/nf-core/megahit/main.nf
++++ modules/nf-core/megahit/main.nf
+@@ -40,6 +40,8 @@
+             megahit_out/*.fa \\
+             megahit_out/intermediate_contigs/*.fa
+ 
++        [ -f megahit_out/${prefix}_megahit.contigs.fa.gz ] && ln -s megahit_out/${prefix}_megahit.contigs.fa.gz ${prefix}_megahit.contigs.fa.gz
++
+         cat <<-END_VERSIONS > versions.yml
+         "${task.process}":
+             megahit: \$(echo \$(megahit -v 2>&1) | sed 's/MEGAHIT v//')
+@@ -61,6 +63,8 @@
+             megahit_out/*.fa \\
+             megahit_out/intermediate_contigs/*.fa
+ 
++        [ -f megahit_out/${prefix}_megahit.contigs.fa.gz ] && ln -s megahit_out/${prefix}_megahit.contigs.fa.gz ${prefix}_megahit.contigs.fa.gz
++
+         cat <<-END_VERSIONS > versions.yml
+         "${task.process}":
+             megahit: \$(echo \$(megahit -v 2>&1) | sed 's/MEGAHIT v//')
+
+************************************************************
