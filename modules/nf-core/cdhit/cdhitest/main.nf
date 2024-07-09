@@ -22,8 +22,6 @@ process CDHIT_CDHITEST {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     def suffix = task.ext.suffix ?: "${sequences}" ==~ /(.*f[astn]*a(.gz)?$)/ ? "fa" : "fq"
-    def pident = meta.pident ? + meta.pident : params.identity_threshold
-    def score = pident < 0.8 ? '-c 0.8' : '-c ' + pident
 
     def avail_mem = 3072
     if (!task.memory) {
@@ -34,9 +32,8 @@ process CDHIT_CDHITEST {
     """
     cd-hit-est \\
         $args \\
-        ${score} \\
         -i ${sequences} \\
-        -o ${prefix}.${suffix} \\
+        -o ${meta.id}.${suffix} \\
         -M $avail_mem \\
         -T $task.cpus
 

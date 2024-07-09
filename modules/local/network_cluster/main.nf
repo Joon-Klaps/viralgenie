@@ -23,11 +23,9 @@ process NETWORK_CLUSTER {
     script:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
-    def score =  meta.pident ? "--score " + meta.pident : "--score ${params.identity_threshold}"
     """
     network_cluster.py \\
         $args \\
-        ${score} \\
         --method $cluster_method \\
         --cluster-algorithm $algorithm \\
         --prefix $prefix \\

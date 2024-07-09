@@ -21,7 +21,6 @@ process MMSEQS_CLUSTER {
     def args = task.ext.args ?: ''
     def args2 = task.ext.args2 ?: "*.dbtype"
     prefix = task.ext.prefix ?: "${meta.id}"
-    def score =  meta.pident ? "--min-seq-id " + meta.pident : "--min-seq-id ${params.identity_threshold}"
     if ("$db_input" == "${prefix}") error "Input and output names of databases are the same, set prefix in module configuration to disambiguate!"
 
     """
@@ -35,7 +34,6 @@ process MMSEQS_CLUSTER {
         ${prefix}/${prefix} \\
         tmp1 \\
         $args \\
-        $score \\
         --threads ${task.cpus} \\
         --compressed 1
 
