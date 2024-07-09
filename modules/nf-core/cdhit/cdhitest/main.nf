@@ -33,7 +33,7 @@ process CDHIT_CDHITEST {
     cd-hit-est \\
         $args \\
         -i ${sequences} \\
-        -o ${meta.id}.${suffix} \\
+        -o ${prefix}.${suffix} \\
         -M $avail_mem \\
         -T $task.cpus
 
