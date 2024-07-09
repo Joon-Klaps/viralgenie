@@ -14,6 +14,7 @@ Initial release of Joon-Klaps/viralgenie, created with the [nf-core](https://nf-
 - Specific benchmarking setup ([#127](https://github.com/Joon-Klaps/viralgenie/pull/127))
 - Include both krakenreport &nodes.dmp in taxonomy ([#128](https://github.com/Joon-Klaps/viralgenie/pull/128))
 - Update new variable mmseqs_cluster_mode default 0 ([#130](https://github.com/Joon-Klaps/viralgenie/pull/130))
+- Sspace indiv ([#132](https://github.com/Joon-Klaps/viralgenie/pull/132))
 
 ### `Fixed`
 
