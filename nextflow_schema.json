@@ -370,6 +370,14 @@
                     "description": "Set of fasta sequences used as potential references for the contigs",
                     "fa_icon": "fas fa-database"
                 },
+                "reference_pools": {
+                    "type": "string",
+                    "fa_icon": "fas fa-database",
+                    "description": "Samplesheet of reference datasets of multifasta files linked to specific samples",
+                    "pattern": "^\\S+.[(csv)|(json)|(tsv)|(yaml)]$",
+                    "format": "file-path",
+                    "schema": "/assets/schemas/reference_pools.json"
+                },
                 "skip_precluster": {
                     "type": "boolean",
                     "fa_icon": "fas fa-forward",
@@ -606,7 +614,7 @@
                     "default": ":",
                     "fa_icon": "fas fa-arrows-alt-h",
                     "description": "UMI seperator in fastq header.",
-                    "help_text": "If you have used an alternative method which does not separate the read id and UMI with a \u201c_\u201d, such as bcl2fastq which uses \u201c:\u201d, you can specify the separator with the option --umi_separator=<sep>, replacing <sep> with e.g \u201c:\u201d."
+                    "help_text": "If you have used an alternative method which does not separate the read id and UMI with a “_”, such as bcl2fastq which uses “:”, you can specify the separator with the option --umi_separator=<sep>, replacing <sep> with e.g “:”."
                 },
                 "mash_sketch_size": {
                     "type": "integer",

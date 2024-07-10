@@ -1,0 +1,32 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "https://raw.githubusercontent.com/Joon-Klaps/viralgenie/master/assets/schemas/reference_pools.json",
+    "title": "Joon-Klaps/viralgenie pipeline - params.reference_pools schema",
+    "description": "Schema for the file provided with params.reference_pools",
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {
+            "id": {
+                "type": "string",
+                "pattern": "^[A-z0-9\\-]+$",
+                "errorMessage": "ID of database",
+                "meta": ["id"]
+            },
+            "samples": {
+                "type": "string",
+                "pattern": "^[A-z0-9\\-]+$",
+                "errorMessage": "Sample list associated to original sample names, separated by ';'",
+                "meta": ["samples"]
+            },
+            "reference_pool": {
+                "type": "string",
+                "pattern": "^\\S+\\.f(ast)?a\\.gz$",
+                "format": "file-path",
+                "exists": true,
+                "errorMessage": "Set of references in multiFasta file that is used to determine similarities with generated denovo contigs'"
+            }
+        },
+        "required": ["id", "samples", "reference_pool"]
+    }
+}

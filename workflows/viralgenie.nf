@@ -143,6 +143,10 @@ workflow VIRALGENIE {
     ch_db = Channel.empty()
     if ((!params.skip_assembly && !params.skip_polishing) || !params.skip_consensus_qc || !params.skip_read_classification || (!params.skip_preprocessing && !params.skip_hostremoval)){
 
+        ch_reference_pools = Channel.fromSamplesheet(
+            'reference_pools'
+        )
+
         ch_db_raw = ch_db.mix(ch_ref_pool,ch_kraken2_db, ch_kaiju_db, ch_checkv_db, ch_bracken_db, ch_k2_host, ch_annotation_db)
         UNPACK_DB (ch_db_raw)
 
