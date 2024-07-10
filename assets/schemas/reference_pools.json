@@ -10,7 +10,7 @@
             "id": {
                 "type": "string",
                 "pattern": "^[A-z0-9\\-]+$",
-                "errorMessage": "ID of database",
+                "errorMessage": "ID of database, no spaces or special characters allowed.",
                 "meta": ["id"]
             },
             "samples": {
@@ -19,14 +19,14 @@
                 "errorMessage": "Sample list associated to original sample names, separated by ';'",
                 "meta": ["samples"]
             },
-            "reference_pool": {
+            "sequence": {
                 "type": "string",
                 "pattern": "^\\S+\\.f(ast)?a\\.gz$",
                 "format": "file-path",
                 "exists": true,
-                "errorMessage": "Set of references in multiFasta file that is used to determine similarities with generated denovo contigs'"
+                "errorMessage": "Set of references in multiFasta file that is used to determine similarities with generated denovo contigs."
             }
         },
-        "required": ["id", "samples", "reference_pool"]
+        "required": ["id", "samples", "sequence"]
     }
 }

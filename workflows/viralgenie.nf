@@ -26,7 +26,7 @@ def createFileChannel(param) {
 }
 
 def createChannel(dbPath, dbName, skipFlag) {
-    return dbPath && skipFlag ? Channel.fromPath(dbPath, checkIfExists: true).map { db -> [[id: dbName], db] } : Channel.empty()
+    return dbPath && skipFlag ? Channel.fromPath(dbPath, checkIfExists: true).map { db -> [[id: dbName, dbname: dbName], db] } : Channel.empty()
 }
 
 // TODO nf-core: Add all file path parameters for the pipeline to the list below
@@ -143,30 +143,35 @@ workflow VIRALGENIE {
     ch_db = Channel.empty()
     if ((!params.skip_assembly && !params.skip_polishing) || !params.skip_consensus_qc || !params.skip_read_classification || (!params.skip_preprocessing && !params.skip_hostremoval)){
 
-        ch_reference_pools = Channel.fromSamplesheet(
-            'reference_pools'
-        )
+        ch_reference_pools = Channel.empty()
+        if (params.reference_pools){
+            ch_reference_pools = Channel.fromSamplesheet(
+                'reference_pools'
+            ).map{ meta, sequence ->
+                [[id: 'reference', db_name : meta.id, samples: meta.samples], sequence]
+            }
+        }
 
-        ch_db_raw = ch_db.mix(ch_ref_pool,ch_kraken2_db, ch_kaiju_db, ch_checkv_db, ch_bracken_db, ch_k2_host, ch_annotation_db)
+        ch_db_raw = ch_db.mix(ch_ref_pool,ch_reference_pools, ch_kraken2_db, ch_kaiju_db, ch_checkv_db, ch_bracken_db, ch_k2_host, ch_annotation_db)
         UNPACK_DB (ch_db_raw)
 
         UNPACK_DB
             .out
             .db
             .branch { meta, unpacked ->
-                k2_host: meta.id == 'k2_host'
+                k2_host: meta.dbname == 'k2_host'
                     return [ unpacked ]
-                reference: meta.id == 'reference'
+                reference: meta.dbname == 'reference'
                     return [ meta, unpacked ]
-                checkv: meta.id == 'checkv'
+                checkv: meta.dbname == 'checkv'
                     return [ unpacked ]
-                kraken2: meta.id == 'kraken2'
+                kraken2: meta.dbname == 'kraken2'
                     return [ unpacked ]
-                bracken: meta.id == 'bracken'
+                bracken: meta.dbname == 'bracken'
                     return [ unpacked ]
-                kaiju: meta.id == 'kaiju'
+                kaiju: meta.dbname == 'kaiju'
                     return [ unpacked ]
-                annotation: meta.id == 'annotation'
+                annotation: meta.dbname == 'annotation'
                     return [ meta, unpacked ]
             }
             .set{ch_db}
@@ -174,7 +179,7 @@ workflow VIRALGENIE {
 
         // transfer to value channels so processes are not just done once
         // '.collect()' is necessary to transform to list so cartesian products are made downstream
-        ch_ref_pool_raw     = ch_db.reference.collect{it[1]}.ifEmpty([]).map{it -> [[id: 'reference'], it]}
+        ch_ref_pool_raw     = ch_db.reference
         ch_kraken2_db       = ch_db.kraken2.collect().ifEmpty([])
         ch_kaiju_db         = ch_db.kaiju.collect().ifEmpty([])
         ch_checkv_db        = ch_db.checkv.collect().ifEmpty([])
