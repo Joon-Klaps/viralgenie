@@ -39,6 +39,8 @@ process MEGAHIT {
             $args2 \\
             megahit_out/*.fa \\
             megahit_out/intermediate_contigs/*.fa
+        
+        [ -f megahit_out/${prefix}_megahit.contigs.fa.gz ] && ln -s megahit_out/${prefix}_megahit.contigs.fa.gz ${prefix}_megahit.contigs.fa.gz
 
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":
@@ -60,6 +62,8 @@ process MEGAHIT {
             $args2 \\
             megahit_out/*.fa \\
             megahit_out/intermediate_contigs/*.fa
+        
+        [ -f megahit_out/${prefix}_megahit.contigs.fa.gz ] && ln -s megahit_out/${prefix}_megahit.contigs.fa.gz ${prefix}_megahit.contigs.fa.gz
 
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":
