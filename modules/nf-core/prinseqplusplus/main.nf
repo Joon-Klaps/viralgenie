@@ -24,7 +24,7 @@ process PRINSEQPLUSPLUS {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     def fastqs = reads ? meta.single_end ? "-fastq ${reads}" : "-fastq ${reads[0]} -fastq2 ${reads[1]}" : ''
-    def fasta = fasta ? "-fasta ${fasta}" : ''
+    def fasta = fasta ? "-fastq ${fasta} -FASTA" : ''
 
     """
     prinseq++ \\
