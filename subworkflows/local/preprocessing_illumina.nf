@@ -96,7 +96,7 @@ workflow PREPROCESSING_ILLUMINA {
 
     // Decomplexification with BBDuk
     if (!params.skip_complexity_filtering) {
-        if {params.decomplexifier == 'bbduk'} {
+        if (params.decomplexifier == 'bbduk') {
             BBMAP_BBDUK (
                 ch_reads_dedup,
                 ch_contaminants,
@@ -105,11 +105,10 @@ workflow PREPROCESSING_ILLUMINA {
             ch_reads_decomplexified = BBMAP_BBDUK.out.reads
             ch_multiqc_files        = ch_multiqc_files.mix(BBMAP_BBDUK.out.log)
             ch_versions             = ch_versions.mix(BBMAP_BBDUK.out.versions)
-        } else if {params.decomplexifier == 'prinseq'} {
-            prinseq_in = ch_reads_dedup.map { meta, reads -> [meta, reads, fasta] }
+        } else if (params.decomplexifier == 'prinseq') {
+            prinseq_in = ch_reads_dedup.map { meta, reads -> [meta, reads, []] }
             PRINSEQ_READS (
-                ch_reads_dedup,
-                params.decomplexifier
+                prinseq_in
             )
             ch_reads_decomplexified = PRINSEQ_READS.out.good_reads
             ch_multiqc_files        = ch_multiqc_files.mix(PRINSEQ_READS.out.log)

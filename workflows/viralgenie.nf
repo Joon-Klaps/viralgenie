@@ -253,6 +253,7 @@ workflow VIRALGENIE {
             assemblers,
             ch_spades_yml,
             ch_spades_hmm)
+        ch_contigs = FASTQ_ASSEMBLY.out.scaffolds
 
         ch_versions      = ch_versions.mix(FASTQ_ASSEMBLY.out.versions)
         ch_multiqc_files = ch_multiqc_files.mix(FASTQ_ASSEMBLY.out.mqc.collect{it[1]}.ifEmpty([]))
@@ -260,7 +261,6 @@ workflow VIRALGENIE {
         if (!params.skip_polishing){
             // blast contigs against reference & identify clusters of (contigs & references)
             ch_contigs
-                .pass
                 .join(ch_host_trim_reads, by: [0], remainder: false)
                 .set{ch_contigs_reads}
 

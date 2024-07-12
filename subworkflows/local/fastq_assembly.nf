@@ -10,7 +10,6 @@ include { QUAST as QUAST_MEGAHIT              } from '../../modules/nf-core/quas
 include { CAT_CAT as CAT_ASSEMBLERS           } from '../../modules/nf-core/cat/cat/main'
 include { SSPACE_BASIC                        } from '../../modules/local/sspace_basic/main'
 include { PRINSEQPLUSPLUS as PRINSEQ_CONTIG   } from '../../modules/nf-core/prinseqplusplus/main'
-include { SEQKIT_FQ2FA                        } from '../../modules/nf-core/seqkit/fq2fa/main'
 include { noContigSamplesToMultiQC            } from '../../modules/local/functions'
 
 workflow FASTQ_ASSEMBLY {
