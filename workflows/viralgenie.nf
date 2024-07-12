@@ -256,7 +256,7 @@ workflow VIRALGENIE {
         ch_contigs = FASTQ_ASSEMBLY.out.scaffolds
 
         ch_versions      = ch_versions.mix(FASTQ_ASSEMBLY.out.versions)
-        ch_multiqc_files = ch_multiqc_files.mix(FASTQ_ASSEMBLY.out.mqc.collect{it[1]}.ifEmpty([]))
+        ch_multiqc_files = ch_multiqc_files.mix(FASTQ_ASSEMBLY.out.mqc.ifEmpty([]))
 
         if (!params.skip_polishing){
             // blast contigs against reference & identify clusters of (contigs & references)

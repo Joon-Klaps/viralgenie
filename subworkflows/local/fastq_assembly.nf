@@ -45,7 +45,7 @@ workflow FASTQ_ASSEMBLY {
             [[:],[]]
         )
         ch_versions         = ch_versions.mix(QUAST_SPADES.out.versions.first())
-        ch_multiqc          = ch_multiqc.mix(QUAST_SPADES.out.tsv)
+        ch_multiqc          = ch_multiqc.mix(QUAST_SPADES.out.tsv.collect{it[1]}.ifEmpty([]))
     }
 
     // TRINITY
@@ -68,7 +68,7 @@ workflow FASTQ_ASSEMBLY {
         )
 
         ch_versions          = ch_versions.mix(QUAST_TRINITY.out.versions.first())
-        ch_multiqc           = ch_multiqc.mix(QUAST_TRINITY.out.tsv)
+        ch_multiqc           = ch_multiqc.mix(QUAST_TRINITY.out.tsv.collect{it[1]}.ifEmpty([]))
     }
 
     // MEGAHIT
@@ -85,7 +85,7 @@ workflow FASTQ_ASSEMBLY {
             [[:],[]]
         )
         ch_versions          = ch_versions.mix(QUAST_MEGAHIT.out.versions.first())
-        ch_multiqc           = ch_multiqc.mix(QUAST_MEGAHIT.out.tsv)
+        ch_multiqc           = ch_multiqc.mix(QUAST_MEGAHIT.out.tsv.collect{it[1]}.ifEmpty([]))
     }
 
     // ch_scaffolds, go from [[meta,scaffold1],[meta,scaffold2], ...] to [meta,[scaffolds]]
