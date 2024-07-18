@@ -17,6 +17,21 @@ workflow FASTA_CONTIG_CLUST {
     ch_versions = Channel.empty()
     fasta       = fasta_fastq.map{ meta, fasta, fastq -> [meta, fasta] }
 
+    // TODO  implement outer join
+        //     sample_genome = ch_genome.map{meta, genome  -> meta.sample, meta, genome}
+        // sample_db = ch_genome.map{meta, blastdb, seq -> meta.sample, blastdb}
+
+        // ch_genome
+        //     .combine(refpool_db)
+        //     .filter{ meta_genome, genome, meta_db, blast_db, blast_seq ->
+        //         meta_genome.sample == meta_db.sample || (meta_genome.sample != null && meta_db.sample == null)}
+        //     .branch{ meta_genome, genome, meta_db, blast_db, blast_seq ->
+        //         genome: return [meta_genome, genome]
+        //         db: return [meta_db, blast_db]
+        //     }
+        //     .set{ch_blast_in}
+
+
     // Blast contigs to a reference database, to find a reference genome can be used for scaffolding
     FASTA_BLAST_REFSEL (
         fasta,

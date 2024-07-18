@@ -131,9 +131,23 @@ workflow CONSENSUS_QC  {
 
     if ( !params.skip_blast_qc ){
         // Identify closest reference from the reference pool database using blast
+
+        sample_genome = ch_genome.map{meta, genome  -> meta.sample, meta, genome}
+        sample_db = ch_genome.map{meta, blastdb, seq -> meta.sample, blastdb}
+
+        ch_genome
+            .combine(refpool_db)
+            .filter{ meta_genome, genome, meta_db, blast_db, blast_seq ->
+                meta_genome.sample == meta_db.sample || (meta_genome.sample != null && meta_db.sample == null)}
+            .branch{ meta_genome, genome, meta_db, blast_db, blast_seq ->
+                genome: return [meta_genome, genome]
+                db: return [meta_db, blast_db]
+            }
+            .set{ch_blast_in}
+
         BLASTN_QC (
-            ch_genome,
-            refpool_db
+            ch_blast_in.genome,
+            ch_blast_in.db
         )
         blast_txt   = BLASTN_QC.out.txt
         ch_versions = ch_versions.mix(BLASTN_QC.out.versions)
