@@ -27,12 +27,6 @@ workflow FASTA_BLAST_REFSEL {
         }
         .set { ch_blast_txt }
 
-    // Throw an warning if no hits are found
-    // ch_blast_txt
-    //     .hits
-    //     .collect()
-    //     .ifEmpty{ log.warn "No blast hits were found in any samples of the given BLAST database. Consider updating the search parameters or the database: \n ${params.reference_pool} "}
-
     // Make a table of samples that did not have any blast hits
     ch_no_blast_hits = Channel.empty()
     ch_blast_txt

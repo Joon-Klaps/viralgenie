@@ -7,8 +7,7 @@ workflow FASTA_CONTIG_CLUST {
 
     take:
     fasta_fastq        // channel: [ val(meta), [ fasta ],  [ fastq ] ]
-    blast_db           // channel: [ val(meta), path(db) ]
-    blast_db_fasta     // channel: [ val(meta), path(fasta) ]
+    blast_db           // channel: [ val(meta), path(db), path(fasta) ]
     contig_classifiers // value:   [ kaiju, kraken2 ]
     kraken2_db         // channel: [ val(meta), path(db) ]
     kaiju_db           // channel: [ val(meta), path(db) ]
@@ -17,26 +16,27 @@ workflow FASTA_CONTIG_CLUST {
     ch_versions = Channel.empty()
     fasta       = fasta_fastq.map{ meta, fasta, fastq -> [meta, fasta] }
 
-    // TODO  implement outer join
-        //     sample_genome = ch_genome.map{meta, genome  -> meta.sample, meta, genome}
-        // sample_db = ch_genome.map{meta, blastdb, seq -> meta.sample, blastdb}
+    fasta.view()
+    blast_db.view()
 
-        // ch_genome
-        //     .combine(refpool_db)
-        //     .filter{ meta_genome, genome, meta_db, blast_db, blast_seq ->
-        //         meta_genome.sample == meta_db.sample || (meta_genome.sample != null && meta_db.sample == null)}
-        //     .branch{ meta_genome, genome, meta_db, blast_db, blast_seq ->
-        //         genome: return [meta_genome, genome]
-        //         db: return [meta_db, blast_db]
-        //     }
-        //     .set{ch_blast_in}
+    // combine refpool_db based on specified samples in the reference_pools parameter
+    fasta
+        .combine(blast_db)
+        .filter{ meta_genome, genome, meta_db, blast_db, blast_seq ->
+            meta_genome.sample == meta_db.sample || (meta_genome.sample != null && meta_db.sample == null)}
+        .branch{ meta_genome, genome, meta_db, blast_db, blast_seq ->
+            contig: [meta_genome, genome]
+            db: [meta_genome, blast_db]
+            db_fasta: [meta_genome, blast_seq]
+        }
+        .set{ch_blastrefsel_in}
 
 
     // Blast contigs to a reference database, to find a reference genome can be used for scaffolding
     FASTA_BLAST_REFSEL (
-        fasta,
-        blast_db,
-        blast_db_fasta
+        ch_blastrefsel_in.contig,
+        ch_blastrefsel_in.db,
+        ch_blastrefsel_in.db_fasta
     )
     ch_versions       = ch_versions.mix(FASTA_BLAST_REFSEL.out.versions)
     no_blast_hits     = FASTA_BLAST_REFSEL.out.no_blast_hits
