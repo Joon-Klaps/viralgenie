@@ -21,7 +21,7 @@
             },
             "sequence": {
                 "type": "string",
-                "pattern": "^\\S+\\.f(ast)?a\\.gz$",
+                "pattern": "^\\S+\\.f(ast)?a(\\.gz)?$",
                 "format": "file-path",
                 "exists": true,
                 "errorMessage": "Set of references in multiFasta file that is used to determine similarities with generated denovo contigs."
