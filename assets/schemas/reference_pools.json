@@ -14,10 +14,18 @@
                 "meta": ["id"]
             },
             "samples": {
-                "type": "string",
-                "pattern": "^[A-z0-9\\-]+$",
-                "errorMessage": "Sample list associated to original sample names, separated by ';'",
-                "meta": ["samples"]
+                "errorMessage": "Samples cannot contain spaces or special characters with the exception of '-' and '.', samples are separated by a ';'",
+                "meta": ["samples"],
+                "anyOf": [
+                    {
+                        "type": "string",
+                        "pattern": "^(?!.*\\_)[A-Za-z0-9\\-\\.\\;]+$"
+                    },
+                    {
+                        "type": "string",
+                        "maxLength": 0
+                    }
+                ]
             },
             "sequence": {
                 "type": "string",

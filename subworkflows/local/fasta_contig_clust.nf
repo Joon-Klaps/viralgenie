@@ -16,21 +16,25 @@ workflow FASTA_CONTIG_CLUST {
     ch_versions = Channel.empty()
     fasta       = fasta_fastq.map{ meta, fasta, fastq -> [meta, fasta] }
 
-    fasta.view()
-    blast_db.view()
+    blast_db
+    .map{ meta, db, fasta ->
+        samples = meta.samples == null ? meta.samples: tuple(meta.samples.split(";"))  // Split up samples if meta.samples is not null
+        [meta, samples, db, fasta]
+    }
+    .transpose(remainder:true)                                                         // unset
+    .set{blast_db}
 
     // combine refpool_db based on specified samples in the reference_pools parameter
     fasta
         .combine(blast_db)
-        .filter{ meta_genome, genome, meta_db, blast_db, blast_seq ->
-            meta_genome.sample == meta_db.sample || (meta_genome.sample != null && meta_db.sample == null)}
-        .branch{ meta_genome, genome, meta_db, blast_db, blast_seq ->
+        .filter{ meta_genome, genome, meta_db, db_samples, blast_db, blast_seq ->
+            meta_genome.sample == db_samples || meta_db.sample == null}
+        .multiMap{ meta_genome, genome, meta_db, db_samples, blast_db, blast_seq ->
             contig: [meta_genome, genome]
             db: [meta_genome, blast_db]
             db_fasta: [meta_genome, blast_seq]
         }
         .set{ch_blastrefsel_in}
-
 
     // Blast contigs to a reference database, to find a reference genome can be used for scaffolding
     FASTA_BLAST_REFSEL (
