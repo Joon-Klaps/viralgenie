@@ -28,7 +28,7 @@ workflow FASTA_CONTIG_CLUST {
     fasta
         .combine(blast_db)
         .filter{ meta_genome, genome, meta_db, db_samples, blast_db, blast_seq ->
-            meta_genome.sample == db_samples || meta_db.sample == null}
+            meta_genome.sample == db_samples || db_samples == null}
         .multiMap{ meta_genome, genome, meta_db, db_samples, blast_db, blast_seq ->
             contig: [meta_genome, genome]
             db: [meta_genome, blast_db]
