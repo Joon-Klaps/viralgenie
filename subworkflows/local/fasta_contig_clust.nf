@@ -30,22 +30,19 @@ workflow FASTA_CONTIG_CLUST {
         .branch {
             meta_genome, genome, meta_db, db_samples, blast_db, blast_seq ->
             specific: meta_genome.sample == db_samples
-                return [meta_genome, genome, blast_db, blast_seq]
             generic: db_samples == null
-                return [meta_genome, genome, blast_db, blast_seq]
         }.set{tmp}
 
-    ch_tmp1= tmp.specific
-    ch_tmp1.view{it -> "specific: $it" }
-    ch_tmp2 = tmp.generic
-    ch_tmp2.view{it -> "generic: $it"  }
+    tmp.specific.view{it -> "specific: $it" }
+    tmp.generic.view{it -> "generic: $it"  }
 
-    ch_tmp2
-        .mix(ch_tmp1)
+    tmp.generic
+        .mix(tmp.specific)
         .multiMap{ meta_genome, genome, meta_db, db_samples, blast_db, blast_seq ->
-            contig: [meta_genome, genome]
-            db: [meta_genome, blast_db]
-            db_fasta: [meta_genome, blast_seq]
+            new_id = meta_genome.id + '-' +  meta_db.id
+            contig: [meta_genome + [id: new_id], genome]
+            db: [meta_genome + [id: new_id], blast_db]
+            db_fasta: [meta_genome + [id: new_id], blast_seq]
         }
         .set{ch_blastrefsel_in}
 
