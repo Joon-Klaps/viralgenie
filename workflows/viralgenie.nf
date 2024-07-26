@@ -83,7 +83,7 @@ include { PREPROCESSING_ILLUMINA          } from '../subworkflows/local/preproce
 include { FASTQ_KRAKEN_KAIJU              } from '../subworkflows/local/fastq_kraken_kaiju'
 
 // Assembly
-include { FASTQ_ASSEMBLY    } from '../subworkflows/local/fastq_assembly'
+include { FASTQ_ASSEMBLY                  } from '../subworkflows/local/fastq_assembly'
 include { noContigSamplesToMultiQC        } from '../modules/local/functions'
 
 // Consensus polishing of genome
@@ -253,32 +253,14 @@ workflow VIRALGENIE {
             assemblers,
             ch_spades_yml,
             ch_spades_hmm)
+        ch_contigs = FASTQ_ASSEMBLY.out.scaffolds
 
         ch_versions      = ch_versions.mix(FASTQ_ASSEMBLY.out.versions)
-        ch_multiqc_files = ch_multiqc_files.mix(FASTQ_ASSEMBLY.out.mqc.collect{it[1]}.ifEmpty([]))
-
-        // Filter out empty scaffolds
-        FASTQ_ASSEMBLY
-            .out
-            .scaffolds
-            .branch { meta, scaffolds ->
-                pass: scaffolds.countFasta() > 0
-                fail: scaffolds.countFasta() == 0
-            }
-            .set{ch_contigs}
-
-        no_contig_samples = ch_contigs.fail
-        noContigSamplesToMultiQC(no_contig_samples, params.assemblers)
-            .collectFile(name:'samples_no_contigs_mqc.tsv')
-            .set{no_contigs}
-
-        ch_multiqc_files = ch_multiqc_files.mix(no_contigs.ifEmpty([]))
-
+        ch_multiqc_files = ch_multiqc_files.mix(FASTQ_ASSEMBLY.out.mqc.ifEmpty([]))
 
         if (!params.skip_polishing){
             // blast contigs against reference & identify clusters of (contigs & references)
             ch_contigs
-                .pass
                 .join(ch_host_trim_reads, by: [0], remainder: false)
                 .set{ch_contigs_reads}
 
