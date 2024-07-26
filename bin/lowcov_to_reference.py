@@ -223,7 +223,7 @@ def main(argv=None):
         consensus_hybrid = consensus
 
     # Write out the annotated consensus sequence
-    SeqIO.write(consensus_hybrid, f"{args.prefix}.fasta", "fasta")
+    SeqIO.write(consensus_hybrid, f"{args.prefix}.fa", "fasta")
 
 
 if __name__ == "__main__":
