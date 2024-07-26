@@ -214,9 +214,8 @@
                     },
                     "megahit": {
                         "branch": "master",
-                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
-                        "installed_by": ["modules"],
-                        "patch": "modules/nf-core/megahit/megahit.diff"
+                        "git_sha": "f5efd4ff526a91f32f87c818943b4d7ce82f80cb",
+                        "installed_by": ["modules"]
                     },
                     "minimap2/align": {
                         "branch": "master",
