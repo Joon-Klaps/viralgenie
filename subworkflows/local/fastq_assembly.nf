@@ -29,14 +29,12 @@ workflow FASTQ_ASSEMBLY {
 
     // SPADES
     if ('spades' in assemblers) {
-
         SPADES(
             reads.map {meta, reads -> [meta, reads, [], []]},
             ch_spades_yml,
             ch_spades_hmm
             )
         ch_versions          = ch_versions.mix(SPADES.out.versions.first())
-
 
         EXTEND_SPADES( reads, SPADES.out.scaffolds, "spades")
         ch_scaffolds         = ch_scaffolds.mix(EXTEND_SPADES.out.scaffolds)
@@ -65,13 +63,6 @@ workflow FASTQ_ASSEMBLY {
         ch_scaffolds         = ch_scaffolds.mix(EXTEND_MEGAHIT.out.scaffolds)
         ch_versions          = ch_versions.mix(EXTEND_MEGAHIT.out.versions)
         ch_multiqc           = ch_multiqc.mix(EXTEND_MEGAHIT.out.mqc)
-        QUAST_MEGAHIT (
-            megahit_filtered,
-            [[:],[]],
-            [[:],[]]
-        )
-        ch_versions          = ch_versions.mix(QUAST_MEGAHIT.out.versions.first())
-        ch_multiqc           = ch_multiqc.mix(QUAST_MEGAHIT.out.tsv.collect{it[1]}.ifEmpty([]))
     }
 
     // ch_scaffolds, go from [[meta,scaffold1],[meta,scaffold2], ...] to [meta,[scaffolds]]
