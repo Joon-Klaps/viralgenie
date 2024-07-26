@@ -32,7 +32,7 @@ process MEGAHIT {
         $args \\
         -t $task.cpus \\
         --out-prefix ${prefix}
-        
+
     pigz \\
         --no-name \\
         -p $task.cpus \\
