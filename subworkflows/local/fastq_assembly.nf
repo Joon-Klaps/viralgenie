@@ -1,6 +1,7 @@
 //
 // Create contigs using
 //
+
 include { SPADES                                     } from '../../modules/nf-core/spades/main'
 include { TRINITY                                    } from '../../modules/nf-core/trinity/main'
 include { MEGAHIT                                    } from '../../modules/nf-core/megahit/main'
@@ -8,6 +9,8 @@ include { FASTQ_FASTA_QUAST_SSPACE as EXTEND_SPADES  } from './fastq_fasta_quast
 include { FASTQ_FASTA_QUAST_SSPACE as EXTEND_TRINITY } from './fastq_fasta_quast_sspace.nf'
 include { FASTQ_FASTA_QUAST_SSPACE as EXTEND_MEGAHIT } from './fastq_fasta_quast_sspace.nf'
 include { CAT_CAT as CAT_ASSEMBLERS                  } from '../../modules/nf-core/cat/cat/main'
+include { PRINSEQPLUSPLUS as PRINSEQ_CONTIG   } from '../../modules/nf-core/prinseqplusplus/main'
+include { noContigSamplesToMultiQC            } from '../../modules/local/functions'
 
 
 workflow FASTQ_ASSEMBLY {
@@ -19,9 +22,10 @@ workflow FASTQ_ASSEMBLY {
     ch_spades_hmm   // channel: ['path/to/hmm']
 
     main:
-    ch_versions   = Channel.empty()
-    ch_scaffolds  = Channel.empty()
-    ch_multiqc    = Channel.empty()
+    ch_versions    = Channel.empty()
+    ch_scaffolds   = Channel.empty()
+    ch_multiqc     = Channel.empty()
+    bad_assemblies = Channel.empty()
 
     // SPADES
     if ('spades' in assemblers) {
@@ -32,6 +36,7 @@ workflow FASTQ_ASSEMBLY {
             ch_spades_hmm
             )
         ch_versions          = ch_versions.mix(SPADES.out.versions.first())
+
 
         EXTEND_SPADES( reads, SPADES.out.scaffolds, "spades")
         ch_scaffolds         = ch_scaffolds.mix(EXTEND_SPADES.out.scaffolds)
@@ -60,6 +65,13 @@ workflow FASTQ_ASSEMBLY {
         ch_scaffolds         = ch_scaffolds.mix(EXTEND_MEGAHIT.out.scaffolds)
         ch_versions          = ch_versions.mix(EXTEND_MEGAHIT.out.versions)
         ch_multiqc           = ch_multiqc.mix(EXTEND_MEGAHIT.out.mqc)
+        QUAST_MEGAHIT (
+            megahit_filtered,
+            [[:],[]],
+            [[:],[]]
+        )
+        ch_versions          = ch_versions.mix(QUAST_MEGAHIT.out.versions.first())
+        ch_multiqc           = ch_multiqc.mix(QUAST_MEGAHIT.out.tsv.collect{it[1]}.ifEmpty([]))
     }
 
     // ch_scaffolds, go from [[meta,scaffold1],[meta,scaffold2], ...] to [meta,[scaffolds]]
@@ -70,7 +82,42 @@ workflow FASTQ_ASSEMBLY {
 
     CAT_ASSEMBLERS(ch_scaffolds_combined)
     ch_scaffolds = CAT_ASSEMBLERS.out.file_out
-    ch_versions  = CAT_ASSEMBLERS.out.versions.first()
+    ch_versions  =  ch_versions.mix(CAT_ASSEMBLERS.out.versions.first())
+
+    // Filter out empty scaffolds, might cause certain processes to crash
+    ch_scaffolds
+        .branch { meta, scaffolds ->
+            pass: scaffolds.countFasta() > 0
+            fail: scaffolds.countFasta() == 0
+        }
+        .set{ch_scaffolds_branched}
+
+    good_assemblies = ch_scaffolds_branched.pass
+    bad_assemblies  = ch_scaffolds_branched.fail
+
+    // Filter low complexity contigs with prinseq++
+    if (!params.skip_contig_prinseq){
+        prinseq_in = good_assemblies.map{ meta, scaffolds -> [meta, [], scaffolds] }
+
+        PRINSEQ_CONTIG(
+            prinseq_in,
+        )
+        ch_versions = ch_versions.mix(PRINSEQ_CONTIG.out.versions.first())
+        good_assemblies = PRINSEQ_CONTIG.out.good_reads
+    }
+
+    good_assemblies
+        .branch { meta, scaffolds ->
+            pass: scaffolds.countFasta() > 0
+            fail: scaffolds.countFasta() == 0
+        }
+        .set{good_assemblies_branched}
+
+    bad_assemblies = bad_assemblies.mix(good_assemblies_branched.fail)
+    noContigSamplesToMultiQC(bad_assemblies, assemblers)
+        .collectFile(name:'samples_no_contigs_mqc.tsv')
+        .set{no_contigs}
+    ch_multiqc = ch_multiqc.mix(no_contigs.ifEmpty([]))
 
     emit:
     scaffolds            = ch_scaffolds  // channel: [ val(meta), [ scaffolds] ]

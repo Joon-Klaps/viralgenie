@@ -1,7 +1,7 @@
 // modules
 
 include { lowReadSamplesToMultiQC            } from '../../modules/local/functions'
-// include { CALIB                              } from '../../modules/local/calib/main'
+include { PRINSEQPLUSPLUS as PRINSEQ_READS   } from '../../modules/nf-core/prinseqplusplus/main'
 include { HUMID                              } from '../../modules/nf-core/humid/main'
 include { BBMAP_BBDUK                        } from '../../modules/nf-core/bbmap/bbduk/main'
 include { FASTQ_FASTQC_UMITOOLS_TRIMMOMATIC  } from './fastq_fastqc_umitools_trimmomatic'
@@ -96,10 +96,24 @@ workflow PREPROCESSING_ILLUMINA {
 
     // Decomplexification with BBDuk
     if (!params.skip_complexity_filtering) {
-        BBMAP_BBDUK ( ch_reads_dedup, ch_contaminants )
-        ch_reads_decomplexified = BBMAP_BBDUK.out.reads
-        ch_multiqc_files        = ch_multiqc_files.mix(BBMAP_BBDUK.out.log)
-        ch_versions             = ch_versions.mix(BBMAP_BBDUK.out.versions)
+        if (params.decomplexifier == 'bbduk') {
+            BBMAP_BBDUK (
+                ch_reads_dedup,
+                ch_contaminants,
+                params.decomplexifier
+            )
+            ch_reads_decomplexified = BBMAP_BBDUK.out.reads
+            ch_multiqc_files        = ch_multiqc_files.mix(BBMAP_BBDUK.out.log)
+            ch_versions             = ch_versions.mix(BBMAP_BBDUK.out.versions)
+        } else if (params.decomplexifier == 'prinseq') {
+            prinseq_in = ch_reads_dedup.map { meta, reads -> [meta, reads, []] }
+            PRINSEQ_READS (
+                prinseq_in
+            )
+            ch_reads_decomplexified = PRINSEQ_READS.out.good_reads
+            ch_multiqc_files        = ch_multiqc_files.mix(PRINSEQ_READS.out.log)
+            ch_versions             = ch_versions.mix(PRINSEQ_READS.out.versions)
+        }
     } else {
         ch_reads_decomplexified = ch_reads_dedup
     }
