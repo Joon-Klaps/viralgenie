@@ -285,7 +285,7 @@
                 },
                 "assemblers": {
                     "type": "string",
-                    "default": "spades,trinity,megahit",
+                    "default": "spades,megahit",
                     "fa_icon": "fas fa-bezier-curve",
                     "description": "The specified tools for denovo assembly, multiple options are possible",
                     "pattern": "^(trinity|spades|megahit)(?:,(trinity|spades|megahit)){0,2}$"
@@ -461,7 +461,7 @@
                 },
                 "cluster_method": {
                     "type": "string",
-                    "default": "mash",
+                    "default": "cdhitest",
                     "description": "Cluster algorithm used for contigs",
                     "enum": ["cdhitest", "vsearch", "mmseqs-linclust", "mmseqs-cluster", "vrhyme", "mash", "diamond"],
                     "fa_icon": "fas fa-bezier-curve"
@@ -490,7 +490,7 @@
                 },
                 "identity_threshold": {
                     "type": "number",
-                    "default": 0.6,
+                    "default": 0.85,
                     "description": "Identity threshold value used in clustering algorithms",
                     "fa_icon": "fas fa-list-ol"
                 },
@@ -626,7 +626,7 @@
                     "default": ":",
                     "fa_icon": "fas fa-arrows-alt-h",
                     "description": "UMI seperator in fastq header.",
-                    "help_text": "If you have used an alternative method which does not separate the read id and UMI with a “_”, such as bcl2fastq which uses “:”, you can specify the separator with the option --umi_separator=<sep>, replacing <sep> with e.g “:”."
+                    "help_text": "If you have used an alternative method which does not separate the read id and UMI with a \u201c_\u201d, such as bcl2fastq which uses \u201c:\u201d, you can specify the separator with the option --umi_separator=<sep>, replacing <sep> with e.g \u201c:\u201d."
                 },
                 "mash_sketch_size": {
                     "type": "integer",

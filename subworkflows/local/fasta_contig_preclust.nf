@@ -69,7 +69,7 @@ workflow FASTA_CONTIG_PRECLUST {
     EXTRACT_PRECLUSTER ( classifications.kaiju, classifications.kraken, classifications.contig, ch_kaiju_db )
     ch_versions = ch_versions.mix( EXTRACT_PRECLUSTER.out.versions.first() )
 
-    reads = ch_contigs_reads.map{ meta, fasta,reads -> [meta.sample, meta, reads] }
+    reads = ch_contigs_reads.map{ meta, fasta,reads -> [meta.db_comb, meta, reads] }
     // modify meta.id to include the taxid & join with reads
 
     EXTRACT_PRECLUSTER
@@ -82,12 +82,12 @@ workflow FASTA_CONTIG_PRECLUST {
         .transpose()                                                                                    // wide to long
         .map{ meta, fasta ->
             def taxid = fasta.baseName.split("_taxid")[1]                                               // get taxid from fasta file name
-            return [meta.sample, meta + [id: "${meta.id}_taxid${taxid}", taxid: "${taxid}"], fasta ]    // [meta.sample, meta, fasta]
+            return [meta.db_comb, meta + [id: "${meta.id}_taxid${taxid}", taxid: "${taxid}"], fasta ]   // [meta.db_comb, meta, fasta]
         }
         .filter { sample, meta, fasta ->
             params.keep_unclassified || meta.taxid != "U"                                               // filter out unclassified
         }
-        .combine(reads, by:[0])                                                                         // reads -> [meta.sample, meta, reads]
+        .combine(reads, by:[0])                                                                         // reads -> [meta.db_comb, meta, reads]
         .map{ sample, meta_contig, fasta, meta_reads, reads -> [meta_contig, fasta, reads] }            // select only meta of contigs
         .map{ meta, fasta, reads -> [meta + [single_end:meta.og_single_end], fasta, reads]}             // set original single_end back
         .set{sequences_reads}

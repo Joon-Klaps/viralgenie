@@ -25,24 +25,22 @@ workflow FASTA_CONTIG_CLUST {
     .set{blast_db}
 
     // combine refpool_db based on specified samples in the reference_pools parameter
-    fasta
+    fasta_fastq
         .combine(blast_db)
         .branch {
-            meta_genome, genome, meta_db, db_samples, blast_db, blast_seq ->
+            meta_genome, genome, reads, meta_db, db_samples, blast_db, blast_seq ->
             specific: meta_genome.sample == db_samples
             generic: db_samples == null
-        }.set{tmp}
+        }.set{db}
 
-    tmp.specific.view{it -> "specific: $it" }
-    tmp.generic.view{it -> "generic: $it"  }
-
-    tmp.generic
-        .mix(tmp.specific)
-        .multiMap{ meta_genome, genome, meta_db, db_samples, blast_db, blast_seq ->
+    //combine specific and generic branches
+    db.generic
+        .mix(db.specific)
+        .multiMap{ meta_genome, genome, reads, meta_db, db_samples, blast_db, blast_seq ->
             new_id = meta_genome.id + '-' +  meta_db.id
-            contig: [meta_genome + [id: new_id], genome]
-            db: [meta_genome + [id: new_id], blast_db]
-            db_fasta: [meta_genome + [id: new_id], blast_seq]
+            contig: [meta_genome + [id: new_id, db_comb: new_id ], genome, reads]
+            db: [meta_genome + [id: new_id, db_comb: new_id], blast_db]
+            db_fasta: [meta_genome + [id: new_id, db_comb: new_id], blast_seq]
         }
         .set{ch_blastrefsel_in}
 
@@ -54,11 +52,9 @@ workflow FASTA_CONTIG_CLUST {
     )
     ch_versions       = ch_versions.mix(FASTA_BLAST_REFSEL.out.versions)
     no_blast_hits     = FASTA_BLAST_REFSEL.out.no_blast_hits
-    fasta_ref_contigs = FASTA_BLAST_REFSEL.out.fasta_ref_contigs
+    fasta_sel_fastq   = FASTA_BLAST_REFSEL.out.fasta_sel_fastq
 
-    // Combine with reads if vrhyme is used
-    fasta_ref_contigs
-        .join(fasta_fastq, by: [0])
+    fasta_sel_fastq
         .map{meta, contigs_joined, contigs, reads -> [meta + [ntaxa: 1], contigs_joined, reads]} // ntaxa will use later
         .set{ch_contigs_reads}
 
@@ -82,20 +78,20 @@ workflow FASTA_CONTIG_CLUST {
     ch_versions = ch_versions.mix(FASTA_FASTQ_CLUST.out.versions)
 
     // Join cluster files with contigs & group based on number of preclusters (ntaxa)
-    fasta_ref_contigs
-        .map{ meta, fasta -> [meta.sample, meta, fasta] }                       // add sample for join
+    fasta_sel_fastq
+        .map{meta, contigs_joined, contigs, reads -> [meta.db_comb, meta , contigs_joined]}  // add sample-db comb for join
         .set{sample_fasta_ref_contigs}
 
     FASTA_FASTQ_CLUST
         .out
         .clusters
         .map{ meta, clusters ->
-            tuple( groupKey(meta.sample, meta.ntaxa), meta, clusters )         // Set groupkey by sample and ntaxa
+            tuple( groupKey(meta.db_comb, meta.ntaxa), meta, clusters )        // Set groupkey by sample-db and ntaxa
             }
         .groupTuple(remainder: true)                                           // Has to be grouped to link different taxa preclusters to the same sample
         .join(sample_fasta_ref_contigs, by: [0])                               // join with contigs
         .map{ sample, meta_clust, clusters, meta_contig, contigs ->
-            [meta_contig, clusters, contigs]                                  // get rid of meta_clust & sample
+            [meta_contig, clusters, contigs]                                  // get rid of meta_clust & sample-db
         }
         .set{ch_clusters_contigs}
 
@@ -108,10 +104,10 @@ workflow FASTA_CONTIG_CLUST {
     EXTRACT_CLUSTER
         .out
         .members_centroids
-        .transpose()                                                            // wide to long
+        .transpose()                                                                     // wide to long
         .map { meta, seq_members, seq_centroids, json_file ->
-            json          = WorkflowCommons.getMapFromJson(json_file)                   // convert cluster metadata to Map
-            new_meta      = meta + [ id: "${meta.sample}_${json.cluster_id}"] + json    // rename meta.id to include cluster number
+            json          = WorkflowCommons.getMapFromJson(json_file)                    // convert cluster metadata to Map
+            new_meta      = meta + [ id: "${meta.db_comb}_${json.cluster_id}"] + json    // rename meta.id to include cluster number
             return [new_meta, seq_centroids, seq_members]
         }
         .set{seq_centroids_members}

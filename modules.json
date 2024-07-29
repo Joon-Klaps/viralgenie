@@ -120,7 +120,8 @@
                     "custom/dumpsoftwareversions": {
                         "branch": "master",
                         "git_sha": "de45447d060b8c8b98575bc637a4a575fd0638e1",
-                        "installed_by": ["modules"]
+                        "installed_by": ["modules"],
+                        "patch": "modules/nf-core/custom/dumpsoftwareversions/custom-dumpsoftwareversions.diff"
                     },
                     "emboss/cons": {
                         "branch": "master",
