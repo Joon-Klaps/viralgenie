@@ -165,6 +165,13 @@
                     "description": "Skip filtering of low complexity regions in reads",
                     "help_text": "Low-complexity sequences are defined as having commonly found stretches of nucleotides with limited information content (e.g. the dinucleotide repeat CACACACACA). Such sequences can produce a large number of high-scoring but biologically insignificant results in database searches"
                 },
+                "decomplexifier": {
+                    "type": "string",
+                    "default": "prinseq",
+                    "fa_icon": "fas fa-filter",
+                    "description": "Specify the decomplexifier to use, bbduk or prinseq",
+                    "enum": ["bbduk", "prinseq"]
+                },
                 "contaminants": {
                     "type": "string",
                     "description": "Reference files containing adapter and/or contaminant sequences for sequence kmer matching (used by bbduk)",
@@ -278,7 +285,7 @@
                 },
                 "assemblers": {
                     "type": "string",
-                    "default": "spades,trinity,megahit",
+                    "default": "spades,megahit",
                     "fa_icon": "fas fa-bezier-curve",
                     "description": "The specified tools for denovo assembly, multiple options are possible",
                     "pattern": "^(trinity|spades|megahit)(?:,(trinity|spades|megahit)){0,2}$"
@@ -316,6 +323,11 @@
                     "type": "string",
                     "description": "Regex pattern to identify contigs that have been made by the assemblers",
                     "fa_icon": "fab fa-behance"
+                },
+                "skip_contig_prinseq": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-forward",
+                    "description": "Skip the filtering of low complexity contigs with prinseq"
                 },
                 "skip_sspace_basic": {
                     "type": "boolean",

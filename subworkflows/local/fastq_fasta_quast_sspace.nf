@@ -24,7 +24,7 @@ workflow FASTQ_FASTA_QUAST_SSPACE {
     // QUAST
     QUAST(ch_scaffolds, [[:],[]], [[:],[]])
     ch_versions = ch_versions.mix(QUAST.out.versions.first())
-    ch_multiqc  = ch_multiqc.mix(QUAST.out.tsv)
+    ch_multiqc  = ch_multiqc.mix(QUAST.out.tsv.collect{it[1]}.ifEmpty([]))
 
     // SSPACE_BASIC
     if (!params.skip_sspace_basic){
