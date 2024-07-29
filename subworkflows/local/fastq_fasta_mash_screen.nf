@@ -54,7 +54,7 @@ workflow FASTQ_FASTA_MASH_SCREEN {
     reference_fastq = SELECT_REFERENCE.out.fasta_reads
         .filter{
             meta, json, fasta, reads ->
-            fasta.countFasta() > 0 
+            fasta.countFasta() > 0
         }
         .map{
             meta, json, fasta, reads ->
