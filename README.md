@@ -32,7 +32,7 @@
 2. Performs optional read pre-processing
     - Adapter trimming([`fastp`](https://github.com/OpenGene/fastp), [`Trimmomatic`](https://github.com/usadellab/Trimmomatic))
     - Read UMI deduplication ([`HUMID`](https://humid.readthedocs.io/en/latest/usage.html))
-    - Low complexity and quality filtering ([`bbduk`](https://jgi.doe.gov/data-and-tools/software-tools/bbtools/))
+    - Low complexity and quality filtering ([`bbduk`](https://jgi.doe.gov/data-and-tools/software-tools/bbtools/), [`prinseq++`](https://github.com/Adrian-Cantu/PRINSEQ-plus-plus))
     - Host-read removal ([`BowTie2`](http://bowtie-bio.sourceforge.net/bowtie2/))
 3. Metagenomic diveristy mapping
     - Performs taxonomic classification and/or profiling using one or more of:
@@ -41,7 +41,7 @@
         - [`Kaiju`](https://kaiju.binf.ku.dk/)
     - Plotting Kraken2 and Kaiju ([`Krona`](https://hpc.nih.gov/apps/kronatools.html))
 4. Denovo assembly ([`SPAdes`](http://cab.spbu.ru/software/spades/), [`TRINITY`](https://github.com/trinityrnaseq/trinityrnaseq), [`megahit`](https://github.com/voutcn/megahit)), combine contigs.
-5. [Optional] extend the contigs with [sspace_basic](https://github.com/nsoranzo/sspace_basic)
+5. [Optional] extend the contigs with [sspace_basic](https://github.com/nsoranzo/sspace_basic) and filter with [`prinseq++`](https://github.com/Adrian-Cantu/PRINSEQ-plus-plus)
 6. Contig reference idententification ([`blastn`](https://blast.ncbi.nlm.nih.gov/Blast.cgi?PAGE_TYPE=BlastSearch))
     -   Identify top 5 blast hits
     -   Merge blast hit and all contigs of a sample

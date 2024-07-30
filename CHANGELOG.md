@@ -11,9 +11,11 @@ Initial release of Joon-Klaps/viralgenie, created with the [nf-core](https://nf-
 
 - Set default umitools dedup strategy to cluster ([#126](https://github.com/Joon-Klaps/viralgenie/pull/126))
 - Include sspace for contig extension ([#123](https://github.com/Joon-Klaps/viralgenie/pull/123))
-- Specific benchmarking setup ([#127](https://github.com/Joon-Klaps/viralgenie/pull/127))
 - Include both krakenreport &nodes.dmp in taxonomy ([#128](https://github.com/Joon-Klaps/viralgenie/pull/128))
 - Update new variable mmseqs_cluster_mode default 0 ([#130](https://github.com/Joon-Klaps/viralgenie/pull/130))
+- Sspace indiv ([#132](https://github.com/Joon-Klaps/viralgenie/pull/132))
+- Add read & contig decomplexification using prinseq++  ([#133](https://github.com/Joon-Klaps/viralgenie/pull/133))
+
 
 ### `Fixed`
 

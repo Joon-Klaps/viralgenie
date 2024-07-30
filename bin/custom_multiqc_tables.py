@@ -620,14 +620,20 @@ def handle_dataframe(df, prefix, column_to_split, header=False, output=False):
         )
         # take the first three columns & rename
         split_data = split_data.iloc[:, :3]
-        split_data.rename(
-            columns={
-                split_data.columns[0]: "sample",
-                split_data.columns[1]: "cluster",
-                split_data.columns[2]: "step",
-            },
-            inplace=True,
-        )
+        try:
+            split_data.rename(
+                columns={
+                    split_data.columns[0]: "sample",
+                    split_data.columns[1]: "cluster",
+                    split_data.columns[2]: "step",
+                },
+                inplace=True,
+            )
+        except IndexError as e:
+            logger.warning(
+                "Unable to split up the file %s, at column %s \n ERROR: %s",prefix, column_to_split, e
+            )
+            return result_df
         df = pd.concat([df, split_data], axis=1)
         df["step"] = df["step"].str.split(".").str[0]
         df["id"] = df["sample"] + "_" + df["cluster"] + "_" + df["step"]
@@ -840,6 +846,7 @@ def main(argv=None):
         quast_df = handle_dataframe(
             quast_df, "quast", "Assembly", quast_header, "summary_quast_mqc.tsv"
         )
+
         # Most of the columns are not good for a single contig evaluation
         quast_df["(quast) # N's"] = (
             pd.to_numeric(quast_df["(quast) # N's per 100 kbp"])

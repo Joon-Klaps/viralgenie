@@ -56,9 +56,9 @@ Viralgenie supports both deduplication on a read level as well as a mapping leve
 
 Complexity filtering is primarily a run-time optimisation step. Low-complexity sequences are defined as having commonly found stretches of nucleotides with limited information content (e.g. the dinucleotide repeat CACACACACA). Such sequences can produce a large number of high-scoring but biologically insignificant results in database searches. Removing these reads therefore saves computational time and resources.
 
-Complexity filtering is done with [`Bbduk`](https://jgi.doe.gov/data-and-tools/software-tools/bbtools/bb-tools-user-guide/bbduk-guide/) which is part of [`BBtools`](https://jgi.doe.gov/data-and-tools/software-tools/bbtools/) where the "duk" stands for Decontamination Using Kmers.
+Complexity filtering is done with [`Bbduk`](https://jgi.doe.gov/data-and-tools/software-tools/bbtools/bb-tools-user-guide/bbduk-guide/) which is part of [`BBtools`](https://jgi.doe.gov/data-and-tools/software-tools/bbtools/) where the "duk" stands for Decontamination Using Kmers. Alternativly, complexity filtering can be done with [`prinseq++`](https://github.com/Adrian-Cantu/PRINSEQ-plus-plus).
 
-> By default this step is skipped, if this step shouldn't be skipped specify `--skip_complexity_filtering false`.
+> By default this step is skipped, if this step shouldn't be skipped specify `--skip_complexity_filtering false`. Specify the tool to use for complexity filtering with the `--decomplexifier` parameter, `bbduk` or `prinseq`[default].
 
 ## Host read-removal
 
