@@ -6,7 +6,7 @@ include { BCFTOOLS_FILTER  } from '../../modules/nf-core/bcftools/filter/main'
 workflow BAM_VARIANTS_BCFTOOLS {
 
     take:
-    bam_fasta         // channel: [ val(meta), [ bam ], [ fasta ] ]
+    bam_fasta   // channel: [ val(meta), [ bam ], [ fasta ] ]
     save_stats  // value: [ true | false ]
 
     main:

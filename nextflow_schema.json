@@ -285,7 +285,7 @@
                 },
                 "assemblers": {
                     "type": "string",
-                    "default": "spades,trinity,megahit",
+                    "default": "spades,megahit",
                     "fa_icon": "fas fa-bezier-curve",
                     "description": "The specified tools for denovo assembly, multiple options are possible",
                     "pattern": "^(trinity|spades|megahit)(?:,(trinity|spades|megahit)){0,2}$"
@@ -482,7 +482,7 @@
                 },
                 "identity_threshold": {
                     "type": "number",
-                    "default": 0.6,
+                    "default": 0.85,
                     "description": "Identity threshold value used in clustering algorithms",
                     "fa_icon": "fas fa-list-ol"
                 },
