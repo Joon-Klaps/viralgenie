@@ -13,7 +13,7 @@ from Bio import SeqIO
 logger = logging.getLogger()
 
 
-def parse_args(argv=None):
+def parse_args(argv=None) -> argparse.Namespace:
     """Define and immediately parse command line arguments."""
     parser = argparse.ArgumentParser(
         description="Provide a command line tool to filter blast results.",
@@ -53,13 +53,13 @@ def parse_args(argv=None):
     )
     return parser.parse_args(argv)
 
-def to_dict_remove_dups(sequences):
+def to_dict_remove_dups(sequences) -> dict:
     return {record.id: record for record in sequences}
 
 
-def extract_hits(df, references, prefix):
+def write_hits(df, references, prefix) -> None:
     """
-    Extracts contigs hits from a DataFrame and writes them to a FASTA file.
+    write contigs hits from a DataFrame and writes them to a FASTA file.
 
     Args:
         df (pandas.DataFrame): DataFrame containing the hits information.
@@ -91,7 +91,7 @@ def extract_hits(df, references, prefix):
             logger.error("No reference sequences found in the hits. Exiting...")
 
 
-def read_mash_screen(file):
+def read_mash_screen(file) -> pd.DataFrame:
     """
     Read in the file and return a pandas DataFrame
     File format:
@@ -103,7 +103,12 @@ def read_mash_screen(file):
     """
 
     logger.info("Reading in the mash screen file...")
-    df = pd.read_csv(file, sep="\t", header=None)
+    try :
+        df = pd.read_csv(file, sep="\t", header=None)
+    except pd.errors.EmptyDataError as e:
+        logger.warning(f"Empty file: {file}, skipping analysis")
+        return pd.DataFrame()
+
     df.columns = ["identity", "shared-hashes", "median-multiplicity", "p-value", "query-ID", "query-comment"]
 
     logger.info("Removing duplicates and sorting by identity and shared-hashes...")
@@ -125,10 +130,18 @@ def main(argv=None):
         logger.error(f"The given input file {args.references} was not found!")
         sys.exit(2)
 
+    # reading in the mash results
     df = read_mash_screen(args.mash)
+    if df.empty:
+        # Create empty files so nextflow doesn't crash
+        open(f"{args.prefix}_reference.fa", "a").close()
+        open(f"{args.prefix}.json", "a").close()
+        return 0
 
-    extract_hits(df, args.references, args.prefix)
+    # Selecting the best hit and write the hit to a fasta file
+    write_hits(df, args.references, args.prefix)
 
+    # Writing the best hit to a json file for metadata purposes
     df.to_json(f"{args.prefix}.json",orient="records", lines=True)
 
     return 0
