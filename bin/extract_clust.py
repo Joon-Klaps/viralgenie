@@ -32,6 +32,7 @@ class Cluster:
             self.cluster_size = len(members)
         else:
             self.cluster_size = 0
+        self.cumulative_read_depth = 0
 
     def _set_centroid(self, centroid):
         """
@@ -44,6 +45,12 @@ class Cluster:
         Set the centroid sequence for the cluster.
         """
         self.cluster_id = id
+
+    def _set_cumulative_read_depth(self, depth):
+        """
+        Set the centroid sequence for the cluster.
+        """
+        self.cumulative_read_depth = depth
 
     def set_external_reference(self, pattern):
         """
@@ -279,7 +286,7 @@ def get_first_not_match(regex_pattern, data_list):
     return data_list[0]
 
 
-def write_clusters(clusters, sequences, prefix):
+def write_clusters(clusters, sequences, prefix) -> None:
     for cluster in clusters:
         cluster._save_cluster_members(prefix)
         cluster._save_cluster_centroid(prefix)
@@ -301,6 +308,38 @@ def write_clusters_to_tsv(clusters, prefix):
         for cluster in clusters:
             file.write(cluster._to_line(prefix))
             file.write("\n")
+
+def read_coverages(coverages):
+    """
+    Read the coverages from each idxstats file and compute the percentage of each coverage.
+    Return a list of dictionaries, one for each file.
+    """
+    all_coverages = []
+
+    for coverage_file in coverages:
+        coverages_dict = {}
+        total_coverage = 0
+
+        # First pass to compute the total coverage for this file
+        with open(coverage_file, "r") as file:
+            for line in file:
+                parts = line.strip().split("\t")
+                coverage = int(parts[2])
+                total_coverage += coverage
+                if parts[0] in coverages_dict:
+                    coverages_dict[parts[0]] += coverage
+                else:
+                    coverages_dict[parts[0]] = coverage
+
+        # Compute the percentage for each entry
+        for key in coverages_dict:
+            coverages_dict[key] = (coverages_dict[key] / total_coverage) * 100
+
+        # Add the coverage dictionary for this file to the list
+        all_coverages.append(coverages_dict)
+
+    return all_coverages
+
 
 
 def update_cluster_ids(clusters):
@@ -366,6 +405,14 @@ def parse_args(argv=None):
         help="cluster file from cluster methods containing cluster information.",
     )
     parser.add_argument(
+        "-d",
+        "--coverages",
+        nargs="+",
+        metavar="COVERAGES",
+        type=Path,
+        help="idxstats file displaying the number of reads mapped to each contig.",
+    )
+    parser.add_argument(
         "-s",
         "--seq",
         metavar="SEQ_IN",
@@ -427,6 +474,10 @@ def main(argv=None):
         else:
             logger.error(f"Option {args.method} is not supported!")
             sys.exit(2)
+
+    if args.coverages:
+        coverages = read_coverages(args.coverages)
+        print(coverages)
 
     # redefine cluster ids
     clusters_renamed = update_cluster_ids(cluster_list)

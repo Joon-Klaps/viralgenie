@@ -248,13 +248,9 @@ workflow VIRALGENIE {
 
     if (!params.skip_assembly) {
         // run different assemblers and combine contigs
-        FASTQ_ASSEMBLY(
-            ch_host_trim_reads,
-            assemblers,
-            ch_spades_yml,
-            ch_spades_hmm)
-        ch_contigs = FASTQ_ASSEMBLY.out.scaffolds
-
+        FASTQ_ASSEMBLY( ch_host_trim_reads, assemblers, ch_spades_yml, ch_spades_hmm)
+        ch_contigs       = FASTQ_ASSEMBLY.out.scaffolds
+        ch_coverages     = FASTQ_ASSEMBLY.out.coverages
         ch_versions      = ch_versions.mix(FASTQ_ASSEMBLY.out.versions)
         ch_multiqc_files = ch_multiqc_files.mix(FASTQ_ASSEMBLY.out.mqc.ifEmpty([]))
 
@@ -266,6 +262,7 @@ workflow VIRALGENIE {
 
             FASTA_CONTIG_CLUST (
                 ch_contigs_reads,
+                ch_coverages,
                 ch_blast_refdb,
                 ch_ref_pool,
                 contig_classifiers,

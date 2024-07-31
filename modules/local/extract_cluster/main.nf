@@ -8,7 +8,7 @@ process EXTRACT_CLUSTER {
         'biocontainers/biopython:1.81' }"
 
     input:
-    tuple val(meta), path(clusters), path(seq)
+    tuple val(meta), path(clusters), path(seq), path(coverages)
     val(module)
 
     output:
@@ -23,11 +23,13 @@ process EXTRACT_CLUSTER {
     script:
     def prefix = task.ext.prefix ?: "${meta.id}"
     def args = task.ext.args ?: ''
+    def coverages_arg = coverages ? "-d ${coverages}" : ""
     """
     extract_clust.py \\
         $args \\
         -m $module \\
-        -c ${clusters.join(' ')} \\
+        -c ${clusters} \\
+        $coverages_arg \\
         -s $seq \\
         -p $prefix
 

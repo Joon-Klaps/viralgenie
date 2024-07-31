@@ -7,6 +7,7 @@ workflow FASTA_CONTIG_CLUST {
 
     take:
     fasta_fastq        // channel: [ val(meta), [ fasta ],  [ fastq ] ]
+    coverages          // channel: [ val(meta), [ idxstats* ] ]
     blast_db           // channel: [ val(meta), path(db) ]
     blast_db_fasta     // channel: [ val(meta), path(fasta) ]
     contig_classifiers // value:   [ kaiju, kraken2 ]
@@ -57,6 +58,10 @@ workflow FASTA_CONTIG_CLUST {
         .map{ meta, fasta -> [meta.sample, meta, fasta] }                       // add sample for join
         .set{sample_fasta_ref_contigs}
 
+    coverages
+        .map{ meta, idxstats -> [meta.sample, meta, idxstats] }                 // add sample for join
+        .set{sample_coverages}
+
     FASTA_FASTQ_CLUST
         .out
         .clusters
@@ -65,13 +70,14 @@ workflow FASTA_CONTIG_CLUST {
             }
         .groupTuple(remainder: true)                                           // Has to be grouped to link different taxa preclusters to the same sample
         .join(sample_fasta_ref_contigs, by: [0])                               // join with contigs
-        .map{ sample, meta_clust, clusters, meta_contig, contigs ->
-            [meta_contig, clusters, contigs]                                  // get rid of meta_clust & sample
+        .join(sample_coverages, by: [0])                                       // join with coverages
+        .map{ sample, meta_clust, clusters, meta_contig, contigs, meta_coverages, coverages ->
+            [meta_contig, clusters, contigs, coverages]                       // get rid of meta_clust & sample
         }
-        .set{ch_clusters_contigs}
+        .set{ch_clusters_contigs_coverages}
 
     EXTRACT_CLUSTER (
-        ch_clusters_contigs,
+        ch_clusters_contigs_coverages,
         params.cluster_method
     )
     ch_versions = ch_versions.mix(EXTRACT_CLUSTER.out.versions.first())
