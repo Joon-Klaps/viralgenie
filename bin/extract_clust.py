@@ -111,8 +111,17 @@ class Cluster:
                 file.write(f"\n")
 
     def _to_line(self, prefix):
+        rounded_depth = np.round(self.cumulative_read_depth, 2).tolist()
         return "\t".join(
-            [str(prefix), str(self.taxid), str(self.cluster_id), str(self.centroid), str(self.cluster_size), ",".join(self.members)]
+            [
+            str(prefix),
+            str(self.taxid),
+            str(self.cluster_id),
+            str(self.centroid),
+            str(self.cluster_size),
+            ",".join(map(str,rounded_depth)),
+            ",".join(self.members)
+            ]
         )
 
     def determine_cumulative_read_depth(self, coverages):
@@ -296,7 +305,6 @@ def write_clusters(clusters, sequences, prefix) -> None:
         cluster.save_members_fasta(sequences, prefix)
         cluster.save_cluster_json(prefix)
 
-    write_clusters_to_tsv(clusters, prefix)
     write_clusters_summary(clusters, prefix)
 
 def write_clusters_to_tsv(clusters, prefix):
@@ -304,7 +312,7 @@ def write_clusters_to_tsv(clusters, prefix):
     Write the clusters to a json file.
     """
     with open(f"{prefix}.clusters.tsv", "w") as file:
-        file.write("\t".join(["sample", "taxon-id", "cluster-id", "centroid", "size", "members"]))
+        file.write("\t".join(["sample", "taxon-id", "cluster-id", "centroid", "size","cumulative read depth [%]", "members"]))
         file.write("\n")
         for cluster in clusters:
             file.write(cluster._to_line(prefix))
@@ -389,7 +397,7 @@ def filter_clusters_by_coverage(clusters: list , coverages: dict, threshold: flo
         if any(cluster.cumulative_read_depth >= threshold):
             filtered_clusters.append(cluster)
 
-    return filtered_clusters
+    return clusters,filtered_clusters
 
 def parse_args(argv=None):
     """Define and immediately parse command line arguments."""
@@ -510,11 +518,12 @@ def main(argv=None):
     # Filter clusters by coverage
     if args.coverages:
         coverages = read_coverages(args.coverages)
-        filtered_clusters = filter_clusters_by_coverage(filtered_clusters, coverages, args.perc_reads_contig)
+        clusters,filtered_clusters = filter_clusters_by_coverage(filtered_clusters, coverages, args.perc_reads_contig)
         logger.info("Filtered clusters by coverage, %d were removed.", len(clusters_renamed) - len(filtered_clusters))
 
     # Write the clusters to files
     logger.info("Writing results to files.")
+    write_clusters_to_tsv(clusters, args.prefix)
     write_clusters(filtered_clusters, args.seq, args.prefix)
 
     return 0
