@@ -53,15 +53,23 @@ workflow FASTA_CONTIG_CLUST {
     )
     ch_versions = ch_versions.mix(FASTA_FASTQ_CLUST.out.versions)
 
+    // if we have no coverage files, make the empty array else join with coverages
+    if (params.perc_reads_contig == 0){
+        sample_fasta_ref_contigs = fasta_ref_contigs
+            .map{ meta, fasta -> [meta.sample, meta, fasta []] }               // add sample for join
+    } else {
+        sample_coverages = coverages
+            .map{ meta, idxstats -> [meta.sample, meta, idxstats] }            // add sample for join
+
+        sample_fasta_ref_contigs = fasta_ref_contigs
+            .map{ meta, fasta -> [meta.sample, meta, fasta] }                  // add sample for join
+            .join(sample_coverages, by: [0], remainder:true)                   // join with coverages
+            .map{ sample, meta_fasta, fasta, meta_coverages, coverages ->      // remove meta coverages
+                [sample, meta_fasta, fasta, coverages]
+                }
+    }
+
     // Join cluster files with contigs & group based on number of preclusters (ntaxa)
-    fasta_ref_contigs
-        .map{ meta, fasta -> [meta.sample, meta, fasta] }                       // add sample for join
-        .set{sample_fasta_ref_contigs}
-
-    coverages
-        .map{ meta, idxstats -> [meta.sample, meta, idxstats] }                 // add sample for join
-        .set{sample_coverages}
-
     FASTA_FASTQ_CLUST
         .out
         .clusters
@@ -69,10 +77,10 @@ workflow FASTA_CONTIG_CLUST {
             tuple( groupKey(meta.sample, meta.ntaxa), meta, clusters )         // Set groupkey by sample and ntaxa
             }
         .groupTuple(remainder: true)                                           // Has to be grouped to link different taxa preclusters to the same sample
-        .join(sample_fasta_ref_contigs, by: [0])                               // join with contigs
-        .join(sample_coverages, by: [0])                                       // join with coverages
-        .map{ sample, meta_clust, clusters, meta_contig, contigs, meta_coverages, coverages ->
-            [meta_contig, clusters, contigs, coverages]                       // get rid of meta_clust & sample
+        .combine(sample_fasta_ref_contigs)                                     // combine with contigs (regural join doesn't work)
+        .filter{it -> it[0]==it[3]}                                            // filter for matching samples
+        .map{ sample, meta_clust, clusters, sample2, meta_contig, contigs, coverages ->
+            [meta_contig, clusters, contigs, coverages]                        // get rid of meta_clust & sample
         }
         .set{ch_clusters_contigs_coverages}
 
@@ -85,7 +93,7 @@ workflow FASTA_CONTIG_CLUST {
     EXTRACT_CLUSTER
         .out
         .members_centroids
-        .transpose()                                                            // wide to long
+        .transpose()                                                                    // wide to long
         .map { meta, seq_members, seq_centroids, json_file ->
             json          = WorkflowCommons.getMapFromJson(json_file)                   // convert cluster metadata to Map
             new_meta      = meta + [ id: "${meta.sample}_${json.cluster_id}"] + json    // rename meta.id to include cluster number

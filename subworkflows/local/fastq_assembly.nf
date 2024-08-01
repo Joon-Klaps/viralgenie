@@ -119,10 +119,10 @@ workflow FASTQ_ASSEMBLY {
     ch_multiqc = ch_multiqc.mix(no_contigs.ifEmpty([]))
 
     emit:
-    scaffolds            = ch_scaffolds  // channel: [ val(meta), [ scaffolds] ]
-    coverages            = ch_coverages  // channel: [ val(meta), [ idxstats* ] ]
-    mqc                  = ch_multiqc    // channel: [ val(meta), [ mqc ] ]
-    versions             = ch_versions   // channel: [ versions.yml ]
+    scaffolds            = ch_scaffolds           // channel: [ val(meta), [ scaffolds] ]
+    coverages            = ch_coverages_combined  // channel: [ val(meta), [ idxstats* ] ]
+    mqc                  = ch_multiqc             // channel: [ val(meta), [ mqc ] ]
+    versions             = ch_versions            // channel: [ versions.yml ]
     // there are not any MQC files available for spades, trinity and megahit
 }
 
