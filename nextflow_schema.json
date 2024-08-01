@@ -495,8 +495,8 @@
                 },
                 "perc_reads_contig": {
                     "type": "integer",
-                    "default": 10,
-                    "description": "minimum cumulated sum of mapped read percentages of each member from a cluster group",
+                    "default": 5,
+                    "description": "minimum cumulated sum of mapped read percentages of each member from a cluster group, set to 0 to disable",
                     "help_text": "Setting this variable will remove clusters that have a low cumulated sum of mapped read percentages. This can be used to remove clusters that have a low coverage and are likely to be false positives.",
                     "fa_icon": "fas fa-compress-alt",
                     "minimum": 0,

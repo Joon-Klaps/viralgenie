@@ -502,16 +502,16 @@ def main(argv=None):
     filtered_clusters = filter_members(clusters_renamed, args.pattern)
     logger.info("Filtered clusters by members, %d were removed.", len(clusters_renamed) - len(filtered_clusters))
 
+    # Set external reference, used to know if it needs to collapse or called consensus normally
+    logger.info("Setting external reference for clusters.")
+    for cluster in filtered_clusters:
+        cluster.set_external_reference(args.pattern)
+
     # Filter clusters by coverage
     if args.coverages:
         coverages = read_coverages(args.coverages)
         filtered_clusters = filter_clusters_by_coverage(filtered_clusters, coverages, args.perc_reads_contig)
         logger.info("Filtered clusters by coverage, %d were removed.", len(clusters_renamed) - len(filtered_clusters))
-
-    # Set external reference, used to know if it needs to collapse or called consensus normally
-    logger.info("Setting external reference for clusters.")
-    for cluster in filtered_clusters:
-        cluster.set_external_reference(args.pattern)
 
     # Write the clusters to files
     logger.info("Writing results to files.")
