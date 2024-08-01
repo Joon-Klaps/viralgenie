@@ -43,7 +43,7 @@ workflow FASTA_CONTIG_CLUST {
             kraken2_db
         )
         ch_versions      = ch_versions.mix(FASTA_CONTIG_PRECLUST.out.versions)
-        ch_contigs_reads = FASTA_CONTIG_PRECLUST.out.sequences_reads
+        ch_contigs_reads = FASTA_CONTIG_PRECLUST.out.contigs_reads
     }
 
     // cluster our reference hits and contigs should make this a subworkflow
@@ -63,7 +63,7 @@ workflow FASTA_CONTIG_CLUST {
 
         sample_fasta_ref_contigs = fasta_ref_contigs
             .map{ meta, fasta -> [meta.sample, meta, fasta] }                  // add sample for join
-            .join(sample_coverages, by: [0], remainder:true)                   // join with coverages
+            .join(sample_coverages, by: [0])                                   // join with coverages
             .map{ sample, meta_fasta, fasta, meta_coverages, coverages ->      // remove meta coverages
                 [sample, meta_fasta, fasta, coverages]
                 }
