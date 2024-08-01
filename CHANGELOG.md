@@ -15,7 +15,7 @@ Initial release of Joon-Klaps/viralgenie, created with the [nf-core](https://nf-
 - Update new variable mmseqs_cluster_mode default 0 ([#130](https://github.com/Joon-Klaps/viralgenie/pull/130))
 - Sspace indiv ([#132](https://github.com/Joon-Klaps/viralgenie/pull/132))
 - Add read & contig decomplexification using prinseq++  ([#133](https://github.com/Joon-Klaps/viralgenie/pull/133))
-
+- Contig coverage filtering ([#138](https://github.com/Joon-Klaps/viralgenie/pull/138))
 
 ### `Fixed`
 
