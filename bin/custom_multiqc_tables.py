@@ -11,30 +11,53 @@ import sys
 from pathlib import Path
 
 import pandas as pd
+import numpy as np
 import yaml
+import plotly.io as pio
+import plotly.express as px
 
 logger = logging.getLogger()
 
+BLAST_COLUMNS = [
+    "query",
+    "subject",
+    "subject title",
+    "pident",
+    "qlen",
+    "slen",
+    "length",
+    "mismatch",
+    "gapopen",
+    "qstart",
+    "qend",
+    "sstart",
+    "send",
+    "evalue",
+    "bitscore",
+]
 
-class BlastConstants:
-    COLUMNS = [
-        "query",
-        "subject",
-        "subject title",
-        "pident",
-        "qlen",
-        "slen",
-        "length",
-        "mismatch",
-        "gapopen",
-        "qstart",
-        "qend",
-        "sstart",
-        "send",
-        "evalue",
-        "bitscore",
+SUMMARY_COLUMNS = {
+    "index": "index",
+    "sample name": "sample name",
+    "cluster": "cluster",
+    "step": "step",
+    "species": "species",
+    "segment": "segment",
+    "definition": "definition",
+    "(annotation) species": "(annotation) species",
+    "(annotation) segment": "(annotation) segment",
+    "(blast) length":"contig length",
+    "(annotation) % contig aligned":"% contig aligned",
+    "(quast) % N's":"% N's",
+    "(bcftools_stats) number of SNPs":"number of SNPs",
+    "(multiqc) mosdepth Median read depth":"Median read depth",
+}
+
+GROUPING_COLUMNS = [
+    "(annotation) species",
+    "(annotation) segment",
+    "(annotation) lineage",
     ]
-
 
 def parse_args(argv=None):
     """Define and immediately parse command line arguments."""
@@ -50,7 +73,7 @@ def parse_args(argv=None):
             sys.exit(2)
         ext = fname_path.suffix[1:]
         if ext not in choices:
-            logger.error(f"File '{fname}' doesn't end with one of {choices}")
+            logger.error(f"File '{fname}' with {ext}, doesn't end with one of {choices}")
             sys.exit(2)
         return fname_path
 
@@ -59,7 +82,7 @@ def parse_args(argv=None):
         metavar="CLUSTER SUMMARY FILES",
         nargs="+",
         type=Path,
-        help=" list of cluster summary files from created by the module extract clust.",
+        help="List of cluster summary files from created by the module extract_clust.py",
     )
 
     parser.add_argument(
@@ -75,6 +98,14 @@ def parse_args(argv=None):
         metavar="FILE_OUT_PREFIX",
         type=str,
         help="Output file prefix",
+    )
+
+    parser.add_argument(
+        "--bed_files",
+        metavar="BED_FILES",
+        nargs="+",
+        help="Bed (coverage) files for each sample",
+        type=lambda s: file_choices(("bed", "gz"), s),
     )
 
     parser.add_argument(
@@ -104,6 +135,14 @@ def parse_args(argv=None):
         nargs="+",
         help="Checkv summary files for each sample",
         type=Path,
+    )
+    parser.add_argument(
+        "--filter_level",
+        metavar="FILTER LEVEL",
+        choices= ["normal", "strict", "none"],
+        default="normal",
+        type=str,
+        help="Specify how strict the filtering should be, default is normal.",
     )
 
     parser.add_argument(
@@ -154,7 +193,6 @@ def parse_args(argv=None):
     )
     return parser.parse_args(argv)
 
-
 def check_file_exists(file, throw_error=True):
     """Check if the given files exist.
 
@@ -178,7 +216,6 @@ def check_file_exists(file, throw_error=True):
         return False
     return True
 
-
 def read_header_file(file_path):
     """
     Read a file and return its content as a list of strings.
@@ -192,7 +229,6 @@ def read_header_file(file_path):
     with open(file_path, "r") as file:
         content = file.read().splitlines()
     return content
-
 
 def concat_table_files(table_files, **kwargs):
     """Concatenate all the cluster summary files into a single dataframe.
@@ -213,7 +249,6 @@ def concat_table_files(table_files, **kwargs):
     )
     return df
 
-
 def read_in_quast(table_files):
     """Concatenate all the cluster summary files into a single dataframe.
 
@@ -231,7 +266,6 @@ def read_in_quast(table_files):
                     d = dict(line.strip().split("\t") for line in f)
                     df = pd.concat([df, pd.DataFrame.from_dict(d, orient="index").T])
     return df
-
 
 def get_files_and_columns_of_interest(table_headers):
     """
@@ -282,7 +316,6 @@ def get_files_and_columns_of_interest(table_headers):
 
     return file_columns
 
-
 def write_dataframe(df, file, comment):
     """
     Write a pandas DataFrame to a file in TSV format.
@@ -295,13 +328,15 @@ def write_dataframe(df, file, comment):
     Returns:
         None
     """
+    if df.empty:
+        logger.warning(f"The DataFrame %s is empty, nothing will be written to the file!", file)
+        return
     df_tsv = df.to_csv(sep="\t", index=False, quoting=csv.QUOTE_NONNUMERIC)
     with open(file, "w") as f:
         if comment:
             f.write("\n".join(comment))
             f.write("\n")
         f.write(df_tsv)
-
 
 def filter_and_rename_columns(df, columns_of_interest):
     """
@@ -311,6 +346,7 @@ def filter_and_rename_columns(df, columns_of_interest):
     Args:
         df (pandas.DataFrame): The input DataFrame.
         columns_of_interest (dict): A dictionary mapping column names of interest to their desired new names.
+            {old_colname: new_colname}
 
     Returns:
         pandas.DataFrame: The filtered DataFrame with renamed columns.
@@ -335,7 +371,6 @@ def filter_and_rename_columns(df, columns_of_interest):
     else:
         return df
 
-
 def read_dataframe_from_tsv(file, **kwargs):
     """
     Read a dataframe from a tsv file.
@@ -350,7 +385,6 @@ def read_dataframe_from_tsv(file, **kwargs):
         df = pd.read_csv(table, sep="\t", **kwargs)
     return df
 
-
 def read_dataframe_from_csv(file, **kwargs):
     """
     Read a dataframe from a csv file.
@@ -364,7 +398,6 @@ def read_dataframe_from_csv(file, **kwargs):
     with open(file, "r") as table:
         df = pd.read_csv(table, **kwargs)
     return df
-
 
 def read_dataframe_from_yaml(file, **kwargs):
     """
@@ -381,7 +414,6 @@ def read_dataframe_from_yaml(file, **kwargs):
         df = pd.DataFrame(data)
     return df
 
-
 def read_file_to_dataframe(file, **kwargs):
     """
     Read a dataframe from a file.
@@ -396,7 +428,7 @@ def read_file_to_dataframe(file, **kwargs):
     if os.path.getsize(file_path) == 0:
         logger.debug("File is empty %s", file_path)
         return pd.DataFrame()
-    if file_path.suffix in [".tsv", ".txt"]:  # mqc calls tsv's txts
+    if file_path.suffix in [".tsv", ".txt"]:  # mqc calls tsv's txts, bed files are gzipped
         df = read_dataframe_from_tsv(file_path, **kwargs)
     elif file_path.suffix == ".csv":
         df = read_dataframe_from_csv(file_path, **kwargs)
@@ -407,27 +439,26 @@ def read_file_to_dataframe(file, **kwargs):
         sys.exit(2)
     return df
 
-
-def join_dataframes(df1, df2):
+def join_dataframes(base_df, dataframes_to_join):
     """
-    Join two DataFrames or a DataFrame and a Series together.
+    Join multiple DataFrames or a DataFrame and a Series together.
 
     Args:
-        df1 (pd.DataFrame or pd.Series): The first DataFrame or Series to be joined.
-        df2 (pd.DataFrame): The second DataFrame to be joined.
+        base_df (pd.DataFrame or pd.Series): The base DataFrame or Series to start with.
+        dataframes_to_join (list): A list of DataFrames to be joined with the base DataFrame.
 
     Returns:
         pd.DataFrame: The joined DataFrame.
-
     """
-    if isinstance(df1, pd.Series):  # Check if df1 is a Series
-        df1 = df1.to_frame()  # Convert Series to DataFrame
-        return pd.concat([df1, df2], axis=1, join="outer")
-    elif df1.empty:
-        return df2
-    else:
-        return df1.join(df2, how="outer")
+    joined_df = base_df.copy()
 
+    for df in dataframes_to_join:
+        if df.empty:
+            continue
+        if isinstance(joined_df, pd.Series):
+            joined_df = joined_df.to_frame()
+        joined_df = pd.concat([joined_df, df], axis=1, join="outer")
+    return joined_df
 
 def process_multiqc_dataframe(df):
     """
@@ -448,7 +479,6 @@ def process_multiqc_dataframe(df):
     df.set_index(df.columns[0], inplace=True)
     return df
 
-
 def process_failed_contig_dataframe(df):
     """
     Process the failed contig dataframe by converting columns to string type,
@@ -465,7 +495,6 @@ def process_failed_contig_dataframe(df):
     df["id"] = df["sample name"] + "_" + df["cluster"] + "_" + df["step"]
     df.set_index("id", inplace=True)
     return df
-
 
 def filter_files_of_interest(multiqc_data, files_of_interest):
     """
@@ -492,7 +521,6 @@ def filter_files_of_interest(multiqc_data, files_of_interest):
     if len(file_list) == 0:
         return []
     return file_list[0]
-
 
 def read_data(directory, file_columns, process_dataframe):
     """
@@ -524,10 +552,9 @@ def read_data(directory, file_columns, process_dataframe):
             continue
         df = process_dataframe(df)
         df = filter_and_rename_columns(df, column_names)
-        multiqc_samples_df = join_dataframes(multiqc_samples_df, df)
+        multiqc_samples_df = join_dataframes(multiqc_samples_df, [df])
 
     return multiqc_samples_df
-
 
 def get_header(comment_dir, header_file_name):
     """
@@ -547,7 +574,6 @@ def get_header(comment_dir, header_file_name):
             header = read_header_file(header_file_path)
     return header
 
-
 def dynamic_split(row, delimiter="_"):
     """
     Splits a string into multiple parts based on the specified delimiter.
@@ -562,6 +588,119 @@ def dynamic_split(row, delimiter="_"):
     parts = row.split(delimiter)
     return parts
 
+def compute_quast_metrics(quast_df):
+    """
+    Compute additional metrics based on QUAST output and add them to the DataFrame.
+
+    Args:
+        quast_df (pandas.DataFrame): The QUAST output DataFrame.
+
+    Returns:
+        pandas.DataFrame: The updated DataFrame with additional computed metrics.
+    """
+    if quast_df.empty:
+        return quast_df
+
+    try:
+        # Compute the number of N's based on the "# N's per 100 kbp" and "Largest contig" columns
+        quast_df["(quast) # N's"] = (
+            pd.to_numeric(quast_df["(quast) # N's per 100 kbp"])
+            * pd.to_numeric(quast_df["(quast) Largest contig"])
+            / 100000
+        )
+        quast_df["(quast) # N's"] = quast_df["(quast) # N's"].astype(int)
+
+        # Compute the percentage of N's based on the "# N's per 100 kbp" column
+        quast_df["(quast) % N's"] = round(
+            pd.to_numeric(quast_df["(quast) # N's per 100 kbp"]) / 1000, 2
+        )
+
+        # Keep only the relevant columns
+        quast_df = quast_df[
+            ["(quast) # N's", "(quast) % N's", "(quast) # N's per 100 kbp"]
+        ]
+    except KeyError as e:
+        logger.warning(f"Missing column in QUAST output: {e}")
+    except Exception as e:
+        logger.error(f"Error computing QUAST metrics: {e}")
+
+    return quast_df
+
+def process_blast_dataframe(blast_df, blast_header, output_file):
+    """
+    Process the BLAST output DataFrame.
+
+    Args:
+        blast_df (pandas.DataFrame): The BLAST output DataFrame.
+        blast_header (list): A list of strings representing the header for the output file.
+        output_file (str): The path to the output file.
+
+    Returns:
+        pandas.DataFrame: The processed BLAST DataFrame.
+    """
+    if blast_df.empty:
+        logger.warning("The BLAST DataFrame is empty.")
+        return blast_df
+
+    try:
+        # Set the column names
+        blast_df.columns = BLAST_COLUMNS
+
+        # Filter for the best hit per contig and keep only the best hit
+        blast_df = blast_df.sort_values("bitscore", ascending=False).drop_duplicates("query")
+
+        # Process the DataFrame
+        blast_df = handle_dataframe(blast_df, "blast", "query", blast_header, output_file)
+
+        # Make everything a string for the annotation
+        blast_df = blast_df.astype(str)
+    except Exception as e:
+        logger.error(f"Error processing BLAST DataFrame: {e}")
+
+    return blast_df
+
+def process_annotation_dataframe(annotation_df, blast_header, output_file):
+    """
+    Process the annotation DataFrame.
+
+    Args:
+        annotation_df (pandas.DataFrame): The annotation DataFrame.
+        blast_header (list): A list of strings representing the header for the output file.
+        output_file (str): The path to the output file.
+
+    Returns:
+        pandas.DataFrame: The processed annotation DataFrame.
+    """
+    if annotation_df.empty:
+        logger.warning("The annotation DataFrame is empty.")
+        return annotation_df
+
+    try:
+        # Set the column names
+        annotation_df.columns = BLAST_COLUMNS
+
+        # Filter for the best hit per contig and keep only the best hit
+        annotation_df = annotation_df.sort_values("bitscore", ascending=False).drop_duplicates("query")
+
+        # Extract all key-value pairs into separate columns
+        annotation_df = extract_annotation_data(annotation_df)
+
+        annotation_df['% contig aligned'] = round((annotation_df['length'] / annotation_df['qlen']) * 100,2)
+
+        # Process the DataFrame
+        annotation_df = handle_dataframe(annotation_df, "annotation", "query", blast_header, output_file)
+
+        # Make everything a string for the annotation
+        annotation_df = annotation_df.astype(str)
+    except Exception as e:
+        logger.error(f"Error processing annotation DataFrame: {e}")
+
+    return annotation_df
+
+def extract_annotation_data(df):
+    # Extract all key-value pairs into separate columns
+    df_extracted = ( df["subject title"].apply(parse_annotation_data).apply(pd.Series))
+    return pd.concat([df, df_extracted], axis=1)
 
 def parse_annotation_data(annotation_str):
     annotation_dict = {}
@@ -570,7 +709,6 @@ def parse_annotation_data(annotation_str):
     for key, value in matches:
         annotation_dict[key] = value
     return annotation_dict
-
 
 def handle_tables(table_files, header_name=False, output=False, **kwargs):
     """
@@ -592,7 +730,6 @@ def handle_tables(table_files, header_name=False, output=False, **kwargs):
     if output:
         write_dataframe(result_df, output, header_name)
     return result_df
-
 
 def handle_dataframe(df, prefix, column_to_split, header=False, output=False):
     """
@@ -647,7 +784,6 @@ def handle_dataframe(df, prefix, column_to_split, header=False, output=False):
     )
     return result_df
 
-
 def filter_constrain(df, column, value):
     """
     Filter a dataframe based on a column and a regex value.
@@ -671,7 +807,6 @@ def filter_constrain(df, column, value):
     df_with_value.loc[:, "index"] = df_with_value["index"].str.replace(value, "")
     return df_without_value, df_with_value
 
-
 def drop_columns(df, columns):
     """
     Try to drop columns from a dataframe and return the dataframe.
@@ -686,6 +821,21 @@ def drop_columns(df, columns):
     result = df.drop(columns=[column for column in columns if column in df.columns])
     return result.copy()
 
+def split_index_column(df):
+    """
+    Split the index column of the DataFrame into separate columns for sample name, cluster, and step.
+
+    Args:
+        df (pandas.DataFrame): The input DataFrame.
+
+    Returns:
+        pandas.DataFrame: The updated DataFrame with separate columns for sample name, cluster, and step.
+    """
+    df_copy = df.copy()
+    df_copy = df_copy.reset_index().rename(columns={df_copy.index.name: "index"})
+    df_copy = df_copy[df_copy["index"].str.contains("_", na=False)]
+    df_copy[["sample name", "cluster", "step"]] = df_copy["index"].str.split("_", n=3, expand=True)
+    return df_copy
 
 def reorder_columns(df, columns):
     """
@@ -704,6 +854,224 @@ def reorder_columns(df, columns):
     ]
     return df
 
+def reorder_rows(dataframe):
+    """
+    Reorder the rows in the DataFrame based on the ranking of the steps.
+
+    Args:
+        dataframe (pandas.DataFrame): The input DataFrame.
+
+    Returns:
+        pandas.DataFrame: The reordered DataFrame.
+    """
+
+    df = dataframe.copy()
+    ordered_list = (['constrain'] + [f'it{i}' for i in range(100, 0, -1)] + ['itvariant-calling', 'consensus', 'singleton'])
+    rank_dict = {step: rank for rank, step in enumerate(ordered_list, start=1)}
+
+    # Sort the DataFrame by 'step' based on the ranking dictionary
+    df['rank'] = df['step'].map(rank_dict)
+    df = df.sort_values(['sample name', 'cluster', 'rank'])
+
+    return df
+
+
+def filter_contigs(dataframe, level="normal") -> pd.DataFrame:
+    """
+    Filter contigs for each sample to only include those:
+        - latest step of each cluster
+        - Only annotated ones (if annotation is available)
+
+    Args:
+        df (pandas.DataFrame): The input DataFrame.
+
+    Returns:
+        pandas.DataFrame: The filtered DataFrame.
+    """
+    df = reorder_rows(dataframe)
+
+    # Select the first occurrence of each group
+    df_snip = df.groupby(['sample name', 'cluster']).head(1).reset_index(drop=True)
+    if not 'annotation' in df.columns:
+        logger.debug("Removed %d rows", len(df.index) - len(df_snip.index))
+        return df_snip
+
+    # Filter for annotated contigs
+    df_snip = df_snip[df_snip['annotation'].notnull()]
+
+    if level != "strict":
+        logger.debug("Removed %d rows", len(df.index) - len(df_snip.index))
+        return df_snip
+
+    if ["(annotation) % contig aligned" , "(annotation) bitscore"] not in df_snip.columns:
+        logger.warning("Columns for filtering are not present in the dataframe")
+        return df_snip
+
+    df_snip['sort'] = df_snip["(annotation) % contig aligned"] * df_snip["(annotation) bitscore"]
+    df_snip = df_snip.sort_values(['sample name', 'cluster', 'sort'], ascending=[True, True, False])
+
+    # Filter for the latest step of each cluster
+    group_cols = [col for col in df_snip.columns if col in GROUPING_COLUMNS]
+    logger.debug("Grouping columns for filtering: %s", group_cols)
+    df_snip = df_snip.groupby([['sample name' + group_cols ]]).tail(1).reset_index(drop=True)
+
+    logger.debug("Removed %d rows", len(df.index) - len(df_snip.index))
+    return df_snip
+
+def coalesce_constrain(dataframe):
+    """
+    Fill missing values in the dataframe based on the group values.
+
+    Args:
+        dataframe (pandas.DataFrame): The input DataFrame.
+
+    Returns:
+        pandas.DataFrame: The DataFrame with filled missing values.
+    """
+
+    df = reorder_rows(dataframe)
+    grouping_cols = ['sample name', 'cluster']
+    coalesce_columns = df.columns.difference(grouping_cols)
+    result = df.copy()
+    result[coalesce_columns] = result.groupby(grouping_cols)[coalesce_columns].transform(fill_group_na)
+
+    return result.query('step == "constrain"')
+
+def fill_group_na(s):
+    return s.infer_objects(copy=False).ffill().bfill()
+
+def read_bed(bed_files, selection):
+    """
+    Read bed files and concatenate them into a single dataframe.
+
+    Args:
+        bed_files (list): List of bed file paths.
+        selection (list): List of approved bed_files.
+
+    Returns:
+        dict: {index: pd.Dataframe} dictionary of bed dataframes.
+    """
+    bed_data = {}
+    for sample in selection:
+        bed_sel = [bed_file for bed_file in bed_files if sample_in_file(sample, bed_file)]
+        logger.debug ("Bed files for %s: %s", sample, bed_sel)
+        if not bed_sel:
+            logger.warning("No bed files were found for %s", sample)
+            continue
+        bed_file = bed_sel[0]
+        if check_file_exists(bed_file):
+            logger.debug("Converting bed file %s to coverage", bed_file)
+            df = pd.read_csv(bed_file, sep="\t", compression="gzip", names= ['chromosome', 'position', 'end', 'coverage'])
+            bed_data[sample] = df[['position', 'coverage']].copy()
+
+    if len(bed_data) != len(selection):
+        logger.warning("Not all bed files were read!")
+        logger.warning("Missing bed files: %s", set(selection) - set(bed_data.keys()))
+    return bed_data
+
+def sample_in_file(sample, file_name) -> bool:
+    """
+    Check if the sample name is in the file name.
+
+    Args:
+        sample (str): The sample name.
+        file (str): The file name.
+
+    Returns:
+        bool: True if the sample name is in the file name, False otherwise.
+    """
+    sample_upper = sample.upper()
+    file_upper = str(file_name).upper()
+    logger.debug("sample: %s - file: %s",sample_upper, file_upper)
+
+    return (
+        sample_upper in file_upper
+        or sample_upper in file_upper.replace("_", "-")
+        or sample_upper in file_upper.replace("-", "_")
+    )
+
+def remove_keys(d, keys):
+    """
+    Remove keys from a dictionary.
+
+    Args:
+        d (dict): The dictionary to remove keys from.
+        keys (list): The list of keys to remove.
+
+    Returns:
+        dict: The dictionary with the specified keys removed.
+    """
+    return {k: v for k, v in d.items() if k not in keys}
+
+def custom_html_table(df, columns, bed_files, header, output_name) -> None:
+    """
+    Create a custom HTML table for MultiQC.
+
+    Args:
+        df (pandas.DataFrame): The input DataFrame.
+        columns (list): The list of columns to include in the table.
+        bed_files (list): The list of bed files to include in the table.
+        output_name (str): The name of the output file.
+
+    Returns:
+        None
+    """
+    df_id = output_name.split(".")[0]
+
+    if df.empty:
+        logger.warning("The DataFrame for custom html is empty, nothing will be written to the file!")
+        return
+
+    # Read the bed files
+    logger.info("Reading bed files")
+    beds = read_bed(bed_files, df['index'])
+
+    if not beds:
+        logger.warning("No bed files were read, nothing will be written to the file!")
+        return
+
+    # Remove duplicated columns that aren't needed
+    if '(annotation) species' in df.columns and all(df['(annotation) species'].notnull()):
+        columns = remove_keys(columns, ["species", "segment"])
+
+    df = filter_and_rename_columns(df, columns)
+    df.set_index('index', inplace=True)
+
+    # Append the bed coverage dictionary with the input DataFrame
+    combined_data = pd.concat([df, pd.Series(beds, name='bed_coverage')], axis=1)
+
+    # Create the sparkline plot within the table
+    # TODO: Consider implementing VCF file reading as well and color them differently
+    logger.debug("Making the coverage plots")
+    config = {'displaylogo': False}
+    combined_data['coverage plot'] = combined_data.apply(
+        lambda row: px.area(row['bed_coverage'], x='position', y='coverage', title=f"{row['sample name']}-{row['cluster']}").to_html(config=config, full_html=False, include_plotlyjs='cdn', default_height='300px', default_width='600px'),
+        axis=1
+    )
+    combined_data.drop(columns=['bed_coverage'], inplace=True)
+
+    # Create the HTML table
+    # pd.df.to_html (not pio.to_html)
+    html_table = combined_data.to_html(escape=False, justify = "center", render_links=True, border=0, index=False,table_id= df_id, classes = ['table', 'table-condensed', 'mqc_table'])
+
+    # Write the HTML table to a file
+    html = ""
+    if header:
+        html += "\n".join(header)
+        html += "\n"
+    collapse_class = "mqc-table-collapse" if len(combined_data.index) > 10 else ""
+    html += f"""
+        <div id="{df_id}_container" class="mqc_table_container">
+            <div class="table-responsive mqc-table-responsive {collapse_class}">
+        """
+    html += html_table
+    html += f"""
+            </div>
+        </div>
+        """
+
+    with open(output_name, "w", encoding="utf-8") as file:
+        file.write(html)
 
 def create_constrain_summary(df_constrain, file_columns):
     # Filter only for columns of interest
@@ -803,7 +1171,6 @@ def create_constrain_summary(df_constrain, file_columns):
 
     return df_wide
 
-
 def main(argv=None):
     """
     Main function for creating custom tables for MultiQC.
@@ -815,7 +1182,11 @@ def main(argv=None):
         int: Exit code.
     """
     args = parse_args(argv)
-    logging.basicConfig(level=args.log_level, format="[%(levelname)s] %(message)s")
+    logging.basicConfig(
+        level=args.log_level,
+        format="[%(asctime)s - %(levelname)s] %(message)s",
+        datefmt='%Y-%m-%d %H:%M:%S',
+    )
 
     # General stats - Cluster summariesx
     if args.clusters_summary:
@@ -833,11 +1204,9 @@ def main(argv=None):
     if args.save_intermediate:
         checkv_header = get_header(args.comment_dir, "checkv_mqc.txt")
     if not checkv_df.empty:
-        checkv_df = handle_dataframe(
-            checkv_df, "checkv", "contig_id", checkv_header, "summary_checkv_mqc.tsv"
-        )
+        checkv_df = handle_dataframe(checkv_df, "checkv", "contig_id", checkv_header, "summary_checkv_mqc.tsv")
 
-    # CLuster table - Quast summary
+    # Cluster table - Quast summary
     quast_df = read_in_quast(args.quast_files)
     quast_header = []
     if args.save_intermediate:
@@ -861,185 +1230,106 @@ def main(argv=None):
             ["(quast) # N's", "(quast) % N's", "(quast) # N's per 100 kbp"]
         ]
 
-    # CLuster table - Blast summary
+    # Cluster table - Blast summary
     blast_df = handle_tables(args.blast_files, header=None)
     blast_header = []
     if args.save_intermediate:
         blast_header = get_header(args.comment_dir, "blast_mqc.txt")
     if not blast_df.empty:
-        # Read the blast summary file
-        blast_df.columns = BlastConstants.COLUMNS
+        blast_df = process_blast_dataframe(blast_df, blast_header, "summary_blast_mqc.tsv")
 
-        # Filter on best hit per contig and keep only the best hit
-        blast_df = blast_df.sort_values("bitscore", ascending=False).drop_duplicates(
-            "query"
-        )
-
-        blast_df = handle_dataframe(
-            blast_df, "blast", "query", blast_header, "summary_blast_mqc.tsv"
-        )
-
-    # CLuster table - mmseqs easysearch summary - annotation section
+    # Cluster table - mmseqs easysearch summary (annotation section)
     annotation_df = handle_tables(args.annotation_files, header=None)
     if not annotation_df.empty:
-        annotation_df.columns = BlastConstants.COLUMNS
-        # Filter on best hit per contig and keep only the best hit
-        annotation_df = annotation_df.sort_values(
-            "bitscore", ascending=False
-        ).drop_duplicates("query")
-
-        # Extract all key-value pairs into separate columns
-        df_extracted = (
-            annotation_df["subject title"].apply(parse_annotation_data).apply(pd.Series)
-        )
-
-        # Concatenate the original DataFrame with the extracted columns
-        annotation_df = pd.concat([annotation_df, df_extracted], axis=1)
-
-        # Remove the blast columns (but not query), we only want annotation data (but not genome_name)
-        annotation_df = drop_columns(annotation_df, BlastConstants.COLUMNS[1:])
-        annotation_df = handle_dataframe(
-            annotation_df, "annotation", "query", blast_header, "summary_anno_mqc.tsv"
-        )
-        # Make everything a string for the annotation
-        annotation_df = annotation_df.astype(str)
-
+        annotation_df = process_annotation_dataframe(annotation_df, blast_header, "summary_anno_mqc.tsv")
 
     # CLuster table -  Multiqc output txt files
     if args.multiqc_dir:
-        # Check if the given files exist
         check_file_exists(args.multiqc_dir)
-
-        # Extract files & columns specified by the user through the table headers file
         file_columns = get_files_and_columns_of_interest(args.table_headers)
+        multiqc_contigs_df = read_data(args.multiqc_dir, file_columns, process_multiqc_dataframe)
 
-        # Read the multiqc data txt files & select & rename
-        multiqc_contigs_df = read_data(
-            args.multiqc_dir, file_columns, process_multiqc_dataframe
-        )
-
-        # If we are empty, just quit
         if multiqc_contigs_df.empty:
-            logger.warning(
-                "No data was found from MULTIQC to create the contig overview table!"
-            )
+            logger.warning("No data was found from MULTIQC to create the contig overview table!")
             return 0
 
         # Write the complete dataframe to a file
         logger.info("Writing intermediate file: contigs_intermediate.tsv")
-        write_dataframe(
-            multiqc_contigs_df.reset_index(inplace=False),
-            "contigs_intermediate.tsv",
-            [],
-        )
+        write_dataframe(multiqc_contigs_df.reset_index(inplace=False),"contigs_intermediate.tsv",[])
 
         # Join with the custom contig tables
         logger.info("Joining dataframes")
-        multiqc_contigs_df = multiqc_contigs_df.join(checkv_df, how="outer")
-        multiqc_contigs_df = multiqc_contigs_df.join(quast_df, how="outer")
-        multiqc_contigs_df = multiqc_contigs_df.join(blast_df, how="outer")
-        multiqc_contigs_df = multiqc_contigs_df.join(annotation_df, how="outer")
+        multiqc_contigs_df = join_dataframes(multiqc_contigs_df, [checkv_df, quast_df, blast_df, annotation_df])
 
-        # If we are empty, just quit
         if multiqc_contigs_df.empty:
             logger.warning("No data was found to create the contig overview table!")
             return 0
 
         # Keep only those rows we can split up in sample, cluster, step
         logger.info("Splitting up the index column in sample name, cluster, step")
-        mqc_contigs_sel = multiqc_contigs_df.reset_index().rename(
-            columns={multiqc_contigs_df.index.name: "index"}
-        )
-        mqc_contigs_sel = mqc_contigs_sel[
-            mqc_contigs_sel["index"].str.contains("_", na=False)
-        ]
-        mqc_contigs_sel[["sample name", "cluster", "step"]] = mqc_contigs_sel[
-            "index"
-        ].str.split("_", n=3, expand=True)
-
-        # # adding a tag saying that contig faild qc check
-        # logger.info("Adding failed contig QC check")
-        # failed_contigs = {"failed_mapped": {}, "failed_contig_quality": {}}
-        # failed_contig_df = read_data(
-        #     args.multiqc_dir, failed_contigs, process_failed_contig_dataframe
-        # )
-        # if not failed_contig_df.empty:
-        #     merged_df = pd.merge(mqc_contigs_sel.reset_index(), failed_contig_df, on=['sample name', 'cluster', 'step'], how='left', indicator=True)
-        #     merged_df['Contig failed QC check'] = merged_df['_merge'] == 'both'
-        #     mqc_contigs_sel['Contig failed QC check'] = merged_df['Contig failed QC check']
-
-
+        multiqc_contigs_df = split_index_column(multiqc_contigs_df)
 
         # Reorder the columns
         logger.info("Reordering columns")
         final_columns = (
-            ["index", "sample name", "cluster", "step"]
-            + [column for column in mqc_contigs_sel.columns if "annotation" in column]
-            + [column for column in mqc_contigs_sel.columns if "blast" in column]
-            + [column for column in mqc_contigs_sel.columns if "checkv" in column]
-            + [column for column in mqc_contigs_sel.columns if "QC check" in column]
-            + [column for column in mqc_contigs_sel.columns if "quast" in column]
-        )
-        mqc_contigs_sel = reorder_columns(mqc_contigs_sel, final_columns)
+            ["index", "sample name", "cluster", "step"] +
+            [ column for group in ["annotation", "blast", "checkv", "QC check", "quast"] for column in multiqc_contigs_df.columns if group in column ] )
+        multiqc_contigs_df = reorder_columns(multiqc_contigs_df, final_columns)
 
         # split up denovo constructs and mapping (-CONSTRAIN) results
         logger.info("Splitting up denovo constructs and mapping (-CONSTRAIN) results")
-        contigs_mqc, constrains_mqc = filter_constrain(
-            mqc_contigs_sel, "cluster", "-CONSTRAIN"
-        )
+        contigs_mqc, constrains_mqc = filter_constrain( multiqc_contigs_df, "cluster", "-CONSTRAIN")
 
         # Write the final dataframe to a file
-        logger.info("Writing Denovo constructs table file: contigs_overview_mqc.tsv")
-        header_clusters_overview = get_header(
-            args.comment_dir, "contig_overview_mqc.txt"
-        )
-        write_dataframe(
-            contigs_mqc, "contigs_overview_mqc.tsv", header_clusters_overview
-        )
+        logger.info("Writing Unfiltered Denovo constructs table file: contigs_all.tsv")
+        write_dataframe(contigs_mqc, "contigs_all.tsv", [])
+
+        contig_sel = contigs_mqc
+        if args.filter_level != "none":
+            logger.info("Selecting best representatives of groups")
+            contigs_sel = filter_contigs(contigs_mqc, args.filter_level)
+
+        logger.info("Making the HMTL contig table report")
+        contig_html = custom_html_table(
+            contigs_sel,
+            SUMMARY_COLUMNS,
+            args.bed_files,
+            get_header(args.comment_dir, "contig_overview_mqc.html"),
+            "contig_custom_table_mqc.html"
+            )
 
         # Separate table for mapping constrains
         if not constrains_mqc.empty:
-            header_mapping_seq = get_header(
-                args.comment_dir, "mapping_constrains_mqc.txt"
-            )
 
             # Add constrain metadata to the mapping constrain table
             constrain_meta = handle_tables([args.mapping_constrains])
+
             # drop unwanted columns & reorder
             constrain_meta = drop_columns(constrain_meta, ["sequence", "samples"])
-            constrains_mqc = constrains_mqc.merge(
-                constrain_meta, how="left", left_on="cluster", right_on="id"
-            )
-            constrains_mqc = reorder_columns(
-                constrains_mqc,
-                [
-                    "index",
-                    "sample name",
-                    "cluster",
-                    "step",
-                    "species",
-                    "segment",
-                    "definition",
-                ],
-            )
-            logger.info("Writing mapping long table: mapping_constrains_mqc.tsv")
-            write_dataframe(
-                constrains_mqc, "mapping_constrains_mqc.tsv", header_mapping_seq
-            )
+            constrains_mqc = constrains_mqc.merge( constrain_meta, how="left", left_on="cluster", right_on="id")
+            constrains_mqc = reorder_columns( constrains_mqc,[ "index", "sample name", "cluster", "step", "species", "segment", "definition"])
 
             # add mapping summary to sample overview table in ... wide format with species & segment combination
             logger.info("Creating mapping constrain summary (wide) table")
-            constrains_summary_mqc = create_constrain_summary(
-                constrains_mqc, file_columns
-            )
-            if not constrains_summary_mqc.empty:
-                header_mapping_summary = get_header(
-                    args.comment_dir, "mapping_constrains_summary_mqc.txt"
+            write_dataframe(
+                create_constrain_summary( constrains_mqc, file_columns),
+                "mapping_constrains_summary_mqc.txt",
+                get_header( args.comment_dir, "mapping_constrains_summary_mqc.txt")
                 )
-                write_dataframe(
-                    constrains_summary_mqc,
-                    "mapping_constrains_summary_mqc.tsv",
-                    header_mapping_summary,
+
+            logger.info("Coalescing columns")
+            coalesced_constrains = coalesce_constrain(constrains_mqc)
+
+            logger.info("Writing mapping long table: mapping_constrains.tsv")
+            write_dataframe( coalesced_constrains, "mapping_constrains.tsv", [] )
+
+            logger.info("Making the HMTL constrain table report")
+            custom_html_table(
+                coalesced_constrains,
+                SUMMARY_COLUMNS,
+                args.bed_files,
+                get_header( args.comment_dir, "mapping_constrains_mqc.html"),
+                "constrain_custom_table_mqc.html"
                 )
     return 0
 

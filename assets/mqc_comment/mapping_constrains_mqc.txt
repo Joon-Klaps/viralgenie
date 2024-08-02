@@ -1,5 +1,0 @@
-# id: 'Constrain_overview'
-# section_name: 'CLUSTER: Constrained sequences overview'
-# format: 'tsv'
-# description: 'Concatenation information of multiple tools regarding the constrained sequences with their corresponding sample'
-# plot_type: 'table'
