@@ -56,46 +56,44 @@ workflow FASTA_CONTIG_CLUST {
     fasta_sel_fastq   = FASTA_BLAST_REFSEL.out.fasta_sel_fastq
 
     fasta_sel_fastq
-        .map{meta, contigs_joined, contigs, reads -> [meta + [ntaxa: 1], contigs_joined, reads]} // ntaxa will use later
-        .set{ch_contigs_reads}
+        .map{meta, ref_contigs, contigs, reads -> [meta + [ntaxa: 1], ref_contigs, reads]} // ntaxa will use later
+        .set{ch_ref_contigs_reads}
 
     // precluster our reference hits and contigs using kraken & Kaiju to delineate contigs at a species level
     if (!params.skip_precluster) {
         FASTA_CONTIG_PRECLUST (
-            ch_contigs_reads,
+            ch_ref_contigs_reads,
             contig_classifiers,
             kaiju_db,
             kraken2_db
         )
         ch_versions      = ch_versions.mix(FASTA_CONTIG_PRECLUST.out.versions)
-        ch_contigs_reads = FASTA_CONTIG_PRECLUST.out.contigs_reads
+        ch_ref_contigs_reads = FASTA_CONTIG_PRECLUST.out.contigs_reads
     }
 
     // cluster our reference hits and contigs should make this a subworkflow
     FASTA_FASTQ_CLUST (
-        ch_contigs_reads,
+        ch_ref_contigs_reads,
         params.cluster_method,
     )
     ch_versions = ch_versions.mix(FASTA_FASTQ_CLUST.out.versions)
 
     // if we have no coverage files, make the empty array else join with coverages
     if (params.perc_reads_contig == 0){
-        sample_fasta_ref_contigs = ch_contigs_reads
-            .map{ meta, fasta, reads -> [meta.db_comb, meta, fasta []] }       // add sample for join
+        sample_fasta_ref_contigs = fasta_sel_fastq
+            .map{ meta,  ref_contigs, contigs, reads -> [meta.db_comb, meta, ref_contigs []] } // add sample for join
     } else {
         sample_coverages = coverages
-            .map{ meta, idxstats -> [meta.sample, meta, idxstats] }            // add sample for join
+            .map{ meta, idxstats -> [meta.sample, meta, idxstats] }                            // add sample for join
 
-        sample_fasta_ref_contigs = ch_contigs_reads
-            .map{ meta, fasta, reads -> [meta.sample, meta, fasta] }           // add sample for join
-            .combine(sample_coverages)                                         // combine with coverages (need an carhesian product)
-            .filter{it -> it[0]==it[3]}                                        // filter for matching samples
+        sample_fasta_ref_contigs = fasta_sel_fastq
+            .map{ meta,  ref_contigs, contigs, reads -> [meta.sample, meta, ref_contigs] }     // add sample for join
+            .combine(sample_coverages)                                                         // combine with coverages (need an carhesian product)
+            .filter{it -> it[0]==it[3]}                                                        // filter for matching samples
             .map{ sample, meta_fasta, fasta, sample_coverages, meta_coverages, coverages ->
-                [meta_fasta.db_comb, meta_fasta, fasta, coverages]             // remove meta coverages
+                [meta_fasta.db_comb, meta_fasta, fasta, coverages]                             // remove meta coverages
                 }
     }
-
-    sample_fasta_ref_contigs.dump(tag:"sample_fasta_ref_contigs", pretty:true)
 
     // Join cluster files with contigs & group based on number of preclusters (ntaxa)
     FASTA_FASTQ_CLUST
@@ -106,12 +104,9 @@ workflow FASTA_CONTIG_CLUST {
             }
         .groupTuple(remainder: true)                                           // Has to be grouped to link different taxa preclusters to the same sample
         .combine(sample_fasta_ref_contigs)                                     // combine with contigs (regural join doesn't work)
-        .set{tmp}
-        tmp.dump(tag:"tmp", pretty:true)
-        tmp
         .filter{it -> it[0]==it[3]}                                            // filter for matching samples
         .map{ db_comb, meta_clust, clusters, sample2, meta_contig, contigs, coverages ->
-            [meta_contig, clusters, contigs, coverages]                        // get rid of meta_clust & sample
+            [meta_contig + [id: "${meta_contig.db_comb}"], clusters, contigs, coverages]                        // get rid of meta_clust & sample
         }
         .set{ch_clusters_contigs_coverages}
 

@@ -53,7 +53,7 @@ workflow FASTA_BLAST_REFSEL {
     ch_fasta_sel_fastq = BLAST_FILTER.out.sequence.join(fasta_fastq, by:[0])
 
     emit:
-    fasta_sel_fastq   = ch_fasta_sel_fastq  // channel: [ val(meta), [ fasta ], [ fastq ] ]
+    fasta_sel_fastq   = ch_fasta_sel_fastq  // channel: [ val(meta), [ fasta_all ], [contigs], [ fastq ] ]
     no_blast_hits     = ch_no_blast_hits    // channel: [ val(meta), [ mqc ] ]
     versions          = ch_versions         // channel: [ versions.yml ]
 }
