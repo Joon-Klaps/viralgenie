@@ -93,9 +93,9 @@ workflow FASTA_CONTIG_PRECLUST {
         .set{sequences_reads}
 
     emit:
-    sequences_reads  = sequences_reads  // channel: [ [ meta ], [ fasta ], [ fastq ]
-    kraken           = kraken           // channel: [ val(meta), [ kraken ] ]
-    kaiju            = kaiju            // channel: [ val(meta), [ kaiju ] ]
-    versions         = ch_versions      // channel: [ versions.yml ]
+    contigs_reads  = sequences_reads  // channel: [ [ meta ], [ fasta ], [ fastq ]
+    kraken         = kraken           // channel: [ val(meta), [ kraken ] ]
+    kaiju          = kaiju            // channel: [ val(meta), [ kaiju ] ]
+    versions       = ch_versions      // channel: [ versions.yml ]
 }
 
