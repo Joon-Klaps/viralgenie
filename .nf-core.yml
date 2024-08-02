@@ -34,6 +34,7 @@ lint:
     - lib/WorkflowMain.groovy
     - lib/NfcoreTemplate.groovy
     - lib/WorkflowViralgenie.groovy
+    - assets/nf-core-viralgenie_logo_light.png
   actions_awsfulltest:
     - .github/workflows/awsfulltest.yml
     - .github/workflows/awstest.yml
