@@ -15,6 +15,7 @@ Initial release of Joon-Klaps/viralgenie, created with the [nf-core](https://nf-
 - Add Sspace indiv to each assembler seperatly ([#132](https://github.com/Joon-Klaps/viralgenie/pull/132))
 - Add read & contig decomplexification using prinseq++  ([#133](https://github.com/Joon-Klaps/viralgenie/pull/133))
 - Add option to filter contig clusters based on cumulative read coverage ([#138](https://github.com/Joon-Klaps/viralgenie/pull/138))
+- Reffurbish mqc implementation ([#139](https://github.com/Joon-Klaps/viralgenie/pull/139))
 
 ### `Fixed`
 
