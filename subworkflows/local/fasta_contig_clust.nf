@@ -81,13 +81,13 @@ workflow FASTA_CONTIG_CLUST {
     // if we have no coverage files, make the empty array else join with coverages
     if (params.perc_reads_contig == 0){
         sample_fasta_ref_contigs = ch_contigs_reads
-            .map{ meta, fasta -> [meta.db_comb, meta, fasta []] }               // add sample for join
+            .map{ meta, fasta, reads -> [meta.db_comb, meta, fasta []] }       // add sample for join
     } else {
         sample_coverages = coverages
             .map{ meta, idxstats -> [meta.sample, meta, idxstats] }            // add sample for join
 
         sample_fasta_ref_contigs = ch_contigs_reads
-            .map{ meta, fasta -> [meta.sample, meta, fasta] }                  // add sample for join
+            .map{ meta, fasta, reads -> [meta.sample, meta, fasta] }           // add sample for join
             .join(sample_coverages, by: [0])                                   // join with coverages
             .map{ sample, meta_fasta, fasta, meta_coverages, coverages ->      // remove meta coverages
                 [meta_fasta.db_comb, meta_fasta, fasta, coverages]
