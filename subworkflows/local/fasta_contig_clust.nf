@@ -88,11 +88,14 @@ workflow FASTA_CONTIG_CLUST {
 
         sample_fasta_ref_contigs = ch_contigs_reads
             .map{ meta, fasta, reads -> [meta.sample, meta, fasta] }           // add sample for join
-            .join(sample_coverages, by: [0])                                   // join with coverages
-            .map{ sample, meta_fasta, fasta, meta_coverages, coverages ->      // remove meta coverages
-                [meta_fasta.db_comb, meta_fasta, fasta, coverages]
+            .combine(sample_coverages)                                         // combine with coverages (need an carhesian product)
+            .filter{it -> it[0]==it[3]}                                        // filter for matching samples
+            .map{ sample, meta_fasta, fasta, sample_coverages, meta_coverages, coverages ->
+                [meta_fasta.db_comb, meta_fasta, fasta, coverages]             // remove meta coverages
                 }
     }
+
+    sample_fasta_ref_contigs.dump(tag:"sample_fasta_ref_contigs", pretty:true)
 
     // Join cluster files with contigs & group based on number of preclusters (ntaxa)
     FASTA_FASTQ_CLUST
@@ -103,6 +106,9 @@ workflow FASTA_CONTIG_CLUST {
             }
         .groupTuple(remainder: true)                                           // Has to be grouped to link different taxa preclusters to the same sample
         .combine(sample_fasta_ref_contigs)                                     // combine with contigs (regural join doesn't work)
+        .set{tmp}
+        tmp.dump(tag:"tmp", pretty:true)
+        tmp
         .filter{it -> it[0]==it[3]}                                            // filter for matching samples
         .map{ db_comb, meta_clust, clusters, sample2, meta_contig, contigs, coverages ->
             [meta_contig, clusters, contigs, coverages]                        // get rid of meta_clust & sample
