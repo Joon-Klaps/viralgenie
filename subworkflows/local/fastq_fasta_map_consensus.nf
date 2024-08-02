@@ -19,7 +19,7 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
     variant_caller       // val: [ bcftools | ivar ]
     call_consensus       // val: [ true | false ]
     consensus_caller     // val: [ bcftools | ivar ]
-    mapping_stats            // val: [ true | false ]
+    mapping_stats        // val: [ true | false ]
     min_mapped_reads     // integer: min_mapped_reads
     min_len              // integer: min_length
     n_100                // integer: n_100

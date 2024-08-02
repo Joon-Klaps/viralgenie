@@ -12,9 +12,9 @@ process LOWCOV_TO_REFERENCE {
     tuple val(meta), path(reference), path(consensus), path(mpileup)
 
     output:
-    tuple val(meta), path("*.fasta") , emit: sequence
-    tuple val(meta), path("*.txt")   , emit: txt, optional: true
-    path "versions.yml"              , emit: versions
+    tuple val(meta), path("*.fa") , emit: sequence
+    tuple val(meta), path("*.txt"), emit: txt, optional: true
+    path "versions.yml"           , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
