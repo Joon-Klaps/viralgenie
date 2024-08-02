@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""Provide a command line tool to extract sequence names from cdhit's cluster files."""
+"""Provide a command line tool to create several custom mqc report files."""
 
 import argparse
 import csv
@@ -143,6 +143,14 @@ def parse_args(argv=None):
         default="normal",
         type=str,
         help="Specify how strict the filtering should be, default is normal.",
+    )
+
+    parser.add_argument(
+        "--clusters_files",
+        metavar="CLUSTER FILES",
+        nargs="+",
+        type=Path,
+        help="Cluster files for each sample in table format containing information on the number every cluster of a sample.",
     )
 
     parser.add_argument(
@@ -650,7 +658,7 @@ def process_blast_dataframe(blast_df, blast_header, output_file):
         blast_df = blast_df.sort_values("bitscore", ascending=False).drop_duplicates("query")
 
         # Process the DataFrame
-        blast_df = handle_dataframe(blast_df, "blast", "query", blast_header, output_file)
+        blast_df = generate_indexed_df(blast_df, "blast", "query", blast_header, output_file)
 
         # Make everything a string for the annotation
         blast_df = blast_df.astype(str)
@@ -688,7 +696,7 @@ def process_annotation_dataframe(annotation_df, blast_header, output_file):
         annotation_df['% contig aligned'] = round((annotation_df['length'] / annotation_df['qlen']) * 100,2)
 
         # Process the DataFrame
-        annotation_df = handle_dataframe(annotation_df, "annotation", "query", blast_header, output_file)
+        annotation_df = generate_indexed_df(annotation_df, "annotation", "query", blast_header, output_file)
 
         # Make everything a string for the annotation
         annotation_df = annotation_df.astype(str)
@@ -710,7 +718,7 @@ def parse_annotation_data(annotation_str):
         annotation_dict[key] = value
     return annotation_dict
 
-def handle_tables(table_files, header_name=False, output=False, **kwargs):
+def generate_df(table_files, header_name=False, output=False, **kwargs):
     """
     Handle multiple table files and perform concatenation and writing to output file if specified.
 
@@ -731,7 +739,7 @@ def handle_tables(table_files, header_name=False, output=False, **kwargs):
         write_dataframe(result_df, output, header_name)
     return result_df
 
-def handle_dataframe(df, prefix, column_to_split, header=False, output=False):
+def generate_indexed_df(df, prefix, column_to_split, header=False, output=False):
     """
     Handle the given dataframe by adding a prefix to column names, splitting a specific column,
     and generating an ID based on sample, cluster, and step information.
@@ -1191,20 +1199,26 @@ def main(argv=None):
     # General stats - Cluster summariesx
     if args.clusters_summary:
         cluster_header = get_header(args.comment_dir, "clusters_summary_mqc.txt")
-        handle_tables(args.clusters_summary, cluster_header, "summary_clusters_mqc.tsv")
+        generate_df(args.clusters_summary, cluster_header, "summary_clusters_mqc.tsv")
 
     # General Stats - Sample metadata
     if args.sample_metadata:
         sample_header = get_header(args.comment_dir, "sample_metadata_mqc.txt")
-        handle_tables([args.sample_metadata], sample_header, "sample_metadata_mqc.tsv")
+        generate_df([args.sample_metadata], sample_header, "sample_metadata_mqc.tsv")
+
+    # Custom barplot -  Clusters sample
+    if args.clusters_files:
+        clusters_df = generate_df(args.clusters_files)
+        if not clusters_df.empty:
+            print("continue here")
 
     # CLuster table - Checkv summary
-    checkv_df = handle_tables(args.checkv_files)
+    checkv_df = generate_df(args.checkv_files)
     checkv_header = []
     if args.save_intermediate:
         checkv_header = get_header(args.comment_dir, "checkv_mqc.txt")
     if not checkv_df.empty:
-        checkv_df = handle_dataframe(checkv_df, "checkv", "contig_id", checkv_header, "summary_checkv_mqc.tsv")
+        checkv_df = generate_indexed_df(checkv_df, "checkv", "contig_id", checkv_header, "summary_checkv_mqc.tsv")
 
     # Cluster table - Quast summary
     quast_df = read_in_quast(args.quast_files)
@@ -1212,7 +1226,7 @@ def main(argv=None):
     if args.save_intermediate:
         quast_header = get_header(args.comment_dir, "quast_mqc.txt")
     if not quast_df.empty:
-        quast_df = handle_dataframe(
+        quast_df = generate_indexed_df(
             quast_df, "quast", "Assembly", quast_header, "summary_quast_mqc.tsv"
         )
 
@@ -1231,7 +1245,7 @@ def main(argv=None):
         ]
 
     # Cluster table - Blast summary
-    blast_df = handle_tables(args.blast_files, header=None)
+    blast_df = generate_df(args.blast_files, header=None)
     blast_header = []
     if args.save_intermediate:
         blast_header = get_header(args.comment_dir, "blast_mqc.txt")
@@ -1239,7 +1253,7 @@ def main(argv=None):
         blast_df = process_blast_dataframe(blast_df, blast_header, "summary_blast_mqc.tsv")
 
     # Cluster table - mmseqs easysearch summary (annotation section)
-    annotation_df = handle_tables(args.annotation_files, header=None)
+    annotation_df = generate_df(args.annotation_files, header=None)
     if not annotation_df.empty:
         annotation_df = process_annotation_dataframe(annotation_df, blast_header, "summary_anno_mqc.tsv")
 
@@ -1302,7 +1316,7 @@ def main(argv=None):
         if not constrains_mqc.empty:
 
             # Add constrain metadata to the mapping constrain table
-            constrain_meta = handle_tables([args.mapping_constrains])
+            constrain_meta = generate_df([args.mapping_constrains])
 
             # drop unwanted columns & reorder
             constrain_meta = drop_columns(constrain_meta, ["sequence", "samples"])

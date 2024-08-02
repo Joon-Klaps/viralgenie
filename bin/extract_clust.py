@@ -32,7 +32,7 @@ class Cluster:
             self.cluster_size = len(members)
         else:
             self.cluster_size = 0
-        self.cumulative_read_depth = []
+        self.cumulative_read_depth = {}
 
     def _set_centroid(self, centroid):
         """
@@ -110,7 +110,7 @@ class Cluster:
                 file.write(f"\n")
 
     def _to_line(self, prefix):
-        rounded_depth = np.round(self.cumulative_read_depth, 2).tolist()
+        rounded_depth = np.round(list(self.cumulative_read_depth.values()), 2).tolist()
         return "\t".join(
             [
             str(prefix),
@@ -118,18 +118,16 @@ class Cluster:
             str(self.cluster_id),
             str(self.centroid),
             str(self.cluster_size),
-            ",".join(map(str,rounded_depth)),
+            "\t".join(map(str,rounded_depth)),
             ",".join(self.members)
             ]
         )
 
-    def determine_cumulative_read_depth(self, coverages):
+    def determine_cumulative_read_depth(self, coverages: dict) -> dict:
         """
         Determine the cumulative read depth for each member of the cluster.
         """
-        self.cumulative_read_depth = np.sum([
-                [d.get(key, 0) for d in coverages] for key in [self.centroid] + self.members
-            ], axis=0)
+        self.cumulative_read_depth = sum_dict_values_by_assembler(self.centroid, self.members, coverages)
 
 def parse_clusters_chdit(file_in):
     """
@@ -311,7 +309,8 @@ def write_clusters_to_tsv(clusters, prefix):
     Write the clusters to a json file.
     """
     with open(f"{prefix}.clusters.tsv", "w") as file:
-        file.write("\t".join(["sample", "taxon-id", "cluster-id", "centroid", "size","cumulative read depth [%]", "members"]))
+        assemblers = [f"cumulative read depth - {assembler} [%]" for assembler in  clusters[0].cumulative_read_depth.keys()]
+        file.write("\t".join(["sample", "taxon-id", "cluster-id", "centroid", "size"] + assemblers + ["members"]))
         file.write("\n")
         for cluster in clusters:
             file.write(cluster._to_line(prefix))
@@ -354,6 +353,43 @@ def update_cluster_ids(clusters):
         cluster.set_cluster_id(f"cl{idx}")
         updated_clusters.append(cluster)
     return updated_clusters
+
+def sum_dict_values_by_assembler(centroid: str, members: list, coverages:list) -> dict:
+    """
+    Sum the values of the dictionaries in the list for the given key.
+
+    Parameters:
+    centroid (str): The key to sum the values for.
+    members (list): The list of keys to sum the values for.
+    coverages (list): The list of dictionaries to sum the values from.
+
+    Returns:
+    dict: A dictionary with the summed values for each assembler
+    """
+    # Define regex patterns for each assembler
+    patterns = {
+        'spades': r'^(spades)|(NODE)',
+        'megahit': r'^(megahit)|(k\d+)',
+        'trinity': r'^(trinity)|(TRINITY)'
+    }
+
+    # Function to get the assembler type for a key
+    def get_assembler(key):
+        for assembler, pattern in patterns.items():
+            if re.match(pattern, key):
+                return assembler
+        return 'unknown'  # In case no pattern matches
+
+    # Initialize result dictionary
+    result = {assembler: 0 for assembler in patterns.keys()}
+
+    # Sum coverages
+    for key in [centroid] + members:
+        assembler = get_assembler(key)
+        if assembler != 'unknown':
+            result[assembler] += sum(d.get(key, 0) for d in coverages)
+
+    return result
 
 def write_clusters_summary(clusters, prefix):
     """
@@ -400,7 +436,8 @@ def filter_clusters_by_coverage(clusters: list , coverages: dict, threshold: flo
     for cluster in clusters:
         cluster.determine_cumulative_read_depth(coverages)
         logger.debug("Cluster %s has cumulative read depth %s", cluster.cluster_id, cluster.cumulative_read_depth)
-        if any(cluster.cumulative_read_depth >= threshold):
+        cum_coverages = np.array(list(cluster.cumulative_read_depth.values()))
+        if any(cum_coverages >= threshold):
             filtered_clusters.append(cluster)
     return clusters,filtered_clusters
 
@@ -485,6 +522,7 @@ def main(argv=None):
         sys.exit(2)
 
     cluster_list = []
+
     for cluster_file in args.clusters:
         logger.debug(f"Reading {cluster_file}...")
         if not cluster_file.is_file():
@@ -500,6 +538,7 @@ def main(argv=None):
             # vrhyme doens't select centroids so we provide pattern to give preference to non matching sequences
             cluster_list += parse_clusters_vrhyme(cluster_file, args.pattern)
         elif args.method == "mash":
+            # mash doens't select centroids so we provide pattern to give preference to non matching sequences
             cluster_list += parse_clusters_vrhyme(cluster_file, args.pattern, False)
         else:
             logger.error(f"Option {args.method} is not supported!")
@@ -525,6 +564,10 @@ def main(argv=None):
         coverages = read_coverages(args.coverages)
         clusters,filtered_clusters = filter_clusters_by_coverage(filtered_clusters, coverages, args.perc_reads_contig)
         logger.info("Filtered clusters by coverage, %d were removed.", len(clusters_renamed) - len(filtered_clusters))
+
+    if len(filtered_clusters) == 0:
+        logger.error("No clusters left after filtering.")
+        return 2
 
     # Write the clusters to files
     logger.info("Writing results to files.")

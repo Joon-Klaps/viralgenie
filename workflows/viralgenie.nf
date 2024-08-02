@@ -289,6 +289,7 @@ workflow VIRALGENIE {
                 .set{ch_centroids_members}
 
             ch_clusters_summary    = FASTA_CONTIG_CLUST.out.clusters_summary.collect{it[1]}.ifEmpty([])
+            ch_clusters_tsv        = FASTA_CONTIG_CLUST.out.clusters_tsv.collect{it[1]}.ifEmpty([])
             ch_multiqc_files       =  ch_multiqc_files.mix(FASTA_CONTIG_CLUST.out.no_blast_hits_mqc.ifEmpty([]))
 
             // map clustered contigs & create a single consensus per cluster
@@ -494,13 +495,15 @@ workflow VIRALGENIE {
             ch_bed.collect{it[1]}.ifEmpty([]),
             ch_constrain_meta,
             ch_annotation_summary.ifEmpty([]),
+            ch_clusters_tsv.ifEmpty([]),
             multiqc_data,
             ch_multiqc_comment_headers.ifEmpty([]),
             ch_multiqc_custom_table_headers.ifEmpty([])
             )
     ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_MULTIQC_TABLES.out.summary_clusters_mqc.ifEmpty([]))
+    ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_MULTIQC_TABLES.out.clusters_barchart_mqc.ifEmpty([]))
     ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_MULTIQC_TABLES.out.sample_metadata_mqc.ifEmpty([]))
-    ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_MULTIQC_TABLES.out.contigs_overview_mqc.ifEmpty([]))
+    ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_MULTIQC_TABLES.out.clusters_barchart_mqc.ifEmpty([]))
     ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_MULTIQC_TABLES.out.mapping_constrains_mqc.ifEmpty([]))
     ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_MULTIQC_TABLES.out.constrains_summary_mqc.ifEmpty([]))
     ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_MULTIQC_TABLES.out.contig_html.ifEmpty([]))
