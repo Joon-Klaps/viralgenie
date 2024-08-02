@@ -21,20 +21,18 @@ workflow CONSENSUS_QC  {
 
     ch_versions      = Channel.empty()
     ch_multiqc_files = Channel.empty()
-    blast_txt        = Channel.empty()
-    checkv_summary   = Channel.empty()
-    quast_summary    = Channel.empty()
-    annotation_txt  = Channel.empty()
+    blast            = Channel.empty()
+    checkv           = Channel.empty()
+    quast            = Channel.empty()
+    annotation       = Channel.empty()
 
     if ( !params.skip_checkv || !params.skip_alignment_qc) {
         ch_genome
             .map{meta, genome -> [meta.subMap('id','cluster_id','sample'), genome]}
             .groupTuple()
-            .set{ch_genome_grouped}
+            .set{catcat_in}
 
-        CAT_CAT_QC(
-            ch_genome_grouped
-        )
+        CAT_CAT_QC( catcat_in )
 
         CAT_CAT_QC
             .out
@@ -51,12 +49,10 @@ workflow CONSENSUS_QC  {
         }
 
         // uses HMM and AA alignment to deterimine completeness
-        CHECKV_ENDTOEND (
-            ch_genome_collapsed,
-            checkv_db
-        )
-        checkv_summary = CHECKV_ENDTOEND.out.quality_summary
-        ch_versions    = ch_versions.mix(CHECKV_ENDTOEND.out.versions)
+        CHECKV_ENDTOEND ( ch_genome_collapsed, checkv_db)
+
+        checkv      = CHECKV_ENDTOEND.out.quality_summary
+        ch_versions = ch_versions.mix(CHECKV_ENDTOEND.out.versions)
     }
 
     // Align the different steps to each other to see how the sequences have changed
@@ -70,97 +66,64 @@ workflow CONSENSUS_QC  {
             }
             .set{ch_genome_collapsed_branch}
 
-        MAFFT_ITERATIONS (
-            ch_genome_collapsed_branch.pass,
-            [[:],[]],
-            [[:],[]],
-            [[:],[]],
-            [[:],[]],
-            [[:],[]],
-            false
-        )
+        MAFFT_ITERATIONS ( ch_genome_collapsed_branch.pass, [[:],[]], [[:],[]], [[:],[]], [[:],[]], [[:],[]], false )
+
         ch_versions = ch_versions.mix(MAFFT_ITERATIONS.out.versions)
+        contigs_mod = ch_aligned_raw_contigs.map{ meta, genome -> [meta.id, meta, genome] }
 
-        // Mix single sequences with the (multiple) aligned ones
+        // Make a channel that contains the alignment of the iterations with
+        // the original contigs from the assemblers
         ch_genome_collapsed_branch
-            .fail
-            .mix(MAFFT_ITERATIONS.out.fas)
-            .map{ meta, genome -> [meta.id, meta, genome] }
-            .set{ch_genome_collapsed_mod}
-
-        ch_aligned_raw_contigs.map{ meta, genome -> [meta.id, meta, genome] }.set{ch_aligned_raw_contigs_mod}
-
-        // Combine with the orignal contigs
-        ch_genome_collapsed_mod
-            .join( ch_aligned_raw_contigs_mod, by: 0)
-            .map{ id, meta_genome, scaffolds, meta_contigs, contigs -> [meta_genome, scaffolds, contigs] }
-            .filter{ meta, scaffolds, contigs ->
+            .fail.mix(MAFFT_ITERATIONS.out.fas)                             // Combine alignments with single results
+            .map{ meta, genome -> [meta.id, meta, genome] }                 // Set common delimiter
+            .join( contigs_mod, by: 0)                                      // Combine with raw contigs
+            .filter{id, meta_genome, scaffolds, meta_contigs, contigs  ->   // Make sure we have at least 2 sequences
                 scaffolds.countFasta() + contigs.countFasta() > 1
             }
-            .set{ch_genome_collapsed_branch}
+            .multiMap{ id, meta_genome, scaffolds, meta_contigs, contigs -> // Split in correct inputs
+                scaffolds: [meta_genome, scaffolds]
+                contigs: [meta_genome, contigs]
+            }.set{mafftQC_in}
 
-        ch_genome_collapsed_branch
-            .map{ meta, scaffolds, contigs -> [meta, scaffolds] }
-            .set{scaffolds}
-        ch_genome_collapsed_branch
-            .map{ meta, scaffolds, contigs -> [meta,contigs] }
-            .set{addsequences}
+        MAFFT_QC ( mafftQC_in.scaffolds, mafftQC_in.contigs, [[:],[]], [[:],[]], [[:],[]], [[:],[]], false)
 
-        MAFFT_QC (
-            scaffolds,
-            addsequences,
-            [[:],[]],
-            [[:],[]],
-            [[:],[]],
-            [[:],[]],
-            false
-        )
         ch_versions = ch_versions.mix(MAFFT_QC.out.versions)
     }
 
+    // Contig summary statistics
     if ( !params.skip_quast ) {
-        // Contig summary statistics
-        QUAST_QC (
-            ch_genome,
-            [[:],[]],
-            [[:],[]]
-        )
+        QUAST_QC ( ch_genome, [[:],[]], [[:],[]])
+
         ch_versions   = ch_versions.mix(QUAST_QC.out.versions)
-        quast_summary = QUAST_QC.out.tsv
+        quast = QUAST_QC.out.tsv
     }
 
+    // Identify closest reference from the reference pool database using blast
     if ( !params.skip_blast_qc ){
-        // Identify closest reference from the reference pool database using blast
-        BLASTN_QC (
-            ch_genome,
-            refpool_db
-        )
-        blast_txt   = BLASTN_QC.out.txt
+        BLASTN_QC ( ch_genome, refpool_db)
+
+        blast       = BLASTN_QC.out.txt
         ch_versions = ch_versions.mix(BLASTN_QC.out.versions)
     }
 
+    // use MMSEQS easy search to find best hits against annotation db
     if ( !params.skip_annotation){
         ch_genomes_collect = ch_genome.collect{it[1]}.map{files -> [[id:"all_genomes_annotation.hits"], files]}
-        CAT_CAT_MMSEQS(
-            ch_genomes_collect
-        )
+        CAT_CAT_MMSEQS( ch_genomes_collect )
         ch_versions = ch_versions.mix(CAT_CAT_MMSEQS.out.versions)
-        // use MMSEQS easy search to find best hits against annotation db
-        MMSEQS_ANNOTATE(
-            CAT_CAT_MMSEQS.out.file_out,
-            annotation_db
-        )
-        annotation_txt = MMSEQS_ANNOTATE.out.tsv
+
+        MMSEQS_ANNOTATE(CAT_CAT_MMSEQS.out.file_out,annotation_db)
+
+        annotation  = MMSEQS_ANNOTATE.out.tsv
         ch_versions = ch_versions.mix(MMSEQS_ANNOTATE.out.versions)
     }
 
-
     emit:
-    blast_txt       = blast_txt         // channel: [ val(meta), [ txt ] ]
-    checkv_summary  = checkv_summary    // channel: [ val(meta), [ tsv ] ]
-    quast_summary   = quast_summary     // channel: [ val(meta), [ tsv ] ]
-    annotation_txt  = annotation_txt   // channel: [ val(meta), [ txt ] ]
-    mqc             = ch_multiqc_files  // channel: [ tsv ]
-    versions        = ch_versions       // channel: [ versions.yml ]
+    blast       = blast             // channel: [ val(meta), [ txt ] ]
+    checkv      = checkv            // channel: [ val(meta), [ tsv ] ]
+    quast       = quast             // channel: [ val(meta), [ tsv ] ]
+    annotation  = annotation        // channel: [ val(meta), [ txt ] ]
+    mqc         = ch_multiqc_files  // channel: [ tsv ]
+    versions    = ch_versions       // channel: [ versions.yml ]
 }
 

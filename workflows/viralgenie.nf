@@ -243,8 +243,10 @@ workflow VIRALGENIE {
     ch_consensus               = Channel.empty()
     // Channel for consensus sequences that have been generated at the LAST iteration
     ch_consensus_results_reads = Channel.empty()
-    // Channel for summary table of cluseters to include in mqc report
+    // Channel for summary table of clusters to include in mqc report
     ch_clusters_summary        = Channel.empty()
+    // Channel for summary coverages of each contig
+    ch_bed                     = Channel.empty()
 
     if (!params.skip_assembly) {
         // run different assemblers and combine contigs
@@ -350,6 +352,7 @@ workflow VIRALGENIE {
                 ch_consensus_results_reads = FASTQ_FASTA_ITERATIVE_CONSENSUS.out.consensus_reads
                 ch_versions                = ch_versions.mix(FASTQ_FASTA_ITERATIVE_CONSENSUS.out.versions)
                 ch_multiqc_files           = ch_multiqc_files.mix(FASTQ_FASTA_ITERATIVE_CONSENSUS.out.mqc.ifEmpty([])) //collect already done in subworkflow
+                ch_bed                     = ch_bed.mix(FASTQ_FASTA_ITERATIVE_CONSENSUS.out.bed)
             } else {
                 ch_consensus_results_reads = ch_consensus_results_reads_intermediate
             }
@@ -443,6 +446,7 @@ workflow VIRALGENIE {
         )
         ch_consensus     = ch_consensus.mix(FASTQ_FASTA_MAP_CONSENSUS.out.consensus_all)
         ch_multiqc_files = ch_multiqc_files.mix(FASTQ_FASTA_MAP_CONSENSUS.out.mqc.ifEmpty([])) // collect already done in subworkflow
+        ch_bed           = ch_bed.mix(FASTQ_FASTA_MAP_CONSENSUS.out.bed)
 
     }
 
@@ -462,10 +466,10 @@ workflow VIRALGENIE {
             )
         ch_versions           = ch_versions.mix(CONSENSUS_QC.out.versions)
         ch_multiqc_files      = ch_multiqc_files.mix(CONSENSUS_QC.out.mqc.collect{it[1]}.ifEmpty([]))
-        ch_checkv_summary     = CONSENSUS_QC.out.checkv_summary.collect{it[1]}.ifEmpty([])
-        ch_quast_summary      = CONSENSUS_QC.out.quast_summary.collect{it[1]}.ifEmpty([])
-        ch_blast_summary      = CONSENSUS_QC.out.blast_txt.collect{it[1]}.ifEmpty([])
-        ch_annotation_summary = CONSENSUS_QC.out.annotation_txt.collect{it[1]}.ifEmpty([])
+        ch_checkv_summary     = CONSENSUS_QC.out.checkv.collect{it[1]}.ifEmpty([])
+        ch_quast_summary      = CONSENSUS_QC.out.quast.collect{it[1]}.ifEmpty([])
+        ch_blast_summary      = CONSENSUS_QC.out.blast.collect{it[1]}.ifEmpty([])
+        ch_annotation_summary = CONSENSUS_QC.out.annotation.collect{it[1]}.ifEmpty([])
 
     }
 
@@ -487,6 +491,7 @@ workflow VIRALGENIE {
             ch_checkv_summary.ifEmpty([]),
             ch_quast_summary.ifEmpty([]),
             ch_blast_summary.ifEmpty([]),
+            ch_bed.collect{it[1]}.ifEmpty([]),
             ch_constrain_meta,
             ch_annotation_summary.ifEmpty([]),
             multiqc_data,
@@ -498,6 +503,7 @@ workflow VIRALGENIE {
     ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_MULTIQC_TABLES.out.contigs_overview_mqc.ifEmpty([]))
     ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_MULTIQC_TABLES.out.mapping_constrains_mqc.ifEmpty([]))
     ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_MULTIQC_TABLES.out.constrains_summary_mqc.ifEmpty([]))
+    ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_MULTIQC_TABLES.out.contig_html.ifEmpty([]))
     ch_versions      = ch_versions.mix(CUSTOM_MULTIQC_TABLES.out.versions)
 
     CUSTOM_DUMPSOFTWAREVERSIONS (

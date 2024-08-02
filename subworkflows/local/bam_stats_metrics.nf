@@ -31,6 +31,7 @@ workflow BAM_STATS_METRICS {
     ch_versions  = ch_versions.mix(PICARD_COLLECTMULTIPLEMETRICS.out.versions)
 
     MOSDEPTH(input_metics.bam_bai_bed, input_metics.ref)
+    ch_bed       = MOSDEPTH.out.per_base_bed
     ch_versions  = ch_versions.mix(MOSDEPTH.out.versions)
     ch_multiqc   = ch_multiqc.mix(MOSDEPTH.out.global_txt)
     ch_multiqc   = ch_multiqc.mix(MOSDEPTH.out.summary_txt)
@@ -41,9 +42,9 @@ workflow BAM_STATS_METRICS {
     ch_multiqc   = ch_multiqc.mix(BAM_STATS_SAMTOOLS.out.flagstat)
     // ch_multiqc   = ch_multiqc.mix(BAM_STATS_SAMTOOLS.out.idxstats)
 
-
     emit:
     bai      = SAMTOOLS_INDEX.out.bai          // channel: [ val(meta), [ bai ] ]
+    bed      = ch_bed                          // channel: [ val(meta), [ bed ] ]
     mqc      = ch_multiqc                      // channel: [ multiqc  ]
 
     versions = ch_versions                     // channel: [ versions.yml ]

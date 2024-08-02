@@ -4,4 +4,8 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - conda-forge::bioframe=0.4.1
+  - pip
+  - pip:
+      - dash==2.17.0
+      - multiqc==1.22.1
+      - pandas==2.2.0rc0
