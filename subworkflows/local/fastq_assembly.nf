@@ -5,12 +5,12 @@
 include { SPADES                                     } from '../../modules/nf-core/spades/main'
 include { TRINITY                                    } from '../../modules/nf-core/trinity/main'
 include { MEGAHIT                                    } from '../../modules/nf-core/megahit/main'
-include { FASTQ_FASTA_QUAST_SSPACE as EXTEND_SPADES  } from './fastq_fasta_quast_sspace.nf'
-include { FASTQ_FASTA_QUAST_SSPACE as EXTEND_TRINITY } from './fastq_fasta_quast_sspace.nf'
-include { FASTQ_FASTA_QUAST_SSPACE as EXTEND_MEGAHIT } from './fastq_fasta_quast_sspace.nf'
+include { SCAFFOLDS_EXTEND_STATS as EXTEND_SPADES    } from './scaffolds_extend_stats.nf'
+include { SCAFFOLDS_EXTEND_STATS as EXTEND_TRINITY   } from './scaffolds_extend_stats.nf'
+include { SCAFFOLDS_EXTEND_STATS as EXTEND_MEGAHIT   } from './scaffolds_extend_stats.nf'
 include { CAT_CAT as CAT_ASSEMBLERS                  } from '../../modules/nf-core/cat/cat/main'
-include { PRINSEQPLUSPLUS as PRINSEQ_CONTIG   } from '../../modules/nf-core/prinseqplusplus/main'
-include { noContigSamplesToMultiQC            } from '../../modules/local/functions'
+include { PRINSEQPLUSPLUS as PRINSEQ_CONTIG          } from '../../modules/nf-core/prinseqplusplus/main'
+include { noContigSamplesToMultiQC                   } from '../../modules/local/functions'
 
 
 workflow FASTQ_ASSEMBLY {
@@ -24,6 +24,7 @@ workflow FASTQ_ASSEMBLY {
     main:
     ch_versions    = Channel.empty()
     ch_scaffolds   = Channel.empty()
+    ch_coverages   = Channel.empty()
     ch_multiqc     = Channel.empty()
     bad_assemblies = Channel.empty()
 
@@ -38,10 +39,10 @@ workflow FASTQ_ASSEMBLY {
 
         EXTEND_SPADES( reads, SPADES.out.scaffolds, "spades")
         ch_scaffolds         = ch_scaffolds.mix(EXTEND_SPADES.out.scaffolds)
+        ch_coverages         = ch_coverages.mix(EXTEND_SPADES.out.coverages)
         ch_versions          = ch_versions.mix(EXTEND_SPADES.out.versions)
         ch_multiqc           = ch_multiqc.mix(EXTEND_SPADES.out.mqc)
     }
-
 
     // TRINITY
     if ('trinity' in assemblers) {
@@ -50,6 +51,7 @@ workflow FASTQ_ASSEMBLY {
 
         EXTEND_TRINITY( reads, TRINITY.out.transcript_fasta, "trinity")
         ch_scaffolds         = ch_scaffolds.mix(EXTEND_TRINITY.out.scaffolds)
+        ch_coverages         = ch_coverages.mix(EXTEND_TRINITY.out.coverages)
         ch_versions          = ch_versions.mix(EXTEND_TRINITY.out.versions)
         ch_multiqc           = ch_multiqc.mix(EXTEND_TRINITY.out.mqc)
     }
@@ -61,6 +63,7 @@ workflow FASTQ_ASSEMBLY {
 
         EXTEND_MEGAHIT( reads, MEGAHIT.out.contigs, "megahit")
         ch_scaffolds         = ch_scaffolds.mix(EXTEND_MEGAHIT.out.scaffolds)
+        ch_coverages         = ch_coverages.mix(EXTEND_MEGAHIT.out.coverages)
         ch_versions          = ch_versions.mix(EXTEND_MEGAHIT.out.versions)
         ch_multiqc           = ch_multiqc.mix(EXTEND_MEGAHIT.out.mqc)
     }
@@ -70,6 +73,11 @@ workflow FASTQ_ASSEMBLY {
         .map { meta, scaffold  -> tuple( groupKey(meta, assemblers.size()), scaffold ) }
         .groupTuple(remainder: true)
         .set{ch_scaffolds_combined}
+
+    ch_coverages
+        .map { meta, coverages  -> tuple( groupKey(meta, assemblers.size()), coverages ) }
+        .groupTuple(remainder: true)
+        .set{ch_coverages_combined}
 
     CAT_ASSEMBLERS(ch_scaffolds_combined)
     ch_scaffolds = CAT_ASSEMBLERS.out.file_out
@@ -111,9 +119,10 @@ workflow FASTQ_ASSEMBLY {
     ch_multiqc = ch_multiqc.mix(no_contigs.ifEmpty([]))
 
     emit:
-    scaffolds            = ch_scaffolds  // channel: [ val(meta), [ scaffolds] ]
-    mqc                  = ch_multiqc    // channel: [ val(meta), [ mqc ] ]
-    versions             = ch_versions   // channel: [ versions.yml ]
+    scaffolds            = ch_scaffolds           // channel: [ val(meta), [ scaffolds] ]
+    coverages            = ch_coverages_combined  // channel: [ val(meta), [ idxstats* ] ]
+    mqc                  = ch_multiqc             // channel: [ val(meta), [ mqc ] ]
+    versions             = ch_versions            // channel: [ versions.yml ]
     // there are not any MQC files available for spades, trinity and megahit
 }
 

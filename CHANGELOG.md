@@ -10,15 +10,15 @@ Initial release of Joon-Klaps/viralgenie, created with the [nf-core](https://nf-
 ### `Enhancement`
 
 - Set default umitools dedup strategy to cluster ([#126](https://github.com/Joon-Klaps/viralgenie/pull/126))
-- Include sspace for contig extension ([#123](https://github.com/Joon-Klaps/viralgenie/pull/123))
-- Include both krakenreport &nodes.dmp in taxonomy ([#128](https://github.com/Joon-Klaps/viralgenie/pull/128))
-- Update new variable mmseqs_cluster_mode default 0 ([#130](https://github.com/Joon-Klaps/viralgenie/pull/130))
-- Sspace indiv ([#132](https://github.com/Joon-Klaps/viralgenie/pull/132))
+- Include both krakenreport &nodes.dmp in taxonomy filtering ([#128](https://github.com/Joon-Klaps/viralgenie/pull/128))
+- Add Sspace indiv to each assembler seperatly ([#132](https://github.com/Joon-Klaps/viralgenie/pull/132))
 - Add read & contig decomplexification using prinseq++  ([#133](https://github.com/Joon-Klaps/viralgenie/pull/133))
-- Database sample specifc ([#134](https://github.com/Joon-Klaps/viralgenie/pull/134))
+- Allow reference pool for specific samples ([#134](https://github.com/Joon-Klaps/viralgenie/pull/134))
+- Add option to filter contig clusters based on cumulative read coverage ([#138](https://github.com/Joon-Klaps/viralgenie/pull/138))
 
 ### `Fixed`
 
 - OOM with longer contigs for lowcov_to_reference, uses more RAM now ([#125](https://github.com/Joon-Klaps/viralgenie/pull/125))
 
 ### `Parameters`
+- New parameter mmseqs_cluster_mode default to 0 ([#130](https://github.com/Joon-Klaps/viralgenie/pull/130))

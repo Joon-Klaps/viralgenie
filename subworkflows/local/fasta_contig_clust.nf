@@ -7,7 +7,8 @@ workflow FASTA_CONTIG_CLUST {
 
     take:
     fasta_fastq        // channel: [ val(meta), [ fasta ],  [ fastq ] ]
-    blast_db           // channel: [ val(meta), path(db), path(fasta) ]
+    blast_db           // channel: [ val(meta), [ db ], [ fasta ] ]
+    coverages          // channel: [ val(meta), [ idxstats* ] ]
     contig_classifiers // value:   [ kaiju, kraken2 ]
     kraken2_db         // channel: [ val(meta), path(db) ]
     kaiju_db           // channel: [ val(meta), path(db) ]
@@ -67,7 +68,7 @@ workflow FASTA_CONTIG_CLUST {
             kraken2_db
         )
         ch_versions      = ch_versions.mix(FASTA_CONTIG_PRECLUST.out.versions)
-        ch_contigs_reads = FASTA_CONTIG_PRECLUST.out.sequences_reads
+        ch_contigs_reads = FASTA_CONTIG_PRECLUST.out.contigs_reads
     }
 
     // cluster our reference hits and contigs should make this a subworkflow
@@ -77,11 +78,23 @@ workflow FASTA_CONTIG_CLUST {
     )
     ch_versions = ch_versions.mix(FASTA_FASTQ_CLUST.out.versions)
 
-    // Join cluster files with contigs & group based on number of preclusters (ntaxa)
-    fasta_sel_fastq
-        .map{meta, contigs_joined, contigs, reads -> [meta.db_comb, meta , contigs_joined]}  // add sample-db comb for join
-        .set{sample_fasta_ref_contigs}
+    // if we have no coverage files, make the empty array else join with coverages
+    if (params.perc_reads_contig == 0){
+        sample_fasta_ref_contigs = fasta_ref_contigs
+            .map{ meta, fasta -> [meta.db_comb, meta, fasta []] }               // add sample for join
+    } else {
+        sample_coverages = coverages
+            .map{ meta, idxstats -> [meta.sample, meta, idxstats] }            // add sample for join
 
+        sample_fasta_ref_contigs = fasta_ref_contigs
+            .map{ meta, fasta -> [meta.sample, meta, fasta] }                  // add sample for join
+            .join(sample_coverages, by: [0])                                   // join with coverages
+            .map{ sample, meta_fasta, fasta, meta_coverages, coverages ->      // remove meta coverages
+                [meta_fasta.db_comb, meta_fasta, fasta, coverages]
+                }
+    }
+
+    // Join cluster files with contigs & group based on number of preclusters (ntaxa)
     FASTA_FASTQ_CLUST
         .out
         .clusters
@@ -89,14 +102,15 @@ workflow FASTA_CONTIG_CLUST {
             tuple( groupKey(meta.db_comb, meta.ntaxa), meta, clusters )        // Set groupkey by sample-db and ntaxa
             }
         .groupTuple(remainder: true)                                           // Has to be grouped to link different taxa preclusters to the same sample
-        .join(sample_fasta_ref_contigs, by: [0])                               // join with contigs
-        .map{ sample, meta_clust, clusters, meta_contig, contigs ->
-            [meta_contig, clusters, contigs]                                  // get rid of meta_clust & sample-db
+        .combine(sample_fasta_ref_contigs)                                     // combine with contigs (regural join doesn't work)
+        .filter{it -> it[0]==it[3]}                                            // filter for matching samples
+        .map{ db_comb, meta_clust, clusters, sample2, meta_contig, contigs, coverages ->
+            [meta_contig, clusters, contigs, coverages]                        // get rid of meta_clust & sample
         }
-        .set{ch_clusters_contigs}
+        .set{ch_clusters_contigs_coverages}
 
     EXTRACT_CLUSTER (
-        ch_clusters_contigs,
+        ch_clusters_contigs_coverages,
         params.cluster_method
     )
     ch_versions = ch_versions.mix(EXTRACT_CLUSTER.out.versions.first())
