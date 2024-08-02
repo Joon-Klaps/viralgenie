@@ -16,7 +16,6 @@ from Bio import SeqIO
 
 logger = logging.getLogger()
 
-
 class Cluster:
     """
     A cluster contains the centroid sequence, members of the cluster, cluster_size of centroid.
@@ -370,6 +369,13 @@ def write_clusters_summary(clusters, prefix):
         file.write("\t".join([str(prefix), str(n_clusters), str(avg_size), str(n_singletons)]))
         file.write("\n")
 
+def write_clusters_mqc(clusters, prefix):
+    """
+    Write the clusters to a json file.
+    """
+    with open(f"{prefix}.clusters_mqc.json", "w") as file:
+        json.dump(clusters, file, default=lambda o: o.tolist() if isinstance(o, np.ndarray) else o.__dict__, sort_keys=True, indent=4)
+
 def filter_members(clusters, pattern):
     """
     Filter clusters on members given regex pattern, members cannot contain the pattern.
@@ -396,7 +402,6 @@ def filter_clusters_by_coverage(clusters: list , coverages: dict, threshold: flo
         logger.debug("Cluster %s has cumulative read depth %s", cluster.cluster_id, cluster.cumulative_read_depth)
         if any(cluster.cumulative_read_depth >= threshold):
             filtered_clusters.append(cluster)
-
     return clusters,filtered_clusters
 
 def parse_args(argv=None):

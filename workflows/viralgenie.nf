@@ -474,6 +474,8 @@ workflow VIRALGENIE {
         ch_multiqc_config.toList(),
         ch_multiqc_custom_config.toList(),
         ch_multiqc_logo.toList(),
+        [],
+        [],
     )
 
     multiqc_data = MULTIQC_DATAPREP.out.data.ifEmpty([])
@@ -520,7 +522,9 @@ workflow VIRALGENIE {
         ch_multiqc_files.collect(),
         ch_multiqc_config.toList(),
         ch_multiqc_custom_config.toList(),
-        ch_multiqc_logo.toList()
+        ch_multiqc_logo.toList(),
+        [],
+        [],
     )
     multiqc_report = MULTIQC_REPORT.out.report.toList()
 }
