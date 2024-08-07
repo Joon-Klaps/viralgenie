@@ -14,20 +14,21 @@ process CUSTOM_MULTIQC_TABLES {
     path blast_files, stageAs: "?/blast/*"
     path mapping_constrains
     path anno_files, stageAs: "?/annotation/*"
+    path screen_files, stageAs: "?/screen/*"
     path multiqc_dir
     path comment_headers
     path custom_table_headers
 
     output:
-    path("summary_clusters_mqc.tsv")          , emit: summary_clusters_mqc  , optional: true
-    path("sample_metadata_mqc.tsv")           , emit: sample_metadata_mqc   , optional: true
-    path("contigs_overview_mqc.tsv")          , emit: contigs_overview_mqc  , optional: true
-    path("summary_checkv_mqc.tsv")            , emit: summary_checkv_mqc    , optional: true
-    path("summary_quast_mqc.tsv")             , emit: summary_quast_mqc     , optional: true
-    path("summary_blast_mqc.tsv")             , emit: summary_blast_mqc     , optional: true
-    path("summary_anno_mqc.tsv")              , emit: summary_anno_mqc      , optional: true
-    path("mapping_constrains_mqc.tsv")        , emit: mapping_constrains_mqc, optional: true
-    path("mapping_constrains_summary_mqc.tsv"), emit: constrains_summary_mqc, optional: true
+    path("summary_clusters_mqc.tsv")          , emit: summary_clusters_mqc   , optional: true
+    path("sample_metadata_mqc.tsv")           , emit: sample_metadata_mqc    , optional: true
+    path("contigs_overview_mqc.tsv")          , emit: contigs_overview_mqc   , optional: true
+    path("summary_checkv_mqc.tsv")            , emit: summary_checkv_mqc     , optional: true
+    path("summary_quast_mqc.tsv")             , emit: summary_quast_mqc      , optional: true
+    path("summary_blast_mqc.tsv")             , emit: summary_blast_mqc      , optional: true
+    path("summary_anno_mqc.tsv")              , emit: summary_anno_mqc       , optional: true
+    path("mapping_constrains_mqc.tsv")        , emit: mapping_constrains_mqc , optional: true
+    path("mapping_constrains_summary_mqc.tsv"), emit: constrains_summary_mqc , optional: true
     path "versions.yml"                       , emit: versions
 
     when:
@@ -42,6 +43,7 @@ process CUSTOM_MULTIQC_TABLES {
     def blast_files            = blast_files            ? "--blast_files ${blast_files}"                 : ''
     def annotation_files       = anno_files             ? "--annotation_files ${anno_files}"             : ''
     def mapping_constrains     = mapping_constrains     ? "--mapping_constrains ${mapping_constrains}"   : ''
+    def screen_files           = screen_files           ? "--screen_files ${screen_files}"               : ''
     def multiqc_dir            = multiqc_dir            ? "--multiqc_dir ${multiqc_dir}"                 : ''
     def comment_headers        = comment_headers        ? "--comment_dir ${comment_headers}"             : ''
     def custom_table_headers   = custom_table_headers   ? "--table_headers ${custom_table_headers}"      : ''
@@ -56,6 +58,7 @@ process CUSTOM_MULTIQC_TABLES {
         $blast_files \\
         $mapping_constrains \\
         $annotation_files \\
+        $screen_files\\
         $comment_headers \\
         $custom_table_headers \\
         $multiqc_dir

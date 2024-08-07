@@ -62,8 +62,11 @@ workflow FASTQ_FASTA_MASH_SCREEN {
             return [meta + json, fasta, reads]
         }
 
+    ch_json = SELECT_REFERENCE.out.fasta_reads.map{ meta, json, fasta, reads -> [meta, json]}
+
     emit:
-    reference_fastq = reference_fastq   // channel: [meta, fasta, reads]
+    reference_fastq = reference_fastq   // channel: [meta, fasta, reads ]
+    json            = ch_json           // channel: [meta, json ]
     versions        = ch_versions       // channel: [ versions.yml ]
 }
 
