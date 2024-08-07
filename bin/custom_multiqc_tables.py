@@ -401,7 +401,12 @@ def read_dataframe_from_json(file, **kwargs):
         pandas.DataFrame: The dataframe read from the file.
     """
     with open(file, "r") as json_file:
-        data = json.load(json_file, **kwargs)
+        try:
+            data = json.load(json_file, **kwargs)
+        except json.JSONDecodeError as e:
+            logger.warning("Error reading JSON file %s: %s", file, e)
+            return pd.DataFrame()
+
         # Check if 'query' key exists
         if 'filename' not in data:
             # Get the filename without path and suffix
