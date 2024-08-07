@@ -213,14 +213,24 @@ def concat_table_files(table_files, **kwargs):
     Returns:
         pandas.DataFrame: The concatenated dataframe.
     """
-    df = pd.concat(
-        [
+    try:
+        valid_dfs = [
             read_file_to_dataframe(file, **kwargs)
             for file in table_files
             if check_file_exists(file)
         ]
-    )
-    return df
+
+        if not valid_dfs:
+            logging.warning(f"Warning concatenating files: {table_files}")
+            logging.warning("No valid files found to concatenate.")
+            return pd.DataFrame()
+
+        df = pd.concat(valid_dfs)
+        return df
+
+    except ValueError as e:
+        logging.warning(f"Warning concatenating files: {table_files}")
+        return pd.DataFrame()
 
 
 def read_in_quast(table_files):
