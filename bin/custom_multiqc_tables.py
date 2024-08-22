@@ -5,6 +5,7 @@
 import argparse
 import csv
 import logging
+import json
 import os
 import re
 import sys
@@ -82,6 +83,14 @@ def parse_args(argv=None):
         metavar="SAMPLE METADATA",
         help="Sample metadata file containing information on the samples, supported formats: '.csv', '.tsv', '.yaml', '.yml'",
         type=lambda s: file_choices(("csv", "tsv", "yaml","yml"), s),
+    )
+
+    parser.add_argument(
+        "--screen_files",
+        metavar="MASH SCREEN FILES",
+        nargs="+",
+        help="Mash screen result of the module SELECT REFERENCE where top hit is outputted in json file format",
+        type=lambda s: file_choices(("json"), s),
     )
 
     parser.add_argument(
@@ -204,14 +213,24 @@ def concat_table_files(table_files, **kwargs):
     Returns:
         pandas.DataFrame: The concatenated dataframe.
     """
-    df = pd.concat(
-        [
+    try:
+        valid_dfs = [
             read_file_to_dataframe(file, **kwargs)
             for file in table_files
             if check_file_exists(file)
         ]
-    )
-    return df
+
+        if not valid_dfs:
+            logging.warning(f"Warning concatenating files: {table_files}")
+            logging.warning("No valid files found to concatenate.")
+            return pd.DataFrame()
+
+        df = pd.concat(valid_dfs)
+        return df
+
+    except ValueError as e:
+        logging.warning(f"Warning concatenating files: {table_files}")
+        return pd.DataFrame()
 
 
 def read_in_quast(table_files):
@@ -381,7 +400,31 @@ def read_dataframe_from_yaml(file, **kwargs):
         df = pd.DataFrame(data)
     return df
 
+def read_dataframe_from_json(file, **kwargs):
+    """
+    Read a dataframe from a JSON file.
 
+    Args:
+        file (str): The path to the file.
+
+    Returns:
+        pandas.DataFrame: The dataframe read from the file.
+    """
+    with open(file, "r") as json_file:
+        try:
+            data = json.load(json_file, **kwargs)
+        except json.JSONDecodeError as e:
+            logger.warning("Error reading JSON file %s: %s", file, e)
+            return pd.DataFrame()
+
+        # Check if 'query' key exists
+        if 'filename' not in data:
+            # Get the filename without path and suffix
+            filename = os.path.splitext(os.path.basename(file))[0]
+            # Add new key-value pair
+            data['filename'] = filename + '_constrain'
+        df = pd.DataFrame([data])
+    return df
 def read_file_to_dataframe(file, **kwargs):
     """
     Read a dataframe from a file.
@@ -402,6 +445,8 @@ def read_file_to_dataframe(file, **kwargs):
         df = read_dataframe_from_csv(file_path, **kwargs)
     elif file_path.suffix in [".yaml", ".yml"]:
         df = read_dataframe_from_yaml(file_path, **kwargs)
+    elif file_path.suffix in [".json"]:
+        df = read_dataframe_from_json(file_path, **kwargs)
     else:
         logger.error("The file format %s is not supported of file %s!", file_path.suffix, file_path)
         sys.exit(2)
@@ -879,6 +924,13 @@ def main(argv=None):
             blast_df, "blast", "query", blast_header, "summary_blast_mqc.tsv"
         )
 
+    # MASH screen used for reference selection summarisation
+    screen_df = handle_tables(args.screen_files)
+    if not screen_df.empty:
+        screen_df = handle_dataframe( screen_df, "mash-screen", "filename")
+         # Make everything a string
+        screen_df = screen_df.astype(str)
+
     # CLuster table - mmseqs easysearch summary - annotation section
     annotation_df = handle_tables(args.annotation_files, header=None)
     if not annotation_df.empty:
@@ -937,6 +989,7 @@ def main(argv=None):
         logger.info("Joining dataframes")
         multiqc_contigs_df = multiqc_contigs_df.join(checkv_df, how="outer")
         multiqc_contigs_df = multiqc_contigs_df.join(quast_df, how="outer")
+        multiqc_contigs_df = multiqc_contigs_df.join(screen_df, how="outer")
         multiqc_contigs_df = multiqc_contigs_df.join(blast_df, how="outer")
         multiqc_contigs_df = multiqc_contigs_df.join(annotation_df, how="outer")
 
@@ -975,6 +1028,7 @@ def main(argv=None):
         final_columns = (
             ["index", "sample name", "cluster", "step"]
             + [column for column in mqc_contigs_sel.columns if "annotation" in column]
+            + [column for column in mqc_contigs_sel.columns if "mash-screen" in column]
             + [column for column in mqc_contigs_sel.columns if "blast" in column]
             + [column for column in mqc_contigs_sel.columns if "checkv" in column]
             + [column for column in mqc_contigs_sel.columns if "QC check" in column]

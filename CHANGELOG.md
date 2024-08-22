@@ -15,6 +15,8 @@ Initial release of Joon-Klaps/viralgenie, created with the [nf-core](https://nf-
 - Add read & contig decomplexification using prinseq++  ([#133](https://github.com/Joon-Klaps/viralgenie/pull/133))
 - Allow reference pool for specific samples ([#134](https://github.com/Joon-Klaps/viralgenie/pull/134))
 - Add option to filter contig clusters based on cumulative read coverage ([#138](https://github.com/Joon-Klaps/viralgenie/pull/138))
+- Adding mash-screen output to result table ([#140](https://github.com/Joon-Klaps/viralgenie/pull/140))
+- Add logic to allow samples with no reference hits to be analysed ([#141](https://github.com/Joon-Klaps/viralgenie/pull/141))
 
 ### `Fixed`
 

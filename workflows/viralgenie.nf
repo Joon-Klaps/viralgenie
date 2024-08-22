@@ -361,6 +361,8 @@ workflow VIRALGENIE {
             }
         .set{ch_consensus_results_reads}
 
+    ch_mash_screen = Channel.empty()
+
     if (params.mapping_constrains && !params.skip_variant_calling ) {
         // Importing samplesheet
         Channel.fromSamplesheet('mapping_constrains')
@@ -410,6 +412,7 @@ workflow VIRALGENIE {
             constrain_consensus_reads.multiFastaSelection
         )
         ch_versions = ch_versions.mix(FASTQ_FASTA_MASH_SCREEN.out.versions)
+        ch_mash_screen = FASTQ_FASTA_MASH_SCREEN.out.json.collect{it[1]}
 
         // For QC we keep original sequence to compare to
         ch_unaligned_raw_contigs = ch_unaligned_raw_contigs
@@ -484,6 +487,7 @@ workflow VIRALGENIE {
             ch_blast_summary.ifEmpty([]),
             ch_constrain_meta,
             ch_annotation_summary.ifEmpty([]),
+            ch_mash_screen.ifEmpty([]),
             multiqc_data,
             ch_multiqc_comment_headers.ifEmpty([]),
             ch_multiqc_custom_table_headers.ifEmpty([])

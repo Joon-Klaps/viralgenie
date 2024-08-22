@@ -37,7 +37,12 @@ workflow FASTQ_ASSEMBLY {
             )
         ch_versions          = ch_versions.mix(SPADES.out.versions.first())
 
-        EXTEND_SPADES( reads, SPADES.out.scaffolds, "spades")
+        SPADES.out.scaffolds
+            .join(SPADES.out.contigs, remainder:true)
+            .map{meta, scaffold, contig -> [meta, scaffold ? scaffold : contig]} // sometimes no scaffold could be created if so take contig
+            .set{spades_consensus}
+
+        EXTEND_SPADES( reads, spades_consensus, "spades")
         ch_scaffolds         = ch_scaffolds.mix(EXTEND_SPADES.out.scaffolds)
         ch_coverages         = ch_coverages.mix(EXTEND_SPADES.out.coverages)
         ch_versions          = ch_versions.mix(EXTEND_SPADES.out.versions)
