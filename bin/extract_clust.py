@@ -379,9 +379,14 @@ def filter_members(clusters, pattern):
 
     for cluster in clusters:
         if cluster.members:
+            non_matching_members = [member for member in cluster.members if not regex.search(member)]
             matching_members = [member for member in cluster.members if regex.search(member)]
+            new_centroid = cluster.centroid
+            if regex.search(cluster.centroid) and non_matching_members:
+                new_centroid =  non_matching_members[0]
+                matching_members.append(cluster.centroid)
             if matching_members or regex.search(cluster.centroid):
-                filtered_clusters.append(Cluster(cluster.cluster_id, cluster.centroid, matching_members, taxid=cluster.taxid))
+                filtered_clusters.append(Cluster(cluster.cluster_id, new_centroid, matching_members, taxid=cluster.taxid))
         elif regex.search(cluster.centroid):
             filtered_clusters.append(cluster)
     return filtered_clusters
