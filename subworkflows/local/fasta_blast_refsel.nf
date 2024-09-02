@@ -30,7 +30,7 @@ workflow FASTA_BLAST_REFSEL {
         .set { ch_blast_txt }
 
     // Make a table of samples that did not have any blast hits
-    ch_no_blast_hits = Channel.empty()
+    no_blast_hits_mqc = Channel.empty()
     ch_blast_txt
         .no_hits
         .join(fasta)
@@ -42,17 +42,19 @@ workflow FASTA_BLAST_REFSEL {
     ch_blast_txt
         .hits
         .join(fasta, by:[0], remainder:true)
+        .join(blast_db_fasta, by:[0], remainder:true)
         .multiMap{
-            meta, txt, fasta ->
+            meta, txt, fasta, db_fasta ->
             hits : [meta, txt ? txt : []]
             contigs : [meta, fasta]
+            db_fasta : [meta, db_fasta]
         }
         .set{input_blast_filter}
 
     BLAST_FILTER (
         input_blast_filter.hits,
         input_blast_filter.contigs,
-        blast_db_fasta
+        input_blast_filter.db_fasta
     )
     ch_versions = ch_versions.mix(BLAST_FILTER.out.versions.first())
 
@@ -60,7 +62,7 @@ workflow FASTA_BLAST_REFSEL {
 
     emit:
     fasta_sel_fastq   = ch_fasta_sel_fastq  // channel: [ val(meta), [ fasta_all ], [contigs], [ fastq ] ]
-    no_blast_hits     = ch_no_blast_hits    // channel: [ val(meta), [ mqc ] ]
+    no_blast_hits     = no_blast_hits_mqc   // channel: [ val(meta), [ mqc ] ]
     versions          = ch_versions         // channel: [ versions.yml ]
 }
 
