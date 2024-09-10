@@ -40,6 +40,7 @@ process MEGAHIT {
         megahit_out/*.fa \\
         megahit_out/intermediate_contigs/*.fa
 
+
     mv megahit_out/* .
 
     cat <<-END_VERSIONS > versions.yml
