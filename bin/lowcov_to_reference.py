@@ -131,6 +131,9 @@ def alignment_replacement(reference_record, consensus_record, regions, args):
     target_locations = alignment.aligned[0]  # Reference locations
     query_locations = alignment.aligned[1]  # Consensus locations
 
+    with open(f"{args.prefix}_alignment.txt", "w") as f:
+        f.write(str(alignment))
+
     logger.debug("ALIGNMENT: %s", alignment.aligned)
 
     # Account for the gaps in the alignment, by updating the consensus indexes
@@ -150,7 +153,10 @@ def alignment_replacement(reference_record, consensus_record, regions, args):
     cons_seq[query_regions] = ref_seq[regions]
 
     visualize_alignment(
-        cons_seq, query_regions, args.prefix, max_line_length=args.max_line_length
+        cons_seq,
+        query_regions,
+        f"{args.prefix}_alignment.png",
+        max_line_length=args.max_line_length,
     )
 
     return "".join(cons_seq)
@@ -227,7 +233,7 @@ def detect_contiguous_regions(query_regions):
     return regions
 
 
-def visualize_alignment(cons_seq, query_regions, prefix, max_line_length) -> None:
+def visualize_alignment(cons_seq, query_regions, filename, max_line_length) -> None:
     """
     Visualises the alignment between the reference and consensus sequences and where the regions are replaced.
 
@@ -236,7 +242,7 @@ def visualize_alignment(cons_seq, query_regions, prefix, max_line_length) -> Non
         ref_seq (np.array[str]): The reference sequence.
         query_regions (list[int]): The regions in the consensus sequence.
         regions (list[int]): The regions to be replaced.
-        prefix (str): The prefix for the output file.
+        filename (str): The filename for the output file.
     """
     # Create a visual representation of the alignment
     cons_visual = cons_seq.copy()
@@ -309,7 +315,7 @@ def visualize_alignment(cons_seq, query_regions, prefix, max_line_length) -> Non
 
     # Save the figure
     plt.tight_layout()
-    plt.savefig(f"{prefix}_alignment.png", dpi=300, bbox_inches="tight")
+    plt.savefig(filename, dpi=300, bbox_inches="tight")
     plt.close()
 
 
