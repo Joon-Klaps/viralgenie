@@ -14,8 +14,9 @@ from Bio.SeqRecord import SeqRecord
 
 # global logger
 logger = logging.getLogger()
-BLUE = "#4c72a5"
-GREEN = "#48a365"
+logging.getLogger("matplotlib.font_manager").disabled = True
+RED = "#FF241F"
+GREEN = "#79C563"
 
 
 def parse_args(argv=None):
@@ -84,14 +85,14 @@ def parse_args(argv=None):
     return parser.parse_args(argv)
 
 
-def annotate_ambiguous(reference, consensus, regions, args):
+def annotate_ambiguous(reference, consensus, low_coverage_regions, args):
     """
     Annotates ambiguous bases in the consensus sequence with the corresponding bases from the reference sequence.
 
     Args:
         reference (SeqRecord): The reference sequence record.
         consensus (SeqRecord): The consensus sequence record.
-        regions (list): A list of indices representing the regions where annotation should be performed.
+        low_coverage_regions (list): A list of indices representing the regions where annotation should be performed.
 
     Returns:
         SeqRecord: The annotated consensus sequence record.
@@ -99,19 +100,21 @@ def annotate_ambiguous(reference, consensus, regions, args):
     ID = f"{args.prefix}"
     DESCRIPTION = f"Hybrid construct of the {args.reference} and {args.consensus} sequences where regions with depth lower then {args.minimum_depth} have been replaced"
 
-    seq = alignment_replacement(reference, consensus, regions, args)
+    seq = alignment_replacement(reference, consensus, low_coverage_regions, args)
 
     return SeqRecord(seq=Seq(seq), id=ID, description=DESCRIPTION)
 
 
-def alignment_replacement(reference_record, consensus_record, regions, args):
+def alignment_replacement(
+    reference_record, consensus_record, low_coverage_regions, args
+):
     """
-    Replaces the aligned regions in the consensus sequence with the corresponding regions from the reference sequence.
+    Replaces the aligned low_coverage_regions in the consensus sequence with the corresponding regions from the reference sequence.
 
     Args:
         reference_record (Bio.SeqRecord.SeqRecord): The reference sequence record.
         consensus_record (Bio.SeqRecord.SeqRecord): The consensus sequence record.
-        regions (list): List of regions to be replaced.
+        low_coverage_regions (list): List of regions to be replaced.
 
     Returns:
         str: The updated consensus sequence.
@@ -139,10 +142,12 @@ def alignment_replacement(reference_record, consensus_record, regions, args):
     # Account for the gaps in the alignment, by updating the consensus indexes
     # Needs to be double checked if the object is a tuple.
     logger.info("> Finding target tuples")
-    indexes_differences = find_target_tuples_sorted(regions, target_locations)
+    indexes_differences = determine_difference_target_query(
+        low_coverage_regions, target_locations
+    )
 
     logger.info("> Updating query tuples")
-    query_regions = update_query_tuple_with_difference(
+    query_low_coverage_regions = update_query_tuple_with_difference(
         query_locations, indexes_differences
     )
 
@@ -150,11 +155,11 @@ def alignment_replacement(reference_record, consensus_record, regions, args):
     ref_seq = np.array(list(str(reference_record.seq)))
     cons_seq = np.array(list(str(consensus_record.seq)))
 
-    cons_seq[query_regions] = ref_seq[regions]
+    cons_seq[query_low_coverage_regions] = ref_seq[low_coverage_regions]
 
     visualize_alignment(
         cons_seq,
-        query_regions,
+        query_low_coverage_regions,
         f"{args.prefix}_alignment.png",
         max_line_length=args.max_line_length,
     )
@@ -162,44 +167,45 @@ def alignment_replacement(reference_record, consensus_record, regions, args):
     return "".join(cons_seq)
 
 
-def find_target_tuples_sorted(regions, target_matrix):
+def determine_difference_target_query(low_coverage_regions, target_matrix):
     """
-    Finds the target tuples sorted based on the regions.
+    Finds the target tuples sorted based on the low_coverage_regions.
 
     Args:
-        regions (list): A sorted list of regions.
+        low_coverage_regions (list): A sorted list of regions that need to be annotated.
         target_matrix (matrix): A n x 2 matrix of [[start1,end1], [start2,end2], ...] alignment positions of the target query
 
     Returns:
         list: A list of tuples containing the index of the target tuple and the difference between the region and the start of the target tuple.
     """
     result = []
+    logger.debug("low coverage regions: %s", low_coverage_regions)
 
     for block_index, (start, end) in enumerate(target_matrix):
         logger.debug("target_matrix[%s]: start: %s - end: %s", block_index, start, end)
 
-        # Iterate through regions while they are less than or equal to the end of the target tuple
-        for region in regions:
-            if region > end:
-                logger.error(
-                    "Region %s is greater than the end of the target tuple %s",
-                    region,
-                    end,
-                )
-                logger.error(
-                    "Please report this issue to the developers with your data from the current workdir."
-                )
-                break
-            elif start <= region <= end:
-                # If the region falls within the start and end of the target tuple,
-                # Store the alignment block's index & the difference between the target position and the start alignment block.
-                difference = region - start
-                logger.debug(
-                    "In alignment block (0-based) %s at postion %s (of that block), the consensus should be updated.",
-                    block_index,
-                    difference,
-                )
-                result.append((block_index, difference))
+        # Filter low_coverage_regions to only include regions within the current block
+        relevant_regions = [
+            region for region in low_coverage_regions if start <= region <= end
+        ]
+        logger.debug("relevant_regions: %s", relevant_regions)
+        for region in relevant_regions:
+            difference = region - start
+            logger.debug(
+                "In alignment block (0-based) %s at position %s (of that block), the consensus should be updated.",
+                block_index,
+                difference,
+            )
+            result.append((block_index, difference))
+
+        # Update low_coverage_regions to remove processed regions
+        low_coverage_regions = [
+            region for region in low_coverage_regions if region > end
+        ]
+
+        if not low_coverage_regions:
+            break  # All regions have been processed
+
     return result
 
 
@@ -269,15 +275,15 @@ def visualize_alignment(cons_seq, query_regions, filename, max_line_length) -> N
             ]
         )
         colors = np.where(
-            np.isin(np.arange(start_idx, end_idx), query_regions), GREEN, BLUE
+            np.isin(np.arange(start_idx, end_idx), query_regions), RED, GREEN
         )
         lc = LineCollection(segments, colors=colors, linewidths=2)
         ax.add_collection(lc)
 
         # Plot nucleotides for this line
         for i in range(start_idx, end_idx):
-            color = GREEN if i in query_regions else BLUE
-            y_offset = line * -2 + (0.1 if color == BLUE else -0.3)
+            color = RED if i in query_regions else GREEN
+            y_offset = line * -2 + (0.1 if color == GREEN else -0.3)
             ax.text(
                 i - start_idx + 0.5,
                 y_offset,
@@ -305,12 +311,13 @@ def visualize_alignment(cons_seq, query_regions, filename, max_line_length) -> N
     # Adjust axes limits and labels
     ax.set_ylim(-2 * n_lines, 1)
     ax.set_yticks([])
+    ax.set_xticks([])
     ax.set_xlabel("Position")
     ax.set_title(f"Hybrid consensus genome (Length={seq_length})")
 
     # Custom legend
-    ax.plot([], [], color=BLUE, label="Consensus", linewidth=2)
-    ax.plot([], [], color=GREEN, label="Reference", linewidth=2)
+    ax.plot([], [], color=GREEN, label="Consensus", linewidth=2)
+    ax.plot([], [], color=RED, label="Reference", linewidth=2)
     ax.legend(loc="upper right")
 
     # Save the figure
