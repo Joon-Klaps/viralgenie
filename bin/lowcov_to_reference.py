@@ -99,7 +99,7 @@ def annotate_ambiguous(reference, consensus, regions, args):
     ID = f"{args.prefix}"
     DESCRIPTION = f"Hybrid construct of the {args.reference} and {args.consensus} sequences where regions with depth lower then {args.minimum_depth} have been replaced"
 
-    seq = alignment_replacement(reference, consensus, regions, args.prefix)
+    seq = alignment_replacement(reference, consensus, regions, args)
 
     return SeqRecord(seq=Seq(seq), id=ID, description=DESCRIPTION)
 
