@@ -5,8 +5,8 @@ process LOWCOV_TO_REFERENCE {
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/biopython:1.81':
-        'biocontainers/biopython:1.81' }"
+        'oras://community.wave.seqera.io/library/biopython_matplotlib:307f47953b7d175d':
+        'community.wave.seqera.io/library/biopython_matplotlib:1991a6cc932d6beb' }"
 
     input:
     tuple val(meta), path(reference), path(consensus), path(mpileup)
@@ -35,6 +35,7 @@ process LOWCOV_TO_REFERENCE {
         python: \$(python --version | sed 's/Python //g')
         numpy: \$(pip show numpy | grep Version | sed 's/Version: //g')
         biopython: \$(pip show biopython | grep Version | sed 's/Version: //g')
+        matplotlib: \$(pip show matplotlib | grep Version | sed 's/Version: //g')
     END_VERSIONS
     """
 
@@ -49,6 +50,7 @@ process LOWCOV_TO_REFERENCE {
         python: \$(python --version | sed 's/Python //g')
         numpy: \$(pip show numpy | grep Version | sed 's/Version: //g')
         biopython: \$(pip show biopython | grep Version | sed 's/Version: //g')
+        matplotlib: \$(pip show matplotlib | grep Version | sed 's/Version: //g')
     END_VERSIONS
     """
 }
