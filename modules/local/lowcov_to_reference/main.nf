@@ -14,6 +14,7 @@ process LOWCOV_TO_REFERENCE {
     output:
     tuple val(meta), path("*.fa") , emit: sequence
     tuple val(meta), path("*.txt"), emit: txt, optional: true
+    tuple val(meta), path("*.png"), emit: png, optional: true
     path "versions.yml"           , emit: versions
 
     when:
