@@ -373,11 +373,14 @@ The network of a triple segmented Hazara virus looks like this, each node repres
 
 ???- abstract "Output files"
 
-    - `polishing/scaffolding/<sample-id>/ivar`
+    - `polishing/scaffolding/<sample-id>`
         - `<sample-id>_cl#_consensus.fa`: A fasta file containing the consensus sequence of the cluster.
         - `<sample-id>_cl#_consensus.mpileup`: A mpileup file containing depth at each position of the consensus sequence.
-        - `<sample-id>_cl#_consensus.qual.txt`: A text file contianing the quality of each base in the consensus sequence.
         - `hybrid-<sample-id>_cl#_consensus.fa`: A fasta file containing the hybrid consensus sequence of the cluster and the reference.
+        - `/visualised/`
+            - `*.png`: A visualisation of the consensus sequence displaying which regions came from the reference and which from the contigs.
+            - `*.txt`: The alignment of the reference to the consensus sequence written as a blast alignment
+
 
 > By default viralgenie will not provide the iVar output files. The intermediate files can be saved by specifying `--save_intermediate_polishing`.
 
