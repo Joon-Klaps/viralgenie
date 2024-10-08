@@ -16,11 +16,13 @@ process CUSTOM_MULTIQC_TABLES {
     path mapping_constrains
     path anno_files, stageAs: "?/annotation/*"
     path clusters_tsv, stageAs: "?/clusters/*"
+    path screen_files, stageAs: "?/screen/*"
     path multiqc_dir
     path comment_headers
     path custom_table_headers
 
     output:
+
     path("summary_clusters_mqc.tsv")          , emit: summary_clusters_mqc  , optional: true
     path("sample_metadata_mqc.tsv")           , emit: sample_metadata_mqc   , optional: true
     path("contigs_overview_mqc.tsv")          , emit: contigs_overview_mqc  , optional: true
@@ -31,7 +33,8 @@ process CUSTOM_MULTIQC_TABLES {
     path("clusters_barchart.tsv")             , emit: clusters_barchart_mqc , optional: true
     path("contig_custom_table_mqc.html")      , emit: contig_html           , optional: true
     path("constrain_custom_table_mqc.html")   , emit: mapping_constrains_mqc, optional: true
-    path("mapping_constrains_summary_mqc.tsv"), emit: constrains_summary_mqc, optional: true
+    path("mapping_constrains_mqc.tsv")        , emit: mapping_constrains_mqc , optional: true
+    path("mapping_constrains_summary_mqc.tsv"), emit: constrains_summary_mqc , optional: true
     path "versions.yml"                       , emit: versions
 
     when:
@@ -48,6 +51,7 @@ process CUSTOM_MULTIQC_TABLES {
     def bed_files              = bed_files              ? "--bed_files ${bed_files}"                     : ''
     def clusters_files         = clusters_tsv           ? "--clusters_files ${clusters_tsv}"             : ''
     def mapping_constrains     = mapping_constrains     ? "--mapping_constrains ${mapping_constrains}"   : ''
+    def screen_files           = screen_files           ? "--screen_files ${screen_files}"               : ''
     def multiqc_dir            = multiqc_dir            ? "--multiqc_dir ${multiqc_dir}"                 : ''
     def comment_headers        = comment_headers        ? "--comment_dir ${comment_headers}"             : ''
     def custom_table_headers   = custom_table_headers   ? "--table_headers ${custom_table_headers}"      : ''
@@ -64,6 +68,7 @@ process CUSTOM_MULTIQC_TABLES {
         $clusters_files \\
         $mapping_constrains \\
         $annotation_files \\
+        $screen_files\\
         $comment_headers \\
         $custom_table_headers \\
         $multiqc_dir

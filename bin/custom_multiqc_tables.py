@@ -5,6 +5,7 @@
 import argparse
 import csv
 import logging
+import json
 import os
 import re
 import sys
@@ -113,6 +114,14 @@ def parse_args(argv=None):
         metavar="SAMPLE METADATA",
         help="Sample metadata file containing information on the samples, supported formats: '.csv', '.tsv', '.yaml', '.yml'",
         type=lambda s: file_choices(("csv", "tsv", "yaml","yml"), s),
+    )
+
+    parser.add_argument(
+        "--screen_files",
+        metavar="MASH SCREEN FILES",
+        nargs="+",
+        help="Mash screen result of the module SELECT REFERENCE where top hit is outputted in json file format",
+        type=lambda s: file_choices(("json"), s),
     )
 
     parser.add_argument(
@@ -248,14 +257,24 @@ def concat_table_files(table_files, **kwargs):
     Returns:
         pandas.DataFrame: The concatenated dataframe.
     """
-    df = pd.concat(
-        [
+    try:
+        valid_dfs = [
             read_file_to_dataframe(file, **kwargs)
             for file in table_files
             if check_file_exists(file)
         ]
-    )
-    return df
+
+        if not valid_dfs:
+            logging.warning(f"Warning concatenating files: {table_files}")
+            logging.warning("No valid files found to concatenate.")
+            return pd.DataFrame()
+
+        df = pd.concat(valid_dfs)
+        return df
+
+    except ValueError as e:
+        logging.warning(f"Warning concatenating files: {table_files}")
+        return pd.DataFrame()
 
 def read_in_quast(table_files):
     """Concatenate all the cluster summary files into a single dataframe.
@@ -422,6 +441,32 @@ def read_dataframe_from_yaml(file, **kwargs):
         df = pd.DataFrame(data)
     return df
 
+def read_dataframe_from_json(file, **kwargs):
+    """
+    Read a dataframe from a JSON file.
+
+    Args:
+        file (str): The path to the file.
+
+    Returns:
+        pandas.DataFrame: The dataframe read from the file.
+    """
+    with open(file, "r") as json_file:
+        try:
+            data = json.load(json_file, **kwargs)
+        except json.JSONDecodeError as e:
+            logger.warning("Error reading JSON file %s: %s", file, e)
+            return pd.DataFrame()
+
+        # Check if 'query' key exists
+        if 'filename' not in data:
+            # Get the filename without path and suffix
+            filename = os.path.splitext(os.path.basename(file))[0]
+            # Add new key-value pair
+            data['filename'] = filename + '_constrain'
+        df = pd.DataFrame([data])
+    return df
+
 def read_file_to_dataframe(file, **kwargs):
     """
     Read a dataframe from a file.
@@ -442,6 +487,8 @@ def read_file_to_dataframe(file, **kwargs):
         df = read_dataframe_from_csv(file_path, **kwargs)
     elif file_path.suffix in [".yaml", ".yml"]:
         df = read_dataframe_from_yaml(file_path, **kwargs)
+    elif file_path.suffix in [".json"]:
+        df = read_dataframe_from_json(file_path, **kwargs)
     else:
         logger.error("The file format %s is not supported of file %s!", file_path.suffix, file_path)
         sys.exit(2)
@@ -1254,6 +1301,7 @@ def main(argv=None):
 
     # Cluster table - mmseqs easysearch summary (annotation section)
     annotation_df = generate_df(args.annotation_files, header=None)
+
     if not annotation_df.empty:
         annotation_df = process_annotation_dataframe(annotation_df, blast_header, "summary_anno_mqc.tsv")
 
@@ -1273,6 +1321,7 @@ def main(argv=None):
 
         # Join with the custom contig tables
         logger.info("Joining dataframes")
+        
         multiqc_contigs_df = join_dataframes(multiqc_contigs_df, [checkv_df, quast_df, blast_df, annotation_df])
 
         if multiqc_contigs_df.empty:
@@ -1287,9 +1336,10 @@ def main(argv=None):
         logger.info("Reordering columns")
         final_columns = (
             ["index", "sample name", "cluster", "step"] +
-            [ column for group in ["annotation", "blast", "checkv", "QC check", "quast"] for column in multiqc_contigs_df.columns if group in column ] )
+            [ column for group in ["annotation", "mas-screen", "blast", "checkv", "QC check", "quast"] for column in multiqc_contigs_df.columns if group in column ] 
+        )
         multiqc_contigs_df = reorder_columns(multiqc_contigs_df, final_columns)
-
+        
         # split up denovo constructs and mapping (-CONSTRAIN) results
         logger.info("Splitting up denovo constructs and mapping (-CONSTRAIN) results")
         contigs_mqc, constrains_mqc = filter_constrain( multiqc_contigs_df, "cluster", "-CONSTRAIN")
