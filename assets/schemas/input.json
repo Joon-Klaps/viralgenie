@@ -18,8 +18,6 @@
                 "format": "file-path",
                 "exists": true,
                 "pattern": "^\\S+\\.f(ast)?q\\.gz$",
-                "format": "file-path",
-                "exists": true,
                 "errorMessage": "FastQ file for reads 1 must be provided, cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'"
             },
             "fastq_2": {
@@ -31,5 +29,6 @@
             }
         },
         "required": ["sample", "fastq_1"]
-    }
+    },
+    "uniqueItems": true
 }

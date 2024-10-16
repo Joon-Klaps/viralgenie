@@ -66,32 +66,33 @@ ch_multiqc_custom_table_headers       = params.custom_table_headers        ? Cha
     IMPORT LOCAL & NF-CORE MODULES/SUBWORKFLOWS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-include { paramsSummaryMap;fromSamplesheet } from 'plugin/nf-schema'
-include { paramsSummaryMultiqc             } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-include { softwareVersionsToYAML           } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-include { methodsDescriptionText           } from '../subworkflows/local/utils_nfcore_viralgenie_pipeline'
+include { samplesheetToList               } from 'plugin/nf-schema'
+include { paramsSummaryMap                } from 'plugin/nf-schema'
+include { paramsSummaryMultiqc            } from '../subworkflows/nf-core/utils_nfcore_pipeline'
+include { softwareVersionsToYAML          } from '../subworkflows/nf-core/utils_nfcore_pipeline'
+include { methodsDescriptionText          } from '../subworkflows/local/utils_nfcore_viralgenie_pipeline'
 
 // Preprocessing
-include { PREPROCESSING_ILLUMINA           } from '../subworkflows/local/preprocessing_illumina'
+include { PREPROCESSING_ILLUMINA          } from '../subworkflows/local/preprocessing_illumina'
 
 // metagenomic diversity
-include { FASTQ_KRAKEN_KAIJU               } from '../subworkflows/local/fastq_kraken_kaiju'
+include { FASTQ_KRAKEN_KAIJU              } from '../subworkflows/local/fastq_kraken_kaiju'
 
 // Assembly
-include { FASTQ_ASSEMBLY                   } from '../subworkflows/local/fastq_assembly'
-include { noContigSamplesToMultiQC         } from '../modules/local/functions'
+include { FASTQ_ASSEMBLY                  } from '../subworkflows/local/fastq_assembly'
+include { noContigSamplesToMultiQC        } from '../modules/local/functions'
 
 // Consensus polishing of genome
-include { FASTA_CONTIG_CLUST               } from '../subworkflows/local/fasta_contig_clust'
-include { BLAST_MAKEBLASTDB                } from '../modules/nf-core/blast/makeblastdb/main'
-include { SEQKIT_REPLACE                   } from '../modules/nf-core/seqkit/replace/main'
-include { ALIGN_COLLAPSE_CONTIGS           } from '../subworkflows/local/align_collapse_contigs'
-include { UNPACK_DB                        } from '../subworkflows/local/unpack_db'
-include { FASTQ_FASTA_ITERATIVE_CONSENSUS  } from '../subworkflows/local/fastq_fasta_iterative_consensus'
-include { SINGLETON_FILTERING              } from '../subworkflows/local/singleton_filtering'
+include { FASTA_CONTIG_CLUST              } from '../subworkflows/local/fasta_contig_clust'
+include { BLAST_MAKEBLASTDB               } from '../modules/nf-core/blast/makeblastdb/main'
+include { SEQKIT_REPLACE                  } from '../modules/nf-core/seqkit/replace/main'
+include { ALIGN_COLLAPSE_CONTIGS          } from '../subworkflows/local/align_collapse_contigs'
+include { UNPACK_DB                       } from '../subworkflows/local/unpack_db'
+include { FASTQ_FASTA_ITERATIVE_CONSENSUS } from '../subworkflows/local/fastq_fasta_iterative_consensus'
+include { SINGLETON_FILTERING             } from '../subworkflows/local/singleton_filtering'
 
 // Mapping constrains selection
-include { FASTQ_FASTA_MASH_SCREEN          } from '../subworkflows/local/fastq_fasta_mash_screen'
+include { FASTQ_FASTA_MASH_SCREEN         } from '../subworkflows/local/fastq_fasta_mash_screen'
 
 // Variant calling
 include { RENAME_FASTA_HEADER as RENAME_FASTA_HEADER_CONSTRAIN } from '../modules/local/rename_fasta_header'
@@ -104,7 +105,6 @@ include { CONSENSUS_QC                    } from '../subworkflows/local/consensu
 include { CUSTOM_MULTIQC_TABLES           } from '../modules/local/custom_multiqc_tables'
 include { MULTIQC as MULTIQC_DATAPREP     } from '../modules/nf-core/multiqc/main'
 include { MULTIQC as MULTIQC_REPORT       } from '../modules/nf-core/multiqc/main'
-include { CUSTOM_DUMPSOFTWAREVERSIONS     } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -122,18 +122,7 @@ workflow VIRALGENIE {
     ch_multiqc_files = Channel.empty()
 
     // Importing samplesheet
-    ch_reads = Channel.fromSamplesheet(
-        'input'
-        ).map{
-            meta, read1, read2 ->
-            single_end = read1 && !read2
-            if (single_end) {
-                return [meta + [sample: meta.id, single_end: single_end] , [read1]]
-            }
-            else {
-                return [meta + [sample: meta.id, single_end: single_end] , [read1, read2]]
-            }
-        }
+    ch_reads = ch_samplesheet
 
     // Prepare Databases
     ch_db = Channel.empty()
@@ -363,7 +352,8 @@ workflow VIRALGENIE {
 
     if (params.mapping_constrains && !params.skip_variant_calling ) {
         // Importing samplesheet
-        Channel.fromSamplesheet('mapping_constrains')
+        Channel
+            .fromList(samplesheetToList(params.mapping_constrains, "${projectDir}/assets/schemas/mapping_constrains.json"))
             .map{ meta, sequence ->
                 samples = meta.samples == null ? meta.samples: tuple(meta.samples.split(";"))  // Split up samples if meta.samples is not null
                 [meta, samples, sequence]

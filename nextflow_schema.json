@@ -15,8 +15,8 @@
                 "input": {
                     "type": "string",
                     "format": "file-path",
-                    "exists": true,
                     "schema": "assets/schemas/input.json",
+                    "exists": true,
                     "mimetype": "text/csv",
                     "pattern": "^\\S+\\.csv$",
                     "description": "Path to comma-separated file containing information about the samples in the experiment.",
@@ -931,25 +931,25 @@
             "$ref": "#/$defs/input_output_options"
         },
         {
-            "$ref": "#/definitions/preprocessing_options"
+            "$ref": "#/$defs/preprocessing_options"
         },
         {
-            "$ref": "#/definitions/metagenomic_diveristy"
+            "$ref": "#/$defs/metagenomic_diveristy"
         },
         {
-            "$ref": "#/definitions/assembly"
+            "$ref": "#/$defs/assembly"
         },
         {
-            "$ref": "#/definitions/polishing"
+            "$ref": "#/$defs/polishing"
         },
         {
-            "$ref": "#/definitions/iterative_consensus_refinement"
+            "$ref": "#/$defs/iterative_consensus_refinement"
         },
         {
-            "$ref": "#/definitions/variant_analysis"
+            "$ref": "#/$defs/variant_analysis"
         },
         {
-            "$ref": "#/definitions/genome_qc"
+            "$ref": "#/$defs/genome_qc"
         },
         {
             "$ref": "#/$defs/institutional_config_options"
