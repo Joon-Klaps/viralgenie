@@ -26,7 +26,7 @@ def createFileChannel(param) {
 }
 
 def createChannel(dbPath, dbName, skipFlag) {
-    return dbPath && skipFlag ? Channel.fromPath(dbPath, checkIfExists: true).map { db -> [[id: dbName], db] } : Channel.empty()
+    return dbPath && skipFlag ? Channel.fromPath(dbPath, checkIfExists: true).map { db -> [[id: dbName, dbname: dbName], db] } : Channel.empty()
 }
 
 // TODO nf-core: Add all file path parameters for the pipeline to the list below
@@ -143,26 +143,35 @@ workflow VIRALGENIE {
     ch_db = Channel.empty()
     if ((!params.skip_assembly && !params.skip_polishing) || !params.skip_consensus_qc || !params.skip_read_classification || (!params.skip_preprocessing && !params.skip_hostremoval)){
 
-        ch_db_raw = ch_db.mix(ch_ref_pool,ch_kraken2_db, ch_kaiju_db, ch_checkv_db, ch_bracken_db, ch_k2_host, ch_annotation_db)
+        ch_reference_pools = Channel.empty()
+        if (params.reference_pools){
+            ch_reference_pools = Channel.fromSamplesheet(
+                'reference_pools'
+            ).map{ meta, sequence ->
+                [[id:  meta.id, dbname : 'reference', samples: meta.samples], sequence]
+            }
+        }
+
+        ch_db_raw = ch_db.mix(ch_ref_pool,ch_reference_pools, ch_kraken2_db, ch_kaiju_db, ch_checkv_db, ch_bracken_db, ch_k2_host, ch_annotation_db)
         UNPACK_DB (ch_db_raw)
 
         UNPACK_DB
             .out
             .db
             .branch { meta, unpacked ->
-                k2_host: meta.id == 'k2_host'
+                k2_host: meta.dbname == 'k2_host'
                     return [ unpacked ]
-                reference: meta.id == 'reference'
+                reference: meta.dbname == 'reference'
                     return [ meta, unpacked ]
-                checkv: meta.id == 'checkv'
+                checkv: meta.dbname == 'checkv'
                     return [ unpacked ]
-                kraken2: meta.id == 'kraken2'
+                kraken2: meta.dbname == 'kraken2'
                     return [ unpacked ]
-                bracken: meta.id == 'bracken'
+                bracken: meta.dbname == 'bracken'
                     return [ unpacked ]
-                kaiju: meta.id == 'kaiju'
+                kaiju: meta.dbname == 'kaiju'
                     return [ unpacked ]
-                annotation: meta.id == 'annotation'
+                annotation: meta.dbname == 'annotation'
                     return [ meta, unpacked ]
             }
             .set{ch_db}
@@ -170,7 +179,7 @@ workflow VIRALGENIE {
 
         // transfer to value channels so processes are not just done once
         // '.collect()' is necessary to transform to list so cartesian products are made downstream
-        ch_ref_pool_raw     = ch_db.reference.collect{it[1]}.ifEmpty([]).map{it -> [[id: 'reference'], it]}
+        ch_ref_pool_raw     = ch_db.reference
         ch_kraken2_db       = ch_db.kraken2.collect().ifEmpty([])
         ch_kaiju_db         = ch_db.kaiju.collect().ifEmpty([])
         ch_checkv_db        = ch_db.checkv.collect().ifEmpty([])
@@ -179,31 +188,21 @@ workflow VIRALGENIE {
         ch_annotation_db    = ch_db.annotation.collect{it[1]}.ifEmpty([]).map{it -> [[id: 'annotation'], it]}
     }
 
-    // Prepare blast DB
+    // Prepare blast DBs
     ch_ref_pool     = Channel.empty()
-    ch_blast_refdb  = Channel.empty()
-    ch_blast_annodb = Channel.empty()
+    ch_blastdb_seq  = Channel.empty()
 
     if ( (!params.skip_assembly && !params.skip_polishing) || (!params.skip_consensus_qc && !params.skip_blast_qc)){
-        ch_blastdb_in = Channel.empty()
+        ch_ref_pool = Channel.empty()
+
         // see issue #56
         SEQKIT_REPLACE (ch_ref_pool_raw)
         ch_versions   = ch_versions.mix(SEQKIT_REPLACE.out.versions)
         ch_ref_pool   = SEQKIT_REPLACE.out.fastx
-        ch_blastdb_in = ch_blastdb_in.mix(ch_ref_pool)
 
-        BLAST_MAKEBLASTDB ( ch_blastdb_in )
-        BLAST_MAKEBLASTDB
-            .out
-            .db
-            .branch { meta, db ->
-                reference: meta.id == 'reference'
-                    return [ meta, db ]
-                // annotation: meta.id == 'annotation'
-                //     return [ meta, db ]
-            }.
-            set{ch_blastdb_out}
-        ch_blast_refdb  = ch_blastdb_out.reference.collect{it[1]}.ifEmpty([]).map{it -> [[id: 'reference'], it]}
+        BLAST_MAKEBLASTDB ( ch_ref_pool )
+
+        ch_blastdb_seq  = BLAST_MAKEBLASTDB.out.db.join(ch_ref_pool)
         ch_versions     = ch_versions.mix(BLAST_MAKEBLASTDB.out.versions)
     }
 
@@ -262,9 +261,8 @@ workflow VIRALGENIE {
 
             FASTA_CONTIG_CLUST (
                 ch_contigs_reads,
+                ch_blastdb_seq,
                 ch_coverages,
-                ch_blast_refdb,
-                ch_ref_pool,
                 contig_classifiers,
                 ch_kraken2_db,
                 ch_kaiju_db
@@ -460,7 +458,7 @@ workflow VIRALGENIE {
             ch_consensus,
             ch_unaligned_raw_contigs,
             ch_checkv_db,
-            ch_blast_refdb,
+            ch_blastdb_seq,
             ch_annotation_db,
             )
         ch_versions           = ch_versions.mix(CONSENSUS_QC.out.versions)
@@ -469,7 +467,6 @@ workflow VIRALGENIE {
         ch_quast_summary      = CONSENSUS_QC.out.quast_summary.collect{it[1]}.ifEmpty([])
         ch_blast_summary      = CONSENSUS_QC.out.blast_txt.collect{it[1]}.ifEmpty([])
         ch_annotation_summary = CONSENSUS_QC.out.annotation_txt.collect{it[1]}.ifEmpty([])
-
     }
 
     MULTIQC_DATAPREP (

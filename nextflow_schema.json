@@ -382,6 +382,14 @@
                     "description": "Set of fasta sequences used as potential references for the contigs",
                     "fa_icon": "fas fa-database"
                 },
+                "reference_pools": {
+                    "type": "string",
+                    "fa_icon": "fas fa-database",
+                    "description": "Samplesheet of reference datasets of multifasta files linked to specific samples",
+                    "pattern": "^\\S+.[(csv)|(json)|(tsv)|(yaml)]$",
+                    "format": "file-path",
+                    "schema": "/assets/schemas/reference_pools.json"
+                },
                 "skip_precluster": {
                     "type": "boolean",
                     "fa_icon": "fas fa-forward",

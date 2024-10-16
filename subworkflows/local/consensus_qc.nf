@@ -14,7 +14,7 @@ workflow CONSENSUS_QC  {
     ch_genome              // channel: [ val(meta), [ genome ] ]
     ch_aligned_raw_contigs // channel: [ val(meta), [ genome ] ]
     checkv_db              // channel: [ checkv_db ]
-    refpool_db             // channel: [ val(meta), [refpool_db] ]
+    refpool_db             // channel: [ val(meta), [refpool_db], [refpool_seq] ]
     annotation_db          // channel: [ val(meta), [annotation_db] ]
 
     main:
@@ -130,10 +130,22 @@ workflow CONSENSUS_QC  {
     }
 
     if ( !params.skip_blast_qc ){
+
+        // combine refpool_db based on specified samples in the reference_pools parameter
+        ch_genome
+            .combine(refpool_db)
+            .filter{ meta_genome, genome, meta_db, blast_db, blast_seq ->
+                meta_genome.sample == meta_db.sample || (meta_genome.sample != null && meta_db.sample == null)}
+            .branch{ meta_genome, genome, meta_db, blast_db, blast_seq ->
+                genome: [meta_genome, genome]
+                db: [meta_db, blast_db]
+            }
+            .set{ch_blast_in}
+
         // Identify closest reference from the reference pool database using blast
         BLASTN_QC (
-            ch_genome,
-            refpool_db
+            ch_blast_in.genome,
+            ch_blast_in.db
         )
         blast_txt   = BLASTN_QC.out.txt
         ch_versions = ch_versions.mix(BLASTN_QC.out.versions)

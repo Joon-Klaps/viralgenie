@@ -1,0 +1,40 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "https://raw.githubusercontent.com/Joon-Klaps/viralgenie/master/assets/schemas/reference_pools.json",
+    "title": "Joon-Klaps/viralgenie pipeline - params.reference_pools schema",
+    "description": "Schema for the file provided with params.reference_pools",
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {
+            "id": {
+                "type": "string",
+                "pattern": "^[A-z0-9\\-]+$",
+                "errorMessage": "ID of database, no spaces or special characters allowed.",
+                "meta": ["id"]
+            },
+            "samples": {
+                "errorMessage": "Samples cannot contain spaces or special characters with the exception of '-' and '.', samples are separated by a ';'",
+                "meta": ["samples"],
+                "anyOf": [
+                    {
+                        "type": "string",
+                        "pattern": "^(?!.*\\_)[A-Za-z0-9\\-\\.\\;]+$"
+                    },
+                    {
+                        "type": "string",
+                        "maxLength": 0
+                    }
+                ]
+            },
+            "sequence": {
+                "type": "string",
+                "pattern": "^\\S+\\.f(ast)?a(\\.gz)?$",
+                "format": "file-path",
+                "exists": true,
+                "errorMessage": "Set of references in multiFasta file that is used to determine similarities with generated denovo contigs."
+            }
+        },
+        "required": ["id", "samples", "sequence"]
+    }
+}
