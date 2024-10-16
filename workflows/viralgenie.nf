@@ -41,11 +41,11 @@ for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true
 if (params.input ) { ch_input = file(params.input) } else { exit 1, 'Input samplesheet not specified!'}
 
 // Optional parameters
-ch_adapter_fasta = createFileChannel(params.adapter_fasta)
-ch_metadata      = createFileChannel(params.metadata)
-ch_contaminants  = createFileChannel(params.contaminants)
-ch_spades_yml    = createFileChannel(params.spades_yml)
-ch_spades_hmm    = createFileChannel(params.spades_hmm)
+ch_adapter_fasta  = createFileChannel(params.adapter_fasta)
+ch_metadata       = createFileChannel(params.metadata)
+ch_contaminants   = createFileChannel(params.contaminants)
+ch_spades_yml     = createFileChannel(params.spades_yml)
+ch_spades_hmm     = createFileChannel(params.spades_hmm)
 ch_constrain_meta = createFileChannel(params.mapping_constrains)
 
 // Databases, we really don't want to stage uncessary databases
