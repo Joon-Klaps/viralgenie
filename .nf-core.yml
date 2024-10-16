@@ -1,1 +1,18 @@
+bump_version: null
+lint: null
+nf_core_version: 3.0.2
+org_path: null
 repository_type: pipeline
+template:
+  author: joon.klaps@kuleuven.be
+  description: "A pipeline to reconstruct consensus genomes and identify intrahost
+    variants from metagenomic sequencing data or enriched based sequencing data like
+    hybrid capture.  "
+  force: false
+  is_nfcore: true
+  name: viralgenie
+  org: nf-core
+  outdir: .
+  skip_features: null
+  version: 1.0dev
+update: null
