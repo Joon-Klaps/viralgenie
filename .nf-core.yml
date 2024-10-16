@@ -1,5 +1,7 @@
+bump_version: null
+nf_core_version: 3.0.2
+org_path: null
 repository_type: pipeline
-nf_core_version: 2.7.2
 lint:
   files_unchanged:
     - docs/images/nf-core-viralgenie_logo_light.png
@@ -41,3 +43,7 @@ template:
   is_nfcore: false
   skip_features:
     - igenomes
+  force: false
+  outdir: .
+  version: 0.1.1dev
+update: null

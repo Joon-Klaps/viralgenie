@@ -1,17 +1,8 @@
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    PRINT PARAMS SUMMARY
+    VIRALGENIE
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-
-include { paramsSummaryLog; paramsSummaryMap; fromSamplesheet } from 'plugin/nf-validation'
-
-def logo = NfcoreTemplate.logo(workflow, params.monochrome_logs)
-def citation = '\n' + WorkflowMain.citation(workflow) + '\n'
-def summary_params = paramsSummaryMap(workflow)
-
-// Print parameter summary log to screen
-log.info logo + paramsSummaryLog(workflow) + citation
 
 def valid_params = [
     spades_modes     : ['rnaviral', 'corona', 'metaviral', 'meta', 'metaplasmid', 'plasmid', 'isolate', 'rna', 'bio']
@@ -75,28 +66,32 @@ ch_multiqc_custom_table_headers       = params.custom_table_headers        ? Cha
     IMPORT LOCAL & NF-CORE MODULES/SUBWORKFLOWS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
+include { paramsSummaryMap;fromSamplesheet } from 'plugin/nf-schema'
+include { paramsSummaryMultiqc             } from '../subworkflows/nf-core/utils_nfcore_pipeline'
+include { softwareVersionsToYAML           } from '../subworkflows/nf-core/utils_nfcore_pipeline'
+include { methodsDescriptionText           } from '../subworkflows/local/utils_nfcore_viralgenie_pipeline'
 
 // Preprocessing
-include { PREPROCESSING_ILLUMINA          } from '../subworkflows/local/preprocessing_illumina'
+include { PREPROCESSING_ILLUMINA           } from '../subworkflows/local/preprocessing_illumina'
 
 // metagenomic diversity
-include { FASTQ_KRAKEN_KAIJU              } from '../subworkflows/local/fastq_kraken_kaiju'
+include { FASTQ_KRAKEN_KAIJU               } from '../subworkflows/local/fastq_kraken_kaiju'
 
 // Assembly
-include { FASTQ_ASSEMBLY                  } from '../subworkflows/local/fastq_assembly'
-include { noContigSamplesToMultiQC        } from '../modules/local/functions'
+include { FASTQ_ASSEMBLY                   } from '../subworkflows/local/fastq_assembly'
+include { noContigSamplesToMultiQC         } from '../modules/local/functions'
 
 // Consensus polishing of genome
-include { FASTA_CONTIG_CLUST              } from '../subworkflows/local/fasta_contig_clust'
-include { BLAST_MAKEBLASTDB               } from '../modules/nf-core/blast/makeblastdb/main'
-include { SEQKIT_REPLACE                  } from '../modules/nf-core/seqkit/replace/main'
-include { ALIGN_COLLAPSE_CONTIGS          } from '../subworkflows/local/align_collapse_contigs'
-include { UNPACK_DB                       } from '../subworkflows/local/unpack_db'
-include { FASTQ_FASTA_ITERATIVE_CONSENSUS } from '../subworkflows/local/fastq_fasta_iterative_consensus'
-include { SINGLETON_FILTERING             } from '../subworkflows/local/singleton_filtering'
+include { FASTA_CONTIG_CLUST               } from '../subworkflows/local/fasta_contig_clust'
+include { BLAST_MAKEBLASTDB                } from '../modules/nf-core/blast/makeblastdb/main'
+include { SEQKIT_REPLACE                   } from '../modules/nf-core/seqkit/replace/main'
+include { ALIGN_COLLAPSE_CONTIGS           } from '../subworkflows/local/align_collapse_contigs'
+include { UNPACK_DB                        } from '../subworkflows/local/unpack_db'
+include { FASTQ_FASTA_ITERATIVE_CONSENSUS  } from '../subworkflows/local/fastq_fasta_iterative_consensus'
+include { SINGLETON_FILTERING              } from '../subworkflows/local/singleton_filtering'
 
 // Mapping constrains selection
-include { FASTQ_FASTA_MASH_SCREEN         } from '../subworkflows/local/fastq_fasta_mash_screen'
+include { FASTQ_FASTA_MASH_SCREEN          } from '../subworkflows/local/fastq_fasta_mash_screen'
 
 // Variant calling
 include { RENAME_FASTA_HEADER as RENAME_FASTA_HEADER_CONSTRAIN } from '../modules/local/rename_fasta_header'
@@ -117,10 +112,11 @@ include { CUSTOM_DUMPSOFTWAREVERSIONS     } from '../modules/nf-core/custom/dump
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-// Info required for completion email and summary
-def multiqc_report = []
-
 workflow VIRALGENIE {
+
+    take:
+    ch_samplesheet // channel: samplesheet read in from --input
+    main:
 
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
@@ -502,59 +498,64 @@ workflow VIRALGENIE {
     ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_MULTIQC_TABLES.out.constrains_summary_mqc.ifEmpty([]))
     ch_versions      = ch_versions.mix(CUSTOM_MULTIQC_TABLES.out.versions)
 
-    CUSTOM_DUMPSOFTWAREVERSIONS (
-        ch_versions.unique().collectFile(name: 'collated_versions.yml')
-    )
-    ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
+    //
+    // Collate and save software versions
+    //
+    softwareVersionsToYAML(ch_versions)
+        .collectFile(
+            storeDir: "${params.outdir}/pipeline_info",
+            name: 'nf_core_'  + 'pipeline_software_' +  'mqc_'  + 'versions.yml',
+            sort: true,
+            newLine: true
+        ).set { ch_collated_versions }
+
 
     //
     // MODULE: MultiQC
     //
-    workflow_summary    = WorkflowViralgenie.paramsSummaryMultiqc(workflow, summary_params)
-    ch_workflow_summary = Channel.value(workflow_summary)
+    ch_multiqc_config        = Channel.fromPath(
+        "$projectDir/assets/multiqc_config.yml", checkIfExists: true)
+    ch_multiqc_custom_config = params.multiqc_config ?
+        Channel.fromPath(params.multiqc_config, checkIfExists: true) :
+        Channel.empty()
+    ch_multiqc_logo          = params.multiqc_logo ?
+        Channel.fromPath(params.multiqc_logo, checkIfExists: true) :
+        Channel.empty()
 
-    methods_description    = WorkflowViralgenie.methodsDescriptionText(workflow, ch_multiqc_custom_methods_description, params)
-    ch_methods_description = Channel.value(methods_description)
+    summary_params      = paramsSummaryMap(
+        workflow, parameters_schema: "nextflow_schema.json")
+    ch_workflow_summary = Channel.value(paramsSummaryMultiqc(summary_params))
+    ch_multiqc_files = ch_multiqc_files.mix(
+        ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
+    ch_multiqc_custom_methods_description = params.multiqc_methods_description ?
+        file(params.multiqc_methods_description, checkIfExists: true) :
+        file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
+    ch_methods_description                = Channel.value(
+        methodsDescriptionText(ch_multiqc_custom_methods_description))
 
-
-    ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
-    ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml'))
+    ch_multiqc_files = ch_multiqc_files.mix(ch_collated_versions)
+    ch_multiqc_files = ch_multiqc_files.mix(
+        ch_methods_description.collectFile(
+            name: 'methods_description_mqc.yaml',
+            sort: true
+        )
+    )
 
     MULTIQC_REPORT (
         ch_multiqc_files.collect(),
         ch_multiqc_config.toList(),
         ch_multiqc_custom_config.toList(),
-        ch_multiqc_logo.toList()
+        ch_multiqc_logo.toList(),
+        [],
+        []
     )
-    multiqc_report = MULTIQC_REPORT.out.report.toList()
+
+    emit:multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
+    versions       = ch_versions                 // channel: [ path(versions.yml) ]
+
 }
 
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    COMPLETION EMAIL AND SUMMARY
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
 
-workflow.onComplete {
-    if (params.email || params.email_on_fail) {
-        NfcoreTemplate.email(workflow, params, summary_params, projectDir, log, multiqc_report)
-    }
-    NfcoreTemplate.dump_parameters(workflow, params)
-    NfcoreTemplate.summary(workflow, params, log)
-    if (params.hook_url) {
-        NfcoreTemplate.IM_notification(workflow, params, summary_params, projectDir, log)
-    }
-}
-
-workflow.onError {
-    if (workflow.errorReport.contains("Process requirement exceeds available memory")) {
-        println("🛑 Default resources exceed availability 🛑 ")
-        println("💡 See here on how to configure pipeline: https://nf-co.re/docs/usage/configuration#tuning-workflow-resources 💡")
-    }
-    if (params.clean_output_on_error) {
-        file(params.outdir).deleteDir()
-    }
-}
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

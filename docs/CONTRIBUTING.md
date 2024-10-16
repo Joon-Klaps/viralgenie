@@ -20,7 +20,7 @@ If you'd like to write some code for Joon-Klaps/viralgenie, the standard workflo
 1. Check that there isn't already an issue about your idea in the [Joon-Klaps/viralgenie issues](https://github.com/Joon-Klaps/viralgenie/issues) to avoid duplicating work. If there isn't one already, please create one so that others know you're working on this
 2. [Fork](https://help.github.com/en/github/getting-started-with-github/fork-a-repo) the [Joon-Klaps/viralgenie repository](https://github.com/Joon-Klaps/viralgenie) to your GitHub account
 3. Make the necessary changes / additions within your forked repository following [Pipeline conventions](#pipeline-contribution-conventions)
-4. Use `nf-core schema build` and add any new parameters to the pipeline JSON schema (requires [nf-core tools](https://github.com/nf-core/tools) >= 1.10).
+4. Use `nf-core pipelines schema build` and add any new parameters to the pipeline JSON schema (requires [nf-core tools](https://github.com/nf-core/tools) >= 1.10).
 5. Submit a Pull Request against the `dev` branch and wait for the code to be reviewed and merged
 
 If you're not used to this workflow with git, you can start with some [docs from GitHub](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests) or even their [excellent `git` resources](https://try.github.io/).
@@ -72,7 +72,7 @@ If you wish to contribute a new step, please use the following coding standards:
 2. Write the process block (see below).
 3. Define the output channel if needed (see below).
 4. Add any new parameters to `nextflow.config` with a default (see below).
-5. Add any new parameters to `nextflow_schema.json` with help text (via the `nf-core schema build` tool).
+5. Add any new parameters to `nextflow_schema.json` with help text (via the `nf-core pipelines schema build` tool).
 6. Add sanity checks and validation for all relevant parameters.
 7. Perform local tests to validate that the new code works as expected.
 8. If applicable, add a new test command in `.github/workflow/ci.yml`.
@@ -83,13 +83,13 @@ If you wish to contribute a new step, please use the following coding standards:
 
 Parameters should be initialised / defined with default values in `nextflow.config` under the `params` scope.
 
-Once there, use `nf-core schema build` to add to `nextflow_schema.json`.
+Once there, use `nf-core pipelines schema build` to add to `nextflow_schema.json`.
 
 ### Default processes resource requirements
 
-Sensible defaults for process resource requirements (CPUs / memory / time) for a process should be defined in `conf/base.config`. These should generally be specified generic with `withLabel:` selectors so they can be shared across multiple processes/steps of the pipeline. A nf-core standard set of labels that should be followed where possible can be seen in the [nf-core pipeline template](https://github.com/nf-core/tools/blob/master/nf_core/pipeline-template/conf/base.config), which has the default process as a single core-process, and then different levels of multi-core configurations for increasingly large memory requirements defined with standardised labels.
+Sensible defaults for process resource requirements (CPUs / memory / time) for a process should be defined in `conf/base.config`. These should generally be specified generic with `withLabel:` selectors so they can be shared across multiple processes/steps of the pipeline. A nf-core standard set of labels that should be followed where possible can be seen in the [nf-core pipeline template](https://github.com/nf-core/tools/blob/main/nf_core/pipeline-template/conf/base.config), which has the default process as a single core-process, and then different levels of multi-core configurations for increasingly large memory requirements defined with standardised labels.
 
-The process resources can be passed on to the tool dynamically within the process with the `${task.cpu}` and `${task.memory}` variables in the `script:` block.
+The process resources can be passed on to the tool dynamically within the process with the `${task.cpus}` and `${task.memory}` variables in the `script:` block.
 
 ### Naming schemes
 
@@ -100,7 +100,7 @@ Please use the following naming schemes, to make it easy to understand what is g
 
 ### Nextflow version bumping
 
-If you are using a new feature from core Nextflow, you may bump the minimum required version of nextflow in the pipeline with: `nf-core bump-version --nextflow . [min-nf-version]`
+If you are using a new feature from core Nextflow, you may bump the minimum required version of nextflow in the pipeline with: `nf-core pipelines bump-version --nextflow . [min-nf-version]`
 
 ### Images and figures
 
