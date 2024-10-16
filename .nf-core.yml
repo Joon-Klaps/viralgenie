@@ -1,4 +1,5 @@
 repository_type: pipeline
+nf_core_version: 2.7.2
 lint:
   files_unchanged:
     - docs/images/nf-core-viralgenie_logo_light.png
@@ -18,10 +19,9 @@ lint:
   nextflow_config:
     - manifest.name
     - manifest.homePage
-    - config_defaults:
-        - params.annotation_db
-        - params.multiqc_comment_headers
-        - params.custom_table_headers
+    - params.annotation_db
+    - params.multiqc_comment_headers
+    - params.custom_table_headers
   multiqc_config:
     - report_section_order
     - report_comment
@@ -34,10 +34,10 @@ lint:
     - lib/WorkflowMain.groovy
     - lib/NfcoreTemplate.groovy
     - lib/WorkflowViralgenie.groovy
-  actions_awsfulltest:
-    - .github/workflows/awsfulltest.yml
-    - .github/workflows/awstest.yml
 template:
   name: viralgenie
   description: a bioinformatics best-practice analysis pipeline for reconstructing consensus genomes and to identify intra-host variants from metagenomic sequencing data or enriched based sequencing data like hybrid capture.
-  author: Joon-Klaps
+  author: "Joon Klaps, Philippe Lemey, Liana Kafetzopoulou"
+  is_nfcore: false
+  skip_features:
+    - igenomes
