@@ -118,11 +118,6 @@
                         "git_sha": "56cf5a89c2646ad50195635cf18df4028a6928ce",
                         "installed_by": ["modules"]
                     },
-                    "custom/dumpsoftwareversions": {
-                        "branch": "master",
-                        "git_sha": "de45447d060b8c8b98575bc637a4a575fd0638e1",
-                        "installed_by": ["modules"]
-                    },
                     "emboss/cons": {
                         "branch": "master",
                         "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",

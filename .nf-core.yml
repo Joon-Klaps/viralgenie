@@ -18,6 +18,7 @@ lint:
     - assets/email_template.txt
     - assets/sendmail_template.txt
     - pyproject.toml
+    - .gitignore
   nextflow_config:
     - manifest.name
     - manifest.homePage

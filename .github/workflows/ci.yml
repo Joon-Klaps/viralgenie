@@ -185,7 +185,7 @@ jobs:
           CLUSTER_METHOD: ${{ matrix.CLUSTER_METHOD }}
           profile: ${{ matrix.profile }}
         run: |
-          nextflow run ${GITHUB_WORKSPACE} -profile test,profile --cluster_method ${CLUSTER_METHOD} --skip_iterative_refinement --skip_variant_calling --outdir ./results --max_cpus 4 --max_memory 15GB
+          nextflow run ${GITHUB_WORKSPACE} -profile test,${profile} --cluster_method ${CLUSTER_METHOD} --skip_iterative_refinement --skip_variant_calling --outdir ./results --max_cpus 4 --max_memory 15GB
 
   test-others:
     name: "Run pipeline with various test profiles (${{ matrix.test_name }}) | (${{ matrix.NXF_VER }}) | (${{ matrix.profile }})"
