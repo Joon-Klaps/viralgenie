@@ -3,8 +3,8 @@ process CUSTOM_MULTIQC_TABLES {
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'oras://community.wave.seqera.io/library/pip_dash_multiqc_pandas:9472df82fedd8448':
-        'community.wave.seqera.io/library/pip_dash_multiqc_pandas:1046792731cd7619' }"
+        'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/73/73a8b9ad157a08e5aa8a83cdb1975f9d4ff46f112351ebb9427b27dc32763c76/data':
+        'community.wave.seqera.io/library/pip_multiqc_pandas:d84d38acb8d47ed1' }"
 
     input:
     path clusters_summary_files
@@ -33,8 +33,7 @@ process CUSTOM_MULTIQC_TABLES {
     path("clusters_barchart.tsv")             , emit: clusters_barchart_mqc , optional: true
     path("contig_custom_table_mqc.html")      , emit: contig_html           , optional: true
     path("constrain_custom_table_mqc.html")   , emit: mapping_constrains_mqc, optional: true
-    path("mapping_constrains_mqc.tsv")        , emit: mapping_constrains_mqc , optional: true
-    path("mapping_constrains_summary_mqc.tsv"), emit: constrains_summary_mqc , optional: true
+    path("mapping_constrains_summary_mqc.tsv"), emit: constrains_summary_mqc, optional: true
     path "versions.yml"                       , emit: versions
 
     when:

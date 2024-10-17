@@ -2,10 +2,8 @@ name: custom_multiqc_tables
 channels:
   - conda-forge
   - bioconda
-  - defaults
 dependencies:
   - pip
   - pip:
-      - dash==2.17.0
-      - multiqc==1.22.1
-      - pandas==2.2.0rc0
+      - multiqc==1.25.1
+      - pandas==2.2.3
