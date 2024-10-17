@@ -354,8 +354,9 @@ workflow VIRALGENIE {
         // Importing samplesheet
         Channel
             .fromList(samplesheetToList(params.mapping_constrains, "${projectDir}/assets/schemas/mapping_constrains.json"))
+            .tap{mapping_constrains}
             .map{ meta, sequence ->
-                samples = meta.samples == null ? meta.samples: tuple(meta.samples.split(";"))  // Split up samples if meta.samples is not null
+                samples = meta.samples == [] ? meta.samples: tuple(meta.samples.split(";"))  // Split up samples if meta.samples is not null
                 [meta, samples, sequence]
             }
             .transpose(remainder:true)                                                         // Unnest
@@ -364,7 +365,7 @@ workflow VIRALGENIE {
         // // Check if the input is a multi-fasta
         // ch_mapping_constrains.map{ meta, samples, sequence -> WorkflowMain.isMultiFasta(sequence, log)}
 
-        //
+        // Joining all the reads with the mapping constrains, filter for those specified or keep everything if none specified.
         ch_decomplex_trim_reads
             .combine( ch_mapping_constrains )
             .filter{ meta_reads, fastq, meta_mapping, mapping_samples, sequence -> mapping_samples == null || mapping_samples == meta_reads.sample}
@@ -536,12 +537,10 @@ workflow VIRALGENIE {
         ch_multiqc_config.toList(),
         ch_multiqc_custom_config.toList(),
         ch_multiqc_logo.toList(),
-        [],
-        []
     )
 
-    emit:multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
-    versions       = ch_versions                 // channel: [ path(versions.yml) ]
+    emit:multiqc_report = MULTIQC_REPORT.out.report.toList() // channel: /path/to/multiqc_report.html
+    versions            = ch_versions                        // channel: [ path(versions.yml) ]
 
 }
 

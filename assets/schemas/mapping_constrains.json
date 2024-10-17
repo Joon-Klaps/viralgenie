@@ -48,12 +48,12 @@
                 "errorMessage": "Give a definition of the sequence for metadata annotation purposes only",
                 "meta": ["definition"],
                 "type": "string"
-            },
-            "required": ["id", "sequence"]
+            }
+        },
+        "required": ["id", "sequence"],
+        "dependentRequired": {
+            "segment": ["species"]
         }
     },
-    "dependentRequired": {
-        "segment": ["species"]
-    },
-    "uniqueEntries": ["species", "segment"]
+    "allOf": [{ "uniqueEntries": ["species", "segment"] }, { "uniqueEntries": ["id"] }]
 }
