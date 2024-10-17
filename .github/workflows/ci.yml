@@ -101,7 +101,7 @@ jobs:
           CONSENSUS_CALLER: ${{ matrix.CONSENSUS_CALLER }}
           profile: ${{ matrix.profile }}
         run: |
-          nextflow run ${GITHUB_WORKSPACE} -profile test,${profile} --variant_caller ${VARIANT_CALLER} --consensus_caller ${CONSENSUS_CALLER} --outdir ./results --max_cpus 2 --max_memory 4GB
+          nextflow run ${GITHUB_WORKSPACE} -profile test,${profile} --variant_caller ${VARIANT_CALLER} --consensus_caller ${CONSENSUS_CALLER} --outdir ./results
 
   test-cluster-methods:
     name: "Run pipeline with test data (${{ matrix.NXF_VER }}) | (${{ matrix.profile }}) | (${{ matrix.CLUSTER_METHOD }})"
@@ -185,7 +185,7 @@ jobs:
           CLUSTER_METHOD: ${{ matrix.CLUSTER_METHOD }}
           profile: ${{ matrix.profile }}
         run: |
-          nextflow run ${GITHUB_WORKSPACE} -profile test,${profile} --cluster_method ${CLUSTER_METHOD} --skip_iterative_refinement --skip_variant_calling --outdir ./results --max_cpus 4 --max_memory 15GB
+          nextflow run ${GITHUB_WORKSPACE} -profile test,${profile} --cluster_method ${CLUSTER_METHOD} --skip_iterative_refinement --skip_variant_calling --outdir ./results
 
   test-others:
     name: "Run pipeline with various test profiles (${{ matrix.test_name }}) | (${{ matrix.NXF_VER }}) | (${{ matrix.profile }})"
@@ -266,4 +266,4 @@ jobs:
           test_name: ${{ matrix.test_name }}
           profile: ${{ matrix.profile }}
         run: |
-          nextflow run ${GITHUB_WORKSPACE} -profile ${test_name},${profile} --${test_name} --outdir ./results --max_cpus 4 --max_memory 15GB
+          nextflow run ${GITHUB_WORKSPACE} -profile ${test_name},${profile} --outdir ./results
