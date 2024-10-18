@@ -7,6 +7,8 @@ process CUSTOM_MULTIQC_TABLES {
         'community.wave.seqera.io/library/pip_multiqc_pandas:d84d38acb8d47ed1' }"
 
     input:
+    path multiqc_files, stageAs: "multiqc_files/?/*"
+    path multiqc_config
     path clusters_summary_files
     path sample_metadata
     path checkv_files, stageAs: "?/checkv/*"
@@ -41,6 +43,8 @@ process CUSTOM_MULTIQC_TABLES {
 
     script:
     def args = task.ext.args ?: ''
+    def multiqc_files          = multiqc_files          ? "--multiqc_files multiqc_files"                : '' // Just refer to the dir for now.
+    def multiqc_config         = multiqc_config         ? "--multiqc_config ${multiqc_config}"           : ''
     def clusters_summary_files = clusters_summary_files ? "--clusters_summary ${clusters_summary_files}" : ''
     def sample_metadata        = sample_metadata        ? "--sample_metadata ${sample_metadata}"         : ''
     def checkv_files           = checkv_files           ? "--checkv_files ${checkv_files}"               : ''
@@ -58,6 +62,8 @@ process CUSTOM_MULTIQC_TABLES {
     """
     custom_multiqc_tables.py \\
         $args \\
+        $multiqc_files \\
+        $multiqc_config \\
         $clusters_summary_files \\
         $sample_metadata \\
         $checkv_files \\
@@ -76,9 +82,9 @@ process CUSTOM_MULTIQC_TABLES {
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         python: \$(python --version | sed 's/Python //g')
-        pandas: \$(pip show pandas | grep Version | sed 's/Version: //g')
-        yaml: \$(pip show pyyaml | grep Version | sed 's/Version: //g')
-        plotly: \$(pip show plotly | grep Version | sed 's/Version: //g')
+        pandas: \$(pip show pandas | grep Version: | sed 's/Version: //g')
+        yaml: \$(pip show pyyaml | grep Version: | sed 's/Version: //g')
+        plotly: \$(pip show plotly | grep Version: | sed 's/Version: //g')
     END_VERSIONS
     """
 
@@ -92,9 +98,9 @@ process CUSTOM_MULTIQC_TABLES {
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         python: \$(python --version | sed 's/Python //g')
-        pandas: \$(pip show pandas | grep Version | sed 's/Version: //g')
-        yaml: \$(pip show pyyaml | grep Version | sed 's/Version: //g')
-        plotly: \$(pip show plotly | grep Version | sed 's/Version: //g')
+        pandas: \$(pip show pandas | grep Version: | sed 's/Version: //g')
+        yaml: \$(pip show pyyaml | grep Version: | sed 's/Version: //g')
+        plotly: \$(pip show plotly | grep Version: | sed 's/Version: //g')
     END_VERSIONS
     """
 }

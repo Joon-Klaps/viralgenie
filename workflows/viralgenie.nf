@@ -477,20 +477,22 @@ workflow VIRALGENIE {
 
     // Prepare MULTIQC custom tables
     CUSTOM_MULTIQC_TABLES (
-            ch_clusters_summary.ifEmpty([]),
-            ch_metadata,
-            ch_checkv_summary.ifEmpty([]),
-            ch_quast_summary.ifEmpty([]),
-            ch_blast_summary.ifEmpty([]),
-            ch_bed.collect{it[1]}.ifEmpty([]),
-            ch_constrain_meta,
-            ch_annotation_summary.ifEmpty([]),
-            ch_clusters_tsv.ifEmpty([]),
-            ch_mash_screen.ifEmpty([]),
-            multiqc_data,
-            ch_multiqc_comment_headers.ifEmpty([]),
-            ch_multiqc_custom_table_headers.ifEmpty([])
-            )
+        ch_multiqc_files.collect(),
+        ch_multiqc_config.toList(),
+        ch_clusters_summary.ifEmpty([]),
+        ch_metadata,
+        ch_checkv_summary.ifEmpty([]),
+        ch_quast_summary.ifEmpty([]),
+        ch_blast_summary.ifEmpty([]),
+        ch_bed.collect{it[1]}.ifEmpty([]),
+        ch_constrain_meta,
+        ch_annotation_summary.ifEmpty([]),
+        ch_clusters_tsv.ifEmpty([]),
+        ch_mash_screen.ifEmpty([]),
+        multiqc_data,
+        ch_multiqc_comment_headers.ifEmpty([]),
+        ch_multiqc_custom_table_headers.ifEmpty([])
+        )
     ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_MULTIQC_TABLES.out.summary_clusters_mqc.ifEmpty([]))
     ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_MULTIQC_TABLES.out.clusters_barchart_mqc.ifEmpty([]))
     ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_MULTIQC_TABLES.out.sample_metadata_mqc.ifEmpty([]))
@@ -548,6 +550,8 @@ workflow VIRALGENIE {
         ch_multiqc_config.toList(),
         ch_multiqc_custom_config.toList(),
         ch_multiqc_logo.toList(),
+        [],
+        [],
     )
 
     emit:multiqc_report = MULTIQC_REPORT.out.report.toList() // channel: /path/to/multiqc_report.html
