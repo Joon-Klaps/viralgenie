@@ -10,6 +10,7 @@ import os
 import re
 import sys
 from pathlib import Path
+from typing import Dict, List, Optional, Sequence, Union
 
 
 import pandas as pd
@@ -1427,6 +1428,43 @@ def load_custom_data(args):
     return [checkv_df, quast_df, blast_df, annotation_df]
 
 
+def extract_mqc_data(mqc: object, table_headers: Union[str, Path]) -> pd.DataFrame:
+    """
+    Extract data from MultiQC output files.
+
+    Args:
+        mqc (object): MultiQC object.
+        table_headers (Union[str, Path]): Path to the table headers file.
+
+    Returns:
+        pd.DataFrame: Extracted data
+    """
+
+    result = pd.DataFrame()
+    file_columns = get_files_and_columns_of_interest(table_headers)
+
+    module_data = []
+    for module in file_columns.keys():
+        logger.debug("Extracting %s data from multiqc", module)
+        if module in mqc.list_modules():
+            if data := mqc.get_module_data(module):
+                df = pd.DataFrame(data)
+                print(df)
+            module_data.append(mqc.get_module_data(module))
+        else:
+            logger.warning(f"No data was found for {module} in MultiQC, check {os.path.basename(table_headers)} ")
+            continue
+
+    if not module_data:
+        logger.warning(f"No data was found in MultiQC, check {os.path.basename(table_headers)}")
+        return result
+
+
+
+
+    return result
+
+
 def main(argv=None):
     """
     Main function for creating custom tables for MultiQC.
@@ -1450,7 +1488,9 @@ def main(argv=None):
     # 2. Parse our custom files into the correct tables
     custom_tables = load_custom_data(args)
 
-    # 3. Add plots to MQC again
+    # 3. Make our own summary excel
+    contigs_df = extract_mqc_data(mqc, args.table_headers)
+
     mqc.list_modules()
 
     # General stats - Cluster summariesx
