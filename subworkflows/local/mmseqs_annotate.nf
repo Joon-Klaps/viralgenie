@@ -19,7 +19,7 @@ workflow MMSEQS_ANNOTATE {
     ch_versions = ch_versions.mix(MMSEQS_EASYSEARCH.out.versions.first())
 
     emit:
-    tsv      = MMSEQS_EASYSEARCH.out.tsv // channel: [ val(meta), [ bam ] ]
+    tsv      = MMSEQS_EASYSEARCH.out.tsv // channel: [ val(meta), [ tsv ] ]
     versions = ch_versions               // channel: [ versions.yml ]
 }
 

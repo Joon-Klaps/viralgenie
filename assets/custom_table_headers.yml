@@ -54,7 +54,7 @@ ivar_variants:
   - INS: "raw inserts"
   - SNP: "raw SNPs"
   - DEL: "raw deletions"
-bcftools_stats:
+bcftools:
   - number_of_indels: "number of indels"
   - number_of_samples: "number of samples"
   - number_of_SNPs: "number of SNPs"

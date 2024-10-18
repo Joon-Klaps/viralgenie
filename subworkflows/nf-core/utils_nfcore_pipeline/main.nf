@@ -94,8 +94,14 @@ def getWorkflowVersion() {
 //
 def processVersionsFromYAML(yaml_file) {
     def yaml = new org.yaml.snakeyaml.Yaml()
-    def versions = yaml.load(yaml_file).collectEntries { k, v -> [k.tokenize(':')[-1], v] }
-    return yaml.dumpAsMap(versions).trim()
+    try {
+        def versions = yaml.load(yaml_file).collectEntries { k, v -> [k.tokenize(':')[-1], v] }
+        return yaml.dumpAsMap(versions).trim()
+    } catch (Exception e) {
+        println "An error occurred while processing the YAML file. Printing the entire content:"
+        println yaml_file
+        throw e  // Re-throw the exception after printing the file content
+    }
 }
 
 //

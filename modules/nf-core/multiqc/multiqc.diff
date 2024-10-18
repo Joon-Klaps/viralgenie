@@ -3,7 +3,7 @@ Changes in module 'nf-core/multiqc'
 +++ modules/nf-core/multiqc/main.nf
 @@ -13,7 +13,7 @@
      path(multiqc_logo)
- 
+
      output:
 -    path "*multiqc_report.html", emit: report
 +    path "*multiqc_report.html", optional:true, emit: report

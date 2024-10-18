@@ -114,19 +114,19 @@ module_order:
 table_columns_name:
   "SAMPLE: FastQC (raw)":
     total_sequences: "Nr. Input Reads"
-    avg_sequence_length: "Length Input Reads"
+    avg_sequence_length: "Average Length Input Reads"
     percent_gc: "% GC Input Reads"
     percent_duplicates: "% Dups Input Reads"
     percent_fails: "% Failed Input Reads"
   "SAMPLE: FastQC (post-Trimming)":
     total_sequences: "Nr. reads post Trimming"
-    avg_sequence_length: "Length reads post Trimming"
+    avg_sequence_length: "Average Length reads post Trimming"
     percent_gc: "% GC reads post Trimming"
     percent_duplicates: "% Dups reads post Trimming"
     percent_fails: "% Failed reads post Trimming"
   "SAMPLE: FastQC (post-Host-removal)":
     total_sequences: "Nr. Processed Reads"
-    avg_sequence_length: "Length Processed Reads"
+    avg_sequence_length: "Average Length Processed Reads"
     percent_gc: "% GC Processed Reads"
     percent_duplicates: "% Dups Processed Reads"
     percent_fails: "% Failed Processed Reads"
@@ -150,6 +150,7 @@ table_columns_name:
     pct_unclassified: "% non-host reads"
   "SAMPLE: Kraken2 (Diversity)":
     pct_top_n: "% reads top 5 Species (Kraken2)"
+    pct_unclassified: "% reads unclassified (Kraken2)"
   "SAMPLE: KAIJU (Diversity)":
     "% Assigned": "% Reads assigned (Kaiju)"
     assigned: "M reads assigned (Kaiju)"
