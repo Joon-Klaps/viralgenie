@@ -361,7 +361,7 @@ def get_files_and_columns_of_interest(table_headers):
         # Files of interest contigs:
         files_of_interest = [
             "samtools_stats",
-            "umitools",
+            "umitools_dedup",
             "general_stats",
             "picard_dups",
             "ivar_variants",
@@ -1428,6 +1428,34 @@ def load_custom_data(args):
     return [checkv_df, quast_df, blast_df, annotation_df]
 
 
+def get_module_data(mqc: object, module: str) -> Dict[str, any]:
+    """
+    Attempt to get data for a module that might be a partial match.
+
+    Args:
+        mqc (object): MultiQC object.
+        module (str): Module name to search for.
+
+    Returns:
+        Dict[str, Any]: Module data if found, otherwise an empty dict.
+    """
+    if module in mqc.list_modules():
+        data = mqc.get_module_data(module)
+        return data
+
+    module_basename = module.split("_")[0]
+    if module_basename in mqc.list_modules():
+        all_data = mqc.get_module_data(module_basename)
+        if all_data:
+            matching_key = next((key for key in all_data.keys() if module in key), None)
+            if matching_key:
+                logger.debug(
+                    "Data found for %s in MultiQC under key %s", module, matching_key
+                )
+                return {all_data[matching_key]}
+    return {}
+
+
 def extract_mqc_data(mqc: object, table_headers: Union[str, Path]) -> pd.DataFrame:
     """
     Extract data from MultiQC output files.
@@ -1439,29 +1467,24 @@ def extract_mqc_data(mqc: object, table_headers: Union[str, Path]) -> pd.DataFra
     Returns:
         pd.DataFrame: Extracted data
     """
-
     result = pd.DataFrame()
     file_columns = get_files_and_columns_of_interest(table_headers)
 
-    module_data = []
     for module in file_columns.keys():
         logger.debug("Extracting %s data from multiqc", module)
-        if module in mqc.list_modules():
-            if data := mqc.get_module_data(module):
-                df = pd.DataFrame(data)
-                print(df)
-            module_data.append(mqc.get_module_data(module))
+
+        # Refactor the original function as it throws an error.
+        if data := get_module_data(mqc, module):
+            df = pd.DataFrame(data)
+            result = pd.concat([result, df], ignore_index=True)
         else:
-            logger.warning(f"No data was found for {module} in MultiQC, check {os.path.basename(table_headers)} ")
-            continue
+            logger.warning(
+                "No data was found for %s in MultiQC, check %s",
+                module,
+                Path(table_headers).name,
+            )
 
-    if not module_data:
-        logger.warning(f"No data was found in MultiQC, check {os.path.basename(table_headers)}")
-        return result
-
-
-
-
+    logger.info("Extracted data:\n%s", result)
     return result
 
 
