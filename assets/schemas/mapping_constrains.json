@@ -1,5 +1,5 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://raw.githubusercontent.com/Joon-Klaps/viralgenie/dev/assets/schemas/mapping_constrains.json",
     "title": "Joon-Klaps/viralgenie pipeline - params.mapping_constrains schema",
     "description": "Schema for the file provided with params.mapping_constrains",
@@ -23,46 +23,20 @@
             "species": {
                 "errorMessage": "Species cannot contain spaces or special characters with the exception of '-' and '.'",
                 "meta": ["species"],
-                "anyOf": [
-                    {
-                        "type": "string",
-                        "pattern": "^(?!.*\\_)[A-Za-z0-9\\-\\.]+$"
-                    },
-                    {
-                        "type": "string",
-                        "maxLength": 0
-                    }
-                ]
+                "type": "string",
+                "pattern": "^(?!.*\\_)[A-Za-z0-9\\-\\.]+$"
             },
             "samples": {
                 "errorMessage": "Samples cannot contain spaces or special characters with the exception of '-' and '.', samples are separated by a ';'",
                 "meta": ["samples"],
-                "anyOf": [
-                    {
-                        "type": "string",
-                        "pattern": "^(?!.*\\_)[A-Za-z0-9\\-\\.\\;]+$"
-                    },
-                    {
-                        "type": "string",
-                        "maxLength": 0
-                    }
-                ]
+                "type": "string",
+                "pattern": "^(?!.*\\_)[A-Za-z0-9\\-\\.\\;]+$"
             },
             "segment": {
                 "errorMessage": "Segment cannot contain spaces or special characters with the exception of '-' and '.'. Segment is unique in combination with species",
                 "meta": ["segment"],
-                "anyOf": [
-                    {
-                        "type": "string",
-                        "pattern": "^(?!.*\\_)[A-Za-z0-9\\-\\.]+$",
-                        "dependentRequired": ["species"],
-                        "unique": ["species"]
-                    },
-                    {
-                        "type": "string",
-                        "maxLength": 0
-                    }
-                ]
+                "type": "string",
+                "pattern": "^(?!.*\\_)[A-Za-z0-9\\-\\.]+$"
             },
             "selection": {
                 "errorMessage": "Selection can only be true or false",
@@ -73,17 +47,13 @@
             "definition": {
                 "errorMessage": "Give a definition of the sequence for metadata annotation purposes only",
                 "meta": ["definition"],
-                "anyOf": [
-                    {
-                        "type": "string"
-                    },
-                    {
-                        "type": "string",
-                        "maxLength": 0
-                    }
-                ]
+                "type": "string"
             }
         },
-        "required": ["id", "sequence"]
-    }
+        "required": ["id", "sequence"],
+        "dependentRequired": {
+            "segment": ["species"]
+        }
+    },
+    "allOf": [{ "uniqueEntries": ["species", "segment"] }, { "uniqueEntries": ["id"] }]
 }
