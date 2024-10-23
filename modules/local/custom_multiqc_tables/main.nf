@@ -84,7 +84,6 @@ process CUSTOM_MULTIQC_TABLES {
         python: \$(python --version | sed 's/Python //g')
         pandas: \$(pip show pandas | grep Version: | sed 's/Version: //g')
         yaml: \$(pip show pyyaml | grep Version: | sed 's/Version: //g')
-        plotly: \$(pip show plotly | grep Version: | sed 's/Version: //g')
     END_VERSIONS
     """
 
@@ -100,7 +99,6 @@ process CUSTOM_MULTIQC_TABLES {
         python: \$(python --version | sed 's/Python //g')
         pandas: \$(pip show pandas | grep Version: | sed 's/Version: //g')
         yaml: \$(pip show pyyaml | grep Version: | sed 's/Version: //g')
-        plotly: \$(pip show plotly | grep Version: | sed 's/Version: //g')
     END_VERSIONS
     """
 }

@@ -1473,6 +1473,29 @@ def extract_mqc_data(
     return join_dataframes(result, data) if data else result
 
 
+def reformat_custom_df(df):
+    # Keep only those rows we can split up in sample, cluster, step
+    logger.info("Splitting up the index column in sample name, cluster, step")
+    df = split_index_column(df)
+
+    # Reorder the columns
+    logger.info("Reordering columns")
+    final_columns = ["index", "sample name", "cluster", "step"] + [
+        column
+        for group in [
+            "annotation",
+            "mas-screen",
+            "blast",
+            "checkv",
+            "QC check",
+            "quast",
+        ]
+        for column in df.columns
+        if group in column
+    ]
+    return reorder_columns(df, final_columns)
+
+
 def main(argv=None):
     """
     Main function for creating custom tables for MultiQC.
@@ -1501,117 +1524,71 @@ def main(argv=None):
 
     # 3. Make our own summary excel
     # 3.1 Extract the MQC data
-    mqc_contigs_df = extract_mqc_data(mqc, args.table_headers)
-    if not mqc_contigs_df.empty:
-        logger.info("Writing intermediate file: contigs_intermediate.tsv")
-        write_dataframe(
-            mqc_contigs_df.reset_index(inplace=False), "contigs_intermediate.tsv", []
-        )
-    else:
+    mqc_custom_df = extract_mqc_data(mqc, args.table_headers)
+    if mqc_custom_df.empty:
         logger.warning(
             "No data was found from MULTIQC to create the contig overview table! - Exiting"
         )
         return 0
 
     # 3.2 Join with the custom contig tables
-    logger.info("Joining dataframes")
-    mqc_contigs_df = join_dataframes(mqc_contigs_df, custom_tables)
+    mqc_custom_df = join_dataframes(mqc_custom_df, custom_tables)
 
-    if mqc_contigs_df.empty:
+    if mqc_custom_df.empty:
         logger.warning("No data was found to create the contig overview table!")
         return 0
 
-    # Keep only those rows we can split up in sample, cluster, step
-    logger.info("Splitting up the index column in sample name, cluster, step")
-    mqc_contigs_df = split_index_column(mqc_contigs_df)
+    # 3.3 reformat the dataframe
+    mqc_custom_df = reformat_custom_df(mqc_custom_df)
 
-    #     # Reorder the columns
-    #     logger.info("Reordering columns")
-    #     final_columns = ["index", "sample name", "cluster", "step"] + [
-    #         column
-    #         for group in [
-    #             "annotation",
-    #             "mas-screen",
-    #             "blast",
-    #             "checkv",
-    #             "QC check",
-    #             "quast",
-    #         ]
-    #         for column in multiqc_contigs_df.columns
-    #         if group in column
-    #     ]
-    #     multiqc_contigs_df = reorder_columns(multiqc_contigs_df, final_columns)
+    # 3.4 split up denovo constructs and mapping (-CONSTRAIN) results
+    logger.info("Splitting up denovo constructs and mapping (-CONSTRAIN) results")
+    contigs_mqc, constrains_mqc = filter_constrain(
+        mqc_custom_df, "cluster", "-CONSTRAIN"
+    )
 
-    #     # split up denovo constructs and mapping (-CONSTRAIN) results
-    #     logger.info("Splitting up denovo constructs and mapping (-CONSTRAIN) results")
-    #     contigs_mqc, constrains_mqc = filter_constrain(
-    #         multiqc_contigs_df, "cluster", "-CONSTRAIN"
-    #     )
+    # Write the final dataframe to a file
+    logger.info("Writing Unfiltered Denovo constructs table file: contigs_all.tsv")
+    write_dataframe(contigs_mqc, "contigs_all.tsv", [])
 
-    #     # Write the final dataframe to a file
-    #     logger.info("Writing Unfiltered Denovo constructs table file: contigs_all.tsv")
-    #     write_dataframe(contigs_mqc, "contigs_all.tsv", [])
+    # Separate table for mapping constrains
+    if not constrains_mqc.empty:
 
-    #     contig_sel = contigs_mqc
-    #     if args.filter_level != "none":
-    #         logger.info("Selecting best representatives of groups")
-    #         contigs_sel = filter_contigs(contigs_mqc, args.filter_level)
+        # Add constrain metadata to the mapping constrain table
+        constrain_meta = generate_df([args.mapping_constrains])
 
-    #     logger.info("Making the HMTL contig table report")
-    #     contig_html = custom_html_table(
-    #         contigs_sel,
-    #         SUMMARY_COLUMNS,
-    #         args.bed_files,
-    #         get_header(args.comment_dir, "contig_overview_mqc.html"),
-    #         "contig_custom_table_mqc.html",
-    #     )
+        # drop unwanted columns & reorder
+        constrain_meta = drop_columns(constrain_meta, ["sequence", "samples"])
+        constrains_mqc = constrains_mqc.merge(
+            constrain_meta, how="left", left_on="cluster", right_on="id"
+        )
+        constrains_mqc = reorder_columns(
+            constrains_mqc,
+            [
+                "index",
+                "sample name",
+                "cluster",
+                "step",
+                "species",
+                "segment",
+                "definition",
+            ],
+        )
 
-    #     # Separate table for mapping constrains
-    #     if not constrains_mqc.empty:
+        # add mapping summary to sample overview table in ... wide format with species & segment combination
+        logger.info("Creating mapping constrain summary (wide) table")
+        write_dataframe(
+            create_constrain_summary(constrains_mqc, file_columns),
+            "mapping_constrains_summary_mqc.txt",
+            get_header(args.comment_dir, "mapping_constrains_summary_mqc.txt"),
+        )
 
-    #         # Add constrain metadata to the mapping constrain table
-    #         constrain_meta = generate_df([args.mapping_constrains])
+        logger.info("Coalescing columns")
+        coalesced_constrains = coalesce_constrain(constrains_mqc)
 
-    #         # drop unwanted columns & reorder
-    #         constrain_meta = drop_columns(constrain_meta, ["sequence", "samples"])
-    #         constrains_mqc = constrains_mqc.merge(
-    #             constrain_meta, how="left", left_on="cluster", right_on="id"
-    #         )
-    #         constrains_mqc = reorder_columns(
-    #             constrains_mqc,
-    #             [
-    #                 "index",
-    #                 "sample name",
-    #                 "cluster",
-    #                 "step",
-    #                 "species",
-    #                 "segment",
-    #                 "definition",
-    #             ],
-    #         )
+        logger.info("Writing mapping long table: mapping_constrains.tsv")
+        write_dataframe(coalesced_constrains, "mapping_constrains.tsv", [])
 
-    #         # add mapping summary to sample overview table in ... wide format with species & segment combination
-    #         logger.info("Creating mapping constrain summary (wide) table")
-    #         write_dataframe(
-    #             create_constrain_summary(constrains_mqc, file_columns),
-    #             "mapping_constrains_summary_mqc.txt",
-    #             get_header(args.comment_dir, "mapping_constrains_summary_mqc.txt"),
-    #         )
-
-    #         logger.info("Coalescing columns")
-    #         coalesced_constrains = coalesce_constrain(constrains_mqc)
-
-    #         logger.info("Writing mapping long table: mapping_constrains.tsv")
-    #         write_dataframe(coalesced_constrains, "mapping_constrains.tsv", [])
-
-    #         logger.info("Making the HMTL constrain table report")
-    #         custom_html_table(
-    #             coalesced_constrains,
-    #             SUMMARY_COLUMNS,
-    #             args.bed_files,
-    #             get_header(args.comment_dir, "mapping_constrains_mqc.html"),
-    #             "constrain_custom_table_mqc.html",
-    #         )
     mqc.write_report(make_data_dir=True, data_format="json")
     return 0
 
