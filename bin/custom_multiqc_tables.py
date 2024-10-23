@@ -1512,23 +1512,18 @@ def main(argv=None):
             "No data was found from MULTIQC to create the contig overview table! - Exiting"
         )
         return 0
+
     # 3.2 Join with the custom contig tables
     logger.info("Joining dataframes")
-
     mqc_contigs_df = join_dataframes(mqc_contigs_df, custom_tables)
 
-    #     # Join with the custom contig tables
-    #     logger.info("Joining dataframes")
+    if mqc_contigs_df.empty:
+        logger.warning("No data was found to create the contig overview table!")
+        return 0
 
-    #     multiqc_contigs_df = join_dataframes(multiqc_contigs_df, custom_tables)
-
-    #     if multiqc_contigs_df.empty:
-    #         logger.warning("No data was found to create the contig overview table!")
-    #         return 0
-
-    #     # Keep only those rows we can split up in sample, cluster, step
-    #     logger.info("Splitting up the index column in sample name, cluster, step")
-    #     multiqc_contigs_df = split_index_column(multiqc_contigs_df)
+    # Keep only those rows we can split up in sample, cluster, step
+    logger.info("Splitting up the index column in sample name, cluster, step")
+    mqc_contigs_df = split_index_column(mqc_contigs_df)
 
     #     # Reorder the columns
     #     logger.info("Reordering columns")
