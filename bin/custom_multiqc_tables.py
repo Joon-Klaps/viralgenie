@@ -60,6 +60,18 @@ SUMMARY_COLUMNS = {
     "(multiqc) mosdepth Median read depth": "Median read depth",
 }
 
+CONSTRAIN_GENERAL_STATS_COLUMNS = [
+    "input_reads",
+    "output_reads",
+    "number_of_SNPs",
+    "CLUSTER: mosdepth.mean_coverage",
+    "CLUSTER: mosdepth.min_coverage",
+    "CLUSTER: mosdepth.max_coverage",
+    "CLUSTER: mosdepth.median_coverage",
+    "CLUSTER: mosdepth.1_x_pc",
+    "CLUSTER: mosdepth.10_x_pc",
+]
+
 GROUPING_COLUMNS = [
     "(annotation) species",
     "(annotation) segment",
@@ -1103,13 +1115,15 @@ def remove_keys(d, keys):
     return {k: v for k, v in d.items() if k not in keys}
 
 
-def create_constrain_summary(df_constrain: pd.DataFrame, file_columns: Dict) -> pd.DataFrame:
+def create_constrain_summary(
+    df_constrain: pd.DataFrame, file_columns: List[Union[str, Dict[str, str]]]
+) -> pd.DataFrame:
     """
     Create a summary table for the constrain data.
 
     Args:
         df_constrain (pd.DataFrame): The constrain data DataFrame.
-        file_columns (dict): The file columns dictionary with old names & new names.
+        file_columns (List): A columns dictionary with old names & new names.
 
     Returns:
         pd.DataFrame: The constrain summary table.
@@ -1117,20 +1131,14 @@ def create_constrain_summary(df_constrain: pd.DataFrame, file_columns: Dict) -> 
 
     # Filter only for columns of interest
     # Some columns were already renamed, so we get the new values of them based on the original naming of mqc
-    dic_columns = {sub_key: sub_value for sub_dict in file_columns.values() for sub_key, sub_value in sub_dict.items()}
-    keys_to_extract = [
-        "input_reads",
-        "output_reads",
-        "number_of_SNPs",
-        "SNP",
-        "mosdepth-1_x_pc",
-        "mosdepth-10_x_pc",
-        "mosdepth-median_coverage",
-        "mosdepth-mean_coverage",
-        "mosdepth-min_coverage",
-        "mosdepth-max_coverage",
-    ]
-    columns_of_interest = [dic_columns[key] for key in keys_to_extract if key in dic_columns.keys()]
+    dic_columns = {}
+    for item in file_columns:
+        if isinstance(item, dict):
+            dic_columns.update(item)
+        else:
+            dic_columns[item] = item
+
+    columns_of_interest = [dic_columns[key] for key in CONSTRAIN_GENERAL_STATS_COLUMNS if key in dic_columns.keys()]
 
     if not columns_of_interest:
         logger.warning("No columns of interest were found to create the constrain summary table!")
@@ -1411,9 +1419,11 @@ def extract_mqc_data(table_headers: Union[str, Path]) -> Optional[pd.DataFrame]:
             logger.warning("Module %s is not available in MultiQC, skipping extraction", module)
             continue
 
-        logger.info("Extracting %s data from multiqc", module)
-        module_data, columns = handle_module_data(mqc, module, section)
-        logger.debug("Data for %s: %s", module, module_data)
+        else:
+            logger.info("Extracting %s data from multiqc", module)
+            module_data, columns = handle_module_data(mqc, module, section)
+            logger.debug("Data for %s: %s", module, module_data)
+
         data.extend(module_data)
         columns_result.extend(columns)
 
@@ -1477,7 +1487,8 @@ def reformat_constrain_df(df, file_columns, args):
 
     # add mapping summary to sample overview table in ... wide format with species & segment combination
     logger.info("Creating mapping constrain summary (wide) table")
-    mapping_constrains_summary = create_constrain_summary(df, file_columns)
+    mapping_constrains_summary = create_constrain_summary(df, file_columns).set_index("sample name")
+    write_dataframe(mapping_constrains_summary, "mapping_constrains_summary.tsv", [])
     if not mapping_constrains_summary.empty:
         # Add to mqc
         module = mqc.BaseMultiqcModule(name="Mapping Constrains Summary", anchor="custom_data")
@@ -1555,7 +1566,7 @@ def main(argv=None):
     logger.info("Splitting up denovo constructs and mapping (-CONSTRAIN) results")
     contigs_mqc, constrains_mqc = filter_constrain(mqc_custom_df, "cluster", "-CONSTRAIN")
 
-    coalesced_constrains = reformat_constrain_df(contigs_mqc, renamed_columns, args)
+    coalesced_constrains = reformat_constrain_df(constrains_mqc, renamed_columns, args)
 
     write_results(contigs_mqc, coalesced_constrains, args)
     return 0
