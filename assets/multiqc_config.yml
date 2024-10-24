@@ -207,6 +207,7 @@ table_columns_visible:
     Total length: False
 
 skip_versions_section: true
+disable_version_detection: true
 
 # Viral reads are not so big
 read_count_multiplier: 1

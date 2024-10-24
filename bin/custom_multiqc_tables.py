@@ -90,9 +90,7 @@ def parse_args(argv=None):
             sys.exit(2)
         ext = fname_path.suffix[1:]
         if ext not in choices:
-            logger.error(
-                f"File '{fname}' with {ext}, doesn't end with one of {choices}"
-            )
+            logger.error(f"File '{fname}' with {ext}, doesn't end with one of {choices}")
             sys.exit(2)
         return fname_path
 
@@ -293,11 +291,7 @@ def concat_table_files(table_files, **kwargs):
         pandas.DataFrame: The concatenated dataframe.
     """
     try:
-        valid_dfs = [
-            read_file_to_dataframe(file, **kwargs)
-            for file in table_files
-            if check_file_exists(file)
-        ]
+        valid_dfs = [read_file_to_dataframe(file, **kwargs) for file in table_files if check_file_exists(file)]
 
         if not valid_dfs:
             logging.warning(f"Warning concatenating files: {table_files}")
@@ -341,7 +335,6 @@ def get_module_selection(table_headers: Path = None) -> Dict:
     Returns:
         a dictionary containing the {module:{section:{old_col:new_col}}}, both section and old & new column can be empty
     """
-    file_columns = {}
     if not table_headers:
         return FILES_OF_INTEREST
 
@@ -364,9 +357,7 @@ def write_dataframe(df, file, comment):
         None
     """
     if df.empty:
-        logger.warning(
-            f"The DataFrame %s is empty, nothing will be written to the file!", file
-        )
+        logger.warning(f"The DataFrame %s is empty, nothing will be written to the file!", file)
         return
     df_tsv = df.to_csv(sep="\t", index=False, quoting=csv.QUOTE_NONNUMERIC)
     with open(file, "w") as f:
@@ -376,9 +367,7 @@ def write_dataframe(df, file, comment):
         f.write(df_tsv)
 
 
-def filter_and_rename_columns(
-    data: pd.DataFrame, columns: List[Union[str, Dict[str, str]]]
-) -> pd.DataFrame:
+def filter_and_rename_columns(data: pd.DataFrame, columns: List[Union[str, Dict[str, str]]]) -> pd.DataFrame:
     """
     Filter and rename columns in a DataFrame.
 
@@ -406,9 +395,7 @@ def filter_and_rename_columns(
     # Check if all columns exist in the DataFrame
     missing_columns = set(keep_columns) - set(data.columns)
     if missing_columns:
-        logger.warning(
-            f"Columns not found in data: {missing_columns} \n columns available:{data.columns}"
-        )
+        logger.warning(f"Columns not found in data: {missing_columns} \n columns available:{data.columns}")
         keep_columns = [col for col in keep_columns if col in data.columns]
 
     return data[keep_columns].rename(columns=rename_dict)
@@ -630,9 +617,7 @@ def read_data(directory, file_columns, process_dataframe):
     for file_name, column_names in file_columns.items():
         files_of_interest = filter_files_of_interest(multiqc_data, file_name)
         if not files_of_interest:
-            logger.info(
-                "No files of interest were found for %s in %s", file_name, directory
-            )
+            logger.info("No files of interest were found for %s in %s", file_name, directory)
             continue
 
         df = read_file_to_dataframe(files_of_interest)
@@ -703,14 +688,10 @@ def compute_quast_metrics(quast_df):
         quast_df["(quast) # N's"] = quast_df["(quast) # N's"].astype(int)
 
         # Compute the percentage of N's based on the "# N's per 100 kbp" column
-        quast_df["(quast) % N's"] = round(
-            pd.to_numeric(quast_df["(quast) # N's per 100 kbp"]) / 1000, 2
-        )
+        quast_df["(quast) % N's"] = round(pd.to_numeric(quast_df["(quast) # N's per 100 kbp"]) / 1000, 2)
 
         # Keep only the relevant columns
-        quast_df = quast_df[
-            ["(quast) # N's", "(quast) % N's", "(quast) # N's per 100 kbp"]
-        ]
+        quast_df = quast_df[["(quast) # N's", "(quast) % N's", "(quast) # N's per 100 kbp"]]
     except KeyError as e:
         logger.warning(f"Missing column in QUAST output: {e}")
     except Exception as e:
@@ -740,14 +721,10 @@ def process_blast_dataframe(blast_df, blast_header, output_file):
         blast_df.columns = BLAST_COLUMNS
 
         # Filter for the best hit per contig and keep only the best hit
-        blast_df = blast_df.sort_values("bitscore", ascending=False).drop_duplicates(
-            "query"
-        )
+        blast_df = blast_df.sort_values("bitscore", ascending=False).drop_duplicates("query")
 
         # Process the DataFrame
-        blast_df = generate_indexed_df(
-            blast_df, "blast", "query", blast_header, output_file
-        )
+        blast_df = generate_indexed_df(blast_df, "blast", "query", blast_header, output_file)
 
         # Make everything a string for the annotation
         blast_df = blast_df.astype(str)
@@ -778,21 +755,15 @@ def process_annotation_dataframe(annotation_df, blast_header, output_file):
         annotation_df.columns = BLAST_COLUMNS
 
         # Filter for the best hit per contig and keep only the best hit
-        annotation_df = annotation_df.sort_values(
-            "bitscore", ascending=False
-        ).drop_duplicates("query")
+        annotation_df = annotation_df.sort_values("bitscore", ascending=False).drop_duplicates("query")
 
         # Extract all key-value pairs into separate columns
         annotation_df = extract_annotation_data(annotation_df)
 
-        annotation_df["% contig aligned"] = round(
-            (annotation_df["length"] / annotation_df["qlen"]) * 100, 2
-        )
+        annotation_df["% contig aligned"] = round((annotation_df["length"] / annotation_df["qlen"]) * 100, 2)
 
         # Process the DataFrame
-        annotation_df = generate_indexed_df(
-            annotation_df, "annotation", "query", blast_header, output_file
-        )
+        annotation_df = generate_indexed_df(annotation_df, "annotation", "query", blast_header, output_file)
 
         # Make everything a string for the annotation
         annotation_df = annotation_df.astype(str)
@@ -860,9 +831,7 @@ def generate_indexed_df(df, prefix, column_to_split, header=False, output=False)
         df = df.add_prefix(f"({prefix}) ")
 
         # Apply the dynamic split function to each row in the column
-        split_data = (
-            df[f"({prefix}) {column_to_split}"].apply(dynamic_split).apply(pd.Series)
-        )
+        split_data = df[f"({prefix}) {column_to_split}"].apply(dynamic_split).apply(pd.Series)
         # take the first three columns & rename
         split_data = split_data.iloc[:, :3]
         try:
@@ -948,9 +917,7 @@ def split_index_column(df):
     df_copy = df.copy()
     df_copy = df_copy.reset_index().rename(columns={df_copy.index.name: "index"})
     df_copy = df_copy[df_copy["index"].str.contains("_", na=False)]
-    df_copy[["sample name", "cluster", "step"]] = df_copy["index"].str.split(
-        "_", n=3, expand=True
-    )
+    df_copy[["sample name", "cluster", "step"]] = df_copy["index"].str.split("_", n=3, expand=True)
     return df_copy
 
 
@@ -966,8 +933,7 @@ def reorder_columns(df, columns):
         pandas.DataFrame: The dataframe with the reordered columns.
     """
     df = df[
-        [column for column in columns if column in df.columns]
-        + df.columns.difference(columns, sort=False).tolist()
+        [column for column in columns if column in df.columns] + df.columns.difference(columns, sort=False).tolist()
     ]
     return df
 
@@ -985,9 +951,7 @@ def reorder_rows(dataframe):
 
     df = dataframe.copy()
     ordered_list = (
-        ["constrain"]
-        + [f"it{i}" for i in range(100, 0, -1)]
-        + ["itvariant-calling", "consensus", "singleton"]
+        ["constrain"] + [f"it{i}" for i in range(100, 0, -1)] + ["itvariant-calling", "consensus", "singleton"]
     )
     rank_dict = {step: rank for rank, step in enumerate(ordered_list, start=1)}
 
@@ -1032,19 +996,13 @@ def filter_contigs(dataframe, level="normal") -> pd.DataFrame:
         logger.warning("Columns for filtering are not present in the dataframe")
         return df_snip
 
-    df_snip["sort"] = (
-        df_snip["(annotation) % contig aligned"] * df_snip["(annotation) bitscore"]
-    )
-    df_snip = df_snip.sort_values(
-        ["sample name", "cluster", "sort"], ascending=[True, True, False]
-    )
+    df_snip["sort"] = df_snip["(annotation) % contig aligned"] * df_snip["(annotation) bitscore"]
+    df_snip = df_snip.sort_values(["sample name", "cluster", "sort"], ascending=[True, True, False])
 
     # Filter for the latest step of each cluster
     group_cols = [col for col in df_snip.columns if col in GROUPING_COLUMNS]
     logger.debug("Grouping columns for filtering: %s", group_cols)
-    df_snip = (
-        df_snip.groupby([["sample name" + group_cols]]).tail(1).reset_index(drop=True)
-    )
+    df_snip = df_snip.groupby([["sample name" + group_cols]]).tail(1).reset_index(drop=True)
 
     logger.debug("Removed %d rows", len(df.index) - len(df_snip.index))
     return df_snip
@@ -1065,9 +1023,7 @@ def coalesce_constrain(dataframe):
     grouping_cols = ["sample name", "cluster"]
     coalesce_columns = df.columns.difference(grouping_cols)
     result = df.copy()
-    result[coalesce_columns] = result.groupby(grouping_cols)[
-        coalesce_columns
-    ].transform(fill_group_na)
+    result[coalesce_columns] = result.groupby(grouping_cols)[coalesce_columns].transform(fill_group_na)
 
     return result.query('step == "constrain"')
 
@@ -1089,9 +1045,7 @@ def read_bed(bed_files, selection):
     """
     bed_data = {}
     for sample in selection:
-        bed_sel = [
-            bed_file for bed_file in bed_files if sample_in_file(sample, bed_file)
-        ]
+        bed_sel = [bed_file for bed_file in bed_files if sample_in_file(sample, bed_file)]
         logger.debug("Bed files for %s: %s", sample, bed_sel)
         if not bed_sel:
             logger.warning("No bed files were found for %s", sample)
@@ -1149,18 +1103,26 @@ def remove_keys(d, keys):
     return {k: v for k, v in d.items() if k not in keys}
 
 
-def create_constrain_summary(df_constrain, file_columns):
+def create_constrain_summary(df_constrain: pd.DataFrame, file_columns: Dict) -> pd.DataFrame:
+    """
+    Create a summary table for the constrain data.
+
+    Args:
+        df_constrain (pd.DataFrame): The constrain data DataFrame.
+        file_columns (dict): The file columns dictionary with old names & new names.
+
+    Returns:
+        pd.DataFrame: The constrain summary table.
+    """
+
     # Filter only for columns of interest
     # Some columns were already renamed, so we get the new values of them based on the original naming of mqc
-    dic_columns = {
-        sub_key: sub_value
-        for sub_dict in file_columns.values()
-        for sub_key, sub_value in sub_dict.items()
-    }
+    dic_columns = {sub_key: sub_value for sub_dict in file_columns.values() for sub_key, sub_value in sub_dict.items()}
     keys_to_extract = [
         "input_reads",
         "output_reads",
         "number_of_SNPs",
+        "SNP",
         "mosdepth-1_x_pc",
         "mosdepth-10_x_pc",
         "mosdepth-median_coverage",
@@ -1168,14 +1130,10 @@ def create_constrain_summary(df_constrain, file_columns):
         "mosdepth-min_coverage",
         "mosdepth-max_coverage",
     ]
-    columns_of_interest = [
-        dic_columns[key] for key in keys_to_extract if key in dic_columns.keys()
-    ]
+    columns_of_interest = [dic_columns[key] for key in keys_to_extract if key in dic_columns.keys()]
 
     if not columns_of_interest:
-        logger.warning(
-            "No columns of interest were found to create the constrain summary table!"
-        )
+        logger.warning("No columns of interest were found to create the constrain summary table!")
         return pd.DataFrame()
 
     columns_of_interest = [
@@ -1214,13 +1172,9 @@ def create_constrain_summary(df_constrain, file_columns):
     df_constrain.loc[:, "idgroup"] = df_constrain.apply(
         lambda row: (
             f"{row['species']} ({row['segment']})"
-            if "segment" in df_constrain.columns
-            and pd.notnull(row["species"])
-            and pd.notnull(row["segment"])
+            if "segment" in df_constrain.columns and pd.notnull(row["species"]) and pd.notnull(row["segment"])
             else (
-                row["species"]
-                if "species" in df_constrain.columns and pd.notnull(row["species"])
-                else row["cluster"]
+                row["species"] if "species" in df_constrain.columns and pd.notnull(row["species"]) else row["cluster"]
             )
         ),
         axis=1,
@@ -1231,18 +1185,14 @@ def create_constrain_summary(df_constrain, file_columns):
     df_constrain = drop_columns(df_constrain, ["species", "segment"])
 
     # Convert dataframe to long and then extra wide
-    df_long = df_constrain.melt(
-        id_vars=["idgroup", "sample name"], var_name="variable", value_name="Value"
-    )
+    df_long = df_constrain.melt(id_vars=["idgroup", "sample name"], var_name="variable", value_name="Value")
     # Remove rows with NaN values & duplicates
     df_long = df_long.dropna()
     df_long = df_long.drop_duplicates()
     df_long["grouped variable"] = df_long["idgroup"] + " - " + df_long["variable"]
     df_long.drop(columns=["idgroup", "variable"], inplace=True)
     # Convert to wide format
-    df_wide = df_long.pivot(
-        index=["sample name"], columns="grouped variable", values="Value"
-    )
+    df_wide = df_long.pivot(index=["sample name"], columns="grouped variable", values="Value")
     df_wide.reset_index(inplace=True)
 
     return df_wide
@@ -1270,9 +1220,7 @@ def load_custom_data(args):
     if args.save_intermediate:
         checkv_header = get_header(args.comment_dir, "checkv_mqc.txt")
     if not checkv_df.empty:
-        checkv_df = generate_indexed_df(
-            checkv_df, "checkv", "contig_id", checkv_header, "summary_checkv_mqc.tsv"
-        )
+        checkv_df = generate_indexed_df(checkv_df, "checkv", "contig_id", checkv_header, "summary_checkv_mqc.tsv")
 
     # Cluster table - Quast summary
     quast_df = read_in_quast(args.quast_files)
@@ -1280,9 +1228,7 @@ def load_custom_data(args):
     if args.save_intermediate:
         quast_header = get_header(args.comment_dir, "quast_mqc.txt")
     if not quast_df.empty:
-        quast_df = generate_indexed_df(
-            quast_df, "quast", "Assembly", quast_header, "summary_quast_mqc.tsv"
-        )
+        quast_df = generate_indexed_df(quast_df, "quast", "Assembly", quast_header, "summary_quast_mqc.tsv")
 
         # Most of the columns are not good for a single contig evaluation
         quast_df["(quast) # N's"] = (
@@ -1291,12 +1237,8 @@ def load_custom_data(args):
             / 100000
         )
         quast_df = quast_df.astype({"(quast) # N's": int})
-        quast_df["(quast) % N's"] = round(
-            pd.to_numeric(quast_df["(quast) # N's per 100 kbp"]) / 1000, 2
-        )
-        quast_df = quast_df[
-            ["(quast) # N's", "(quast) % N's", "(quast) # N's per 100 kbp"]
-        ]
+        quast_df["(quast) % N's"] = round(pd.to_numeric(quast_df["(quast) # N's per 100 kbp"]) / 1000, 2)
+        quast_df = quast_df[["(quast) # N's", "(quast) % N's", "(quast) # N's per 100 kbp"]]
 
     # Cluster table - Blast summary
     blast_df = generate_df(args.blast_files, header=None)
@@ -1304,17 +1246,13 @@ def load_custom_data(args):
     if args.save_intermediate:
         blast_header = get_header(args.comment_dir, "blast_mqc.txt")
     if not blast_df.empty:
-        blast_df = process_blast_dataframe(
-            blast_df, blast_header, "summary_blast_mqc.tsv"
-        )
+        blast_df = process_blast_dataframe(blast_df, blast_header, "summary_blast_mqc.tsv")
 
     # Cluster table - mmseqs easysearch summary (annotation section)
     annotation_df = generate_df(args.annotation_files, header=None)
 
     if not annotation_df.empty:
-        annotation_df = process_annotation_dataframe(
-            annotation_df, blast_header, "summary_anno_mqc.tsv"
-        )
+        annotation_df = process_annotation_dataframe(annotation_df, blast_header, "summary_anno_mqc.tsv")
 
     return [checkv_df, quast_df, blast_df, annotation_df]
 
@@ -1340,9 +1278,7 @@ def get_module_data(mqc: object, module: str) -> Dict[str, any]:
         if all_data:
             matching_key = next((key for key in all_data.keys() if module in key), None)
             if matching_key:
-                logger.debug(
-                    "Data found for %s in MultiQC under key %s", module, matching_key
-                )
+                logger.debug("Data found for %s in MultiQC under key %s", module, matching_key)
                 return all_data[matching_key]
     return {}
 
@@ -1367,7 +1303,7 @@ def handle_module_data(
             ]
         ],
     ],
-) -> pd.DataFrame:
+) -> (list[pd.DataFrame], List[Union[str, Dict[str, str]]]):
     def check_section_exists(module_data: Dict, section_key: str) -> bool:
         """Check if a section exists in the module data."""
         return any(section_key in key for key in module_data.keys())
@@ -1378,56 +1314,51 @@ def handle_module_data(
 
     if not all_module_data:
         logger.warning("No data found for module: %s", module)
-        return pd.DataFrame()
+        return [pd.DataFrame()], []
 
     # Empty section, so we take all values from module
     if isinstance(section, str):
         if not section:
-            return [pd.DataFrame.from_dict(all_module_data, orient="index")]
+            return [pd.DataFrame.from_dict(all_module_data, orient="index")], []
         else:
             if check_section_exists(all_module_data, section):
-                return [
-                    pd.DataFrame.from_dict(all_module_data[section], orient="index")
-                ]
+                return [pd.DataFrame.from_dict(all_module_data[section], orient="index")], []
             else:
                 logger.warning("Section %s not found in module %s", section, module)
-                return [pd.DataFrame()]
+                return [pd.DataFrame()], []
     elif isinstance(section, list):
         if isinstance(section[0], str):
             # Section refers to column names
             return [
-                filter_and_rename_columns(
-                    pd.DataFrame.from_dict(all_module_data, orient="index"), section
-                )
-            ]
+                filter_and_rename_columns(pd.DataFrame.from_dict(all_module_data, orient="index"), section)
+            ], section
         elif isinstance(section[0], dict):
             first_value = next(iter(section[0].values()))
             if isinstance(first_value, str):
                 # Already at column level
                 return [
-                    filter_and_rename_columns(
-                        pd.DataFrame.from_dict(all_module_data, orient="index"), section
-                    )
-                ]
+                    filter_and_rename_columns(pd.DataFrame.from_dict(all_module_data, orient="index"), section)
+                ], section
             elif isinstance(first_value, list):
                 # Section could have multiple sections:
-                result = []
+                result_df = []
+                result_list = []
                 for subsection in section:
-                    subsection_data = handle_module_data(mqc, module, subsection)
+                    subsection_data, columns = handle_module_data(mqc, module, subsection)
                     if isinstance(subsection_data, pd.DataFrame):
-                        result.extend(subsection_data)
-                return result
+                        result_df.extend(subsection_data)
+                    if isinstance(columns, list):
+                        result_list.extend(columns)
+                return result_df, result_list
     elif isinstance(section, dict):
         # We just have {section: List[Union[colname, Dict[colname, colrename]]}
         section_name, columns = next(iter(section.items()))
         if check_section_exists(all_module_data, section_name):
             data = pd.DataFrame.from_dict(all_module_data[section_name], orient="index")
-            return [filter_and_rename_columns(data, columns)]
+            return [filter_and_rename_columns(data, columns)], columns
         else:
-            logger.warning(
-                "Section '%s' not found in module '%s'", section_name, module
-            )
-            return [pd.DataFrame()]
+            logger.warning("Section '%s' not found in module '%s'", section_name, module)
+            return [pd.DataFrame()], []
 
     logger.warning(
         "Unsupported section type from module %s: %s for %s",
@@ -1435,12 +1366,26 @@ def handle_module_data(
         type(section),
         section,
     )
-    return pd.DataFrame()
+    return [pd.DataFrame()], []
 
 
-def extract_mqc_data(
-    mqc: object, table_headers: Union[str, Path]
-) -> Optional[pd.DataFrame]:
+def handle_general_stats(columns: List[Union[str, Dict[str, str]]]) -> (pd.DataFrame, List):
+    """
+    Handle general stats data from MultiQC.
+
+    Args:
+        columns (List[Union[str, Dict[str,str]]): List of columns to filter and rename.
+
+    Returns:
+        pd.DataFrame: The filtered and renamed DataFrame.
+    """
+
+    df = pd.DataFrame.from_dict(mqc.get_general_stats_data(), orient="index")
+
+    return [filter_and_rename_columns(df, columns)], []
+
+
+def extract_mqc_data(table_headers: Union[str, Path]) -> Optional[pd.DataFrame]:
     """
     Extract data from MultiQC output files.
 
@@ -1455,25 +1400,32 @@ def extract_mqc_data(
     module_selection = get_module_selection(table_headers)
     av_modules = mqc.list_modules()
     data = []
+    columns_result = []
 
     for module, section in module_selection.items():
-        if module not in av_modules:
-            logger.warning(
-                "Module %s is not available in MultiQC, skipping extraction", module
-            )
+        if module == "general_stats":
+            logger.info("Extracting general stats data from multiqc")
+            module_data, columns = handle_general_stats(section)
+
+        elif module not in av_modules:
+            logger.warning("Module %s is not available in MultiQC, skipping extraction", module)
             continue
 
         logger.info("Extracting %s data from multiqc", module)
-        module_data = handle_module_data(mqc, module, section)
+        module_data, columns = handle_module_data(mqc, module, section)
         logger.debug("Data for %s: %s", module, module_data)
         data.extend(module_data)
+        columns_result.extend(columns)
 
     logger.debug("Data list: %s", data)
 
-    return join_dataframes(result, data) if data else result
+    return join_dataframes(result, data) if data else result, columns_result
 
 
 def reformat_custom_df(df):
+    """
+    Reformat the custom dataframe.
+    """
     # Keep only those rows we can split up in sample, cluster, step
     logger.info("Splitting up the index column in sample name, cluster, step")
     df = split_index_column(df)
@@ -1494,6 +1446,66 @@ def reformat_custom_df(df):
         if group in column
     ]
     return reorder_columns(df, final_columns)
+
+
+def reformat_constrain_df(df, file_columns, args):
+    """
+    Reformat the constrain dataframe.
+    """
+    # Separate table for mapping constrains
+    if df.empty:
+        return mqc, df
+
+    # Add constrain metadata to the mapping constrain table
+    constrain_meta = generate_df([args.mapping_constrains])
+
+    # drop unwanted columns & reorder
+    constrain_meta = drop_columns(constrain_meta, ["sequence", "samples"])
+    df = df.merge(constrain_meta, how="left", left_on="cluster", right_on="id")
+    df = reorder_columns(
+        df,
+        [
+            "index",
+            "sample name",
+            "cluster",
+            "step",
+            "species",
+            "segment",
+            "definition",
+        ],
+    )
+
+    # add mapping summary to sample overview table in ... wide format with species & segment combination
+    logger.info("Creating mapping constrain summary (wide) table")
+    mapping_constrains_summary = create_constrain_summary(df, file_columns)
+    if not mapping_constrains_summary.empty:
+        # Add to mqc
+        module = mqc.BaseMultiqcModule(name="Mapping Constrains Summary", anchor="custom_data")
+        content = mapping_constrains_summary.to_dict(orient="index")
+        module.general_stats_addcols(content)
+        mqc.report.modules.append(module)
+
+    logger.info("Coalescing columns")
+    coalesced_constrains = coalesce_constrain(df)
+    return coalesced_constrains
+
+
+def write_results(contigs_mqc, constrains_mqc, args) -> int:
+    """
+    Write thhe results to files.
+    """
+
+    if not contigs_mqc.empty:
+        logger.info("Writing Unfiltered Denovo constructs table file: contigs_all.tsv")
+        write_dataframe(contigs_mqc, "contigs_all.tsv", [])
+
+    if not constrains_mqc.empty:
+        logger.info("Writing Unfiltered Mapping constructs table file: mapping_all.tsv")
+        write_dataframe(constrains_mqc, "mapping_all.tsv", [])
+
+    mqc.write_report(make_data_dir=True, data_format="tsv")
+
+    return 0
 
 
 def main(argv=None):
@@ -1524,11 +1536,9 @@ def main(argv=None):
 
     # 3. Make our own summary excel
     # 3.1 Extract the MQC data
-    mqc_custom_df = extract_mqc_data(mqc, args.table_headers)
+    mqc_custom_df, renamed_columns = extract_mqc_data(args.table_headers)
     if mqc_custom_df.empty:
-        logger.warning(
-            "No data was found from MULTIQC to create the contig overview table! - Exiting"
-        )
+        logger.warning("No data was found from MULTIQC to create the contig overview table! - Exiting")
         return 0
 
     # 3.2 Join with the custom contig tables
@@ -1543,53 +1553,11 @@ def main(argv=None):
 
     # 3.4 split up denovo constructs and mapping (-CONSTRAIN) results
     logger.info("Splitting up denovo constructs and mapping (-CONSTRAIN) results")
-    contigs_mqc, constrains_mqc = filter_constrain(
-        mqc_custom_df, "cluster", "-CONSTRAIN"
-    )
+    contigs_mqc, constrains_mqc = filter_constrain(mqc_custom_df, "cluster", "-CONSTRAIN")
 
-    # Write the final dataframe to a file
-    logger.info("Writing Unfiltered Denovo constructs table file: contigs_all.tsv")
-    write_dataframe(contigs_mqc, "contigs_all.tsv", [])
+    coalesced_constrains = reformat_constrain_df(contigs_mqc, renamed_columns, args)
 
-    # Separate table for mapping constrains
-    if not constrains_mqc.empty:
-
-        # Add constrain metadata to the mapping constrain table
-        constrain_meta = generate_df([args.mapping_constrains])
-
-        # drop unwanted columns & reorder
-        constrain_meta = drop_columns(constrain_meta, ["sequence", "samples"])
-        constrains_mqc = constrains_mqc.merge(
-            constrain_meta, how="left", left_on="cluster", right_on="id"
-        )
-        constrains_mqc = reorder_columns(
-            constrains_mqc,
-            [
-                "index",
-                "sample name",
-                "cluster",
-                "step",
-                "species",
-                "segment",
-                "definition",
-            ],
-        )
-
-        # add mapping summary to sample overview table in ... wide format with species & segment combination
-        logger.info("Creating mapping constrain summary (wide) table")
-        write_dataframe(
-            create_constrain_summary(constrains_mqc, file_columns),
-            "mapping_constrains_summary_mqc.txt",
-            get_header(args.comment_dir, "mapping_constrains_summary_mqc.txt"),
-        )
-
-        logger.info("Coalescing columns")
-        coalesced_constrains = coalesce_constrain(constrains_mqc)
-
-        logger.info("Writing mapping long table: mapping_constrains.tsv")
-        write_dataframe(coalesced_constrains, "mapping_constrains.tsv", [])
-
-    mqc.write_report(make_data_dir=True, data_format="json")
+    write_results(contigs_mqc, coalesced_constrains, args)
     return 0
 
 
