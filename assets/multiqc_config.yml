@@ -30,24 +30,6 @@ report_section_order:
 use_filename_as_sample_name:
   - fastp
 
-run_modules:
-  - custom_content
-  - fastqc
-  - fastp
-  - trimmomatic
-  - humid
-  - bbduk
-  - umitools
-  - bowtie2
-  - kaiju
-  - mosdepth
-  - kraken
-  - bracken
-  - quast
-  - samtools
-  - bcftools
-  - picard
-
 module_order:
   - "fastqc":
       name: "SAMPLE: FastQC (Raw)"
@@ -98,6 +80,8 @@ module_order:
       anchor: "quast_trinity"
       path_filters:
         - "*_trinity.tsv"
+  - "cluster-summary":
+      name: "SAMPLE: Contig clustering"
   - "picard":
       name: "CLUSTER: Picard"
   - "umitools":

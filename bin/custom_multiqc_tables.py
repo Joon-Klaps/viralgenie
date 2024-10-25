@@ -10,13 +10,13 @@ import os
 import re
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional, Sequence, Union
+from typing import Dict, List, Optional, Union, Tuple
 
 
 import pandas as pd
 import numpy as np
 import multiqc as mqc
-from multiqc.plots import bargraph
+from multiqc.plots import bargraph, table
 from multiqc.types import Anchor
 import yaml
 
@@ -108,7 +108,7 @@ CLUSTER_HEADERS = {
 
 CLUSTER_PCONFIG = {
     "id": "summary_clusters_info",
-    "title": "Cluster Summary",
+    "title": "Number of contig clusters",
     "ylab": "# clusters",
     "y_decimals": False,
 }
@@ -326,7 +326,7 @@ def concat_table_files(table_files, **kwargs):
         **kwargs: Additional keyword arguments to be passed to pd.read_csv().
 
     Returns:
-        pandas.DataFrame: The concatenated dataframe.
+        pd.DataFrame: The concatenated dataframe.
     """
     try:
         valid_dfs = [read_file_to_dataframe(file, **kwargs) for file in table_files if check_file_exists(file)]
@@ -351,7 +351,7 @@ def read_in_quast(table_files):
         table_files (list): List of file paths to the cluster summary files.
 
     Returns:
-        pandas.DataFrame: A dataframe containing the concatenated data from all the cluster summary files.
+        pd.DataFrame: A dataframe containing the concatenated data from all the cluster summary files.
     """
     df = pd.DataFrame()
     if table_files:
@@ -387,7 +387,7 @@ def write_dataframe(df, file, comment):
     Write a pandas DataFrame to a file in TSV format.
 
     Args:
-        df (pandas.DataFrame): The DataFrame to be written.
+        df (pd.DataFrame): The DataFrame to be written.
         file (str): The file path to write the DataFrame to.
         comment (list): A list of strings to be written as comments at the beginning of the file.
 
@@ -447,7 +447,7 @@ def df_from_tsv(file, **kwargs):
         file (str): The path to the file.
 
     Returns:
-        pandas.DataFrame: The dataframe read from the file.
+        pd.DataFrame: The dataframe read from the file.
     """
     with open(file, "r") as table:
         df = pd.read_csv(table, sep="\t", **kwargs)
@@ -462,7 +462,7 @@ def df_from_csv(file, **kwargs):
         file (str): The path to the file.
 
     Returns:
-        pandas.DataFrame: The dataframe read from the file.
+        pd.DataFrame: The dataframe read from the file.
     """
     with open(file, "r") as table:
         df = pd.read_csv(table, **kwargs)
@@ -477,7 +477,7 @@ def df_from_yaml(file, **kwargs):
         file (str): The path to the file.
 
     Returns:
-        pandas.DataFrame: The dataframe read from the file.
+        pd.DataFrame: The dataframe read from the file.
     """
     with open(file, "r") as yaml_file:
         data = yaml.safe_load(yaml_file, **kwargs)
@@ -493,7 +493,7 @@ def df_from_json(file, **kwargs):
         file (str): The path to the file.
 
     Returns:
-        pandas.DataFrame: The dataframe read from the file.
+        pd.DataFrame: The dataframe read from the file.
     """
     with open(file, "r") as json_file:
         try:
@@ -520,7 +520,7 @@ def read_file_to_dataframe(file, **kwargs):
         file (str): The path to the file.
 
     Returns:
-        pandas.DataFrame: The dataframe read from the file.
+        pd.DataFrame: The dataframe read from the file.
     """
     file_path = Path(file)
     if os.path.getsize(file_path) == 0:
@@ -577,10 +577,10 @@ def process_multiqc_dataframe(df):
     This function is required to handle the output files form quast & checkv to bring them to the same standard as MultiQC.
 
     Args:
-        df (pandas.DataFrame): The MultiQC dataframe to be processed.
+        df (pd.DataFrame): The MultiQC dataframe to be processed.
 
     Returns:
-        pandas.DataFrame: The processed MultiQC dataframe.
+        pd.DataFrame: The processed MultiQC dataframe.
     """
     # check if '.' are present in the first columns
     first_element = df[df.columns[0]].iloc[0]
@@ -598,7 +598,7 @@ def process_failed_contig_dataframe(df):
     setting "id" as the index, and returning the index series.
 
     Args:
-        df (pandas.DataFrame): The dataframe containing the failed contig data.
+        df (pd.DataFrame): The dataframe containing the failed contig data.
 
     Returns:
         pandas.Index: The index series of the processed dataframe.
@@ -708,10 +708,10 @@ def compute_quast_metrics(quast_df):
     Compute additional metrics based on QUAST output and add them to the DataFrame.
 
     Args:
-        quast_df (pandas.DataFrame): The QUAST output DataFrame.
+        quast_df (pd.DataFrame): The QUAST output DataFrame.
 
     Returns:
-        pandas.DataFrame: The updated DataFrame with additional computed metrics.
+        pd.DataFrame: The updated DataFrame with additional computed metrics.
     """
     if quast_df.empty:
         return quast_df
@@ -736,17 +736,17 @@ def compute_quast_metrics(quast_df):
     return quast_df
 
 
-def process_blast_dataframe(blast_df, blast_header, output_file):
+def process_blast_dataframe(blast_df, blast_header=None, output_file=None):
     """
     Process the BLAST output DataFrame.
 
     Args:
-        blast_df (pandas.DataFrame): The BLAST output DataFrame.
+        blast_df (pd.DataFrame): The BLAST output DataFrame.
         blast_header (list): A list of strings representing the header for the output file.
         output_file (str): The path to the output file.
 
     Returns:
-        pandas.DataFrame: The processed BLAST DataFrame.
+        pd.DataFrame: The processed BLAST DataFrame.
     """
     if blast_df.empty:
         logger.warning("The BLAST DataFrame is empty.")
@@ -770,17 +770,17 @@ def process_blast_dataframe(blast_df, blast_header, output_file):
     return blast_df
 
 
-def process_annotation_dataframe(annotation_df, blast_header, output_file):
+def process_annotation_dataframe(annotation_df, blast_header=None, output_file=None):
     """
     Process the annotation DataFrame.
 
     Args:
-        annotation_df (pandas.DataFrame): The annotation DataFrame.
+        annotation_df (pd.DataFrame): The annotation DataFrame.
         blast_header (list): A list of strings representing the header for the output file.
         output_file (str): The path to the output file.
 
     Returns:
-        pandas.DataFrame: The processed annotation DataFrame.
+        pd.DataFrame: The processed annotation DataFrame.
     """
     if annotation_df.empty:
         logger.warning("The annotation DataFrame is empty.")
@@ -795,6 +795,9 @@ def process_annotation_dataframe(annotation_df, blast_header, output_file):
 
         # Extract all key-value pairs into separate columns
         annotation_df = extract_annotation_data(annotation_df)
+
+        # Remove subject title:
+        annotation_df.drop(columns=["subject title"], inplace=True)
 
         annotation_df["% contig aligned"] = round((annotation_df["length"] / annotation_df["qlen"]) * 100, 2)
 
@@ -835,7 +838,7 @@ def generate_df(table_files, header_name=False, output=False, **kwargs):
         **kwargs: Additional keyword arguments for concatenation.
 
     Returns:
-        pandas.DataFrame: Concatenated table data.
+        pd.DataFrame: Concatenated table data.
 
     """
     result_df = pd.DataFrame()
@@ -852,14 +855,14 @@ def generate_indexed_df(df: pd.DataFrame, prefix: str, column_to_split: str, hea
     and generating an ID based on sample, cluster, and step information.
 
     Args:
-        df (pandas.DataFrame): The input dataframe.
+        df (pd.DataFrame): The input dataframe.
         prefix (str): The prefix to add to column names.
         column_to_split (str): The column to split.
         header (bool, optional): Whether the dataframe has a header. Defaults to False.
         output (bool, optional): Whether to write the resulting dataframe to a file. Defaults to False.
 
     Returns:
-        pandas.DataFrame: The processed dataframe.
+        pd.DataFrame: The processed dataframe.
     """
     result_df = pd.DataFrame()
     if not df.empty:
@@ -906,12 +909,12 @@ def filter_constrain(df, column, value):
     Filter a dataframe based on a column and a regex value.
 
     Args:
-        df (pandas.DataFrame): The dataframe to be filtered.
+        df (pd.DataFrame): The dataframe to be filtered.
         column (str): The column to filter on.
         regex_value (str): The regex value to filter on.
 
     Returns:
-        pandas.DataFrame, pandas.DataFrame: The filtered dataframe with the regex value and the filtered dataframe without the regex value.
+        pd.DataFrame, pd.DataFrame: The filtered dataframe with the regex value and the filtered dataframe without the regex value.
     """
     # Find rows with the regex value
     locations = df[column].str.contains(value) | df["step"].str.contains("constrain")
@@ -930,11 +933,11 @@ def drop_columns(df, columns):
     Try to drop columns from a dataframe and return the dataframe.
 
     Args:
-        df (pandas.DataFrame): The dataframe to drop columns from.
+        df (pd.DataFrame): The dataframe to drop columns from.
         columns (list): The list of columns to drop.
 
     Returns:
-        pandas.DataFrame: The dataframe with the dropped columns.
+        pd.DataFrame: The dataframe with the dropped columns.
     """
     result = df.drop(columns=[column for column in columns if column in df.columns])
     return result.copy()
@@ -945,10 +948,10 @@ def split_index_column(df):
     Split the index column of the DataFrame into separate columns for sample name, cluster, and step.
 
     Args:
-        df (pandas.DataFrame): The input DataFrame.
+        df (pd.DataFrame): The input DataFrame.
 
     Returns:
-        pandas.DataFrame: The updated DataFrame with separate columns for sample name, cluster, and step.
+        pd.DataFrame: The updated DataFrame with separate columns for sample name, cluster, and step.
     """
     df_copy = df.copy()
     df_copy = df_copy.reset_index().rename(columns={df_copy.index.name: "index"})
@@ -962,11 +965,11 @@ def reorder_columns(df, columns):
     Try to reorder columns in a dataframe and return the dataframe.
 
     Args:
-        df (pandas.DataFrame): The dataframe to reorder columns in.
+        df (pd.DataFrame): The dataframe to reorder columns in.
         columns (list): The list of columns to reorder.
 
     Returns:
-        pandas.DataFrame: The dataframe with the reordered columns.
+        pd.DataFrame: The dataframe with the reordered columns.
     """
     df = df[[column for column in columns if column in df.columns] + df.columns.difference(columns, sort=False).tolist()]
     return df
@@ -977,10 +980,10 @@ def reorder_rows(dataframe):
     Reorder the rows in the DataFrame based on the ranking of the steps.
 
     Args:
-        dataframe (pandas.DataFrame): The input DataFrame.
+        dataframe (pd.DataFrame): The input DataFrame.
 
     Returns:
-        pandas.DataFrame: The reordered DataFrame.
+        pd.DataFrame: The reordered DataFrame.
     """
 
     df = dataframe.copy()
@@ -1001,10 +1004,10 @@ def filter_contigs(dataframe, level="normal") -> pd.DataFrame:
         - Only annotated ones (if annotation is available)
 
     Args:
-        df (pandas.DataFrame): The input DataFrame.
+        df (pd.DataFrame): The input DataFrame.
 
     Returns:
-        pandas.DataFrame: The filtered DataFrame.
+        pd.DataFrame: The filtered DataFrame.
     """
     df = reorder_rows(dataframe)
 
@@ -1045,10 +1048,10 @@ def coalesce_constrain(dataframe):
     Fill missing values in the dataframe based on the group values.
 
     Args:
-        dataframe (pandas.DataFrame): The input DataFrame.
+        dataframe (pd.DataFrame): The input DataFrame.
 
     Returns:
-        pandas.DataFrame: The DataFrame with filled missing values.
+        pd.DataFrame: The DataFrame with filled missing values.
     """
 
     df = reorder_rows(dataframe)
@@ -1218,7 +1221,10 @@ def create_constrain_summary(df_constrain: pd.DataFrame, file_columns: List[Unio
     return df_wide
 
 
-def load_custom_data(args):
+def load_custom_data(args) -> List[pd.DataFrame]:
+    """
+    Load custom data from files and process it to a list of dataframes.
+    """
 
     # Clusters overview - mini multiqc module
     if args.clusters_summary:
@@ -1232,34 +1238,30 @@ def load_custom_data(args):
             plot_df = reorder_columns(clusters_df.copy(), ["# Clusters", "Filtered # clusters", "Total # clusteres"])
             plot = bargraph.plot(data=plot_df.to_dict(orient="index"), pconfig=CLUSTER_PCONFIG)
             module.add_section(
-                name="Sample: Number of Clusters",
-                anchor=Anchor("cluster_summary"),
-                plot=plot,
-                description="Number of identified contig clusters per sample after assembly.",
+                anchor=Anchor("cluster-summary"), plot=plot, description="Number of identified contig clusters per sample after assembly."
             )
             mqc.report.modules.append(module)
 
     # General Stats - Sample metadata
     if args.sample_metadata:
-        sample_header = get_header(args.comment_dir, "sample_metadata_mqc.txt")
-        generate_df([args.sample_metadata], sample_header, "sample_metadata_mqc.tsv")
-        # TODO add to general stats
+        metadata_df = generate_df([args.sample_metadata])
+        if not metadata_df.empty:
+            sample_col = [col for col in metadata_df.columns if "sample" in col.lower()][0]
+            metadata_df.set_index(sample_col, inplace=True)
+            module = mqc.BaseMultiqcModule(name="Sample metadata", anchor=Anchor("custom_data"))
+            content = metadata_df.to_dict(orient="index")
+            module.general_stats_addcols(content)
+            mqc.report.modules.append(module)
 
     # CLuster table - Checkv summary
     checkv_df = generate_df(args.checkv_files)
-    checkv_header = []
-    if args.save_intermediate:
-        checkv_header = get_header(args.comment_dir, "checkv_mqc.txt")
     if not checkv_df.empty:
-        checkv_df = generate_indexed_df(checkv_df, "checkv", "contig_id", checkv_header, "summary_checkv_mqc.tsv")
+        checkv_df = generate_indexed_df(checkv_df, "checkv", "contig_id")
 
     # Cluster table - Quast summary
     quast_df = read_in_quast(args.quast_files)
-    quast_header = []
-    if args.save_intermediate:
-        quast_header = get_header(args.comment_dir, "quast_mqc.txt")
     if not quast_df.empty:
-        quast_df = generate_indexed_df(quast_df, "quast", "Assembly", quast_header, "summary_quast_mqc.tsv")
+        quast_df = generate_indexed_df(quast_df, "quast", "Assembly")
 
         # Most of the columns are not good for a single contig evaluation
         quast_df["(quast) # N's"] = (
@@ -1271,17 +1273,13 @@ def load_custom_data(args):
 
     # Cluster table - Blast summary
     blast_df = generate_df(args.blast_files, header=None)
-    blast_header = []
-    if args.save_intermediate:
-        blast_header = get_header(args.comment_dir, "blast_mqc.txt")
     if not blast_df.empty:
-        blast_df = process_blast_dataframe(blast_df, blast_header, "summary_blast_mqc.tsv")
+        blast_df = process_blast_dataframe(blast_df)
 
     # Cluster table - mmseqs easysearch summary (annotation section)
     annotation_df = generate_df(args.annotation_files, header=None)
-
     if not annotation_df.empty:
-        annotation_df = process_annotation_dataframe(annotation_df, blast_header, "summary_anno_mqc.tsv")
+        annotation_df = process_annotation_dataframe(annotation_df)
 
     return [checkv_df, quast_df, blast_df, annotation_df]
 
@@ -1332,7 +1330,7 @@ def handle_module_data(
             ]
         ],
     ],
-) -> (list[pd.DataFrame], List[Union[str, Dict[str, str]]]):
+) -> Tuple[list[pd.DataFrame], List[Union[str, Dict[str, str]]]]:
     def check_section_exists(module_data: Dict, section_key: str) -> bool:
         """Check if a section exists in the module data."""
         return any(section_key in key for key in module_data.keys())
@@ -1508,7 +1506,7 @@ def reformat_constrain_df(df, file_columns, args):
     write_dataframe(mapping_constrains_summary, "mapping_constrains_summary.tsv", [])
     if not mapping_constrains_summary.empty:
         # Add to mqc
-        module = mqc.BaseMultiqcModule(name="Mapping Constrains Summary", anchor="custom_data")
+        module = mqc.BaseMultiqcModule(name="Mapping Constrains Summary", anchor=Anchor("custom_data"))
         content = mapping_constrains_summary.to_dict(orient="index")
         module.general_stats_addcols(content)
         mqc.report.modules.append(module)
@@ -1520,16 +1518,30 @@ def reformat_constrain_df(df, file_columns, args):
 
 def write_results(contigs_mqc, constrains_mqc, args) -> int:
     """
-    Write thhe results to files.
+    Write the results to files.
     """
 
     if not contigs_mqc.empty:
         logger.info("Writing Unfiltered Denovo constructs table file: contigs_all.tsv")
         write_dataframe(contigs_mqc, "contigs_all.tsv", [])
+        contigs_mqc.set_index("index", inplace=True)
+        mqc.add_custom_content_section(
+            name="Denovo Construct Overview",
+            anchor=Anchor("contigs_all"),
+            description="The table below shows the overview of the denovo constructs with refinement.",
+            plot=table.plot(data=contigs_mqc.to_dict(orient="index")),
+        )
 
     if not constrains_mqc.empty:
         logger.info("Writing Unfiltered Mapping constructs table file: mapping_all.tsv")
         write_dataframe(constrains_mqc, "mapping_all.tsv", [])
+        constrains_mqc.set_index("index", inplace=True)
+        mqc.add_custom_content_section(
+            name="Mapping Construct Overview",
+            anchor=Anchor("mapping_all"),
+            description="The table below shows the overview of the mapping constructs with refinement.",
+            plot=table.plot(data=constrains_mqc.to_dict(orient="index")),
+        )
 
     # TODO correctly insert metadata of:
     #   -  versions
@@ -1537,9 +1549,32 @@ def write_results(contigs_mqc, constrains_mqc, args) -> int:
     #   -  parameters
     #   -  methods_description
     # TODO: Include only final iteration in plots
-    mqc.write_report(make_data_dir=True, data_format="tsv", export_plots=False )
+    mqc.write_report(make_data_dir=True, data_format="tsv", export_plots=False)
 
     return 0
+
+
+def generate_ignore_sample_pattern(df: pd.DataFrame) -> pd.DataFrame:
+    """ """
+    base_pattern = r".*_"
+    ignores = ["consensus", "singleton"]
+
+    it_patterns = [0]
+    # Find all 'it' patterns in index
+    for idx in df.index:
+        parts = idx.split("_")
+        if parts and parts[-1].startswith("it") and parts[-1][2:].isdigit():
+            it_patterns.append(int(parts[-1][2:]))
+
+    max_number = max(it_patterns)
+
+    if max_number == 0:
+        return f'{base_pattern}({"|".join(ignores)})$'
+
+    ignores.append("itvariant_calling")
+    ignores.append([f"it{i}" for i in range(0, max_number)])
+
+    return f'{base_pattern}({"|".join(ignores)})$'
 
 
 def main(argv=None):
@@ -1560,20 +1595,29 @@ def main(argv=None):
     )
 
     # 1. Run MQC with correct config
-    mqc.parse_logs(args.multiqc_files, args.multiqc_config)
+    mqc.parse_logs(
+        args.multiqc_files,
+        args.multiqc_config,
+    )
     for module in mqc.list_modules():
         module_data = mqc.get_module_data(module)
         logger.info("Data for %s: %s", module, module_data.keys())
+
+    # 2. Extract MQC data
+    mqc_custom_df, renamed_columns = extract_mqc_data(args.table_headers)
+    if mqc_custom_df.empty:
+        logger.warning("No data was found from MULTIQC to create the contig overview table! - Exiting")
+        return 0
+
+    # 3. Reset multiqc and rerun while removing iteration data.
+    mqc.reset()
+    mqc.parse_logs(args.multiqc_files, args.multiqc_config, ignore_samples=generate_ignore_sample_pattern(mqc_custom_df))
 
     # 2. Parse our custom files into the correct tables
     custom_tables = load_custom_data(args)
 
     # 3. Make our own summary excel
     # 3.1 Extract the MQC data
-    mqc_custom_df, renamed_columns = extract_mqc_data(args.table_headers)
-    if mqc_custom_df.empty:
-        logger.warning("No data was found from MULTIQC to create the contig overview table! - Exiting")
-        return 0
 
     # 3.2 Join with the custom contig tables
     mqc_custom_df = join_dataframe(mqc_custom_df, custom_tables)
