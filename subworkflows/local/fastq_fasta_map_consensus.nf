@@ -76,10 +76,8 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
         join(ch_reference, by: [0])
 
     // report summary statistics of alignment
-    ch_bed = Channel.empty()
     if (mapping_stats) {
         BAM_STATS_METRICS ( ch_dedup_bam_ref )
-        ch_bed       = BAM_STATS_METRICS.out.bed
         ch_multiqc   = ch_multiqc.mix(BAM_STATS_METRICS.out.mqc.collect{it[1]}.ifEmpty([]))
         ch_versions  = ch_versions.mix(BAM_STATS_METRICS.out.versions)
     }
@@ -131,7 +129,6 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
     bam             = bam_out                            // channel: [ val(meta), [ bam ] ]
     vcf             = ch_vcf                             // channel: [ val(meta), [ vcf ] ]
     vcf_filter      = ch_vcf_filter                      // channel: [ val(meta), [ vcf ] ]
-    bed             = ch_bed                             // channel: [ val(meta), [ bed ] ]
 
     mqc             = ch_multiqc                           // channel: [ val(meta), [ csi ] ]
     versions        = ch_versions                          // channel: [ versions.yml ]

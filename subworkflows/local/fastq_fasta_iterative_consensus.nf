@@ -48,7 +48,6 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
 
         ch_reference_reads_intermediate = ITERATION_1.out.consensus_reads
         ch_consensus_allsteps           = ch_consensus_allsteps.mix(ITERATION_1.out.consensus)
-        ch_bed                          = ch_bed.mix(ITERATION_1.out.bed)
         ch_multiqc                      = ch_multiqc.mix(ITERATION_1.out.mqc)
         ch_versions                     = ch_versions.mix(ITERATION_1.out.versions)
         bam                             = ITERATION_1.out.bam
@@ -78,7 +77,6 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
 
         ch_reference_reads_intermediate = ITERATION_2.out.consensus_reads
         ch_consensus_allsteps           = ch_consensus_allsteps.mix(ITERATION_2.out.consensus)
-        ch_bed                          = ch_bed.mix(ITERATION_2.out.bed)
         ch_multiqc                      = ch_multiqc.mix(ITERATION_2.out.mqc)
         ch_versions                     = ch_versions.mix(ITERATION_2.out.versions)
         bam                             = ITERATION_2.out.bam
@@ -108,7 +106,6 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
 
         ch_reference_reads_intermediate = ITERATION_3.out.consensus_reads
         ch_consensus_allsteps           = ch_consensus_allsteps.mix(ITERATION_3.out.consensus)
-        ch_bed                          = ch_bed.mix(ITERATION_3.out.bed)
         ch_multiqc                      = ch_multiqc.mix(ITERATION_3.out.mqc)
         ch_versions                     = ch_versions.mix(ITERATION_3.out.versions)
         bam                             = ITERATION_3.out.bam
@@ -138,7 +135,6 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
 
         ch_reference_reads_intermediate = ITERATION_4.out.consensus_reads
         ch_consensus_allsteps           = ch_consensus_allsteps.mix(ITERATION_4.out.consensus)
-        ch_bed                          = ch_bed.mix(ITERATION_4.out.bed)
         ch_multiqc                      = ch_multiqc.mix(ITERATION_4.out.mqc)
         ch_versions                     = ch_versions.mix(ITERATION_4.out.versions)
         bam                             = ITERATION_4.out.bam
@@ -150,7 +146,6 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
     emit:
     consensus_reads      = ch_reference_reads_intermediate      // channel: [ val(meta), [ fasta ], [ fastq ] ]
     consensus_allsteps   = ch_consensus_allsteps                // channel: [ val(meta), [ fasta ] ]
-    bed                  = ch_bed                                  // channel: [ val(meta), [ ch_bed ] ]
     bam                  = bam                                  // channel: [ val(meta), [ bam ] ]
     vcf                  = vcf                                  // channel: [ val(meta), [ vcf ] ]
     vcf_filter           = vcf_filter                           // channel: [ val(meta), [ vcf ] ]

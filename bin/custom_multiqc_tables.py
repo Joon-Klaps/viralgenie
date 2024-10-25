@@ -87,6 +87,31 @@ FILES_OF_INTEREST = {
     "bcftools": "multiqc_bcftools_stats",
 }
 
+CLUSTER_HEADERS = {
+    "# Filtered clusters": {
+        "title": "Filtered # clusters",
+        "description": "Number of contig clusters used for further refinement",
+        "scale": "Blues",
+    },
+    "Total # clusters": {
+        "title": "Total # clusters",
+        "description": "Total number of input contig clusters before filtering",
+        "scale": "Blues",
+    },
+    "# Clusters": {
+        "title": "# Clusters",
+        "description": "Number of contig clusters used for further refinement ",
+        "scale": "Blues",
+    },
+}
+
+CLUSTER_PCONFIG = {
+    "id": "summary_clusters_info",
+    "title": "Cluster Summary",
+    "ylab": "# clusters",
+    "y_decimals": False,
+}
+
 
 def parse_args(argv=None):
     """Define and immediately parse command line arguments."""
@@ -521,7 +546,7 @@ def read_file_to_dataframe(file, **kwargs):
     return df
 
 
-def join_dataframe(base_df: pd.DataFrame, dfs:List[pd.DataFrame]) -> pd.DataFrame:
+def join_dataframe(base_df: pd.DataFrame, dfs: List[pd.DataFrame]) -> pd.DataFrame:
     """
     Join multiple DataFrames or a DataFrame and a Series together.
 
@@ -693,9 +718,7 @@ def compute_quast_metrics(quast_df):
     try:
         # Compute the number of N's based on the "# N's per 100 kbp" and "Largest contig" columns
         quast_df["(quast) # N's"] = (
-            pd.to_numeric(quast_df["(quast) # N's per 100 kbp"])
-            * pd.to_numeric(quast_df["(quast) Largest contig"])
-            / 100000
+            pd.to_numeric(quast_df["(quast) # N's per 100 kbp"]) * pd.to_numeric(quast_df["(quast) Largest contig"]) / 100000
         )
         quast_df["(quast) # N's"] = quast_df["(quast) # N's"].astype(int)
 
@@ -822,7 +845,7 @@ def generate_df(table_files, header_name=False, output=False, **kwargs):
     return result_df
 
 
-def generate_indexed_df(df, prefix, column_to_split, header=False, output=False):
+def generate_indexed_df(df: pd.DataFrame, prefix: str, column_to_split: str, header=False, output=False) -> pd.DataFrame:
     """
     Handle the given dataframe by adding a prefix to column names, splitting a specific column,
     and generating an ID based on sample, cluster, and step information.
@@ -944,9 +967,7 @@ def reorder_columns(df, columns):
     Returns:
         pandas.DataFrame: The dataframe with the reordered columns.
     """
-    df = df[
-        [column for column in columns if column in df.columns] + df.columns.difference(columns, sort=False).tolist()
-    ]
+    df = df[[column for column in columns if column in df.columns] + df.columns.difference(columns, sort=False).tolist()]
     return df
 
 
@@ -962,9 +983,7 @@ def reorder_rows(dataframe):
     """
 
     df = dataframe.copy()
-    ordered_list = (
-        ["constrain"] + [f"it{i}" for i in range(100, 0, -1)] + ["itvariant-calling", "consensus", "singleton"]
-    )
+    ordered_list = ["constrain"] + [f"it{i}" for i in range(100, 0, -1)] + ["itvariant-calling", "consensus", "singleton"]
     rank_dict = {step: rank for rank, step in enumerate(ordered_list, start=1)}
 
     # Sort the DataFrame by 'step' based on the ranking dictionary
@@ -1094,11 +1113,7 @@ def sample_in_file(sample, file_name) -> bool:
     file_upper = str(file_name).upper()
     logger.debug("sample: %s - file: %s", sample_upper, file_upper)
 
-    return (
-        sample_upper in file_upper
-        or sample_upper in file_upper.replace("_", "-")
-        or sample_upper in file_upper.replace("-", "_")
-    )
+    return sample_upper in file_upper or sample_upper in file_upper.replace("_", "-") or sample_upper in file_upper.replace("-", "_")
 
 
 def remove_keys(d, keys):
@@ -1115,9 +1130,7 @@ def remove_keys(d, keys):
     return {k: v for k, v in d.items() if k not in keys}
 
 
-def create_constrain_summary(
-    df_constrain: pd.DataFrame, file_columns: List[Union[str, Dict[str, str]]]
-) -> pd.DataFrame:
+def create_constrain_summary(df_constrain: pd.DataFrame, file_columns: List[Union[str, Dict[str, str]]]) -> pd.DataFrame:
     """
     Create a summary table for the constrain data.
 
@@ -1181,9 +1194,7 @@ def create_constrain_summary(
         lambda row: (
             f"{row['species']} ({row['segment']})"
             if "segment" in df_constrain.columns and pd.notnull(row["species"]) and pd.notnull(row["segment"])
-            else (
-                row["species"] if "species" in df_constrain.columns and pd.notnull(row["species"]) else row["cluster"]
-            )
+            else (row["species"] if "species" in df_constrain.columns and pd.notnull(row["species"]) else row["cluster"])
         ),
         axis=1,
     )
@@ -1207,21 +1218,31 @@ def create_constrain_summary(
 
 
 def load_custom_data(args):
+
+    # Clusters overview - mini multiqc module
     if args.clusters_summary:
-        cluster_header = get_header(args.comment_dir, "clusters_summary_mqc.txt")
-        generate_df(args.clusters_summary, cluster_header, "summary_clusters_mqc.tsv")
+        clusters_df = generate_df(args.clusters_summary)
+        if not clusters_df.empty:
+            clusters_df.set_index("Sample name", inplace=True)
+            module = mqc.BaseMultiqcModule(name="Cluster Summary", anchor="custom_data")
+            module.general_stats_addcols(clusters_df.to_dict(orient="index"))
+
+            # Custom barplot -  Clusters sample
+            plot_df = reorder_columns(clusters_df.copy(),["# Clusters", "Filtered # clusters", "Total # clusteres"])
+            plot = bargraph.plot(data=plot_df.to_dict(orient="index"), pconfig=CLUSTER_PCONFIG)
+            module.add_section(
+                name="Sample: Number of Clusters",
+                anchor="Cluster Summary",
+                plot=plot,
+                description="Number of identified contig clusters per sample after assembly.",
+            )
+            mqc.report.modules.append(module)
 
     # General Stats - Sample metadata
     if args.sample_metadata:
         sample_header = get_header(args.comment_dir, "sample_metadata_mqc.txt")
         generate_df([args.sample_metadata], sample_header, "sample_metadata_mqc.tsv")
-
-    # Custom barplot -  Clusters sample
-    if args.clusters_files:
-        clusters_df = generate_df(args.clusters_files)
-        if not clusters_df.empty:
-
-            print("continue here")
+        # TODO add to general stats
 
     # CLuster table - Checkv summary
     checkv_df = generate_df(args.checkv_files)
@@ -1241,9 +1262,7 @@ def load_custom_data(args):
 
         # Most of the columns are not good for a single contig evaluation
         quast_df["(quast) # N's"] = (
-            pd.to_numeric(quast_df["(quast) # N's per 100 kbp"])
-            * pd.to_numeric(quast_df["(quast) Largest contig"])
-            / 100000
+            pd.to_numeric(quast_df["(quast) # N's per 100 kbp"]) * pd.to_numeric(quast_df["(quast) Largest contig"]) / 100000
         )
         quast_df = quast_df.astype({"(quast) # N's": int})
         quast_df["(quast) % N's"] = round(pd.to_numeric(quast_df["(quast) # N's per 100 kbp"]) / 1000, 2)
@@ -1338,16 +1357,12 @@ def handle_module_data(
     elif isinstance(section, list):
         if isinstance(section[0], str):
             # Section refers to column names
-            return [
-                filter_and_rename_columns(pd.DataFrame.from_dict(all_module_data, orient="index"), section)
-            ], section
+            return [filter_and_rename_columns(pd.DataFrame.from_dict(all_module_data, orient="index"), section)], section
         elif isinstance(section[0], dict):
             first_value = next(iter(section[0].values()))
             if isinstance(first_value, str):
                 # Already at column level
-                return [
-                    filter_and_rename_columns(pd.DataFrame.from_dict(all_module_data, orient="index"), section)
-                ], section
+                return [filter_and_rename_columns(pd.DataFrame.from_dict(all_module_data, orient="index"), section)], section
             elif isinstance(first_value, list):
                 # Section could have multiple sections:
                 result_df = []
