@@ -16,7 +16,8 @@ from typing import Dict, List, Optional, Sequence, Union
 import pandas as pd
 import numpy as np
 import multiqc as mqc
-from multiqc.plots import bargraph, linegraph, scatter, table, violin, heatmap, box
+from multiqc.plots import bargraph
+from multiqc.types import Anchor
 import yaml
 
 
@@ -1224,15 +1225,15 @@ def load_custom_data(args):
         clusters_df = generate_df(args.clusters_summary)
         if not clusters_df.empty:
             clusters_df.set_index("Sample name", inplace=True)
-            module = mqc.BaseMultiqcModule(name="Cluster Summary", anchor="custom_data")
+            module = mqc.BaseMultiqcModule(name="Cluster Summary", anchor=Anchor("cluster-summary"))
             module.general_stats_addcols(clusters_df.to_dict(orient="index"))
 
             # Custom barplot -  Clusters sample
-            plot_df = reorder_columns(clusters_df.copy(),["# Clusters", "Filtered # clusters", "Total # clusteres"])
+            plot_df = reorder_columns(clusters_df.copy(), ["# Clusters", "Filtered # clusters", "Total # clusteres"])
             plot = bargraph.plot(data=plot_df.to_dict(orient="index"), pconfig=CLUSTER_PCONFIG)
             module.add_section(
                 name="Sample: Number of Clusters",
-                anchor="Cluster Summary",
+                anchor=Anchor("cluster_summary"),
                 plot=plot,
                 description="Number of identified contig clusters per sample after assembly.",
             )
@@ -1535,7 +1536,8 @@ def write_results(contigs_mqc, constrains_mqc, args) -> int:
     #   -  citations
     #   -  parameters
     #   -  methods_description
-    mqc.write_report(make_data_dir=True, data_format="tsv")
+    # TODO: Include only final iteration in plots
+    mqc.write_report(make_data_dir=True, data_format="tsv", export_plots=False )
 
     return 0
 
