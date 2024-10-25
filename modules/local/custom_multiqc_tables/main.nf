@@ -15,11 +15,13 @@ process CUSTOM_MULTIQC_TABLES {
     path bed_files, stageAs: "?/bed/*"
     path mapping_constrains
     path anno_files, stageAs: "?/annotation/*"
+    path screen_files, stageAs: "?/screen/*"
     path multiqc_dir
     path comment_headers
     path custom_table_headers
 
     output:
+
     path("summary_clusters_mqc.tsv")          , emit: summary_clusters_mqc  , optional: true
     path("sample_metadata_mqc.tsv")           , emit: sample_metadata_mqc   , optional: true
     path("contigs_overview_mqc.tsv")          , emit: contigs_overview_mqc  , optional: true
@@ -45,6 +47,7 @@ process CUSTOM_MULTIQC_TABLES {
     def annotation_files       = anno_files             ? "--annotation_files ${anno_files}"             : ''
     def bed_files              = bed_files              ? "--bed_files ${bed_files}"                     : ''
     def mapping_constrains     = mapping_constrains     ? "--mapping_constrains ${mapping_constrains}"   : ''
+    def screen_files           = screen_files           ? "--screen_files ${screen_files}"               : ''
     def multiqc_dir            = multiqc_dir            ? "--multiqc_dir ${multiqc_dir}"                 : ''
     def comment_headers        = comment_headers        ? "--comment_dir ${comment_headers}"             : ''
     def custom_table_headers   = custom_table_headers   ? "--table_headers ${custom_table_headers}"      : ''
@@ -60,6 +63,7 @@ process CUSTOM_MULTIQC_TABLES {
         $bed_files \\
         $mapping_constrains \\
         $annotation_files \\
+        $screen_files\\
         $comment_headers \\
         $custom_table_headers \\
         $multiqc_dir

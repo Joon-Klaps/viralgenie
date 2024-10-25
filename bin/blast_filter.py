@@ -177,6 +177,15 @@ def main(argv=None):
     """Coordinate argument parsing and program execution."""
     args = parse_args(argv)
     logging.basicConfig(level=args.log_level, format="[%(levelname)s] %(message)s")
+
+    if args.blast is None and args.contigs.is_file():
+        logger.warning(f"No blast input was provide, just copying input file.")
+        with open(args.contigs, "r") as contigs_file:
+            contig_content = contigs_file.read()
+        with open(f"{args.prefix}_withref.fa", "w") as f:
+            f.write(contig_content)
+        return 0
+
     if not args.blast.is_file():
         logger.error(f"The given input file {args.blast} was not found!")
         sys.exit(2)
@@ -192,6 +201,8 @@ def main(argv=None):
     df_filter = filter(df, args.escore, args.bitscore, args.percent_alignment)
 
     write_hits(df_filter, args.contigs, args.references, args.prefix)
+
+    return 0
 
 
 if __name__ == "__main__":
