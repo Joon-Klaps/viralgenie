@@ -306,7 +306,7 @@ def concat_table_files(table_files, **kwargs):
         valid_dfs = [read_file_to_dataframe(file, **kwargs) for file in table_files if check_file_exists(file)]
 
         if not valid_dfs:
-            logging.warning(f"Warning concatenating files: {table_files}")
+            logging.warning("Warning concatenating files: %s", table_files)
             logging.warning("No valid files found to concatenate.")
             return pd.DataFrame()
 
@@ -314,7 +314,7 @@ def concat_table_files(table_files, **kwargs):
         return df
 
     except ValueError as e:
-        logging.warning(f"Warning concatenating files: {table_files}")
+        logging.warning("Error concatenating files: %s\n%s", table_files, e)
         return pd.DataFrame()
 
 
@@ -369,7 +369,7 @@ def write_dataframe(df, file, comment):
         None
     """
     if df.empty:
-        logger.warning(f"The DataFrame %s is empty, nothing will be written to the file!", file)
+        logger.warning("The DataFrame %s is empty, nothing will be written to the file!", file)
         return
     df_tsv = df.to_csv(sep="\t", index=False, quoting=csv.QUOTE_NONNUMERIC)
     with open(file, "w") as f:
@@ -407,13 +407,13 @@ def filter_and_rename_columns(data: pd.DataFrame, columns: List[Union[str, Dict[
     # Check if all columns exist in the DataFrame
     missing_columns = set(keep_columns) - set(data.columns)
     if missing_columns:
-        logger.warning(f"Columns not found in data: {missing_columns} \n columns available:{data.columns}")
+        logger.warning("Columns not found in data: %s\n columns available: %s", missing_columns, data.columns)
         keep_columns = [col for col in keep_columns if col in data.columns]
 
     return data[keep_columns].rename(columns=rename_dict)
 
 
-def read_dataframe_from_tsv(file, **kwargs):
+def df_from_tsv(file, **kwargs):
     """
     Read a dataframe from a tsv file.
 
@@ -428,7 +428,7 @@ def read_dataframe_from_tsv(file, **kwargs):
     return df
 
 
-def read_dataframe_from_csv(file, **kwargs):
+def df_from_csv(file, **kwargs):
     """
     Read a dataframe from a csv file.
 
@@ -443,7 +443,7 @@ def read_dataframe_from_csv(file, **kwargs):
     return df
 
 
-def read_dataframe_from_yaml(file, **kwargs):
+def df_from_yaml(file, **kwargs):
     """
     Read a dataframe from a YAML file.
 
@@ -459,7 +459,7 @@ def read_dataframe_from_yaml(file, **kwargs):
     return df
 
 
-def read_dataframe_from_json(file, **kwargs):
+def df_from_json(file, **kwargs):
     """
     Read a dataframe from a JSON file.
 
@@ -504,13 +504,13 @@ def read_file_to_dataframe(file, **kwargs):
         ".tsv",
         ".txt",
     ]:  # mqc calls tsv's txts, bed files are gzipped
-        df = read_dataframe_from_tsv(file_path, **kwargs)
+        df = df_from_tsv(file_path, **kwargs)
     elif file_path.suffix == ".csv":
-        df = read_dataframe_from_csv(file_path, **kwargs)
+        df = df_from_csv(file_path, **kwargs)
     elif file_path.suffix in [".yaml", ".yml"]:
-        df = read_dataframe_from_yaml(file_path, **kwargs)
+        df = df_from_yaml(file_path, **kwargs)
     elif file_path.suffix in [".json"]:
-        df = read_dataframe_from_json(file_path, **kwargs)
+        df = df_from_json(file_path, **kwargs)
     else:
         logger.error(
             "The file format %s is not supported of file %s!",
@@ -521,20 +521,20 @@ def read_file_to_dataframe(file, **kwargs):
     return df
 
 
-def join_dataframes(base_df, dataframes_to_join):
+def join_dataframe(base_df: pd.DataFrame, dfs:List[pd.DataFrame]) -> pd.DataFrame:
     """
     Join multiple DataFrames or a DataFrame and a Series together.
 
     Args:
         base_df (pd.DataFrame or pd.Series): The base DataFrame or Series to start with.
-        dataframes_to_join (list): A list of DataFrames to be joined with the base DataFrame.
+        dfs (list): A list of DataFrames to be joined with the base DataFrame.
 
     Returns:
         pd.DataFrame: The joined DataFrame.
     """
     joined_df = base_df.copy()
 
-    for df in dataframes_to_join:
+    for df in dfs:
         if not isinstance(df, pd.DataFrame):
             logger.error("Unable to process the df: %s of class %s", df, type(df))
         if df.empty:
@@ -638,7 +638,7 @@ def read_data(directory, file_columns, process_dataframe):
             continue
         df = process_dataframe(df)
         df = filter_and_rename_columns(df, column_names)
-        multiqc_samples_df = join_dataframes(multiqc_samples_df, [df])
+        multiqc_samples_df = join_dataframe(multiqc_samples_df, [df])
 
     return multiqc_samples_df
 
@@ -1220,6 +1220,7 @@ def load_custom_data(args):
     if args.clusters_files:
         clusters_df = generate_df(args.clusters_files)
         if not clusters_df.empty:
+
             print("continue here")
 
     # CLuster table - Checkv summary
@@ -1377,7 +1378,7 @@ def handle_module_data(
     return [pd.DataFrame()], []
 
 
-def handle_general_stats(columns: List[Union[str, Dict[str, str]]]) -> (pd.DataFrame, List):
+def handle_general_stats(columns: List[Union[str, Dict[str, str]]]) -> tuple[pd.DataFrame, List]:
     """
     Handle general stats data from MultiQC.
 
@@ -1429,7 +1430,7 @@ def extract_mqc_data(table_headers: Union[str, Path]) -> Optional[pd.DataFrame]:
 
     logger.debug("Data list: %s", data)
 
-    return join_dataframes(result, data) if data else result, columns_result
+    return join_dataframe(result, data) if data else result, columns_result
 
 
 def reformat_custom_df(df):
@@ -1514,6 +1515,11 @@ def write_results(contigs_mqc, constrains_mqc, args) -> int:
         logger.info("Writing Unfiltered Mapping constructs table file: mapping_all.tsv")
         write_dataframe(constrains_mqc, "mapping_all.tsv", [])
 
+    # TODO correctly insert metadata of:
+    #   -  versions
+    #   -  citations
+    #   -  parameters
+    #   -  methods_description
     mqc.write_report(make_data_dir=True, data_format="tsv")
 
     return 0
@@ -1553,7 +1559,7 @@ def main(argv=None):
         return 0
 
     # 3.2 Join with the custom contig tables
-    mqc_custom_df = join_dataframes(mqc_custom_df, custom_tables)
+    mqc_custom_df = join_dataframe(mqc_custom_df, custom_tables)
 
     if mqc_custom_df.empty:
         logger.warning("No data was found to create the contig overview table!")

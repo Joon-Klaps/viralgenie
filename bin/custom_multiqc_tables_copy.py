@@ -1190,7 +1190,6 @@ def remove_keys(d, keys):
 #     combined_data = pd.concat([df, pd.Series(beds, name="bed_coverage")], axis=1)
 
 #     # Create the sparkline plot within the table
-#     # TODO: Consider implementing VCF file reading as well and color them differently
 #     logger.debug("Making the coverage plots")
 #     config = {"displaylogo": False}
 #     combined_data["coverage plot"] = combined_data.apply(

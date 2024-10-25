@@ -20,7 +20,6 @@ def createChannel(dbPath, dbName, skipFlag) {
     return dbPath && skipFlag ? Channel.fromPath(dbPath, checkIfExists: true).map { db -> [[id: dbName], db] } : Channel.empty()
 }
 
-// TODO nf-core: Add all file path parameters for the pipeline to the list below
 // Check input path parameters to see if they exist
 def checkPathParamList = [
     params.input, params.multiqc_config, params.adapter_fasta, params.contaminants,
