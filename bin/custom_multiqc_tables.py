@@ -688,19 +688,12 @@ def get_header(comment_dir, header_file_name):
     return header
 
 
-def dynamic_split(row, delimiter="_"):
+def dynamic_split(index_str):
     """
-    Splits a string into multiple parts based on the specified delimiter.
-
-    Args:
-        row (str): The string to be split.
-        delimiter (str, optional): The delimiter to use for splitting the string. Defaults to "_".
-
-    Returns:
-        list: A list of the split parts.
+    Split the index string into sample name, cluster, and step.
     """
-    parts = row.split(delimiter)
-    return parts
+    parts = index_str.split("_")
+    return parts[0], parts[1], "_".join(parts[2:])
 
 
 def compute_quast_metrics(quast_df):
@@ -849,7 +842,7 @@ def generate_df(table_files, header_name=False, output=False, **kwargs):
     return result_df
 
 
-def generate_indexed_df(df: pd.DataFrame, prefix: str, column_to_split: str, header=False, output=False) -> pd.DataFrame:
+def generate_indexed_df(df: pd.DataFrame, prefix: str = None, column_to_split: str = "index", header=False, output=False) -> pd.DataFrame:
     """
     Handle the given dataframe by adding a prefix to column names, splitting a specific column,
     and generating an ID based on sample, cluster, and step information.
@@ -865,40 +858,25 @@ def generate_indexed_df(df: pd.DataFrame, prefix: str, column_to_split: str, hea
         pd.DataFrame: The processed dataframe.
     """
     result_df = pd.DataFrame()
-    if not df.empty:
+    if df.empty:
+        return result_df
+
+    split_column = column_to_split
+    if prefix :
         logger.info("Handling dataframe: %s", prefix)
         df = df.add_prefix(f"({prefix}) ")
+        split_column = f"({prefix}) {column_to_split}"
 
-        # Apply the dynamic split function to each row in the column
-        split_data = df[f"({prefix}) {column_to_split}"].apply(dynamic_split).apply(pd.Series)
-        # take the first three columns & rename
-        split_data = split_data.iloc[:, :3]
-        try:
-            split_data.rename(
-                columns={
-                    split_data.columns[0]: "sample",
-                    split_data.columns[1]: "cluster",
-                    split_data.columns[2]: "step",
-                },
-                inplace=True,
-            )
-        except IndexError as e:
-            logger.warning(
-                "Unable to split up the file %s, at column %s \n ERROR: %s",
-                prefix,
-                column_to_split,
-                e,
-            )
-            return result_df
-        df = pd.concat([df, split_data], axis=1)
-        df["step"] = df["step"].str.split(".").str[0]
-        df["id"] = df["sample"] + "_" + df["cluster"] + "_" + df["step"]
-        df = df.set_index("id")
-        result_df = df
+    df = split_index_column(df, prefix, split_column)
+
+    df["step"] = df["step"].str.split(".").str[0]
+    df["id"] = df["sample"] + "_" + df["cluster"] + "_" + df["step"]
+    df = df.set_index("id")
+    result_df = df
     if output:
         write_dataframe(result_df, output, header)
     result_df.drop(
-        columns=["sample", "cluster", "step", f"({prefix}) {column_to_split}"],
+        columns=["sample", "cluster", "step", split_column],
         inplace=True,
     )
     return result_df
@@ -943,20 +921,40 @@ def drop_columns(df, columns):
     return result.copy()
 
 
-def split_index_column(df):
+def split_index_column(df: pd.DataFrame, prefix: str = None, split_column: str = "index") -> pd.DataFrame:
     """
     Split the index column of the DataFrame into separate columns for sample name, cluster, and step.
 
     Args:
         df (pd.DataFrame): The input DataFrame.
+        prefix (str, optional): A prefix for the DataFrame.
+        split_column (str, optional): The column to split. Defaults to "index".
 
     Returns:
         pd.DataFrame: The updated DataFrame with separate columns for sample name, cluster, and step.
     """
     df_copy = df.copy()
-    df_copy = df_copy.reset_index().rename(columns={df_copy.index.name: "index"})
-    df_copy = df_copy[df_copy["index"].str.contains("_", na=False)]
-    df_copy[["sample name", "cluster", "step"]] = df_copy["index"].str.split("_", n=3, expand=True)
+    # Reset the index and rename the index column
+    df_copy = df_copy.reset_index(drop=False).rename(columns={df_copy.index.name: split_column})
+    df_copy = df_copy[df_copy[split_column].str.contains("_", na=False)]
+
+    # Apply the dynamic split function to each row in the column
+    split_data = df_copy[split_column].apply(dynamic_split).apply(pd.Series)
+
+    # Take the first three columns and rename them
+    split_data = split_data.iloc[:, :3]
+    split_data.rename(
+        columns={
+            split_data.columns[0]: "sample",
+            split_data.columns[1]: "cluster",
+            split_data.columns[2]: "step",
+        },
+        inplace=True,
+    )
+
+    # Concatenate the original DataFrame and the split data
+    df_copy = pd.concat([df_copy, split_data], axis=1)
+
     return df_copy
 
 
@@ -992,55 +990,9 @@ def reorder_rows(dataframe):
 
     # Sort the DataFrame by 'step' based on the ranking dictionary
     df["rank"] = df["step"].map(rank_dict)
-    df = df.sort_values(["sample name", "cluster", "rank"])
+    df = df.sort_values(["sample", "cluster", "rank"])
 
     return df
-
-
-def filter_contigs(dataframe, level="normal") -> pd.DataFrame:
-    """
-    Filter contigs for each sample to only include those:
-        - latest step of each cluster
-        - Only annotated ones (if annotation is available)
-
-    Args:
-        df (pd.DataFrame): The input DataFrame.
-
-    Returns:
-        pd.DataFrame: The filtered DataFrame.
-    """
-    df = reorder_rows(dataframe)
-
-    # Select the first occurrence of each group
-    df_snip = df.groupby(["sample name", "cluster"]).head(1).reset_index(drop=True)
-    if not "annotation" in df.columns:
-        logger.debug("Removed %d rows", len(df.index) - len(df_snip.index))
-        return df_snip
-
-    # Filter for annotated contigs
-    df_snip = df_snip[df_snip["annotation"].notnull()]
-
-    if level != "strict":
-        logger.debug("Removed %d rows", len(df.index) - len(df_snip.index))
-        return df_snip
-
-    if [
-        "(annotation) % contig aligned",
-        "(annotation) bitscore",
-    ] not in df_snip.columns:
-        logger.warning("Columns for filtering are not present in the dataframe")
-        return df_snip
-
-    df_snip["sort"] = df_snip["(annotation) % contig aligned"] * df_snip["(annotation) bitscore"]
-    df_snip = df_snip.sort_values(["sample name", "cluster", "sort"], ascending=[True, True, False])
-
-    # Filter for the latest step of each cluster
-    group_cols = [col for col in df_snip.columns if col in GROUPING_COLUMNS]
-    logger.debug("Grouping columns for filtering: %s", group_cols)
-    df_snip = df_snip.groupby([["sample name" + group_cols]]).tail(1).reset_index(drop=True)
-
-    logger.debug("Removed %d rows", len(df.index) - len(df_snip.index))
-    return df_snip
 
 
 def coalesce_constrain(dataframe):
@@ -1055,7 +1007,7 @@ def coalesce_constrain(dataframe):
     """
 
     df = reorder_rows(dataframe)
-    grouping_cols = ["sample name", "cluster"]
+    grouping_cols = ["sample", "cluster"]
     coalesce_columns = df.columns.difference(grouping_cols)
     result = df.copy()
     result[coalesce_columns] = result.groupby(grouping_cols)[coalesce_columns].transform(fill_group_na)
@@ -1162,7 +1114,7 @@ def create_constrain_summary(df_constrain: pd.DataFrame, file_columns: List[Unio
         return pd.DataFrame()
 
     columns_of_interest = [
-        "sample name",
+        "sample",
         "species",
         "segment",
         "cluster",
@@ -1208,14 +1160,14 @@ def create_constrain_summary(df_constrain: pd.DataFrame, file_columns: List[Unio
     df_constrain = drop_columns(df_constrain, ["species", "segment"])
 
     # Convert dataframe to long and then extra wide
-    df_long = df_constrain.melt(id_vars=["idgroup", "sample name"], var_name="variable", value_name="Value")
+    df_long = df_constrain.melt(id_vars=["idgroup", "sample"], var_name="variable", value_name="Value")
     # Remove rows with NaN values & duplicates
     df_long = df_long.dropna()
     df_long = df_long.drop_duplicates()
     df_long["grouped variable"] = df_long["idgroup"] + " - " + df_long["variable"]
     df_long.drop(columns=["idgroup", "variable"], inplace=True)
     # Convert to wide format
-    df_wide = df_long.pivot(index=["sample name"], columns="grouped variable", values="Value")
+    df_wide = df_long.pivot(index=["sample"], columns="grouped variable", values="Value")
     df_wide.reset_index(inplace=True)
 
     return df_wide
@@ -1453,15 +1405,18 @@ def reformat_custom_df(df):
     """
     # Keep only those rows we can split up in sample, cluster, step
     logger.info("Splitting up the index column in sample name, cluster, step")
+    df = df.drop('index', axis=1)
+    df['index'] = df.index
+
     df = split_index_column(df)
 
     # Reorder the columns
     logger.info("Reordering columns")
-    final_columns = ["index", "sample name", "cluster", "step"] + [
+    final_columns = ["index", "sample", "cluster", "step"] + [
         column
         for group in [
             "annotation",
-            "mas-screen",
+            "mash-screen",
             "blast",
             "checkv",
             "QC check",
@@ -1491,7 +1446,7 @@ def reformat_constrain_df(df, file_columns, args):
         df,
         [
             "index",
-            "sample name",
+            "sample",
             "cluster",
             "step",
             "species",
@@ -1502,7 +1457,7 @@ def reformat_constrain_df(df, file_columns, args):
 
     # add mapping summary to sample overview table in ... wide format with species & segment combination
     logger.info("Creating mapping constrain summary (wide) table")
-    mapping_constrains_summary = create_constrain_summary(df, file_columns).set_index("sample name")
+    mapping_constrains_summary = create_constrain_summary(df, file_columns).set_index("sample")
     write_dataframe(mapping_constrains_summary, "mapping_constrains_summary.tsv", [])
     if not mapping_constrains_summary.empty:
         # Add to mqc
@@ -1554,27 +1509,26 @@ def write_results(contigs_mqc, constrains_mqc, args) -> int:
     return 0
 
 
-def generate_ignore_sample_pattern(df: pd.DataFrame) -> pd.DataFrame:
-    """ """
-    base_pattern = r".*_"
-    ignores = ["consensus", "singleton"]
+def generate_ignore_samples(dataframe: pd.DataFrame) -> pd.Series:
+    """
+    Generate a Series of indices that are not part of the df_snip dataframe.
 
-    it_patterns = [0]
-    # Find all 'it' patterns in index
-    for idx in df.index:
-        parts = idx.split("_")
-        if parts and parts[-1].startswith("it") and parts[-1][2:].isdigit():
-            it_patterns.append(int(parts[-1][2:]))
+    Parameters:
+    dataframe (pd.DataFrame): The input DataFrame to process.
 
-    max_number = max(it_patterns)
+    Returns:
+    pd.Series: A Series containing the indices that are not in df_snip.
+    """
+    df = dataframe.copy()
+    df['index'] = df.index
+    df = split_index_column(df)
 
-    if max_number == 0:
-        return f'{base_pattern}({"|".join(ignores)})$'
+    df = reorder_rows(df)
 
-    ignores.append("itvariant_calling")
-    ignores.append([f"it{i}" for i in range(0, max_number)])
+    # Filter for only the last iteration
+    df_filter = df.groupby(['sample', 'cluster']).head(1).reset_index(drop=True)
 
-    return f'{base_pattern}({"|".join(ignores)})$'
+    return df_filter['index'][~df['index'].isin(df_filter['index'])]
 
 
 def main(argv=None):
@@ -1599,7 +1553,8 @@ def main(argv=None):
         args.multiqc_files,
         args.multiqc_config,
     )
-    for module in mqc.list_modules():
+
+    for module in [m for m in mqc.list_modules() if "viralgenie" not in m]:
         module_data = mqc.get_module_data(module)
         logger.info("Data for %s: %s", module, module_data.keys())
 
@@ -1611,7 +1566,11 @@ def main(argv=None):
 
     # 3. Reset multiqc and rerun while removing iteration data.
     mqc.reset()
-    mqc.parse_logs(args.multiqc_files, args.multiqc_config, ignore_samples=generate_ignore_sample_pattern(mqc_custom_df))
+    mqc.parse_logs(
+        args.multiqc_files,
+        args.multiqc_config,
+        ignore_samples=generate_ignore_samples(mqc_custom_df)
+    )
 
     # 2. Parse our custom files into the correct tables
     custom_tables = load_custom_data(args)

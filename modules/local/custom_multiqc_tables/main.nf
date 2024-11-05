@@ -18,7 +18,6 @@ process CUSTOM_MULTIQC_TABLES {
     path anno_files, stageAs: "?/annotation/*"
     path clusters_tsv, stageAs: "?/clusters/*"
     path screen_files, stageAs: "?/screen/*"
-    path multiqc_dir
     path comment_headers
     path custom_table_headers
 
@@ -53,7 +52,6 @@ process CUSTOM_MULTIQC_TABLES {
     def clusters_files                 = clusters_tsv           ? "--clusters_files ${clusters_tsv}"             : ''
     def mapping_constrains_command     = mapping_constrains     ? "--mapping_constrains ${mapping_constrains}"   : ''
     def screen_files_command           = screen_files           ? "--screen_files ${screen_files}"               : ''
-    def multiqc_dir_command            = multiqc_dir            ? "--multiqc_dir ${multiqc_dir}"                 : ''
     def comment_headers_command        = comment_headers        ? "--comment_dir ${comment_headers}"             : ''
     def custom_table_headers_command   = custom_table_headers   ? "--table_headers ${custom_table_headers}"      : ''
 
@@ -71,10 +69,8 @@ process CUSTOM_MULTIQC_TABLES {
         $clusters_files \\
         $mapping_constrains_command \\
         $screen_files_command \\
-        $multiqc_dir_command \\
         $comment_headers_command \\
         $custom_table_headers_command \\
-        $multiqc_dir
 
 
     cat <<-END_VERSIONS > versions.yml
