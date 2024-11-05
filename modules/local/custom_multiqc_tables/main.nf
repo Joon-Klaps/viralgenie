@@ -14,7 +14,6 @@ process CUSTOM_MULTIQC_TABLES {
     path checkv_files, stageAs: "?/checkv/*"
     path quast_files, stageAs: "?/quast/*"
     path blast_files, stageAs: "?/blast/*"
-    path bed_files, stageAs: "?/bed/*"
     path mapping_constrains
     path anno_files, stageAs: "?/annotation/*"
     path clusters_tsv, stageAs: "?/clusters/*"

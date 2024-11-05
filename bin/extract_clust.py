@@ -11,7 +11,7 @@ import sys
 import numpy as np
 from collections import defaultdict
 from pathlib import Path
-from typing import Dict, List, Optional, Sequence, Unionn, Tuple
+from typing import Dict, List, Tuple
 
 from Bio import SeqIO
 
