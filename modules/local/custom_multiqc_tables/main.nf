@@ -60,7 +60,7 @@ process CUSTOM_MULTIQC_TABLES {
     """
     custom_multiqc_tables.py \\
         $args \\
-        $multiqc_files_command
+        $multiqc_files_command \\
         $multiqc_config_command \\
         $clusters_summary_files_command \\
         $sample_metadata_command \\
