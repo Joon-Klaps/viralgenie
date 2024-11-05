@@ -42,39 +42,38 @@ process CUSTOM_MULTIQC_TABLES {
 
     script:
     def args = task.ext.args ?: ''
-    def multiqc_files          = multiqc_files          ? "--multiqc_files multiqc_files"                : '' // Just refer to the dir for now.
-    def multiqc_config         = multiqc_config         ? "--multiqc_config ${multiqc_config}"           : ''
-    def clusters_summary_files = clusters_summary_files ? "--clusters_summary ${clusters_summary_files}" : ''
-    def sample_metadata        = sample_metadata        ? "--sample_metadata ${sample_metadata}"         : ''
-    def checkv_files           = checkv_files           ? "--checkv_files ${checkv_files}"               : ''
-    def quast_files            = quast_files            ? "--quast_files ${quast_files}"                 : ''
-    def blast_files            = blast_files            ? "--blast_files ${blast_files}"                 : ''
-    def annotation_files       = anno_files             ? "--annotation_files ${anno_files}"             : ''
-    def bed_files              = bed_files              ? "--bed_files ${bed_files}"                     : ''
-    def clusters_files         = clusters_tsv           ? "--clusters_files ${clusters_tsv}"             : ''
-    def mapping_constrains     = mapping_constrains     ? "--mapping_constrains ${mapping_constrains}"   : ''
-    def screen_files           = screen_files           ? "--screen_files ${screen_files}"               : ''
-    def multiqc_dir            = multiqc_dir            ? "--multiqc_dir ${multiqc_dir}"                 : ''
-    def comment_headers        = comment_headers        ? "--comment_dir ${comment_headers}"             : ''
-    def custom_table_headers   = custom_table_headers   ? "--table_headers ${custom_table_headers}"      : ''
+    def multiqc_files_command          = multiqc_files          ? "--multiqc_files multiqc_files"                : '' // Just refer to the dir for now.
+    def multiqc_config_command         = multiqc_config         ? "--multiqc_config ${multiqc_config}"           : ''
+    def clusters_summary_files_command = clusters_summary_files ? "--clusters_summary ${clusters_summary_files}" : ''
+    def sample_metadata_command        = sample_metadata        ? "--sample_metadata ${sample_metadata}"         : ''
+    def checkv_files_command           = checkv_files           ? "--checkv_files ${checkv_files}"               : ''
+    def quast_files_command            = quast_files            ? "--quast_files ${quast_files}"                 : ''
+    def blast_files_command            = blast_files            ? "--blast_files ${blast_files}"                 : ''
+    def annotation_files               = anno_files             ? "--annotation_files ${anno_files}"             : ''
+    def clusters_files                 = clusters_tsv           ? "--clusters_files ${clusters_tsv}"             : ''
+    def mapping_constrains_command     = mapping_constrains     ? "--mapping_constrains ${mapping_constrains}"   : ''
+    def screen_files_command           = screen_files           ? "--screen_files ${screen_files}"               : ''
+    def multiqc_dir_command            = multiqc_dir            ? "--multiqc_dir ${multiqc_dir}"                 : ''
+    def comment_headers_command        = comment_headers        ? "--comment_dir ${comment_headers}"             : ''
+    def custom_table_headers_command   = custom_table_headers   ? "--table_headers ${custom_table_headers}"      : ''
 
     """
     custom_multiqc_tables.py \\
         $args \\
-        $multiqc_files \\
-        $multiqc_config \\
-        $clusters_summary_files \\
-        $sample_metadata \\
-        $checkv_files \\
-        $quast_files \\
-        $blast_files \\
-        $bed_files \\
-        $clusters_files \\
-        $mapping_constrains \\
+        $multiqc_files_command
+        $multiqc_config_command \\
+        $clusters_summary_files_command \\
+        $sample_metadata_command \\
+        $checkv_files_command \\
+        $quast_files_command \\
+        $blast_files_command \\
         $annotation_files \\
-        $screen_files\\
-        $comment_headers \\
-        $custom_table_headers \\
+        $clusters_files \\
+        $mapping_constrains_command \\
+        $screen_files_command \\
+        $multiqc_dir_command \\
+        $comment_headers_command \\
+        $custom_table_headers_command \\
         $multiqc_dir
 
 
@@ -88,7 +87,6 @@ process CUSTOM_MULTIQC_TABLES {
 
     stub:
     def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: "${meta.id}"
     """
     touch cluster_summary_mqc.tsv
     touch sample_metadata_mqc.tsv
