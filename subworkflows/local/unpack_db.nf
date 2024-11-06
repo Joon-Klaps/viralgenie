@@ -8,6 +8,7 @@ workflow UNPACK_DB  {
 
     main:
     ch_versions = Channel.empty()
+    ch_db       = Channel.empty()
 
     db_in
     .branch { meta, dbs ->
@@ -17,14 +18,13 @@ workflow UNPACK_DB  {
     }
     .set{db}
 
-    ch_untar = UNTAR_DB(db.tar).untars
-    ch_versions   = ch_versions.mix(UNTAR_DB.out.versions.first())
+    ch_db       = ch_db.mix(db.other)
 
-    ch_gunzip = GUNZIP_DB(db.gzip).gunzip
-    ch_versions   = ch_versions.mix(GUNZIP_DB.out.versions.first())
+    ch_db       = ch_db.mix(UNTAR_DB(db.tar).untar)
+    ch_versions = ch_versions.mix(UNTAR_DB.out.versions.first())
 
-    ch_db = Channel.empty()
-    ch_db = ch_db.mix(db.other, ch_untar, ch_gunzip)
+    ch_db       = ch_db.mix(GUNZIP_DB(db.gzip).gunzip)
+    ch_versions = ch_versions.mix(GUNZIP_DB.out.versions.first())
 
     emit:
     db       = ch_db            // channel: [ db ]
