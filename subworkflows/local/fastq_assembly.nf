@@ -16,7 +16,7 @@ include { noContigSamplesToMultiQC                   } from '../../modules/local
 workflow FASTQ_ASSEMBLY {
 
     take:
-    reads           // channel: [ val(meta), [ reads ] ]
+    ch_reads        // channel: [ val(meta), [ reads ] ]
     assemblers      // value ['spades','trinity','megahit']
     ch_spades_yml   // channel: ['path/to/yml']
     ch_spades_hmm   // channel: ['path/to/hmm']
@@ -27,11 +27,12 @@ workflow FASTQ_ASSEMBLY {
     ch_coverages   = Channel.empty()
     ch_multiqc     = Channel.empty()
     bad_assemblies = Channel.empty()
+    assemblers     = params.assemblers ? params.assemblers.split(',').collect{ it.trim().toLowerCase() } : []
 
     // SPADES
     if ('spades' in assemblers) {
         SPADES(
-            reads.map {meta, reads -> [meta, reads, [], []]},
+            ch_reads.map {meta, reads -> [meta, reads, [], []]},
             ch_spades_yml,
             ch_spades_hmm
             )
@@ -42,7 +43,7 @@ workflow FASTQ_ASSEMBLY {
             .map{meta, scaffold, contig -> [meta, scaffold ? scaffold : contig]} // sometimes no scaffold could be created if so take contig
             .set{spades_consensus}
 
-        EXTEND_SPADES( reads, spades_consensus, "spades")
+        EXTEND_SPADES( ch_reads, spades_consensus, "spades")
         ch_scaffolds         = ch_scaffolds.mix(EXTEND_SPADES.out.scaffolds)
         ch_coverages         = ch_coverages.mix(EXTEND_SPADES.out.coverages)
         ch_versions          = ch_versions.mix(EXTEND_SPADES.out.versions)
@@ -51,10 +52,10 @@ workflow FASTQ_ASSEMBLY {
 
     // TRINITY
     if ('trinity' in assemblers) {
-        TRINITY(reads)
+        TRINITY(ch_reads)
         ch_versions          = ch_versions.mix(TRINITY.out.versions.first())
 
-        EXTEND_TRINITY( reads, TRINITY.out.transcript_fasta, "trinity")
+        EXTEND_TRINITY( ch_reads, TRINITY.out.transcript_fasta, "trinity")
         ch_scaffolds         = ch_scaffolds.mix(EXTEND_TRINITY.out.scaffolds)
         ch_coverages         = ch_coverages.mix(EXTEND_TRINITY.out.coverages)
         ch_versions          = ch_versions.mix(EXTEND_TRINITY.out.versions)
@@ -63,10 +64,10 @@ workflow FASTQ_ASSEMBLY {
 
     // MEGAHIT
     if ('megahit' in assemblers) {
-        MEGAHIT(reads)
+        MEGAHIT(ch_reads)
         ch_versions          = ch_versions.mix(MEGAHIT.out.versions.first())
 
-        EXTEND_MEGAHIT( reads, MEGAHIT.out.contigs, "megahit")
+        EXTEND_MEGAHIT( ch_reads, MEGAHIT.out.contigs, "megahit")
         ch_scaffolds         = ch_scaffolds.mix(EXTEND_MEGAHIT.out.scaffolds)
         ch_coverages         = ch_coverages.mix(EXTEND_MEGAHIT.out.coverages)
         ch_versions          = ch_versions.mix(EXTEND_MEGAHIT.out.versions)

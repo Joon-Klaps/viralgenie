@@ -10,13 +10,14 @@
 
 params.global_prefix = getGlobalPrefix(workflow, params)
 
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     IMPORT FUNCTIONS / MODULES / SUBWORKFLOWS / WORKFLOWS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { VIRALGENIE              } from './workflows/viralgenie'
+include { VIRALGENIE              } from './workflows/viralgenie.nf'
 include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_viralgenie_pipeline'
 include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_viralgenie_pipeline'
 
