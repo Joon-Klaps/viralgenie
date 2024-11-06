@@ -290,3 +290,10 @@ def methodsDescriptionText(mqc_methods_yaml) {
     return description_html.toString()
 }
 
+def createFileChannel(param) {
+    return param ? Channel.fromPath(param, checkIfExists: true).collect() : []
+}
+
+def createChannel(dbPath, dbName, skipFlag) {
+    return dbPath && skipFlag ? Channel.fromPath(dbPath, checkIfExists: true).map { db -> [[id: dbName], db] } : Channel.empty()
+}

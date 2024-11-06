@@ -4,62 +4,6 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-def valid_params = [
-    spades_modes     : ['rnaviral', 'corona', 'metaviral', 'meta', 'metaplasmid', 'plasmid', 'isolate', 'rna', 'bio']
-]
-
-def assemblers         = params.assemblers ? params.assemblers.split(',').collect{ it.trim().toLowerCase() } : []
-def read_classifiers   = params.read_classifiers ? params.read_classifiers.split(',').collect{ it.trim().toLowerCase() } : []
-def contig_classifiers = params.precluster_classifiers ? params.precluster_classifiers.split(',').collect{ it.trim().toLowerCase() } : []
-
-def createFileChannel(param) {
-    return param ? Channel.fromPath(param, checkIfExists: true).collect() : []
-}
-
-def createChannel(dbPath, dbName, skipFlag) {
-    return dbPath && skipFlag ? Channel.fromPath(dbPath, checkIfExists: true).map { db -> [[id: dbName], db] } : Channel.empty()
-}
-
-// Check input path parameters to see if they exist
-def checkPathParamList = [
-    params.input, params.multiqc_config, params.adapter_fasta, params.contaminants,
-    params.spades_yml,params.spades_hmm
-]
-for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
-
-// Check mandatory parameters
-if (params.input ) { ch_input = file(params.input) } else { exit 1, 'Input samplesheet not specified!'}
-
-// Optional parameters
-ch_adapter_fasta  = createFileChannel(params.adapter_fasta)
-ch_metadata       = createFileChannel(params.metadata)
-ch_contaminants   = createFileChannel(params.contaminants)
-ch_spades_yml     = createFileChannel(params.spades_yml)
-ch_spades_hmm     = createFileChannel(params.spades_hmm)
-ch_constrain_meta = createFileChannel(params.mapping_constrains)
-
-// Databases, we really don't want to stage uncessary databases
-ch_ref_pool      = (!params.skip_assembly && !params.skip_polishing) || (!params.skip_consensus_qc && !params.skip_blast_qc)           ? createChannel( params.reference_pool, "reference", true )                                                         : Channel.empty()
-ch_kraken2_db    = (!params.skip_assembly && !params.skip_polishing && !params.skip_precluster) || !params.skip_read_classification    ? createChannel( params.kraken2_db, "kraken2", ('kraken2' in read_classifiers || 'kraken2' in contig_classifiers) ) : Channel.empty()
-ch_kaiju_db      = (!params.skip_assembly && !params.skip_polishing && !params.skip_precluster) || !params.skip_read_classification    ? createChannel( params.kaiju_db, "kaiju", ('kaiju' in read_classifiers || 'kaiju' in contig_classifiers) )         : Channel.empty()
-ch_checkv_db     = !params.skip_consensus_qc                                                                                           ? createChannel( params.checkv_db, "checkv", !params.skip_checkv )                                                  : Channel.empty()
-ch_bracken_db    = !params.skip_read_classification                                                                                    ? createChannel( params.bracken_db, "bracken", ('bracken' in read_classifiers) )                                    : Channel.empty()
-ch_k2_host       = !params.skip_preprocessing                                                                                          ? createChannel( params.host_k2_db, "k2_host", !params.skip_hostremoval )                                           : Channel.empty()
-ch_annotation_db = !params.skip_consensus_qc                                                                                           ? createChannel( params.annotation_db, "annotation", !params.skip_annotation )                                      : Channel.empty()
-
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    CONFIG FILES
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
-
-ch_multiqc_config                     = Channel.fromPath("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
-ch_multiqc_custom_config              = params.multiqc_config ? Channel.fromPath( params.multiqc_config, checkIfExists: true ) : Channel.empty()
-ch_multiqc_logo                       = params.multiqc_logo   ? Channel.fromPath( params.multiqc_logo, checkIfExists: true ) : Channel.empty()
-ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
-ch_multiqc_comment_headers            = params.multiqc_comment_headers     ? Channel.fromPath(params.multiqc_comment_headers, checkIfExists:true ) : Channel.empty()
-ch_multiqc_custom_table_headers       = params.custom_table_headers        ? Channel.fromPath(params.custom_table_headers, checkIfExists:true ) : Channel.empty()
-
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     IMPORT LOCAL & NF-CORE MODULES/SUBWORKFLOWS
@@ -70,6 +14,8 @@ include { paramsSummaryMap                } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc            } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML          } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { methodsDescriptionText          } from '../subworkflows/local/utils_nfcore_viralgenie_pipeline'
+include { createFileChannel               } from '../subworkflows/local/utils_nfcore_viralgenie_pipeline'
+include { createChannel                   } from '../subworkflows/local/utils_nfcore_viralgenie_pipeline'
 
 // Preprocessing
 include { PREPROCESSING_ILLUMINA          } from '../subworkflows/local/preprocessing_illumina'
@@ -116,6 +62,45 @@ workflow VIRALGENIE {
     take:
     ch_samplesheet // channel: samplesheet read in from --input
     main:
+
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        PARAMETER INITIALIZATION
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    */
+
+    def read_classifiers   = params.read_classifiers ? params.read_classifiers.split(',').collect{ it.trim().toLowerCase() } : []
+    def contig_classifiers = params.precluster_classifiers ? params.precluster_classifiers.split(',').collect{ it.trim().toLowerCase() } : []
+    // Optional parameters
+    ch_adapter_fasta  = createFileChannel(params.adapter_fasta)
+    ch_metadata       = createFileChannel(params.metadata)
+    ch_contaminants   = createFileChannel(params.contaminants)
+    ch_spades_yml     = createFileChannel(params.spades_yml)
+    ch_spades_hmm     = createFileChannel(params.spades_hmm)
+    ch_constrain_meta = createFileChannel(params.mapping_constrains)
+
+    // Databases, we really don't want to stage uncessary databases
+    ch_ref_pool      = (!params.skip_assembly && !params.skip_polishing) || (!params.skip_consensus_qc && !params.skip_blast_qc)           ? createChannel( params.reference_pool, "reference", true )                                                         : Channel.empty()
+    ch_kraken2_db    = (!params.skip_assembly && !params.skip_polishing && !params.skip_precluster) || !params.skip_read_classification    ? createChannel( params.kraken2_db, "kraken2", ('kraken2' in read_classifiers || 'kraken2' in contig_classifiers) ) : Channel.empty()
+    ch_kaiju_db      = (!params.skip_assembly && !params.skip_polishing && !params.skip_precluster) || !params.skip_read_classification    ? createChannel( params.kaiju_db, "kaiju", ('kaiju' in read_classifiers || 'kaiju' in contig_classifiers) )         : Channel.empty()
+    ch_checkv_db     = !params.skip_consensus_qc                                                                                           ? createChannel( params.checkv_db, "checkv", !params.skip_checkv )                                                  : Channel.empty()
+    ch_bracken_db    = !params.skip_read_classification                                                                                    ? createChannel( params.bracken_db, "bracken", ('bracken' in read_classifiers) )                                    : Channel.empty()
+    ch_k2_host       = !params.skip_preprocessing                                                                                          ? createChannel( params.host_k2_db, "k2_host", !params.skip_hostremoval )                                           : Channel.empty()
+    ch_annotation_db = !params.skip_consensus_qc                                                                                           ? createChannel( params.annotation_db, "annotation", !params.skip_annotation )                                      : Channel.empty()
+
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        CONFIG FILES
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    */
+
+    ch_multiqc_config                     = Channel.fromPath("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
+    ch_multiqc_custom_config              = params.multiqc_config ? Channel.fromPath( params.multiqc_config, checkIfExists: true ) : Channel.empty()
+    ch_multiqc_logo                       = params.multiqc_logo   ? Channel.fromPath( params.multiqc_logo, checkIfExists: true ) : Channel.empty()
+    ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
+    ch_multiqc_comment_headers            = params.multiqc_comment_headers     ? Channel.fromPath(params.multiqc_comment_headers, checkIfExists:true ) : Channel.empty()
+    ch_multiqc_custom_table_headers       = params.custom_table_headers        ? Channel.fromPath(params.custom_table_headers, checkIfExists:true ) : Channel.empty()
+
 
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
@@ -166,7 +151,6 @@ workflow VIRALGENIE {
     // Prepare blast DB
     ch_ref_pool     = Channel.empty()
     ch_blast_refdb  = Channel.empty()
-    ch_blast_annodb = Channel.empty()
 
     if ( (!params.skip_assembly && !params.skip_polishing) || (!params.skip_consensus_qc && !params.skip_blast_qc)){
         ch_blastdb_in = Channel.empty()
@@ -185,8 +169,8 @@ workflow VIRALGENIE {
                     return [ meta, db ]
                 // annotation: meta.id == 'annotation'
                 //     return [ meta, db ]
-            }.
-            set{ch_blastdb_out}
+            }
+            .set{ch_blastdb_out}
         ch_blast_refdb  = ch_blastdb_out.reference.collect{it[1]}.ifEmpty([]).map{it -> [[id: 'reference'], it]}
         ch_versions     = ch_versions.mix(BLAST_MAKEBLASTDB.out.versions)
     }
@@ -212,10 +196,10 @@ workflow VIRALGENIE {
     if (!params.skip_read_classification) {
         FASTQ_KRAKEN_KAIJU(
             ch_host_trim_reads,
-            read_classifiers,
             ch_kraken2_db,
             ch_bracken_db,
-            ch_kaiju_db
+            ch_kaiju_db,
+            read_classifiers
             )
         ch_multiqc_files = ch_multiqc_files.mix(FASTQ_KRAKEN_KAIJU.out.mqc.collect{it[1]}.ifEmpty([]))
         ch_versions      = ch_versions.mix(FASTQ_KRAKEN_KAIJU.out.versions)
@@ -233,7 +217,7 @@ workflow VIRALGENIE {
 
     if (!params.skip_assembly) {
         // run different assemblers and combine contigs
-        FASTQ_ASSEMBLY( ch_host_trim_reads, assemblers, ch_spades_yml, ch_spades_hmm)
+        FASTQ_ASSEMBLY( ch_host_trim_reads, ch_spades_yml, ch_spades_hmm)
         ch_contigs       = FASTQ_ASSEMBLY.out.scaffolds
         ch_coverages     = FASTQ_ASSEMBLY.out.coverages
         ch_versions      = ch_versions.mix(FASTQ_ASSEMBLY.out.versions)
@@ -250,9 +234,9 @@ workflow VIRALGENIE {
                 ch_coverages,
                 ch_blast_refdb,
                 ch_ref_pool,
-                contig_classifiers,
                 ch_kraken2_db,
-                ch_kaiju_db
+                ch_kaiju_db,
+                contig_classifiers
                 )
             ch_versions = ch_versions.mix(FASTA_CONTIG_CLUST.out.versions)
 
@@ -357,7 +341,7 @@ workflow VIRALGENIE {
             .fromList(samplesheetToList(params.mapping_constrains, "${projectDir}/assets/schemas/mapping_constrains.json"))
             .tap{mapping_constrains}
             .map{ meta, sequence ->
-                samples = meta.samples == [] ? meta.samples: tuple(meta.samples.split(";"))  // Split up samples if meta.samples is not null
+                def samples = meta.samples == [] ? meta.samples: tuple(meta.samples.split(";"))  // Split up samples if meta.samples is not null
                 [meta, samples, sequence]
             }
             .transpose(remainder:true)                                                         // Unnest
@@ -373,8 +357,8 @@ workflow VIRALGENIE {
             .map
                 {
                     meta, reads, meta_mapping, samples, sequence_mapping ->
-                    id = "${meta.sample}_${meta_mapping.id}-CONSTRAIN"
-                    new_meta = meta + meta_mapping + [
+                    def id = "${meta.sample}_${meta_mapping.id}-CONSTRAIN"
+                    def new_meta = meta + meta_mapping + [
                         id: id,
                         cluster_id: "${meta_mapping.id}",
                         step: "constrain",
