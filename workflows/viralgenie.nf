@@ -49,7 +49,7 @@ include { FASTQ_FASTA_MAP_CONSENSUS                            } from '../subwor
 include { CONSENSUS_QC                    } from '../subworkflows/local/consensus_qc'
 
 // Report generation
-include { CUSTOM_MULTIQC_TABLES           } from '../modules/local/custom_multiqc_tables'
+include { CUSTOM_MULTIQC           } from '../modules/local/custom_multiqc'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -347,9 +347,6 @@ workflow VIRALGENIE {
             .transpose(remainder:true)                                                         // Unnest
             .set{ch_mapping_constrains}
 
-        // // Check if the input is a multi-fasta
-        // ch_mapping_constrains.map{ meta, samples, sequence -> WorkflowMain.isMultiFasta(sequence, log)}
-
         // Joining all the reads with the mapping constrains, filter for those specified or keep everything if none specified.
         ch_decomplex_trim_reads
             .combine( ch_mapping_constrains )
@@ -409,7 +406,6 @@ workflow VIRALGENIE {
             params.deduplicate,
             true,
             params.variant_caller,
-            true,
             params.consensus_caller,
             params.mapping_stats,
             params.min_mapped_reads,
@@ -487,7 +483,7 @@ workflow VIRALGENIE {
     )
 
     // Prepare MULTIQC custom tables
-    CUSTOM_MULTIQC_TABLES (
+    CUSTOM_MULTIQC (
         ch_multiqc_files.collect(),
         ch_multiqc_config.toList(),
         ch_clusters_summary.ifEmpty([]),
@@ -502,10 +498,10 @@ workflow VIRALGENIE {
         ch_multiqc_comment_headers.ifEmpty([]),
         ch_multiqc_custom_table_headers.ifEmpty([])
         )
-    ch_versions = ch_versions.mix(CUSTOM_MULTIQC_TABLES.out.versions)
+    ch_versions = ch_versions.mix(CUSTOM_MULTIQC.out.versions)
 
     emit:
-    multiqc_report = CUSTOM_MULTIQC_TABLES.out.report.toList() // channel: /path/to/multiqc_report.html
+    multiqc_report = CUSTOM_MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
     versions       = ch_versions                               // channel: [ path(versions.yml) ]
 
 }

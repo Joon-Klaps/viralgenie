@@ -417,13 +417,9 @@ def write_clusters_summary(clusters, prefix, length_clusters=None):
 
     with open(f"{prefix}.summary_mqc.tsv", "w") as file:
         if length_clusters:
-            file.write(
-                "\t".join(
-                    ["Sample name", "Filtered # clusters", "Total # clusters", "Average filtered cluster size", "Number of singletons"]
-                )
-            )
+            file.write("\t".join(["Sample name", "# Clusters", "# Removed clusters", "Average cluster size", "Number of singletons"]))
             file.write("\n")
-            file.write("\t".join([str(prefix), str(n_clusters), str(length_clusters), str(avg_size), str(n_singletons)]))
+            file.write("\t".join([str(prefix), str(n_clusters), str(length_clusters - n_clusters), str(avg_size), str(n_singletons)]))
             file.write("\n")
         else:
             file.write("\t".join(["Sample name", "# Clusters", "Average cluster size", "Number of singletons"]))

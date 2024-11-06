@@ -38,7 +38,7 @@ workflow VCF_TABIX_STATS {
         ch_targets,
         ch_samples,
         ch_exons,
-        stats_in.meta_fasta
+        stats_in.fasta
     )
     ch_versions = ch_versions.mix(BCFTOOLS_STATS.out.versions.first())
 

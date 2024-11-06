@@ -1,4 +1,4 @@
-name: custom_multiqc_tables
+name: custom_multiqc
 channels:
   - conda-forge
   - bioconda

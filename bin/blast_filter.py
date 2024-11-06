@@ -5,6 +5,7 @@
 import argparse
 import logging
 import sys
+from constant_variables import BLAST_COLUMNS
 from pathlib import Path
 
 import pandas as pd
@@ -103,23 +104,7 @@ def filter(df, escore, bitscore, percent_alignment):
 
 def read_blast(blast):
     df = pd.read_csv(blast, sep="\t", header=None)
-    df.columns = [
-        "query",
-        "subject",
-        "subject_title",  # "stitle
-        "pident",
-        "qlen",
-        "slen",
-        "length",
-        "mismatch",
-        "gapopen",
-        "qstart",
-        "qend",
-        "sstart",
-        "send",
-        "evalue",
-        "bitscore",
-    ]
+    df.columns = BLAST_COLUMNS
     return df
 
 
@@ -168,9 +153,7 @@ def write_hits(df, contigs, references, prefix):
     # Write unique hits to file
     unique_hits = df["subject"].unique()
     unique_series = pd.Series(unique_hits)
-    unique_series.to_csv(
-        prefix + ".filter.hits.txt", sep="\t", index=False, header=False
-    )
+    unique_series.to_csv(prefix + ".filter.hits.txt", sep="\t", index=False, header=False)
 
 
 def main(argv=None):

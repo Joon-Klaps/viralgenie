@@ -1,4 +1,4 @@
-process CUSTOM_MULTIQC_TABLES {
+process CUSTOM_MULTIQC {
     label 'process_single'
 
     conda "${moduleDir}/environment.yml"
@@ -57,7 +57,7 @@ process CUSTOM_MULTIQC_TABLES {
     def custom_table_headers_command   = custom_table_headers   ? "--table_headers ${custom_table_headers}"      : ''
 
     """
-    custom_multiqc_tables.py \\
+    custom_multiqc.py \\
         $args \\
         $multiqc_files_command \\
         $multiqc_config_command \\
