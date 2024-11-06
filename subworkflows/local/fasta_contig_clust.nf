@@ -7,20 +7,20 @@ workflow FASTA_CONTIG_CLUST {
 
     take:
     fasta_fastq        // channel: [ val(meta), [ fasta ],  [ fastq ] ]
-    coverages          // channel: [ val(meta), [ idxstats* ] ]
+    ch_coverages       // channel: [ val(meta), [ idxstats* ] ]
     blast_db           // channel: [ val(meta), path(db) ]
     blast_db_fasta     // channel: [ val(meta), path(fasta) ]
-    contig_classifiers // value:   [ kaiju, kraken2 ]
     kraken2_db         // channel: [ val(meta), path(db) ]
     kaiju_db           // channel: [ val(meta), path(db) ]
+    contig_classifiers // value ['kraken2','kaiju']
 
     main:
-    ch_versions = Channel.empty()
-    fasta       = fasta_fastq.map{ meta, fasta, fastq -> [meta, fasta] }
+    ch_versions        = Channel.empty()
+    ch_fasta           = fasta_fastq.map{ meta, fasta, fastq -> [meta, fasta] }
 
     // Blast contigs to a reference database, to find a reference genome can be used for scaffolding
     FASTA_BLAST_REFSEL (
-        fasta,
+        ch_fasta,
         blast_db,
         blast_db_fasta
     )
@@ -56,9 +56,9 @@ workflow FASTA_CONTIG_CLUST {
     // if we have no coverage files, make the empty array else join with coverages
     if (params.perc_reads_contig == 0){
         sample_fasta_ref_contigs = fasta_ref_contigs
-            .map{ meta, fasta -> [meta.sample, meta, fasta []] }               // add sample for join
+            .map{ meta, fasta -> [meta.sample, meta, fasta,[]] }               // add sample for join
     } else {
-        sample_coverages = coverages
+        sample_coverages = ch_coverages
             .map{ meta, idxstats -> [meta.sample, meta, idxstats] }            // add sample for join
 
         sample_fasta_ref_contigs = fasta_ref_contigs
@@ -93,21 +93,21 @@ workflow FASTA_CONTIG_CLUST {
     EXTRACT_CLUSTER
         .out
         .members_centroids
-        .transpose()                                                                    // wide to long
+        .transpose()                                                                   // wide to long
         .map { meta, seq_members, seq_centroids, json_file ->
-            json          = WorkflowCommons.getMapFromJson(json_file)                   // convert cluster metadata to Map
-            new_meta      = meta + [ id: "${meta.sample}_${json.cluster_id}"] + json    // rename meta.id to include cluster number
+            def json     = WorkflowCommons.getMapFromJson(json_file)                   // convert cluster metadata to Map
+            def new_meta = meta + [ id: "${meta.sample}_${json.cluster_id}"] + json    // rename meta.id to include cluster number
             return [new_meta, seq_centroids, seq_members]
         }
         .set{seq_centroids_members}
 
     emit:
-    clusters              = FASTA_FASTQ_CLUST.out.clusters            // channel: [ [ meta ], [ clusters ] ]
-    centroids_members     = seq_centroids_members                     // channel: [ [ meta ], [ seq_centroids.fa], [ seq_members.fa] ]
-    clusters_tsv          = EXTRACT_CLUSTER.out.tsv                   // channel: [ [ meta ], [ tsv ] ]
-    clusters_summary      = EXTRACT_CLUSTER.out.summary               // channel: [ [ meta ], [ tsv ] ]
-    no_blast_hits_mqc     = no_blast_hits                            // channel: [ tsv ]
-    versions              = ch_versions                              // channel: [ versions.yml ]
+    clusters              = FASTA_FASTQ_CLUST.out.clusters // channel: [ [ meta ], [ clusters ] ]
+    centroids_members     = seq_centroids_members          // channel: [ [ meta ], [ seq_centroids.fa], [ seq_members.fa] ]
+    clusters_tsv          = EXTRACT_CLUSTER.out.tsv        // channel: [ [ meta ], [ tsv ] ]
+    clusters_summary      = EXTRACT_CLUSTER.out.summary    // channel: [ [ meta ], [ tsv ] ]
+    no_blast_hits_mqc     = no_blast_hits                  // channel: [ tsv ]
+    versions              = ch_versions                    // channel: [ versions.yml ]
 
 }
 

@@ -25,6 +25,7 @@ workflow FASTQ_KRAKEN_KAIJU {
     ch_krona_text           = Channel.empty()
     ch_raw_classifications  = Channel.empty()
 
+
     // Kraken
     if ('kraken2' in read_classifiers){
         KRAKEN2_KRAKEN2 ( reads, kraken2_db, params.kraken2_save_reads, params.kraken2_save_readclassification )
@@ -36,7 +37,7 @@ workflow FASTQ_KRAKEN_KAIJU {
         if ('bracken' in read_classifiers){
             BRACKEN_BRACKEN ( kraken2_report, bracken_db )
             ch_versions    = ch_versions.mix( BRACKEN_BRACKEN.out.versions.first() )
-            kraken2_report = BRACKEN_BRACKEN.out.results.map{ meta, report -> [meta + [tool: 'bracken'], report]}
+            kraken2_report = BRACKEN_BRACKEN.out.reports.map{ meta, report -> [meta + [tool: 'bracken'], report]}
         }
 
 
