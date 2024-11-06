@@ -70,6 +70,8 @@ workflow VIRALGENIE {
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     */
 
+    def read_classifiers   = params.read_classifiers ? params.read_classifiers.split(',').collect{ it.trim().toLowerCase() } : []
+    def contig_classifiers = params.precluster_classifiers ? params.precluster_classifiers.split(',').collect{ it.trim().toLowerCase() } : []
     // Optional parameters
     ch_adapter_fasta  = createFileChannel(params.adapter_fasta)
     ch_metadata       = createFileChannel(params.metadata)
@@ -197,7 +199,8 @@ workflow VIRALGENIE {
             ch_host_trim_reads,
             ch_kraken2_db,
             ch_bracken_db,
-            ch_kaiju_db
+            ch_kaiju_db,
+            read_classifiers
             )
         ch_multiqc_files = ch_multiqc_files.mix(FASTQ_KRAKEN_KAIJU.out.mqc.collect{it[1]}.ifEmpty([]))
         ch_versions      = ch_versions.mix(FASTQ_KRAKEN_KAIJU.out.versions)
@@ -232,7 +235,8 @@ workflow VIRALGENIE {
                 ch_blast_refdb,
                 ch_ref_pool,
                 ch_kraken2_db,
-                ch_kaiju_db
+                ch_kaiju_db,
+                contig_classifiers
                 )
             ch_versions = ch_versions.mix(FASTA_CONTIG_CLUST.out.versions)
 

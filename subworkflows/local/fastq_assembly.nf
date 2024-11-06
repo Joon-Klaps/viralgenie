@@ -17,7 +17,6 @@ workflow FASTQ_ASSEMBLY {
 
     take:
     ch_reads        // channel: [ val(meta), [ reads ] ]
-    assemblers      // value ['spades','trinity','megahit']
     ch_spades_yml   // channel: ['path/to/yml']
     ch_spades_hmm   // channel: ['path/to/hmm']
 

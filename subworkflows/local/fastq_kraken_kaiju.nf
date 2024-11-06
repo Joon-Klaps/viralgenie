@@ -14,6 +14,7 @@ workflow FASTQ_KRAKEN_KAIJU {
 
     take:
     reads            // channel: [ val(meta), [ fastq ] ]
+    read_classifiers // value ['kraken2','kaiju','bracken']
     kraken2_db       // channel: [ path(kraken2_db) ]
     bracken_db       // channel: [ path(bracken_db) ]
     kaiju_db         // channel: [ path(kaiju_db) ]
@@ -23,7 +24,6 @@ workflow FASTQ_KRAKEN_KAIJU {
     ch_multiqc_files        = Channel.empty()
     ch_krona_text           = Channel.empty()
     ch_raw_classifications  = Channel.empty()
-    read_classifiers        = params.read_classifiers ? params.read_classifiers.split(',').collect{ it.trim().toLowerCase() } : []
 
 
     // Kraken

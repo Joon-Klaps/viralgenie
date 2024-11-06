@@ -12,11 +12,11 @@ workflow FASTA_CONTIG_CLUST {
     blast_db_fasta     // channel: [ val(meta), path(fasta) ]
     kraken2_db         // channel: [ val(meta), path(db) ]
     kaiju_db           // channel: [ val(meta), path(db) ]
+    contig_classifiers // value ['kraken2','kaiju']
 
     main:
     ch_versions        = Channel.empty()
     ch_fasta           = fasta_fastq.map{ meta, fasta, fastq -> [meta, fasta] }
-    contig_classifiers = params.precluster_classifiers ? params.precluster_classifiers.split(',').collect{ it.trim().toLowerCase() } : []
 
     // Blast contigs to a reference database, to find a reference genome can be used for scaffolding
     FASTA_BLAST_REFSEL (
