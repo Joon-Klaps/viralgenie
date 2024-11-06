@@ -14,12 +14,12 @@ workflow BAM_CALL_CONSENSUS {
     main:
 
     ch_versions = Channel.empty()
-    bam         = bam_ref.map{ meta, bam, fasta -> [ meta, bam ] }
+    ch_bam      = bam_ref.map{ meta, bam, fasta -> [ meta, bam ] }
     fasta       = bam_ref.map{ meta, bam, fasta -> [ meta, fasta ] }
 
     if (consensus_caller == "bcftools"){
         BAM_VCF_CONSENSUS_BCFTOOLS (
-            bam,
+            ch_bam,
             vcf,
             fasta,
             mapping_stats
@@ -29,7 +29,7 @@ workflow BAM_CALL_CONSENSUS {
     }
     else if (consensus_caller == "ivar"){
         IVAR_CONSENSUS (
-            bam,
+            ch_bam,
             fasta.map{it[1]},
             mapping_stats // save mpileup
         )

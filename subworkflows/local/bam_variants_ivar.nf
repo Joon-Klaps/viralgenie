@@ -15,16 +15,16 @@ workflow BAM_VARIANTS_IVAR {
 
     ch_versions = Channel.empty()
 
-    bam        = bam_fasta.map{ meta, bam, fasta -> [ meta, bam ] }
-    fasta      = bam_fasta.map{ meta, bam, fasta -> [ fasta ] }
+    ch_bam     = bam_fasta.map{ meta, bam, fasta -> [ meta, bam ] }
+    ch_fasta   = bam_fasta.map{ meta, bam, fasta -> [ fasta ] }
     meta_fasta = bam_fasta.map{ meta, bam, fasta -> [ meta, fasta ] }
 
     //
     // Call variants
     //
     IVAR_VARIANTS (
-        bam,
-        fasta,
+        ch_bam,
+        ch_fasta,
         [], // fai never used within ivar
         [], // gff
         save_stats
@@ -76,15 +76,4 @@ workflow BAM_VARIANTS_IVAR {
 
     versions     = ch_versions                     // channel: [ versions.yml ]
 }
-
-// //
-// // Function that returns the number of lines in a file
-// //
-// public static Integer getNumLinesInFile(input_file) {
-//     def num_lines = 0
-//     input_file.eachLine { line ->
-//         num_lines ++
-//     }
-//     return num_lines
-// }
 

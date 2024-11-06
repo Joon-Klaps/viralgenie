@@ -9,6 +9,8 @@
     IMPORT LOCAL & NF-CORE MODULES/SUBWORKFLOWS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
+
+// functions
 include { samplesheetToList               } from 'plugin/nf-schema'
 include { paramsSummaryMap                } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc            } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -16,6 +18,7 @@ include { softwareVersionsToYAML          } from '../subworkflows/nf-core/utils_
 include { methodsDescriptionText          } from '../subworkflows/local/utils_nfcore_viralgenie_pipeline'
 include { createFileChannel               } from '../subworkflows/local/utils_nfcore_viralgenie_pipeline'
 include { createChannel                   } from '../subworkflows/local/utils_nfcore_viralgenie_pipeline'
+include { noContigSamplesToMultiQC        } from '../subworkflows/local/utils_nfcore_viralgenie_pipeline'
 
 // Preprocessing
 include { PREPROCESSING_ILLUMINA          } from '../subworkflows/local/preprocessing_illumina'
@@ -25,7 +28,6 @@ include { FASTQ_KRAKEN_KAIJU              } from '../subworkflows/local/fastq_kr
 
 // Assembly
 include { FASTQ_ASSEMBLY                  } from '../subworkflows/local/fastq_assembly'
-include { noContigSamplesToMultiQC        } from '../modules/local/functions'
 
 // Consensus polishing of genome
 include { FASTA_CONTIG_CLUST              } from '../subworkflows/local/fasta_contig_clust'
@@ -48,8 +50,6 @@ include { CONSENSUS_QC                    } from '../subworkflows/local/consensu
 
 // Report generation
 include { CUSTOM_MULTIQC_TABLES           } from '../modules/local/custom_multiqc_tables'
-include { MULTIQC as MULTIQC_DATAPREP     } from '../modules/nf-core/multiqc/main'
-include { MULTIQC as MULTIQC_REPORT       } from '../modules/nf-core/multiqc/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

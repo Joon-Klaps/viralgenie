@@ -10,7 +10,7 @@ include { SCAFFOLDS_EXTEND_STATS as EXTEND_TRINITY   } from './scaffolds_extend_
 include { SCAFFOLDS_EXTEND_STATS as EXTEND_MEGAHIT   } from './scaffolds_extend_stats.nf'
 include { CAT_CAT as CAT_ASSEMBLERS                  } from '../../modules/nf-core/cat/cat/main'
 include { PRINSEQPLUSPLUS as PRINSEQ_CONTIG          } from '../../modules/nf-core/prinseqplusplus/main'
-include { noContigSamplesToMultiQC                   } from '../../modules/local/functions'
+include { noContigSamplesToMultiQC                   } from '../../subworkflows/local/utils_nfcore_viralgenie_pipeline'
 
 
 workflow FASTQ_ASSEMBLY {

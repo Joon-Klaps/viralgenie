@@ -9,7 +9,7 @@ process TRINITY {
         'biocontainers/trinity:2.15.1--pl5321h146fbdb_3' }"
 
     input:
-    // arity not support in nextflow 23.04.0 
+    // arity not support in nextflow 23.04.0
     tuple val(meta), path(reads)
 
     output:
@@ -24,8 +24,9 @@ process TRINITY {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
 
-    def reads1 = [], reads2 = []
-    meta.single_end ? reads1 = reads : reads.eachWithIndex{ v, ix -> ( ix & 1 ? reads2 : reads1) << v }
+    def reads1 = []
+    def reads2 = []
+    meta.single_end ? reads1 == reads : reads.eachWithIndex{ v, ix -> ( ix & 1 ? reads2 : reads1) << v }
 
     if (meta.single_end) {
         reads_args = "--single ${reads1.join(',')}"

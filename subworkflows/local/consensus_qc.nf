@@ -15,16 +15,17 @@ workflow CONSENSUS_QC  {
     ch_aligned_raw_contigs // channel: [ val(meta), [ genome ] ]
     checkv_db              // channel: [ checkv_db ]
     refpool_db             // channel: [ val(meta), [refpool_db] ]
-    annotation_db          // channel: [ val(meta), [annotation_db] ]
+    annotation_db          // channel: [ val(meta), [annotation_db] ]s
 
     main:
 
-    ch_versions      = Channel.empty()
-    ch_multiqc_files = Channel.empty()
-    blast            = Channel.empty()
-    checkv           = Channel.empty()
-    quast            = Channel.empty()
-    annotation       = Channel.empty()
+    ch_versions         = Channel.empty()
+    ch_multiqc_files    = Channel.empty()
+    blast               = Channel.empty()
+    checkv              = Channel.empty()
+    quast               = Channel.empty()
+    annotation          = Channel.empty()
+    ch_genome_collapsed = Channel.empty()
 
     if ( !params.skip_checkv || !params.skip_alignment_qc) {
         ch_genome

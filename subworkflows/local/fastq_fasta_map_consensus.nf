@@ -1,4 +1,4 @@
-include { filterContigs; failedContigsToMultiQC   } from '../../modules/local/functions'
+include { filterContigs; failedContigsToMultiQC   } from '../../subworkflows/local/utils_nfcore_viralgenie_pipeline'
 include { MAP_READS                               } from './map_reads'
 include { BAM_DEDUPLICATE                         } from './bam_deduplicate'
 include { SAMTOOLS_SORT as SAMTOOLS_SORT_DEDUPPED } from '../../modules/nf-core/samtools/sort/main'
@@ -17,7 +17,6 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
     deduplicate          // val: [ true | false ]
     call_variants        // val: [ true | false ]
     variant_caller       // val: [ bcftools | ivar ]
-    call_consensus       // val: [ true | false ]
     consensus_caller     // val: [ bcftools | ivar ]
     mapping_stats        // val: [ true | false ]
     min_mapped_reads     // integer: min_mapped_reads
@@ -72,8 +71,8 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
     ch_versions = ch_versions.mix(SAMTOOLS_SORT_DEDUPPED.out.versions)
     ch_dedup_bam_sort = SAMTOOLS_SORT_DEDUPPED.out.bam
 
-    ch_dedup_bam_ref = ch_dedup_bam_sort.
-        join(ch_reference, by: [0])
+    ch_dedup_bam_ref = ch_dedup_bam_sort
+        .join(ch_reference, by: [0])
 
     // report summary statistics of alignment
     if (mapping_stats) {

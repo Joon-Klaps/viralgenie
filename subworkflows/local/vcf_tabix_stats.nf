@@ -8,34 +8,37 @@ include { BCFTOOLS_STATS } from '../../modules/nf-core/bcftools/stats/main'
 
 workflow VCF_TABIX_STATS {
     take:
-    vcf         //    channel: [ val(meta), [ vcf ] ]
-    regions     //    channel: [ val(meta), [ regions ] ]
-    targets     //    channel: [ val(meta), [ targets ] ]
-    samples     //    channel: [ val(meta), [ samples ] ]
-    exons       //    channel: [ val(meta), [ exons ] ]
-    fasta       //    channel: [ val(meta), [ fasta ] ]
+    ch_vcf      // channel: [ val(meta), [ vcf ] ]
+    ch_regions  // channel: [ val(meta), [ regions ] ]
+    ch_targets  // channel: [ val(meta), [ targets ] ]
+    ch_samples  // channel: [ val(meta), [ samples ] ]
+    ch_exons    // channel: [ val(meta), [ exons ] ]
+    ch_fasta    // channel: [ val(meta), [ fasta ] ]
 
     main:
 
     ch_versions = Channel.empty()
 
     TABIX_TABIX (
-        vcf
+        ch_vcf
     )
     ch_versions = ch_versions.mix(TABIX_TABIX.out.versions.first())
-    vcf_tbi_fasta= vcf
+    ch_vcf
         .join(TABIX_TABIX.out.tbi, by: [0])
-        .join(fasta, by: [0])
+        .join(ch_fasta, by: [0])
+        .multiMap{meta, vcf, tbi, fasta ->
+            vcf_tbi : [ meta, vcf, tbi]
+            fasta : [ meta, fasta ]
+        }
+        .set{stats_in}
 
-    vcf_tbi    = vcf_tbi_fasta.map{ meta, vcf, tbi, fasta -> [ meta, vcf, tbi ] }
-    meta_fasta = vcf_tbi_fasta.map{ meta, vcf, tbi, fasta -> [ meta, fasta ] }
     BCFTOOLS_STATS (
-        vcf_tbi,
-        regions,
-        targets,
-        samples,
-        exons,
-        meta_fasta
+        stats_in.vcf_tbi,
+        ch_regions,
+        ch_targets,
+        ch_samples,
+        ch_exons,
+        stats_in.meta_fasta
     )
     ch_versions = ch_versions.mix(BCFTOOLS_STATS.out.versions.first())
 
