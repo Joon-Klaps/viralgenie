@@ -825,7 +825,7 @@ def filter_constrain(df, column, value):
     return df_without_value, df_with_value
 
 
-def drop_columns(df, columns):
+def drop_columns(df: pd.DataFrame, columns: List[str]) -> pd.DataFrame:
     """
     Try to drop columns from a dataframe and return the dataframe.
 
@@ -854,7 +854,7 @@ def split_index_column(df: pd.DataFrame, prefix: str = None, split_column: str =
     """
     df_copy = df.copy()
     # Reset the index and rename the index column
-    df_copy = df_copy.reset_index(drop=False).rename(columns={df_copy.index.name: split_column})
+    df_copy = df_copy.reset_index(drop=True).rename(columns={df_copy.index.name: split_column})
     df_copy = df_copy[df_copy[split_column].str.contains("_", na=False)]
 
     # Apply the dynamic split function to each row in the column
@@ -871,6 +871,7 @@ def split_index_column(df: pd.DataFrame, prefix: str = None, split_column: str =
         inplace=True,
     )
 
+    df_copy = drop_columns(df_copy, ["sample", "cluster", "step"])
     # Concatenate the original DataFrame and the split data
     df_copy = pd.concat([df_copy, split_data], axis=1)
 
@@ -908,7 +909,7 @@ def reorder_rows(dataframe):
     rank_dict = {step: rank for rank, step in enumerate(ordered_list, start=1)}
 
     # Sort the DataFrame by 'step' based on the ranking dictionary
-    df["rank"] = df["step"].map(rank_dict)
+    df["rank"] = df["step"].replace(rank_dict)
     df = df.sort_values(["sample", "cluster", "rank"])
 
     return df
@@ -1091,6 +1092,7 @@ def create_constrain_summary(df_constrain: pd.DataFrame, file_columns: List[Unio
 
     return df_wide
 
+
 def select_columns(df: pd.DataFrame, columns: List[str]) -> pd.DataFrame:
     """
     Try to select columns from a dataframe and return the dataframe.
@@ -1104,6 +1106,7 @@ def select_columns(df: pd.DataFrame, columns: List[str]) -> pd.DataFrame:
     """
     result = df[[column for column in columns if column in df.columns]]
     return result.copy()
+
 
 def load_custom_data(args) -> List[pd.DataFrame]:
     """
@@ -1352,7 +1355,7 @@ def reformat_custom_df(df):
     """
     # Keep only those rows we can split up in sample, cluster, step
     logger.info("Splitting up the index column in sample name, cluster, step")
-    df = df.drop("index", axis=1)
+    df = drop_columns(df, ["index"])
     df["index"] = df.index
 
     df = split_index_column(df)
@@ -1427,11 +1430,12 @@ def write_results(contigs_mqc, constrains_mqc, args) -> int:
         logger.info("Writing Unfiltered Denovo constructs table file: contigs_all.tsv")
         write_dataframe(contigs_mqc, "contigs_all.tsv", [])
         contigs_mqc.set_index("index", inplace=True)
+        table_plot = contigs_mqc[~generate_ignore_samples(contigs_mqc)]
         mqc.add_custom_content_section(
             name="Denovo Construct Overview",
             anchor=Anchor("contigs_all"),
             description="The table below shows the overview of the denovo constructs with refinement.",
-            plot=table.plot(data=contigs_mqc.to_dict(orient="index")),
+            plot=table.plot(data=table_plot.to_dict(orient="index")),
         )
 
     if not constrains_mqc.empty:
@@ -1465,6 +1469,7 @@ def generate_ignore_samples(dataframe: pd.DataFrame) -> pd.Series:
     pd.Series: A Series containing the indices that are not in df_snip.
     """
     df = dataframe.copy()
+    df = drop_columns(df, ["index"])
     df["index"] = df.index
     df = split_index_column(df)
 

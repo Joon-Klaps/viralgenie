@@ -42,7 +42,7 @@ FILES_OF_INTEREST = {
 }
 
 CLUSTER_HEADERS = {
-    "# Remaining clusters": {
+    "# Clusters": {
         "title": "Filtered # clusters",
         "description": "Number of contig clusters used for further refinement",
         "scale": "Blues",
