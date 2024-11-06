@@ -862,7 +862,7 @@ def generate_indexed_df(df: pd.DataFrame, prefix: str = None, column_to_split: s
         return result_df
 
     split_column = column_to_split
-    if prefix :
+    if prefix:
         logger.info("Handling dataframe: %s", prefix)
         df = df.add_prefix(f"({prefix}) ")
         split_column = f"({prefix}) {column_to_split}"
@@ -1405,8 +1405,8 @@ def reformat_custom_df(df):
     """
     # Keep only those rows we can split up in sample, cluster, step
     logger.info("Splitting up the index column in sample name, cluster, step")
-    df = df.drop('index', axis=1)
-    df['index'] = df.index
+    df = df.drop("index", axis=1)
+    df["index"] = df.index
 
     df = split_index_column(df)
 
@@ -1500,10 +1500,8 @@ def write_results(contigs_mqc, constrains_mqc, args) -> int:
 
     # TODO correctly insert metadata of:
     #   -  versions
-    #   -  citations
-    #   -  parameters
-    #   -  methods_description
-    # TODO: Include only final iteration in plots
+    #   -  Not all mapping data is in the general stats table, while it should be
+    #   -  Double check for any other loss of information.
     mqc.write_report(make_data_dir=True, data_format="tsv", export_plots=False)
 
     return 0
@@ -1520,15 +1518,15 @@ def generate_ignore_samples(dataframe: pd.DataFrame) -> pd.Series:
     pd.Series: A Series containing the indices that are not in df_snip.
     """
     df = dataframe.copy()
-    df['index'] = df.index
+    df["index"] = df.index
     df = split_index_column(df)
 
     df = reorder_rows(df)
 
     # Filter for only the last iteration
-    df_filter = df.groupby(['sample', 'cluster']).head(1).reset_index(drop=True)
+    df_filter = df.groupby(["sample", "cluster"]).head(1).reset_index(drop=True)
 
-    return df_filter['index'][~df['index'].isin(df_filter['index'])]
+    return df["index"][~df["index"].isin(df_filter["index"])]
 
 
 def main(argv=None):
@@ -1566,11 +1564,8 @@ def main(argv=None):
 
     # 3. Reset multiqc and rerun while removing iteration data.
     mqc.reset()
-    mqc.parse_logs(
-        args.multiqc_files,
-        args.multiqc_config,
-        ignore_samples=generate_ignore_samples(mqc_custom_df)
-    )
+    print(generate_ignore_samples(mqc_custom_df))
+    mqc.parse_logs(args.multiqc_files, args.multiqc_config, ignore_samples=generate_ignore_samples(mqc_custom_df))
 
     # 2. Parse our custom files into the correct tables
     custom_tables = load_custom_data(args)
