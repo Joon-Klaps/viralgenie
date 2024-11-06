@@ -93,7 +93,7 @@ def lowReadSamplesToMultiQC(tsv_data, min_trimmed_reads) {
 def noContigSamplesToMultiQC(tsv_data, assemblers) {
     tsv_data
         .map { meta, fasta ->
-            def n_fasta = scaffolds.countFasta()
+            def n_fasta = fasta.countFasta()
             ["$meta.sample\t$n_fasta"]
         }
         .collect()
