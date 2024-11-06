@@ -460,17 +460,6 @@ workflow VIRALGENIE {
 
     }
 
-    // MULTIQC_DATAPREP (
-    //     ch_multiqc_files.collect(),
-    //     ch_multiqc_config.toList(),
-    //     ch_multiqc_custom_config.toList(),
-    //     ch_multiqc_logo.toList(),
-    //     [],
-    //     [],
-    // )
-
-    // multiqc_data = MULTIQC_DATAPREP.out.data.ifEmpty([])
-
     //
     // MODULE: MultiQC
     //
@@ -526,30 +515,14 @@ workflow VIRALGENIE {
         ch_annotation_summary.ifEmpty([]),
         ch_clusters_tsv.ifEmpty([]),
         ch_mash_screen.ifEmpty([]),
-        multiqc_data,
         ch_multiqc_comment_headers.ifEmpty([]),
         ch_multiqc_custom_table_headers.ifEmpty([])
         )
-    // ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_MULTIQC_TABLES.out.summary_clusters_mqc.ifEmpty([]))
-    // ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_MULTIQC_TABLES.out.clusters_barchart_mqc.ifEmpty([]))
-    // ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_MULTIQC_TABLES.out.sample_metadata_mqc.ifEmpty([]))
-    // ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_MULTIQC_TABLES.out.clusters_barchart_mqc.ifEmpty([]))
-    // ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_MULTIQC_TABLES.out.mapping_constrains_mqc.ifEmpty([]))
-    // ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_MULTIQC_TABLES.out.constrains_summary_mqc.ifEmpty([]))
-    // ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_MULTIQC_TABLES.out.contig_html.ifEmpty([]))
-    // ch_versions      = ch_versions.mix(CUSTOM_MULTIQC_TABLES.out.versions)
+    ch_versions = ch_versions.mix(CUSTOM_MULTIQC_TABLES.out.versions)
 
-    MULTIQC_REPORT (
-        ch_multiqc_files.collect(),
-        ch_multiqc_config.toList(),
-        ch_multiqc_custom_config.toList(),
-        ch_multiqc_logo.toList(),
-        [],
-        [],
-    )
-
-    emit:multiqc_report = MULTIQC_REPORT.out.report.toList() // channel: /path/to/multiqc_report.html
-    versions            = ch_versions                        // channel: [ path(versions.yml) ]
+    emit:
+    multiqc_report = CUSTOM_MULTIQC_TABLES.out.report.toList() // channel: /path/to/multiqc_report.html
+    versions       = ch_versions                               // channel: [ path(versions.yml) ]
 
 }
 

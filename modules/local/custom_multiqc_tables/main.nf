@@ -31,9 +31,10 @@ process CUSTOM_MULTIQC_TABLES {
     path("summary_blast_mqc.tsv")             , emit: summary_blast_mqc     , optional: true
     path("summary_anno_mqc.tsv")              , emit: summary_anno_mqc      , optional: true
     path("clusters_barchart.tsv")             , emit: clusters_barchart_mqc , optional: true
-    path("contig_custom_table_mqc.html")      , emit: contig_html           , optional: true
-    path("constrain_custom_table_mqc.html")   , emit: mapping_constrains_mqc, optional: true
     path("mapping_constrains_summary_mqc.tsv"), emit: constrains_summary_mqc, optional: true
+    path "*multiqc_report.html"               , emit: report                , optional: true
+    path "*_data"                             , emit: data                  , optional: true
+    path "*_plots"                            , emit: plots                 , optional: true
     path "versions.yml"                       , emit: versions
 
     when:
