@@ -1,7 +1,5 @@
 include { CHECKV_DOWNLOADDATABASE           } from '../../modules/nf-core/checkv/downloaddatabase/main'
 include { CHECKV_ENDTOEND                   } from '../../modules/nf-core/checkv/endtoend/main'
-include { CAT_CAT as CAT_CAT_QC             } from '../../modules/nf-core/cat/cat/main'
-include { CAT_CAT as CAT_CAT_MMSEQS         } from '../../modules/nf-core/cat/cat/main'
 include { QUAST  as QUAST_QC                } from '../../modules/nf-core/quast/main'
 include { BLAST_BLASTN as BLASTN_QC         } from '../../modules/nf-core/blast/blastn/main'
 include { MAFFT as MAFFT_ITERATIONS         } from '../../modules/nf-core/mafft/main'
@@ -27,97 +25,92 @@ workflow CONSENSUS_QC  {
     annotation          = Channel.empty()
     ch_genome_collapsed = Channel.empty()
 
-    if ( !params.skip_checkv || !params.skip_alignment_qc) {
-        ch_genome
-            .map{meta, genome -> [meta.subMap('id','cluster_id','sample'), genome]}
-            .groupTuple()
-            .set{catcat_in}
+    ch_genome
+        .collectFile(name: "all_genomes.fa", newLine:true){it[1]}
+        .map{it -> [[id:"all_genomes"], it]}
+        .set{ch_genomes_all}
 
-        CAT_CAT_QC( catcat_in )
+    ch_genomes_all.dump(tag:"all_genomes", pretty:true)
 
-        CAT_CAT_QC
-            .out
-            .file_out
-            .set{ch_genome_collapsed}
-        ch_versions = ch_versions.mix(CAT_CAT_QC.out.versions)
-    }
-
-    if ( !params.skip_checkv ) {
-        if ( !params.checkv_db ) {
-            CHECKV_DOWNLOADDATABASE()
-            checkv_db   = CHECKV_DOWNLOADDATABASE.out.checkv_db
-            ch_versions = ch_versions.mix(CHECKV_DOWNLOADDATABASE.out.versions)
+    ch_genome
+        .map{meta, genome -> [meta.subMap('id','cluster_id','sample'), genome]}
+        .groupTuple()
+        .tap{grouped}
+        .collectFile( newLine: true){ meta, genome ->
+            ["${meta.cluster_id}-grouped.fa", genome]
         }
+        .set{ch_genome_collapsed}
+    grouped.dump(tag:"grouped", pretty:true)
+    ch_genome_collapsed.dump(tag:"collapsed", pretty:true)
 
-        // uses HMM and AA alignment to deterimine completeness
-        CHECKV_ENDTOEND ( ch_genome_collapsed, checkv_db)
+    // // Contig summary statistics
+    // if ( !params.skip_quast ) {
+    //     QUAST_QC ( ch_genome, [[:],[]], [[:],[]])
+    //     quast         = QUAST_QC.out.tsv
+    //     ch_versions   = ch_versions.mix(QUAST_QC.out.versions)
+    // }
 
-        checkv      = CHECKV_ENDTOEND.out.quality_summary
-        ch_versions = ch_versions.mix(CHECKV_ENDTOEND.out.versions)
-    }
+    // // Identify closest reference from the reference pool database using blast
+    // if ( !params.skip_blast_qc ){
+    //     BLASTN_QC (ch_genomes_all, refpool_db)
+    //     blast       = BLASTN_QC.out.txt
+    //     ch_versions = ch_versions.mix(BLASTN_QC.out.versions)
+    // }
 
-    // Align the different steps to each other to see how the sequences have changed
-    if ( !params.skip_alignment_qc){
+    // // use MMSEQS easy search to find best hits against annotation db
+    // if ( !params.skip_annotation){
+    //     MMSEQS_ANNOTATE(ch_genomes_all,annotation_db)
+    //     annotation  = MMSEQS_ANNOTATE.out.tsv
+    //     ch_versions = ch_versions.mix(MMSEQS_ANNOTATE.out.versions)
+    // }
 
-        // MAFFT doesn't like those that have only one sequence
-        ch_genome_collapsed
-            .branch { meta, scaffolds ->
-                pass: scaffolds.countFasta() > 1
-                fail: scaffolds.countFasta() == 1
-            }
-            .set{ch_genome_collapsed_branch}
+    // if ( !params.skip_checkv ) {
+    //     if ( !params.checkv_db ) {
+    //         CHECKV_DOWNLOADDATABASE()
+    //         checkv_db   = CHECKV_DOWNLOADDATABASE.out.checkv_db
+    //         ch_versions = ch_versions.mix(CHECKV_DOWNLOADDATABASE.out.versions)
+    //     }
 
-        MAFFT_ITERATIONS ( ch_genome_collapsed_branch.pass, [[:],[]], [[:],[]], [[:],[]], [[:],[]], [[:],[]], false )
+    //     // uses HMM and AA alignment to deterimine completeness
+    //     CHECKV_ENDTOEND ( ch_genome_collapsed, checkv_db)
+    //     checkv      = CHECKV_ENDTOEND.out.quality_summary
+    //     ch_versions = ch_versions.mix(CHECKV_ENDTOEND.out.versions)
+    // }
 
-        ch_versions = ch_versions.mix(MAFFT_ITERATIONS.out.versions)
-        contigs_mod = ch_aligned_raw_contigs.map{ meta, genome -> [meta.id, meta, genome] }
+    // // Align the different steps to each other to see how the sequences have changed
+    // if ( !params.skip_alignment_qc){
 
-        // Make a channel that contains the alignment of the iterations with
-        // the original contigs from the assemblers
-        ch_genome_collapsed_branch
-            .fail.mix(MAFFT_ITERATIONS.out.fas)                             // Combine alignments with single results
-            .map{ meta, genome -> [meta.id, meta, genome] }                 // Set common delimiter
-            .join( contigs_mod, by: 0)                                      // Combine with raw contigs
-            .filter{id, meta_genome, scaffolds, meta_contigs, contigs  ->   // Make sure we have at least 2 sequences
-                scaffolds.countFasta() + contigs.countFasta() > 1
-            }
-            .multiMap{ id, meta_genome, scaffolds, meta_contigs, contigs -> // Split in correct inputs
-                scaffolds: [meta_genome, scaffolds]
-                contigs: [meta_genome, contigs]
-            }.set{mafftQC_in}
+    //     // MAFFT doesn't like those that have only one sequence
+    //     ch_genome_collapsed
+    //         .branch { meta, scaffolds ->
+    //             pass: scaffolds.countFasta() > 1
+    //             fail: scaffolds.countFasta() == 1
+    //         }
+    //         .set{ch_genome_collapsed_branch}
 
-        MAFFT_QC ( mafftQC_in.scaffolds, mafftQC_in.contigs, [[:],[]], [[:],[]], [[:],[]], [[:],[]], false)
+    //     MAFFT_ITERATIONS ( ch_genome_collapsed_branch.pass, [[:],[]], [[:],[]], [[:],[]], [[:],[]], [[:],[]], false )
 
-        ch_versions = ch_versions.mix(MAFFT_QC.out.versions)
-    }
+    //     ch_versions = ch_versions.mix(MAFFT_ITERATIONS.out.versions)
+    //     contigs_mod = ch_aligned_raw_contigs.map{ meta, genome -> [meta.id, meta, genome] }
 
-    // Contig summary statistics
-    if ( !params.skip_quast ) {
-        QUAST_QC ( ch_genome, [[:],[]], [[:],[]])
+    //     // Make a channel that contains the alignment of the iterations with
+    //     // the original contigs from the assemblers
+    //     ch_genome_collapsed_branch
+    //         .fail.mix(MAFFT_ITERATIONS.out.fas)                             // Combine alignments with single results
+    //         .map{ meta, genome -> [meta.id, meta, genome] }                 // Set common delimiter
+    //         .join( contigs_mod, by: 0)                                      // Combine with raw contigs
+    //         .filter{id, meta_genome, scaffolds, meta_contigs, contigs  ->   // Make sure we have at least 2 sequences
+    //             scaffolds.countFasta() + contigs.countFasta() > 1
+    //         }
+    //         .multiMap{ id, meta_genome, scaffolds, meta_contigs, contigs -> // Split in correct inputs
+    //             scaffolds: [meta_genome, scaffolds]
+    //             contigs: [meta_genome, contigs]
+    //         }.set{mafftQC_in}
 
-        ch_versions   = ch_versions.mix(QUAST_QC.out.versions)
-        quast = QUAST_QC.out.tsv
-    }
+    //     MAFFT_QC ( mafftQC_in.scaffolds, mafftQC_in.contigs, [[:],[]], [[:],[]], [[:],[]], [[:],[]], false)
 
-    // Identify closest reference from the reference pool database using blast
-    if ( !params.skip_blast_qc ){
-        BLASTN_QC ( ch_genome, refpool_db)
-
-        blast       = BLASTN_QC.out.txt
-        ch_versions = ch_versions.mix(BLASTN_QC.out.versions)
-    }
-
-    // use MMSEQS easy search to find best hits against annotation db
-    if ( !params.skip_annotation){
-        ch_genomes_collect = ch_genome.collect{it[1]}.map{files -> [[id:"all_genomes_annotation.hits"], files]}
-        CAT_CAT_MMSEQS( ch_genomes_collect )
-        ch_versions = ch_versions.mix(CAT_CAT_MMSEQS.out.versions)
-
-        MMSEQS_ANNOTATE(CAT_CAT_MMSEQS.out.file_out,annotation_db)
-
-        annotation  = MMSEQS_ANNOTATE.out.tsv
-        ch_versions = ch_versions.mix(MMSEQS_ANNOTATE.out.versions)
-    }
+    //     ch_versions = ch_versions.mix(MAFFT_QC.out.versions)
+    // }
 
     emit:
     blast       = blast             // channel: [ val(meta), [ txt ] ]
