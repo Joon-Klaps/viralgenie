@@ -197,30 +197,6 @@ def parse_args(argv=None):
     return parser.parse_args(argv)
 
 
-def check_file_exists(file, throw_error=True):
-    """Check if the given files exist.
-
-    Args:
-        file (str): The path to the file to be checked.
-        throw_error (bool, optional): Whether to throw an error and exit the program if the file is not found.
-            Defaults to True.
-
-    Returns:
-        bool: True if the file exists and is not empty, False otherwise.
-    """
-    if not Path(file).exists():
-        if throw_error:
-            logger.error("The given input file %s was not found!", file)
-            sys.exit(2)
-        else:
-            logger.warning("The given input file %s was not found!", file)
-            return False
-    elif not os.stat(file).st_size > 0:
-        # logger.warning("The given input file %s is empty, it will not be used!", file)
-        return False
-    return True
-
-
 def get_module_selection(table_headers: Path = None) -> Dict:
     """
     Get the files of interest and the columns of interest from the table headers file
@@ -273,6 +249,7 @@ def filter_and_rename_columns(data: pd.DataFrame, columns: List[Union[str, Dict[
 
     return data[keep_columns].rename(columns=rename_dict)
 
+
 def join_dataframe(base_df: pd.DataFrame, dfs: List[pd.DataFrame]) -> pd.DataFrame:
     """
     Join multiple DataFrames or a DataFrame and a Series together.
@@ -297,143 +274,12 @@ def join_dataframe(base_df: pd.DataFrame, dfs: List[pd.DataFrame]) -> pd.DataFra
     return joined_df
 
 
-def process_multiqc_dataframe(df):
-    """
-    Process the MultiQC dataframe by splitting the values in the first column by "." and setting it as the index.
-    This function is required to handle the output files form quast & checkv to bring them to the same standard as MultiQC.
-
-    Args:
-        df (pd.DataFrame): The MultiQC dataframe to be processed.
-
-    Returns:
-        pd.DataFrame: The processed MultiQC dataframe.
-    """
-    # check if '.' are present in the first columns
-    first_element = df[df.columns[0]].iloc[0]
-    if "." in first_element and not re.search(r"\.\d", first_element):
-        # split the first column by '.' and take the first part
-        df[df.columns[0]] = df[df.columns[0]].str.split(".").str[0]
-    df.set_index(df.columns[0], inplace=True)
-    return df
-
-
-def process_failed_contig_dataframe(df):
-    """
-    Process the failed contig dataframe by converting columns to string type,
-    splitting values in "Cluster" and "Iteration" columns, creating a new "id" column,
-    setting "id" as the index, and returning the index series.
-
-    Args:
-        df (pd.DataFrame): The dataframe containing the failed contig data.
-
-    Returns:
-        pandas.Index: The index series of the processed dataframe.
-    """
-    df = df.astype(str)
-    df["id"] = df["sample name"] + "_" + df["cluster"] + "_" + df["step"]
-    df.set_index("id", inplace=True)
-    return df
-
-
-def filter_files_of_interest(multiqc_data, files_of_interest):
-    """
-    Filters the multiqc_data list to include only files whose stem contains any of the files_of_interest.
-
-    Args:
-        multiqc_data (list): List of file paths.
-        files_of_interest (list): List of file names to filter by.
-
-    Returns:
-        list: Filtered list of file paths.
-    """
-    file_list = [file for file in multiqc_data if files_of_interest in file.stem]
-    if file_list:
-        logger.debug("Files of interest found: %s", file_list)
-    if len(file_list) > 1:
-        logger.warning(
-            "Multiple files of interest were found: %s for %s",
-            file_list,
-            files_of_interest,
-        )
-        logger.warning("Taking the first one: %s", file_list[0])
-        return file_list[0]
-    if len(file_list) == 0:
-        return []
-    return file_list[0]
-
-
-def read_data(directory, file_columns, process_dataframe):
-    """
-    This function reads data from multiple files and processes it.
-
-    Args:
-    directory: The directory where the files are located.
-    files_of_interest: A list of filenames that we are interested in.
-    process_dataframe: A function that processes a dataframe.
-
-    Returns:
-    A dataframe that contains the processed data from all the files of interest.
-    """
-    logger.info("Reading data from %s", directory)
-    multiqc_data = [file for file in directory.glob("multiqc_*.txt")]
-
-    multiqc_samples_df = pd.DataFrame()
-    for file_name, column_names in file_columns.items():
-        files_of_interest = filter_files_of_interest(multiqc_data, file_name)
-        if not files_of_interest:
-            logger.info("No files of interest were found for %s in %s", file_name, directory)
-            continue
-
-        df = read_file_to_dataframe(files_of_interest)
-        if df.empty:
-            logger.warning("The file %s was empty!", files_of_interest)
-            continue
-        df = process_dataframe(df)
-        df = filter_and_rename_columns(df, column_names)
-        multiqc_samples_df = join_dataframe(multiqc_samples_df, [df])
-
-    return multiqc_samples_df
-
-
 def dynamic_split(index_str):
     """
     Split the index string into sample name, cluster, and step.
     """
     parts = index_str.split("_")
     return parts[0], parts[1], "_".join(parts[2:])
-
-
-def compute_quast_metrics(quast_df):
-    """
-    Compute additional metrics based on QUAST output and add them to the DataFrame.
-
-    Args:
-        quast_df (pd.DataFrame): The QUAST output DataFrame.
-
-    Returns:
-        pd.DataFrame: The updated DataFrame with additional computed metrics.
-    """
-    if quast_df.empty:
-        return quast_df
-
-    try:
-        # Compute the number of N's based on the "# N's per 100 kbp" and "Largest contig" columns
-        quast_df["(quast) # N's"] = (
-            pd.to_numeric(quast_df["(quast) # N's per 100 kbp"]) * pd.to_numeric(quast_df["(quast) Largest contig"]) / 100000
-        )
-        quast_df["(quast) # N's"] = quast_df["(quast) # N's"].astype(int)
-
-        # Compute the percentage of N's based on the "# N's per 100 kbp" column
-        quast_df["(quast) % N's"] = round(pd.to_numeric(quast_df["(quast) # N's per 100 kbp"]) / 1000, 2)
-
-        # Keep only the relevant columns
-        quast_df = quast_df[["(quast) # N's", "(quast) % N's", "(quast) # N's per 100 kbp"]]
-    except KeyError as e:
-        logger.warning(f"Missing column in QUAST output: {e}")
-    except Exception as e:
-        logger.error(f"Error computing QUAST metrics: {e}")
-
-    return quast_df
 
 
 def process_blast_dataframe(blast_df, blast_header=None, output_file=None):
@@ -460,7 +306,7 @@ def process_blast_dataframe(blast_df, blast_header=None, output_file=None):
         blast_df = blast_df.sort_values("bitscore", ascending=False).drop_duplicates("query")
 
         # Process the DataFrame
-        blast_df = generate_indexed_df(blast_df, "blast", "query", blast_header, output_file)
+        blast_df = generate_indexed_df(blast_df, "blast", "query")
 
         # Make everything a string for the annotation
         blast_df = blast_df.astype(str)
@@ -470,7 +316,7 @@ def process_blast_dataframe(blast_df, blast_header=None, output_file=None):
     return blast_df
 
 
-def process_annotation_dataframe(annotation_df, blast_header=None, output_file=None):
+def process_annotation_dataframe(annotation_df):
     """
     Process the annotation DataFrame.
 
@@ -502,10 +348,11 @@ def process_annotation_dataframe(annotation_df, blast_header=None, output_file=N
         annotation_df["% contig aligned"] = round((annotation_df["length"] / annotation_df["qlen"]) * 100, 2)
 
         # Process the DataFrame
-        annotation_df = generate_indexed_df(annotation_df, "annotation", "query", blast_header, output_file)
+        annotation_df = generate_indexed_df(annotation_df, "annotation", "query")
 
         # Make everything a string for the annotation
         annotation_df = annotation_df.astype(str)
+
     except Exception as e:
         logger.error(f"Error processing annotation DataFrame: {e}")
 
@@ -527,29 +374,7 @@ def parse_annotation_data(annotation_str):
     return annotation_dict
 
 
-def generate_df(table_files, header_name=False, output=False, **kwargs):
-    """
-    Handle multiple table files and perform concatenation and writing to output file if specified.
-
-    Args:
-        table_files (list): List of table file paths.
-        header_name (bool, optional): Flag to include header name in the output file. Defaults to False.
-        output (str, optional): Output file path. Defaults to False.
-        **kwargs: Additional keyword arguments for concatenation.
-
-    Returns:
-        pd.DataFrame: Concatenated table data.
-
-    """
-    result_df = pd.DataFrame()
-    if table_files:
-        result_df = concat_table_files(table_files, **kwargs)
-    if output:
-        write_dataframe(result_df, output, header_name)
-    return result_df
-
-
-def generate_indexed_df(df: pd.DataFrame, prefix: str = None, column_to_split: str = "index", header=False, output=False) -> pd.DataFrame:
+def generate_indexed_df(df: pd.DataFrame, prefix: str = None, column_to_split: str = "index") -> pd.DataFrame:
     """
     Handle the given dataframe by adding a prefix to column names, splitting a specific column,
     and generating an ID based on sample, cluster, and step information.
@@ -558,8 +383,6 @@ def generate_indexed_df(df: pd.DataFrame, prefix: str = None, column_to_split: s
         df (pd.DataFrame): The input dataframe.
         prefix (str): The prefix to add to column names.
         column_to_split (str): The column to split.
-        header (bool, optional): Whether the dataframe has a header. Defaults to False.
-        output (bool, optional): Whether to write the resulting dataframe to a file. Defaults to False.
 
     Returns:
         pd.DataFrame: The processed dataframe.
@@ -579,9 +402,7 @@ def generate_indexed_df(df: pd.DataFrame, prefix: str = None, column_to_split: s
     df["step"] = df["step"].str.split(".").str[0]
     df["id"] = df["sample"] + "_" + df["cluster"] + "_" + df["step"]
     df = df.set_index("id")
-    result_df = df
-    if output:
-        write_dataframe(result_df, output, header)
+    result_df = df.copy()
     result_df.drop(
         columns=["sample", "cluster", "step", split_column],
         inplace=True,
@@ -850,7 +671,7 @@ def load_custom_data(args) -> List[pd.DataFrame]:
 
     # Clusters overview - mini multiqc module
     if args.clusters_summary:
-        clusters_df = generate_df(args.clusters_summary)
+        clusters_df = filelist_to_df(args.clusters_summary)
         if not clusters_df.empty:
             clusters_df.set_index("Sample name", inplace=True)
 
@@ -868,7 +689,7 @@ def load_custom_data(args) -> List[pd.DataFrame]:
 
     # General Stats - Sample metadata
     if args.sample_metadata:
-        metadata_df = generate_df([args.sample_metadata])
+        metadata_df = filelist_to_df([args.sample_metadata])
         if not metadata_df.empty:
             sample_col = [col for col in metadata_df.columns if "sample" in col.lower()][0]
             metadata_df.set_index(sample_col, inplace=True)
@@ -878,7 +699,7 @@ def load_custom_data(args) -> List[pd.DataFrame]:
             mqc.report.modules.append(module)
 
     # CLuster table - Checkv summary
-    checkv_df = generate_df(args.checkv_files)
+    checkv_df = filelist_to_df(args.checkv_files)
     if not checkv_df.empty:
         checkv_df = generate_indexed_df(checkv_df, "checkv", "contig_id")
 
@@ -896,12 +717,12 @@ def load_custom_data(args) -> List[pd.DataFrame]:
         quast_df = quast_df[["(quast) # N's", "(quast) % N's", "(quast) # N's per 100 kbp"]]
 
     # Cluster table - Blast summary
-    blast_df = generate_df(args.blast_files, header=None)
+    blast_df = filelist_to_df(args.blast_files, header=None)
     if not blast_df.empty:
         blast_df = process_blast_dataframe(blast_df)
 
     # Cluster table - mmseqs easysearch summary (annotation section)
-    annotation_df = generate_df(args.annotation_files, header=None)
+    annotation_df = filelist_to_df(args.annotation_files, header=None)
     if not annotation_df.empty:
         annotation_df = process_annotation_dataframe(annotation_df)
 
@@ -1122,7 +943,7 @@ def reformat_constrain_df(df, file_columns, args):
         return mqc, df
 
     # Add constrain metadata to the mapping constrain table
-    constrain_meta = generate_df([args.mapping_constrains])
+    constrain_meta = filelist_to_df([args.mapping_constrains])
 
     # drop unwanted columns & reorder
     constrain_meta = drop_columns(constrain_meta, ["sequence", "samples"])

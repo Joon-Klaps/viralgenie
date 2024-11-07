@@ -216,3 +216,25 @@ def df_from_json(file, **kwargs):
             data["filename"] = filename + "_constrain"
         df = pd.DataFrame([data])
     return df
+
+
+def filelist_to_df(table_files, header_name=False, output=False, **kwargs):
+    """
+    Handle multiple table files and perform concatenation and writing to output file if specified.
+
+    Args:
+        table_files (list): List of table file paths.
+        header_name (bool, optional): Flag to include header name in the output file. Defaults to False.
+        output (str, optional): Output file path. Defaults to False.
+        **kwargs: Additional keyword arguments for concatenation.
+
+    Returns:
+        pd.DataFrame: Concatenated table data.
+
+    """
+    result_df = pd.DataFrame()
+    if table_files:
+        result_df = concat_table_files(table_files, **kwargs)
+    if output:
+        write_dataframe(result_df, output, header_name)
+    return result_df
