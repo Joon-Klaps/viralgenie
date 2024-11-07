@@ -656,13 +656,6 @@
                     "fa_icon": "fas fa-info",
                     "description": "calculate summary statistics in final iteration"
                 },
-                "multiqc_comment_headers": {
-                    "type": "string",
-                    "default": "${projectDir}/assets/mqc_comment",
-                    "fa_icon": "fas fa-heading",
-                    "description": "Directory containing the mutliqc headers for multiple tables like 'clusters_summary_mqc.txt', 'blast_mqc.txt', ...",
-                    "hidden": true
-                },
                 "ivar_header": {
                     "type": "string",
                     "hidden": true,

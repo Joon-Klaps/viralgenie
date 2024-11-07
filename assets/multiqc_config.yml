@@ -22,7 +22,7 @@ report_section_order:
     before: samtools_stats
   "viralgenie-methods-description":
     order: -1000
-  software_versions:
+  "Joon-Klaps-viralgenie_versions":
     order: -1001
   "Joon-Klaps-viralgenie-summary":
     order: -1002
@@ -191,7 +191,6 @@ table_columns_visible:
     Total length: False
 
 skip_versions_section: true
-disable_version_detection: true
 
 # Viral reads are not so big
 read_count_multiplier: 1

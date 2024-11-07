@@ -190,7 +190,8 @@
                     "mafft": {
                         "branch": "master",
                         "git_sha": "faf557ba56156ac0e5de76a25c1e3df11c944f59",
-                        "installed_by": ["modules"]
+                        "installed_by": ["modules"],
+                        "patch": "modules/nf-core/mafft/mafft.diff"
                     },
                     "mash/dist": {
                         "branch": "master",

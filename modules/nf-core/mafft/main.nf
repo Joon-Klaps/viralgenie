@@ -8,8 +8,8 @@ process MAFFT {
         'biocontainers/mulled-v2-12eba4a074f913c639117640936668f5a6a01da6:425707898cf4f85051b77848be253b88f1d2298a-0' }"
 
     input:
-    tuple val(meta) , path(fasta)
-    tuple val(meta2), path(add)
+    tuple val(meta) , path(fasta, stageAs: 'fasta/*')
+    tuple val(meta2), path(add, stageAs: 'add/*')
     tuple val(meta3), path(addfragments)
     tuple val(meta4), path(addfull)
     tuple val(meta5), path(addprofile)
