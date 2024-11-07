@@ -52,11 +52,6 @@ CLUSTER_HEADERS = {
         "description": "Total number of input contig clusters before filtering",
         "scale": "Blues",
     },
-    "# Clusters": {
-        "title": "# Clusters",
-        "description": "Number of contig clusters used for further refinement ",
-        "scale": "Blues",
-    },
 }
 
 CLUSTER_PCONFIG = {

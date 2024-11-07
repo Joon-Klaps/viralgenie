@@ -3,22 +3,22 @@
 """Provide a command line tool to create several custom mqc report files."""
 
 import csv
-import logging
 import json
+import logging
 import os
-import re
 import sys
-
 from pathlib import Path
-from typing import Dict, List, Optional, Union, Tuple
+from typing import Dict, List, Optional
 
 import pandas as pd
 import yaml
 
+from utils.constant_variables import FILES_OF_INTEREST
+
 logger = logging.getLogger()
 
 
-def check_file_exists(file, throw_error=True):
+def check_file_exists(file: str, throw_error=True) -> bool:
     """Check if the given files exist.
 
     Args:
@@ -42,7 +42,7 @@ def check_file_exists(file, throw_error=True):
     return True
 
 
-def concat_table_files(table_files, **kwargs):
+def concat_table_files(table_files: List[str], **kwargs) -> pd.DataFrame:
     """Concatenate all the cluster summary files into a single dataframe.
 
     Args:
@@ -53,7 +53,7 @@ def concat_table_files(table_files, **kwargs):
         pd.DataFrame: The concatenated dataframe.
     """
     try:
-        valid_dfs = [read_file_to_dataframe(file, **kwargs) for file in table_files if check_file_exists(file)]
+        valid_dfs = [read_file_to_df(file, **kwargs) for file in table_files if check_file_exists(file)]
 
         if not valid_dfs:
             logging.warning("Warning concatenating files: %s", table_files)
@@ -68,7 +68,7 @@ def concat_table_files(table_files, **kwargs):
         return pd.DataFrame()
 
 
-def read_in_quast(table_files):
+def read_in_quast(table_files: List[str]) -> pd.DataFrame:
     """Concatenate all the cluster summary files into a single dataframe.
 
     Args:
@@ -87,7 +87,7 @@ def read_in_quast(table_files):
     return df
 
 
-def write_dataframe(df, file, comment):
+def write_df(df: pd.DataFrame, file: str, comment: Optional[List[str]] = None) -> None:
     """
     Write a pandas DataFrame to a file in TSV format.
 
@@ -110,7 +110,7 @@ def write_dataframe(df, file, comment):
         f.write(df_tsv)
 
 
-def read_file_to_dataframe(file, **kwargs):
+def read_file_to_df(file: str, **kwargs) -> pd.DataFrame:
     """
     Read a dataframe from a file.
 
@@ -145,7 +145,7 @@ def read_file_to_dataframe(file, **kwargs):
     return df
 
 
-def df_from_tsv(file, **kwargs):
+def df_from_tsv(file: str, **kwargs) -> pd.DataFrame:
     """
     Read a dataframe from a tsv file.
 
@@ -160,7 +160,7 @@ def df_from_tsv(file, **kwargs):
     return df
 
 
-def df_from_csv(file, **kwargs):
+def df_from_csv(file: str, **kwargs) -> pd.DataFrame:
     """
     Read a dataframe from a csv file.
 
@@ -175,7 +175,7 @@ def df_from_csv(file, **kwargs):
     return df
 
 
-def df_from_yaml(file, **kwargs):
+def df_from_yaml(file: str, **kwargs) -> pd.DataFrame:
     """
     Read a dataframe from a YAML file.
 
@@ -191,7 +191,7 @@ def df_from_yaml(file, **kwargs):
     return df
 
 
-def df_from_json(file, **kwargs):
+def df_from_json(file: str, **kwargs) -> pd.DataFrame:
     """
     Read a dataframe from a JSON file.
 
@@ -218,7 +218,7 @@ def df_from_json(file, **kwargs):
     return df
 
 
-def filelist_to_df(table_files, header_name=False, output=False, **kwargs):
+def filelist_to_df(table_files: List[str], header_name: Optional[List[str]] = None, output: Optional[str] = None, **kwargs) -> pd.DataFrame:
     """
     Handle multiple table files and perform concatenation and writing to output file if specified.
 
@@ -236,5 +236,24 @@ def filelist_to_df(table_files, header_name=False, output=False, **kwargs):
     if table_files:
         result_df = concat_table_files(table_files, **kwargs)
     if output:
-        write_dataframe(result_df, output, header_name)
+        write_df(result_df, output, header_name)
     return result_df
+
+
+def get_module_selection(table_headers: Path = None) -> Dict:
+    """
+    Get the files of interest and the columns of interest from the table headers file
+
+    Args:
+        table_headers (str): Path to the table headers file
+
+    Returns:
+        a dictionary containing the {module:{section:{old_col:new_col}}}, both section and old & new column can be empty
+    """
+    if not table_headers:
+        return FILES_OF_INTEREST
+
+    check_file_exists(table_headers)
+    yaml_data = yaml.safe_load(table_headers.read_text())
+
+    return yaml_data

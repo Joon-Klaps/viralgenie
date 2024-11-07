@@ -5,11 +5,11 @@
 import argparse
 import logging
 import sys
-from constant_variables import BLAST_COLUMNS
 from pathlib import Path
 
 import pandas as pd
 from Bio import SeqIO
+from utils.constant_variables import BLAST_COLUMNS
 
 logger = logging.getLogger()
 

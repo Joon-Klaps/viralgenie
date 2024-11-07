@@ -12,6 +12,7 @@ import numpy as np
 from Bio import SeqIO
 from scipy.stats import fisher_exact
 
+
 def parse_args(args=None):
     Description = "Convert iVar variants TSV file to VCF format."
     Epilog = """Example usage: python ivar_variants_to_vcf.py <file_in> <file_out>"""

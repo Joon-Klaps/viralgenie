@@ -23,94 +23,95 @@ workflow CONSENSUS_QC  {
     checkv              = Channel.empty()
     quast               = Channel.empty()
     annotation          = Channel.empty()
-    ch_genome_collapsed = Channel.empty()
+    ch_genome_grouped   = Channel.empty()
 
     ch_genome
-        .collectFile(name: "all_genomes.fa", newLine:true){it[1]}
+        .collectFile(name: "all_genomes.fa"){it[1]}
         .map{it -> [[id:"all_genomes"], it]}
         .set{ch_genomes_all}
 
-    ch_genomes_all.dump(tag:"all_genomes", pretty:true)
-
     ch_genome
-        .map{meta, genome -> [meta.subMap('id','cluster_id','sample'), genome]}
-        .groupTuple()
-        .tap{grouped}
-        .collectFile( newLine: true){ meta, genome ->
-            ["${meta.cluster_id}-grouped.fa", genome]
+        .multiMap{ meta, fasta ->
+            metadata: [meta.id, meta.subMap('id','cluster_id','sample')]
+            fasta: [meta.id, fasta]
         }
-        .set{ch_genome_collapsed}
-    grouped.dump(tag:"grouped", pretty:true)
-    ch_genome_collapsed.dump(tag:"collapsed", pretty:true)
+        .set{ch_genomes_mapped}
 
-    // // Contig summary statistics
-    // if ( !params.skip_quast ) {
-    //     QUAST_QC ( ch_genome, [[:],[]], [[:],[]])
-    //     quast         = QUAST_QC.out.tsv
-    //     ch_versions   = ch_versions.mix(QUAST_QC.out.versions)
-    // }
+    ch_genomes_mapped.fasta.collectFile{ id, genome ->
+            ["${id}.fa", genome]
+        }.map{ file -> [file.simpleName, file]}
+        .join(ch_genomes_mapped.metadata.unique())
+        .map{ id, genome, meta -> [meta, genome]}
+        .set{ch_genome_grouped}
 
-    // // Identify closest reference from the reference pool database using blast
-    // if ( !params.skip_blast_qc ){
-    //     BLASTN_QC (ch_genomes_all, refpool_db)
-    //     blast       = BLASTN_QC.out.txt
-    //     ch_versions = ch_versions.mix(BLASTN_QC.out.versions)
-    // }
+    // Contig summary statistics
+    if ( !params.skip_quast ) {
+        QUAST_QC ( ch_genome, [[:],[]], [[:],[]])
+        quast         = QUAST_QC.out.tsv
+        ch_versions   = ch_versions.mix(QUAST_QC.out.versions)
+    }
 
-    // // use MMSEQS easy search to find best hits against annotation db
-    // if ( !params.skip_annotation){
-    //     MMSEQS_ANNOTATE(ch_genomes_all,annotation_db)
-    //     annotation  = MMSEQS_ANNOTATE.out.tsv
-    //     ch_versions = ch_versions.mix(MMSEQS_ANNOTATE.out.versions)
-    // }
+    // Identify closest reference from the reference pool database using blast
+    if ( !params.skip_blast_qc ){
+        BLASTN_QC (ch_genomes_all, refpool_db)
+        blast       = BLASTN_QC.out.txt
+        ch_versions = ch_versions.mix(BLASTN_QC.out.versions)
+    }
 
-    // if ( !params.skip_checkv ) {
-    //     if ( !params.checkv_db ) {
-    //         CHECKV_DOWNLOADDATABASE()
-    //         checkv_db   = CHECKV_DOWNLOADDATABASE.out.checkv_db
-    //         ch_versions = ch_versions.mix(CHECKV_DOWNLOADDATABASE.out.versions)
-    //     }
+    // use MMSEQS easy search to find best hits against annotation db
+    if ( !params.skip_annotation){
+        MMSEQS_ANNOTATE(ch_genomes_all,annotation_db)
+        annotation  = MMSEQS_ANNOTATE.out.tsv
+        ch_versions = ch_versions.mix(MMSEQS_ANNOTATE.out.versions)
+    }
 
-    //     // uses HMM and AA alignment to deterimine completeness
-    //     CHECKV_ENDTOEND ( ch_genome_collapsed, checkv_db)
-    //     checkv      = CHECKV_ENDTOEND.out.quality_summary
-    //     ch_versions = ch_versions.mix(CHECKV_ENDTOEND.out.versions)
-    // }
+    if ( !params.skip_checkv ) {
+        if ( !params.checkv_db ) {
+            CHECKV_DOWNLOADDATABASE()
+            checkv_db   = CHECKV_DOWNLOADDATABASE.out.checkv_db
+            ch_versions = ch_versions.mix(CHECKV_DOWNLOADDATABASE.out.versions)
+        }
 
-    // // Align the different steps to each other to see how the sequences have changed
-    // if ( !params.skip_alignment_qc){
+        // uses HMM and AA alignment to deterimine completeness
+        CHECKV_ENDTOEND ( ch_genome_grouped, checkv_db)
+        checkv      = CHECKV_ENDTOEND.out.quality_summary
+        ch_versions = ch_versions.mix(CHECKV_ENDTOEND.out.versions)
+    }
 
-    //     // MAFFT doesn't like those that have only one sequence
-    //     ch_genome_collapsed
-    //         .branch { meta, scaffolds ->
-    //             pass: scaffolds.countFasta() > 1
-    //             fail: scaffolds.countFasta() == 1
-    //         }
-    //         .set{ch_genome_collapsed_branch}
+    // Align the different steps to each other to see how the sequences have changed
+    if ( !params.skip_alignment_qc){
 
-    //     MAFFT_ITERATIONS ( ch_genome_collapsed_branch.pass, [[:],[]], [[:],[]], [[:],[]], [[:],[]], [[:],[]], false )
+        // MAFFT doesn't like those that have only one sequence
+        ch_genome_grouped
+            .branch { meta, scaffolds ->
+                pass: scaffolds.countFasta() > 1
+                fail: scaffolds.countFasta() == 1
+            }
+            .set{ch_genome_grouped_branch}
 
-    //     ch_versions = ch_versions.mix(MAFFT_ITERATIONS.out.versions)
-    //     contigs_mod = ch_aligned_raw_contigs.map{ meta, genome -> [meta.id, meta, genome] }
+        MAFFT_ITERATIONS ( ch_genome_grouped_branch.pass, [[:],[]], [[:],[]], [[:],[]], [[:],[]], [[:],[]], false )
 
-    //     // Make a channel that contains the alignment of the iterations with
-    //     // the original contigs from the assemblers
-    //     ch_genome_collapsed_branch
-    //         .fail.mix(MAFFT_ITERATIONS.out.fas)                             // Combine alignments with single results
-    //         .map{ meta, genome -> [meta.id, meta, genome] }                 // Set common delimiter
-    //         .join( contigs_mod, by: 0)                                      // Combine with raw contigs
-    //         .filter{id, meta_genome, scaffolds, meta_contigs, contigs  ->   // Make sure we have at least 2 sequences
-    //             scaffolds.countFasta() + contigs.countFasta() > 1
-    //         }
-    //         .multiMap{ id, meta_genome, scaffolds, meta_contigs, contigs -> // Split in correct inputs
-    //             scaffolds: [meta_genome, scaffolds]
-    //             contigs: [meta_genome, contigs]
-    //         }.set{mafftQC_in}
+        ch_versions = ch_versions.mix(MAFFT_ITERATIONS.out.versions)
+        contigs_mod = ch_aligned_raw_contigs.map{ meta, genome -> [meta.id, meta, genome] }
 
-    //     MAFFT_QC ( mafftQC_in.scaffolds, mafftQC_in.contigs, [[:],[]], [[:],[]], [[:],[]], [[:],[]], false)
+        // Make a channel that contains the alignment of the iterations with
+        // the original contigs from the assemblers
+        ch_genome_grouped_branch
+            .fail.mix(MAFFT_ITERATIONS.out.fas)                             // Combine alignments with single results
+            .map{ meta, genome -> [meta.id, meta, genome] }                 // Set common delimiter
+            .join( contigs_mod, by: 0)                                      // Combine with raw contigs
+            .filter{id, meta_genome, scaffolds, meta_contigs, contigs  ->   // Make sure we have at least 2 sequences
+                scaffolds.countFasta() + contigs.countFasta() > 1
+            }
+            .multiMap{ id, meta_genome, scaffolds, meta_contigs, contigs -> // Split in correct inputs
+                scaffolds: [meta_genome, scaffolds]
+                contigs: [meta_genome, contigs]
+            }.set{mafftQC_in}
 
-    //     ch_versions = ch_versions.mix(MAFFT_QC.out.versions)
-    // }
+        MAFFT_QC ( mafftQC_in.scaffolds, mafftQC_in.contigs, [[:],[]], [[:],[]], [[:],[]], [[:],[]], false)
+
+        ch_versions = ch_versions.mix(MAFFT_QC.out.versions)
+    }
 
     emit:
     blast       = blast             // channel: [ val(meta), [ txt ] ]

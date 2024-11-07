@@ -8,11 +8,11 @@ import json
 import logging
 import re
 import sys
-import numpy as np
 from collections import defaultdict
 from pathlib import Path
 from typing import Dict, List, Tuple
 
+import numpy as np
 from Bio import SeqIO
 
 logger = logging.getLogger()
