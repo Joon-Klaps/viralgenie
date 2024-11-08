@@ -24,7 +24,6 @@ def reorder_columns(df, columns):
     df = df[[column for column in columns if column in df.columns] + df.columns.difference(columns, sort=False).tolist()]
     return df
 
-
 def reorder_rows(dataframe):
     """
     Reorder the rows in the DataFrame based on the ranking of the steps.
@@ -175,7 +174,6 @@ def generate_indexed_df(df: pd.DataFrame, prefix: str = None, column_to_split: s
         inplace=True,
     )
     return result_df
-
 
 def filter_and_rename_columns(data: pd.DataFrame, columns: List[Union[str, Dict[str, str]]]) -> pd.DataFrame:
     """

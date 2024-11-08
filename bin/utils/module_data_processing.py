@@ -163,6 +163,7 @@ def filter_constrain(df, column, value):
     # Remove from column
     df_with_value.loc[:, column] = df_with_value[column].str.replace(value, "")
     df_with_value.loc[:, "index"] = df_with_value["index"].str.replace(value, "")
+
     return df_without_value, df_with_value
 
 
@@ -187,17 +188,13 @@ def create_constrain_summary(df_constrain: pd.DataFrame, file_columns: List[Unio
         else:
             dic_columns[item] = item
 
-    print(df_constrain.columns)
-    print(dic_columns)
-
     columns_of_interest = [dic_columns[key] for key in CONSTRAIN_GENERAL_STATS_COLUMNS if key in dic_columns.keys()]
 
-    print(columns_of_interest)
     if not columns_of_interest:
         logger.warning("No columns of interest were found to create the constrain summary table!")
         return pd.DataFrame()
 
-    columns_of_interest.extend([ "sample", "species", "segment", "cluster", "definition", "qlen", "(quast) % N's"])
+    columns_of_interest.extend([ "sample", "species", "segment", "cluster", "definition", "qlen", "(quast) % N's","(mash-screen) shared-hashes"])
 
     df_columns = df_constrain.columns.tolist()
 
@@ -216,7 +213,9 @@ def create_constrain_summary(df_constrain: pd.DataFrame, file_columns: List[Unio
     if df_constrain.empty:
         return df_constrain
 
+    df_constrain = reorder_columns(df_constrain, columns_of_interest)
     df_constrain = df_constrain.rename(columns=COLUMN_MAPPING)
+
 
     # Reformat dataframe to long based on following:
     #   Species & Segment
@@ -282,6 +281,7 @@ def reformat_constrain_df(df, file_columns, args):
 
     logger.info("Coalescing columns")
     coalesced_constrains = coalesce_constrain(df)
+    coalesced_constrains = drop_columns(coalesced_constrains, ["id", "selection", "rank"])
     return coalesced_constrains, mapping_constrains_summary
 
 
@@ -290,7 +290,7 @@ def generate_ignore_samples(dataframe: pd.DataFrame) -> pd.Series:
     Generate a Series of indices that are not part of the df_snip dataframe.
 
     Parameters:
-    dataframe (pd.DataFrame): The input DataFrame to process.
+    dataframe (pd.DataFrame): The input DataFrame to    ocess.
 
     Returns:
     pd.Series: A Series containing the indices that are not in df_snip.
@@ -306,3 +306,12 @@ def generate_ignore_samples(dataframe: pd.DataFrame) -> pd.Series:
     df_filter = df.groupby(["sample", "cluster"]).head(1).reset_index(drop=True)
 
     return df["index"][~df["index"].isin(df_filter["index"])]
+
+def add_prefix_to_values_dict(data: List[Union[str, Dict[str, str]]], prefix: str) -> List[Dict[str, str]]:
+    updated_items = []
+    for item in data:
+        if isinstance(item, str):
+            updated_items.append({item : f"({prefix}) {item}"})
+        else:
+            updated_items.extend({key : f"({prefix}) {value}"} for key, value in item.items())
+    return updated_items

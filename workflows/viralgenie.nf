@@ -340,17 +340,18 @@ workflow VIRALGENIE {
         // Importing samplesheet
         Channel
             .fromList(samplesheetToList(params.mapping_constrains, "${projectDir}/assets/schemas/mapping_constrains.json"))
-            .tap{mapping_constrains}
             .map{ meta, sequence ->
-                def samples = meta.samples == [] ? meta.samples: tuple(meta.samples.split(";"))  // Split up samples if meta.samples is not null
+                def samples = meta.samples == [] ? null : tuple(meta.samples.split(";"))  // Split up samples if meta.samples is not null
                 [meta, samples, sequence]
             }
-            .transpose(remainder:true)                                                         // Unnest
+            .tap{mapping_constrains}
+            .transpose(remainder: true)                                                         // Unnest
             .set{ch_mapping_constrains}
 
         // Joining all the reads with the mapping constrains, filter for those specified or keep everything if none specified.
         ch_decomplex_trim_reads
             .combine( ch_mapping_constrains )
+            .tap{mapping_constrains_tmp}
             .filter{ meta_reads, fastq, meta_mapping, mapping_samples, sequence -> mapping_samples == null || mapping_samples == meta_reads.sample}
             .map
                 {
@@ -368,6 +369,9 @@ workflow VIRALGENIE {
                     return [new_meta, sequence_mapping]
                 }
             .set{ch_map_seq_anno_combined}
+
+        mapping_constrains_tmp.dump(tag:"mapping-raw", pretty:true)
+        ch_map_seq_anno_combined.dump(tag:"mapping", pretty:true)
 
         // Map with both reads and mapping constrains
         ch_map_seq_anno_combined

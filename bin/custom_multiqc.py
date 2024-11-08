@@ -23,6 +23,7 @@ from utils.module_data_processing import (
     process_blast_df,
     reformat_constrain_df,
     reformat_custom_df,
+    add_prefix_to_values_dict,
 )
 from utils.pandas_tools import (
     filter_and_rename_columns,
@@ -255,12 +256,18 @@ def load_custom_data(args) -> List[pd.DataFrame]:
     if not blast_df.empty:
         blast_df = process_blast_df(blast_df)
 
+    # MASH screen used for reference selection summarisation
+    screen_df = filelist_to_df(args.screen_files)
+    if not screen_df.empty:
+        screen_df = generate_indexed_df( screen_df, "mash-screen", "filename")
+        screen_df = screen_df.astype(str)
+
     # Cluster table - mmseqs easysearch summary (annotation section)
     annotation_df = filelist_to_df(args.annotation_files, header=None)
     if not annotation_df.empty:
         annotation_df = process_annotation_df(annotation_df)
 
-    return [checkv_df, quast_df, blast_df, annotation_df]
+    return [checkv_df, quast_df, blast_df, annotation_df, screen_df]
 
 
 def get_module_data(mqc: object, module: str) -> Dict[str, any]:
@@ -314,7 +321,8 @@ def handle_module_data(
         section (Union[str, List[Union[str, Dict[str, str]]]): The section to extract data from.
 
     Returns:
-        Tuple[list[pd.DataFrame], List[Union[str, Dict[str, str]]]]: A list of dataframes and a list of columns.
+        list[pd.DataFrame]: A list of dataframes that were extracted
+        List[Union[str, Dict[str, str]]]]: A list of columns containing both old and new names of columns.
     """
 
     def check_section_exists(module_data: Dict, section_key: str) -> bool:
@@ -391,7 +399,7 @@ def handle_general_stats(columns: List[Union[str, Dict[str, str]]]) -> tuple[pd.
 
     df = pd.DataFrame.from_dict(mqc.get_general_stats_data(), orient="index")
 
-    return [filter_and_rename_columns(df, columns)], []
+    return [filter_and_rename_columns(df, columns)], columns
 
 
 def extract_mqc_data(table_headers: Union[str, Path]) -> Optional[pd.DataFrame]:
@@ -404,6 +412,7 @@ def extract_mqc_data(table_headers: Union[str, Path]) -> Optional[pd.DataFrame]:
 
     Returns:
         pd.DataFrame: Extracted data
+        List[Union[str, Dict[str, str]]]: List of columns containing both old and new names of columns.
     """
     result = pd.DataFrame()
     module_selection = get_module_selection(table_headers)
@@ -425,6 +434,8 @@ def extract_mqc_data(table_headers: Union[str, Path]) -> Optional[pd.DataFrame]:
             module_data, columns = handle_module_data(module, section)
             logger.debug("Data for %s: %s", module, module_data)
 
+        module_data = [df.add_prefix(f"({module}) ") for df in module_data]
+        columns = add_prefix_to_values_dict(columns, module)
         data.extend(module_data)
         columns_result.extend(columns)
 
@@ -470,15 +481,15 @@ def write_results(contigs_mqc, constrains_mqc, constrains_genstats, args) -> int
         mqc.report.modules.append(module)
 
     # TODO correctly insert metadata of:
-    #   -  versions
     #   -  Not all mapping data is in the general stats table, while it should be
     #   -  Double check for any other loss of information.
+    #       - Think some mash-screen data is lost
     mqc.write_report(
         make_data_dir=True,
         data_format="tsv",
         export_plots=False,
         force=True,
-         )
+        )
 
     return 0
 
