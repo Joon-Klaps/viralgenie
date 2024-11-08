@@ -213,9 +213,7 @@ def create_constrain_summary(df_constrain: pd.DataFrame, file_columns: List[Unio
     if df_constrain.empty:
         return df_constrain
 
-    df_constrain = reorder_columns(df_constrain, columns_of_interest)
     df_constrain = df_constrain.rename(columns=COLUMN_MAPPING)
-
 
     # Reformat dataframe to long based on following:
     #   Species & Segment
