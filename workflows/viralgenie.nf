@@ -214,6 +214,7 @@ workflow VIRALGENIE {
     // Channel for summary table of clusters to include in mqc report
     ch_clusters_summary        = Channel.empty()
     // Channel for summary coverages of each contig
+    ch_clusters_tsv            = Channel.empty()
 
     if (!params.skip_assembly) {
         // run different assemblers and combine contigs
