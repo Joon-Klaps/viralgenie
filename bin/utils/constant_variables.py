@@ -21,9 +21,10 @@ BLAST_COLUMNS = [
 ]
 
 CONSTRAIN_GENERAL_STATS_COLUMNS = [
-    "input_reads",
-    "output_reads",
+    "read_mapped",
+    "reads_unmapped",
     "number_of_SNPs",
+    "number_of_indels",
     "CLUSTER: mosdepth.mean_coverage",
     "CLUSTER: mosdepth.min_coverage",
     "CLUSTER: mosdepth.max_coverage",
@@ -31,6 +32,11 @@ CONSTRAIN_GENERAL_STATS_COLUMNS = [
     "CLUSTER: mosdepth.1_x_pc",
     "CLUSTER: mosdepth.10_x_pc",
 ]
+
+COLUMN_MAPPING = {
+    "(blast) qlen": "consensus length",
+    "(annotation) qlen": "consensus length"
+}
 
 FILES_OF_INTEREST = {
     "samtools": "multiqc_samtools_stats",

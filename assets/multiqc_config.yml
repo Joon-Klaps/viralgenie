@@ -4,7 +4,7 @@ report_comment: >
   <a href="https://joon-klaps.github.io/viralgenie/latest/dev/usage/" target="_blank">documentation</a>.
 
 export_plots: true
-
+data_format: "yaml"
 max_table_rows: 100000
 
 report_section_order:
@@ -22,7 +22,7 @@ report_section_order:
     before: samtools_stats
   "viralgenie-methods-description":
     order: -1000
-  "Joon-Klaps-viralgenie_versions":
+  "Software-versions":
     order: -1001
   "Joon-Klaps-viralgenie-summary":
     order: -1002
@@ -189,8 +189,6 @@ table_columns_visible:
     L50: False
     Largest contig: True
     Total length: False
-
-skip_versions_section: true
 
 # Viral reads are not so big
 read_count_multiplier: 1

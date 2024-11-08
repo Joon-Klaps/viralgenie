@@ -473,7 +473,12 @@ def write_results(contigs_mqc, constrains_mqc, constrains_genstats, args) -> int
     #   -  versions
     #   -  Not all mapping data is in the general stats table, while it should be
     #   -  Double check for any other loss of information.
-    mqc.write_report(make_data_dir=True, data_format="tsv", export_plots=False)
+    mqc.write_report(
+        make_data_dir=True,
+        data_format="tsv",
+        export_plots=False,
+        force=True,
+         )
 
     return 0
 

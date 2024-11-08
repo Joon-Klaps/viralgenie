@@ -6,7 +6,7 @@ from typing import Dict, List, Union
 
 import pandas as pd
 
-from utils.constant_variables import BLAST_COLUMNS, CONSTRAIN_GENERAL_STATS_COLUMNS
+from utils.constant_variables import BLAST_COLUMNS, CONSTRAIN_GENERAL_STATS_COLUMNS, COLUMN_MAPPING
 from utils.file_tools import filelist_to_df
 from utils.pandas_tools import (
     coalesce_constrain,
@@ -18,6 +18,7 @@ from utils.pandas_tools import (
 )
 
 logger = logging.getLogger()
+pd.options.mode.copy_on_write = True
 
 
 def process_blast_df(blast_df):
@@ -186,20 +187,17 @@ def create_constrain_summary(df_constrain: pd.DataFrame, file_columns: List[Unio
         else:
             dic_columns[item] = item
 
+    print(df_constrain.columns)
+    print(dic_columns)
+
     columns_of_interest = [dic_columns[key] for key in CONSTRAIN_GENERAL_STATS_COLUMNS if key in dic_columns.keys()]
 
+    print(columns_of_interest)
     if not columns_of_interest:
         logger.warning("No columns of interest were found to create the constrain summary table!")
         return pd.DataFrame()
 
-    columns_of_interest = [
-        "sample",
-        "species",
-        "segment",
-        "cluster",
-        "definition",
-        "qlen",  # length of the query sequence will have to be renamed
-    ] + columns_of_interest
+    columns_of_interest.extend([ "sample", "species", "segment", "cluster", "definition", "qlen", "(quast) % N's"])
 
     df_columns = df_constrain.columns.tolist()
 
@@ -218,8 +216,7 @@ def create_constrain_summary(df_constrain: pd.DataFrame, file_columns: List[Unio
     if df_constrain.empty:
         return df_constrain
 
-    if "(blast) qlen" in df_constrain.columns:
-        df_constrain = df_constrain.rename(columns={"(blast) qlen": "consensus length"})
+    df_constrain = df_constrain.rename(columns=COLUMN_MAPPING)
 
     # Reformat dataframe to long based on following:
     #   Species & Segment
