@@ -259,7 +259,7 @@ def load_custom_data(args) -> List[pd.DataFrame]:
     # MASH screen used for reference selection summarisation
     screen_df = filelist_to_df(args.screen_files)
     if not screen_df.empty:
-        screen_df = generate_indexed_df( screen_df, "mash-screen", "filename")
+        screen_df = generate_indexed_df(screen_df, "mash-screen", "filename")
         screen_df = screen_df.astype(str)
 
     # Cluster table - mmseqs easysearch summary (annotation section)
@@ -338,7 +338,7 @@ def handle_module_data(
         return [pd.DataFrame()], []
 
     # Empty section, so we take all values from module
-    if isinstance(section, str):
+    if isinstance(section, str) or section is None:
         if not section:
             return [pd.DataFrame.from_dict(all_module_data, orient="index")], []
         else:
@@ -480,16 +480,12 @@ def write_results(contigs_mqc, constrains_mqc, constrains_genstats, args) -> int
         module.general_stats_addcols(content)
         mqc.report.modules.append(module)
 
-    # TODO correctly insert metadata of:
-    #   -  Not all mapping data is in the general stats table, while it should be
-    #   -  Double check for any other loss of information.
-    #       - Think some mash-screen data is lost
     mqc.write_report(
         make_data_dir=True,
         data_format="tsv",
         export_plots=False,
         force=True,
-        )
+    )
 
     return 0
 
@@ -531,23 +527,23 @@ def main(argv=None):
     mqc.reset()
     mqc.parse_logs(args.multiqc_files, args.multiqc_config, ignore_samples=generate_ignore_samples(mqc_custom_df))
 
-    # 2. Parse our custom files into the correct tables
+    # 4. Parse our custom files into the correct tables
     custom_tables = load_custom_data(args)
 
-    # 3. Make our own summary excel
-    # 3.1 Extract the MQC data
+    # 5. Make our own summary excel
+    # 5.1 Extract the MQC data
 
-    # 3.2 Join with the custom contig tables
+    # 5.2 Join with the custom contig tables
     mqc_custom_df = join_df(mqc_custom_df, custom_tables)
 
     if mqc_custom_df.empty:
         logger.warning("No data was found to create the contig overview table!")
         return 0
 
-    # 3.3 reformat the dataframe
+    # 5.3 reformat the dataframe
     mqc_custom_df = reformat_custom_df(mqc_custom_df)
 
-    # 3.4 split up denovo constructs and mapping (-CONSTRAIN) results
+    # 5.4 split up denovo constructs and mapping (-CONSTRAIN) results
     logger.info("Splitting up denovo constructs and mapping (-CONSTRAIN) results")
     contigs_mqc, constrains_mqc = filter_constrain(mqc_custom_df, "cluster", "-CONSTRAIN")
 

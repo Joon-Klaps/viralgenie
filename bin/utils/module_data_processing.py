@@ -164,7 +164,7 @@ def filter_constrain(df, column, value):
     df_with_value.loc[:, column] = df_with_value[column].str.replace(value, "")
     df_with_value.loc[:, "index"] = df_with_value["index"].str.replace(value, "")
 
-    return df_without_value, df_with_value
+    return df_without_value.dropna(axis=1, how="all"), df_with_value.dropna(axis=1, how="all")
 
 
 def create_constrain_summary(df_constrain: pd.DataFrame, file_columns: List[Union[str, Dict[str, str]]]) -> pd.DataFrame:
@@ -188,13 +188,21 @@ def create_constrain_summary(df_constrain: pd.DataFrame, file_columns: List[Unio
         else:
             dic_columns[item] = item
 
-    columns_of_interest = [dic_columns[key] for key in CONSTRAIN_GENERAL_STATS_COLUMNS if key in dic_columns.keys()]
+    columns_of_interest = [dic_columns.get(key, key) for key in CONSTRAIN_GENERAL_STATS_COLUMNS]
 
     if not columns_of_interest:
         logger.warning("No columns of interest were found to create the constrain summary table!")
         return pd.DataFrame()
 
-    columns_of_interest.extend([ "sample", "species", "segment", "cluster", "definition", "qlen", "(quast) % N's","(mash-screen) shared-hashes"])
+    columns_of_interest.extend(
+        [
+            "sample",
+            "species",
+            "segment",
+            "cluster",
+            "definition",
+        ]
+    )
 
     df_columns = df_constrain.columns.tolist()
 
@@ -305,11 +313,12 @@ def generate_ignore_samples(dataframe: pd.DataFrame) -> pd.Series:
 
     return df["index"][~df["index"].isin(df_filter["index"])]
 
+
 def add_prefix_to_values_dict(data: List[Union[str, Dict[str, str]]], prefix: str) -> List[Dict[str, str]]:
     updated_items = []
     for item in data:
         if isinstance(item, str):
-            updated_items.append({item : f"({prefix}) {item}"})
+            updated_items.append({item: f"({prefix}) {item}"})
         else:
-            updated_items.extend({key : f"({prefix}) {value}"} for key, value in item.items())
+            updated_items.extend({key: f"({prefix}) {value}"} for key, value in item.items())
     return updated_items

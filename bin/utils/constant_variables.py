@@ -24,19 +24,20 @@ CONSTRAIN_GENERAL_STATS_COLUMNS = [
     "read_mapped",
     "reads_unmapped",
     "number_of_SNPs",
-    "number_of_indels",
-    "CLUSTER: mosdepth.mean_coverage",
+    "number_of_indels" "CLUSTER: mosdepth.mean_coverage",
     "CLUSTER: mosdepth.min_coverage",
     "CLUSTER: mosdepth.max_coverage",
     "CLUSTER: mosdepth.median_coverage",
     "CLUSTER: mosdepth.1_x_pc",
     "CLUSTER: mosdepth.10_x_pc",
+    "qlen",
+    "(quast) % N's",
+    "(mash-screen) query-ID",
+    "(mash-screen) shared-hashes",
+    "(failed_mapped) mapped reads",
 ]
 
-COLUMN_MAPPING = {
-    "(blast) qlen": "consensus length",
-    "(annotation) qlen": "consensus length"
-}
+COLUMN_MAPPING = {"(blast) qlen": "consensus length", "(annotation) qlen": "consensus length"}
 
 FILES_OF_INTEREST = {
     "samtools": "multiqc_samtools_stats",
@@ -66,3 +67,6 @@ CLUSTER_PCONFIG = {
     "ylab": "# clusters",
     "y_decimals": False,
 }
+
+
+MASH_SCREEN_COLUMNS = ["identity", "shared-hashes", "median-multiplicity", "p-value", "query-ID", "query-comment"]

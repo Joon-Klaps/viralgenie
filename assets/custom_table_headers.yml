@@ -1,3 +1,5 @@
+failed_mapped:
+  - mapped reads
 umitools:
   - multiqc_umitools_dedup:
       - input_reads: "mapped reads"
