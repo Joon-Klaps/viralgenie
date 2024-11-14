@@ -386,7 +386,7 @@ def filter_members(clusters, pattern):
             filtered_clusters.append(cluster)
     return filtered_clusters
 
-def filter_clusters_by_coverage(clusters: list , coverages: dict, threshold: float) -> list:
+def filter_clusters_by_coverage(clusters: list , coverages: dict, threshold: float, keep_n_clusters: int) -> list:
     """
     Filter clusters on coverage, only keep clusters with a coverage above the threshold. If no clusters are kept, return top 5.
     """
@@ -401,7 +401,7 @@ def filter_clusters_by_coverage(clusters: list , coverages: dict, threshold: flo
         return clusters,filtered_clusters
 
     sorted_clusters = sorted(clusters, key=lambda x: sum(x.cumulative_read_depth), reverse= True)
-    return sorted_clusters, sorted_clusters[:5]
+    return sorted_clusters, sorted_clusters[:keep_n_clusters]
 
 
 
@@ -468,6 +468,16 @@ def parse_args(argv=None):
         help="Regex pattern to filter clusters by centroid sequence name.",
         default="^(TRINITY)|(NODE)|(k\d+)|(scaffold\d+)",  # Default pattern matches Trinity, SPADes, MEGAHIT, sspace_basic assembly names
     )
+
+    parser.add_argument(
+        "-n",
+        "--keep-clusters",
+        metavar="KEEP_CLUSTERS",
+        type=int,
+        help="Define the number of clusters to keep based if no clusters have at least the threshold value's read depth.",
+        default=5,
+    )
+
     parser.add_argument(
         "-l",
         "--log-level",
@@ -525,7 +535,7 @@ def main(argv=None):
     # Filter clusters by coverage
     if args.coverages:
         coverages = read_coverages(args.coverages)
-        clusters,filtered_clusters = filter_clusters_by_coverage(filtered_clusters, coverages, args.perc_reads_contig)
+        clusters,filtered_clusters = filter_clusters_by_coverage(filtered_clusters, coverages, args.perc_reads_contig, args.keep_clusters)
         logger.info("Filtered clusters by coverage, %d were removed.", len(clusters_renamed) - len(filtered_clusters))
 
     # Write the clusters to files
