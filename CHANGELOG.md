@@ -25,6 +25,7 @@ Initial release of Joon-Klaps/viralgenie, created with the [nf-core](https://nf-
 
 - OOM with longer contigs for lowcov_to_reference, uses more RAM now ([#125](https://github.com/Joon-Klaps/viralgenie/pull/125))
 - fixing null output from global prefix ([#147](https://github.com/Joon-Klaps/viralgenie/pull/147))
+- Fix empty filtered clusters ([#148](https://github.com/Joon-Klaps/viralgenie/pull/148))
 
 ### `Parameters`
 - New parameter mmseqs_cluster_mode default to 0 ([#130](https://github.com/Joon-Klaps/viralgenie/pull/130))
