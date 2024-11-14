@@ -388,7 +388,7 @@ def filter_members(clusters, pattern):
 
 def filter_clusters_by_coverage(clusters: list , coverages: dict, threshold: float) -> list:
     """
-    Filter clusters on coverage, only keep clusters with a coverage above the threshold.
+    Filter clusters on coverage, only keep clusters with a coverage above the threshold. If no clusters are kept, return top 5.
     """
     filtered_clusters = []
     for cluster in clusters:
@@ -397,7 +397,14 @@ def filter_clusters_by_coverage(clusters: list , coverages: dict, threshold: flo
         if any(cluster.cumulative_read_depth >= threshold):
             filtered_clusters.append(cluster)
 
-    return clusters,filtered_clusters
+    if filtered_clusters:
+        return clusters,filtered_clusters
+
+    sorted_clusters = sorted(clusters, key=lambda x: sum(x.cumulative_read_depth), reverse= True)
+    return sorted_clusters, sorted_clusters[:5]
+
+
+
 
 def parse_args(argv=None):
     """Define and immediately parse command line arguments."""
