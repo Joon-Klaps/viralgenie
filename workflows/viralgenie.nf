@@ -429,9 +429,7 @@ workflow VIRALGENIE {
 
     if ( !params.skip_consensus_qc  && (!params.skip_assembly || !params.skip_variant_calling) ) {
         ch_consensus_filter = ch_consensus
-            .map{ meta, fasta -> [meta, fasta, WorkflowCommons.getLengthAndAmbigous(fasta)] }
-            .filter(meta, fasta, stats -> stats.contig_size > 0)
-            .map{ meta, fasta, stats -> [meta, fasta] }
+            .filter{meta, fasta, stats -> WorkflowCommons.getLengthAndAmbigous(fasta).contig_size > 0}
         CONSENSUS_QC(
             ch_consensus_filter,
             ch_unaligned_raw_contigs,
