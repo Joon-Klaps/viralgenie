@@ -428,9 +428,12 @@ workflow VIRALGENIE {
     ch_annotation_summary = Channel.empty()
 
     if ( !params.skip_consensus_qc  && (!params.skip_assembly || !params.skip_variant_calling) ) {
-
+        ch_consensus_filter = ch_consensus
+            .map{ meta, fasta -> [meta, fasta, WorkflowCommons.getLengthAndAmbigous(fasta)] }
+            .filter(meta, fasta, stats -> stats.contig_size > 0)
+            .map{ meta, fasta, stats -> [meta, fasta] }
         CONSENSUS_QC(
-            ch_consensus,
+            ch_consensus_filter,
             ch_unaligned_raw_contigs,
             ch_checkv_db,
             ch_blast_refdb,

@@ -70,7 +70,7 @@ workflow PIPELINE_INITIALISATION {
         .fromList(samplesheetToList(params.input, "${projectDir}/assets/schemas/input.json"))
         .map{
             meta, read1, read2 ->
-            single_end = read1 && !read2
+            def single_end = read1 && !read2
             if (single_end) {
                 return [meta + [sample: meta.id, single_end: single_end] , [read1]]
             }
@@ -296,6 +296,11 @@ def createFileChannel(param) {
 
 def createChannel(dbPath, dbName, skipFlag) {
     return dbPath && skipFlag ? Channel.fromPath(dbPath, checkIfExists: true).map { db -> [[id: dbName], db] } : Channel.empty()
+}
+
+def removeEmptyFasta(fasta) {
+    fasta
+        .filter { meta, fasta -> fasta.size() > 0 }
 }
 
 def filterContigs(contig, min_len, n_100) {
