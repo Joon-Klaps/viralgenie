@@ -298,11 +298,6 @@ def createChannel(dbPath, dbName, skipFlag) {
     return dbPath && skipFlag ? Channel.fromPath(dbPath, checkIfExists: true).map { db -> [[id: dbName], db] } : Channel.empty()
 }
 
-def removeEmptyFasta(fasta) {
-    fasta
-        .filter { meta, fasta -> fasta.size() > 0 }
-}
-
 def filterContigs(contig, min_len, n_100) {
     contig
         .map { meta, fasta -> [ meta, fasta, WorkflowCommons.getLengthAndAmbigous( fasta ) ] }
