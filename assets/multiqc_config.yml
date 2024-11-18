@@ -94,6 +94,18 @@ module_order:
       name: "CLUSTER: Bcftools"
   - "custom_content"
 
+mosdepth_config:
+  general_stats_coverage:
+    - 1
+    - 5
+    - 10
+    - 50
+    - 100
+    - 200
+    - 500
+    - 750
+    - 1000
+
 # Summary table names
 table_columns_name:
   "SAMPLE: FastQC (raw)":
