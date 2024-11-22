@@ -656,13 +656,6 @@
                     "fa_icon": "fas fa-info",
                     "description": "calculate summary statistics in final iteration"
                 },
-                "multiqc_comment_headers": {
-                    "type": "string",
-                    "default": "${projectDir}/assets/mqc_comment",
-                    "fa_icon": "fas fa-heading",
-                    "description": "Directory containing the mutliqc headers for multiple tables like 'clusters_summary_mqc.txt', 'blast_mqc.txt', ...",
-                    "hidden": true
-                },
                 "ivar_header": {
                     "type": "string",
                     "hidden": true,
@@ -720,6 +713,13 @@
                     "type": "boolean",
                     "description": "Skip creating an alignment of each the collapsed clusters and each iterative step",
                     "fa_icon": "fas fa-forward"
+                },
+                "contig_filter_level": {
+                    "type": "string",
+                    "default": "normal",
+                    "fa_icon": "fas fa-filter",
+                    "description": "Specify how strict the filtering should be.",
+                    "help_text": "none - don't filter the report of final contigs (not recomended)\nnormal - display only the consensus of the last iteration that had hits in the annotation set\nstrict - Group results by identified species & segment & lineage (if available) to report only the top hits"
                 },
                 "mmseqs_searchtype": {
                     "type": "integer",
@@ -853,7 +853,8 @@
                     "type": "string",
                     "description": "Custom logo file to supply to MultiQC. File name must also be set in the MultiQC config file",
                     "fa_icon": "fas fa-image",
-                    "hidden": true
+                    "hidden": true,
+                    "default": "https://github.com/Joon-Klaps/viralgenie/blob/dev/docs/images/ViralGenie-nf-core-theme.png?raw=true"
                 },
                 "multiqc_methods_description": {
                     "type": "string",

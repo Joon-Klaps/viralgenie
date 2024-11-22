@@ -1,60 +1,65 @@
-umitools_dedup:
-  - input_reads: "mapped reads"
-  - removed_reads
-  - output_reads: "deduplicated reads"
-  - positions_deduplicated
-  - max_umi_per_pos
-  - mean_umi_per_pos
-  - total_umis
-  - percent_passing_dedup: "% passing dedup"
-  - unique_umis
-picard_dups:
-  - UNPAIRED_READS_EXAMINED: "unpaired reads examined"
-  - READ_PAIR_OPTICAL_DUPLICATES: "read pair optical duplicates"
-  - UNMAPPED_READS: "unmapped reads"
-  - ESTIMATED_LIBRARY_SIZE: "estimated library size"
-  - UNPAIRED_READ_DUPLICATES: "unpaired read duplicates"
-  - SECONDARY_OR_SUPPLEMENTARY_RDS: "secondary or supplementary rds"
-  - READ_PAIRS_EXAMINED: "read pairs examined"
-  - READ_PAIR_DUPLICATES: "read pair duplicates"
-  - PERCENT_DUPLICATION: "% duplication"
-  - LIBRARY: "library"
-samtools_stats:
-  - sequences
-  - reads_paired_percent: "reads paired %"
-  - average_length
-  - is_sorted
-  - bases_mapped_(cigar)
-  - reads_QC_failed_percent: "reads QC failed %"
-  - reads_unmapped
-  - reads_unmapped_percent: "reads unmapped %"
-  - reads_properly_paired_percent: "reads properly paired %"
-  - average_quality
-  - reads_paired
-  - non-primary_alignments
-  - supplementary_alignments
-  - reads_mapped
-  - reads_mapped_percent: "reads mapped %"
-  - bases_trimmed
-  - bases_duplicated
-  - reads_properly_paired
-  - outward_oriented_pairs
-  - reads_duplicated
-  - reads_duplicated_percent: "reads duplicated %"
-  - bases_mapped
-  - insert_size_average
-  - insert_size_standard_deviation
-  - inward_oriented_pairs
-  - error_rate
-  - mismatches
-  - reads_MQ0
-  - total_length
-  - reads_QC_failed
+failed_mapped:
+  - mapped reads
+umitools:
+  - multiqc_umitools_dedup:
+      - input_reads: "mapped reads"
+      - removed_reads
+      - output_reads: "deduplicated reads"
+      - positions_deduplicated
+      - max_umi_per_pos
+      - mean_umi_per_pos
+      - total_umis
+      - percent_passing_dedup: "% passing dedup"
+      - unique_umis
+picard:
+  - multiqc_picard_dups:
+      - UNPAIRED_READS_EXAMINED: "unpaired reads examined"
+      - READ_PAIR_OPTICAL_DUPLICATES: "read pair optical duplicates"
+      - UNMAPPED_READS: "unmapped reads"
+      - ESTIMATED_LIBRARY_SIZE: "estimated library size"
+      - UNPAIRED_READ_DUPLICATES: "unpaired read duplicates"
+      - SECONDARY_OR_SUPPLEMENTARY_RDS: "secondary or supplementary rds"
+      - READ_PAIRS_EXAMINED: "read pairs examined"
+      - READ_PAIR_DUPLICATES: "read pair duplicates"
+      - PERCENT_DUPLICATION: "% duplication"
+      - LIBRARY: "library"
+samtools:
+  - multiqc_samtools_stats:
+      - sequences: "reads mapped"
+      - reads_paired_percent: "reads paired %"
+      - average_length
+      - is_sorted
+      - bases_mapped_(cigar)
+      - reads_QC_failed_percent: "reads QC failed %"
+      - reads_unmapped
+      - reads_unmapped_percent: "reads unmapped %"
+      - reads_properly_paired_percent: "reads properly paired %"
+      - average_quality
+      - reads_paired
+      - non-primary_alignments
+      - supplementary_alignments
+      - reads_mapped
+      - reads_mapped_percent: "reads mapped %"
+      - bases_trimmed
+      - bases_duplicated
+      - reads_properly_paired
+      - outward_oriented_pairs
+      - reads_duplicated
+      - reads_duplicated_percent: "reads duplicated %"
+      - bases_mapped
+      - insert_size_average
+      - insert_size_standard_deviation
+      - inward_oriented_pairs
+      - error_rate
+      - mismatches
+      - reads_MQ0
+      - total_length
+      - reads_QC_failed
 ivar_variants:
   - INS: "raw inserts"
   - SNP: "raw SNPs"
   - DEL: "raw deletions"
-bcftools_stats:
+bcftools:
   - number_of_indels: "number of indels"
   - number_of_samples: "number of samples"
   - number_of_SNPs: "number of SNPs"
@@ -83,12 +88,16 @@ bcftools_stats:
   - substitution_type_G>A: "substitution G->A"
   - substitution_type_A>G: "substitution A->G"
 general_stats:
-  - mosdepth-1_x_pc: "mosdepth 1X coverage"
-  - mosdepth-5_x_pc: "mosdepth 5X coverage"
-  - mosdepth-10_x_pc: "mosdepth 10X coverage"
-  - mosdepth-30_x_pc: "mosdepth 30X coverage"
-  - mosdepth-30_x_pc: "mosdepth 50X coverage"
-  - mosdepth-median_coverage: "mosdepth Median read depth"
-  - mosdepth-mean_coverage: "mosdepth Mean read depth"
-  - mosdepth-min_coverage: "mosdepth Min read depth"
-  - mosdepth-max_coverage: "mosdepth Max read depth"
+  - "CLUSTER: mosdepth.mean_coverage": "mosdepth Mean read depth"
+  - "CLUSTER: mosdepth.min_coverage": "mosdepth Min read depth"
+  - "CLUSTER: mosdepth.max_coverage": "mosdepth Max read depth"
+  - "CLUSTER: mosdepth.median_coverage": "mosdepth Median read depth"
+  - "CLUSTER: mosdepth.1_x_pc": "mosdepth 1X coverage"
+  - "CLUSTER: mosdepth.5_x_pc": "mosdepth 5X coverage"
+  - "CLUSTER: mosdepth.10_x_pc": "mosdepth 10X coverage"
+  - "CLUSTER: mosdepth.50_x_pc": "mosdepth 50X coverage"
+  - "CLUSTER: mosdepth.100_x_pc": "mosdepth 100X coverage"
+  - "CLUSTER: mosdepth.200_x_pc": "mosdepth 200X coverage"
+  - "CLUSTER: mosdepth.500_x_pc": "mosdepth 500X coverage"
+  - "CLUSTER: mosdepth.750_x_pc": "mosdepth 750X coverage"
+  - "CLUSTER: mosdepth.1000_x_pc": "mosdepth 1000X coverage"

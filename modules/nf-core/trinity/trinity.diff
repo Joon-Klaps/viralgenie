@@ -1,4 +1,6 @@
 Changes in module 'nf-core/trinity'
+'modules/nf-core/trinity/environment.yml' is unchanged
+Changes in 'trinity/main.nf':
 --- modules/nf-core/trinity/main.nf
 +++ modules/nf-core/trinity/main.nf
 @@ -9,7 +9,8 @@
@@ -6,10 +8,27 @@ Changes in module 'nf-core/trinity'
  
      input:
 -    tuple val(meta), path(reads, stageAs: "input*/*", arity: '1..*')
-+    // arity not support in nextflow 23.04.0 
++    // arity not support in nextflow 23.04.0
 +    tuple val(meta), path(reads)
  
      output:
      tuple val(meta), path("*.fa.gz")    , emit: transcript_fasta
+@@ -23,8 +24,9 @@
+     def args = task.ext.args ?: ''
+     def prefix = task.ext.prefix ?: "${meta.id}"
+ 
+-    def reads1 = [], reads2 = []
+-    meta.single_end ? reads1 = reads : reads.eachWithIndex{ v, ix -> ( ix & 1 ? reads2 : reads1) << v }
++    def reads1 = []
++    def reads2 = []
++    meta.single_end ? reads1 == reads : reads.eachWithIndex{ v, ix -> ( ix & 1 ? reads2 : reads1) << v }
+ 
+     if (meta.single_end) {
+         reads_args = "--single ${reads1.join(',')}"
 
+'modules/nf-core/trinity/meta.yml' is unchanged
+'modules/nf-core/trinity/tests/main.nf.test' is unchanged
+'modules/nf-core/trinity/tests/main.nf.test.snap' is unchanged
+'modules/nf-core/trinity/tests/nextflow.config' is unchanged
+'modules/nf-core/trinity/tests/tags.yml' is unchanged
 ************************************************************

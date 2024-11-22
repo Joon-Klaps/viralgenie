@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 
 import pandas as pd
+from utils.constant_variables import MASH_SCREEN_COLUMNS
 from Bio import SeqIO
 
 logger = logging.getLogger()
@@ -53,6 +54,7 @@ def parse_args(argv=None) -> argparse.Namespace:
     )
     return parser.parse_args(argv)
 
+
 def to_dict_remove_dups(sequences) -> dict:
     return {record.id: record for record in sequences}
 
@@ -84,8 +86,8 @@ def write_hits(df, references, prefix) -> None:
             hit_name = hit.split(" ")[0]
             if hit_name in ref_records:
                 # Sometimes reads can have illegal characters in the header
-                ref_records[hit_name].id = ref_records[hit_name].id.replace("\\","_")
-                ref_records[hit_name].description = ref_records[hit_name].description.replace("\\","_")
+                ref_records[hit_name].id = ref_records[hit_name].id.replace("\\", "-")
+                ref_records[hit_name].description = ref_records[hit_name].description.replace("\\", "-")
                 SeqIO.write(ref_records[hit_name], f, "fasta")
         if f.tell() == init_position:
             logger.error("No reference sequences found in the hits. Exiting...")
@@ -103,18 +105,16 @@ def read_mash_screen(file) -> pd.DataFrame:
     """
 
     logger.info("Reading in the mash screen file...")
-    try :
-        df = pd.read_csv(file, sep="\t", header=None)
+    try:
+        df = pd.read_csv(file, sep="\t", header=None, names=MASH_SCREEN_COLUMNS)
     except pd.errors.EmptyDataError as e:
         logger.warning(f"Empty file: {file}, skipping analysis")
         return pd.DataFrame()
 
-    df.columns = ["identity", "shared-hashes", "median-multiplicity", "p-value", "query-ID", "query-comment"]
-
     logger.info("Removing duplicates and sorting by identity and shared-hashes...")
-    df['shared-hashes_num'] = df['shared-hashes'].str.split('/').str[0].astype(float)
+    df["shared-hashes_num"] = df["shared-hashes"].str.split("/").str[0].astype(float)
     df = df.sort_values(by=["identity", "shared-hashes_num"], ascending=False)
-    df = df.drop(columns=['shared-hashes_num'])
+    df = df.drop(columns=["shared-hashes_num"])
 
     return df.iloc[[0]]
 
@@ -142,9 +142,12 @@ def main(argv=None):
     write_hits(df, args.references, args.prefix)
 
     # Writing the best hit to a json file for metadata purposes
-    df.to_json(f"{args.prefix}.json",orient="records", lines=True)
+    df_renamed = df.copy()
+    df_renamed["query-ID"] = df_renamed["query-ID"].str.replace("\\", "-")
+    df_renamed.to_json(f"{args.prefix}.json", orient="records", lines=True)
 
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())

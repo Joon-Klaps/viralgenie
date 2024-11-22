@@ -1,0 +1,22 @@
+Changes in module 'nf-core/mafft'
+'modules/nf-core/mafft/environment.yml' is unchanged
+Changes in 'mafft/main.nf':
+--- modules/nf-core/mafft/main.nf
++++ modules/nf-core/mafft/main.nf
+@@ -8,8 +8,8 @@
+         'biocontainers/mulled-v2-12eba4a074f913c639117640936668f5a6a01da6:425707898cf4f85051b77848be253b88f1d2298a-0' }"
+ 
+     input:
+-    tuple val(meta) , path(fasta)
+-    tuple val(meta2), path(add)
++    tuple val(meta) , path(fasta, stageAs: 'fasta/*')
++    tuple val(meta2), path(add, stageAs: 'add/*')
+     tuple val(meta3), path(addfragments)
+     tuple val(meta4), path(addfull)
+     tuple val(meta5), path(addprofile)
+
+'modules/nf-core/mafft/meta.yml' is unchanged
+'modules/nf-core/mafft/tests/main.nf.test' is unchanged
+'modules/nf-core/mafft/tests/main.nf.test.snap' is unchanged
+'modules/nf-core/mafft/tests/tags.yml' is unchanged
+************************************************************

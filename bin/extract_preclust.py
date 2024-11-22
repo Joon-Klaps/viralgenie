@@ -3,10 +3,10 @@
 import argparse
 import logging
 import sys
-
-from Bio import SeqIO
 from collections import defaultdict
 from pathlib import Path
+
+from Bio import SeqIO
 
 logger = logging.getLogger()
 

@@ -718,10 +718,8 @@ Consensus quality control is done with multiple tools, the results are stored in
 
 ???- abstract "Output files"
 
-    - `consensus/quality_control/blast/`
-        - `<sample-id>/<iteration>/<sample-id>_<cl# | constrain-id>.txt`: A tabular file containing the BLAST report.
+    - `consensus/quality_control/blast/` A tabular file containing the BLAST report of all intermediate & final results.
 
-    > If no iterative refiment was ran, the output will be in the `consensus/quality_control/blast/<sample-id>/constrain` directory.
 
 
 ### MMseqs-search (annotation)

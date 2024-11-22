@@ -55,5 +55,5 @@
             "segment": ["species"]
         }
     },
-    "allOf": [{ "uniqueEntries": ["id","species", "segment"] }, { "uniqueEntries": ["id"] }]
+    "allOf": [{ "uniqueEntries": ["id", "species", "segment"] }, { "uniqueEntries": ["id"] }]
 }

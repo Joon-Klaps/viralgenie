@@ -4,12 +4,13 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     IMPORT LOCAL & NF-CORE MODULES/SUBWORKFLOWS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
+
+// functions
 include { samplesheetToList               } from 'plugin/nf-schema'
 include { paramsSummaryMap                } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc            } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -17,6 +18,7 @@ include { softwareVersionsToYAML          } from '../subworkflows/nf-core/utils_
 include { methodsDescriptionText          } from '../subworkflows/local/utils_nfcore_viralgenie_pipeline'
 include { createFileChannel               } from '../subworkflows/local/utils_nfcore_viralgenie_pipeline'
 include { createChannel                   } from '../subworkflows/local/utils_nfcore_viralgenie_pipeline'
+include { noContigSamplesToMultiQC        } from '../subworkflows/local/utils_nfcore_viralgenie_pipeline'
 
 // Preprocessing
 include { PREPROCESSING_ILLUMINA          } from '../subworkflows/local/preprocessing_illumina'
@@ -26,7 +28,6 @@ include { FASTQ_KRAKEN_KAIJU              } from '../subworkflows/local/fastq_kr
 
 // Assembly
 include { FASTQ_ASSEMBLY                  } from '../subworkflows/local/fastq_assembly'
-include { noContigSamplesToMultiQC        } from '../modules/local/functions'
 
 // Consensus polishing of genome
 include { FASTA_CONTIG_CLUST              } from '../subworkflows/local/fasta_contig_clust'
@@ -48,9 +49,7 @@ include { FASTQ_FASTA_MAP_CONSENSUS                            } from '../subwor
 include { CONSENSUS_QC                    } from '../subworkflows/local/consensus_qc'
 
 // Report generation
-include { CUSTOM_MULTIQC_TABLES           } from '../modules/local/custom_multiqc_tables'
-include { MULTIQC as MULTIQC_DATAPREP     } from '../modules/nf-core/multiqc/main'
-include { MULTIQC as MULTIQC_REPORT       } from '../modules/nf-core/multiqc/main'
+include { CUSTOM_MULTIQC           } from '../modules/local/custom_multiqc'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -212,8 +211,10 @@ workflow VIRALGENIE {
     ch_consensus               = Channel.empty()
     // Channel for consensus sequences that have been generated at the LAST iteration
     ch_consensus_results_reads = Channel.empty()
-    // Channel for summary table of cluseters to include in mqc report
+    // Channel for summary table of clusters to include in mqc report
     ch_clusters_summary        = Channel.empty()
+    // Channel for summary coverages of each contig
+    ch_clusters_tsv            = Channel.empty()
 
     if (!params.skip_assembly) {
         // run different assemblers and combine contigs
@@ -256,6 +257,7 @@ workflow VIRALGENIE {
                 .set{ch_centroids_members}
 
             ch_clusters_summary    = FASTA_CONTIG_CLUST.out.clusters_summary.collect{it[1]}.ifEmpty([])
+            ch_clusters_tsv        = FASTA_CONTIG_CLUST.out.clusters_tsv.collect{it[1]}.ifEmpty([])
             ch_multiqc_files       =  ch_multiqc_files.mix(FASTA_CONTIG_CLUST.out.no_blast_hits_mqc.ifEmpty([]))
 
             // map clustered contigs & create a single consensus per cluster
@@ -338,20 +340,18 @@ workflow VIRALGENIE {
         // Importing samplesheet
         Channel
             .fromList(samplesheetToList(params.mapping_constrains, "${projectDir}/assets/schemas/mapping_constrains.json"))
-            .tap{mapping_constrains}
             .map{ meta, sequence ->
-                def samples = meta.samples == [] ? meta.samples: tuple(meta.samples.split(";"))  // Split up samples if meta.samples is not null
+                def samples = meta.samples == [] ? null : tuple(meta.samples.split(";"))  // Split up samples if meta.samples is not null
                 [meta, samples, sequence]
             }
-            .transpose(remainder:true)                                                         // Unnest
+            .tap{mapping_constrains}
+            .transpose(remainder: true)                                                         // Unnest
             .set{ch_mapping_constrains}
-
-        // // Check if the input is a multi-fasta
-        // ch_mapping_constrains.map{ meta, samples, sequence -> WorkflowMain.isMultiFasta(sequence, log)}
 
         // Joining all the reads with the mapping constrains, filter for those specified or keep everything if none specified.
         ch_decomplex_trim_reads
             .combine( ch_mapping_constrains )
+            .tap{mapping_constrains_tmp}
             .filter{ meta_reads, fastq, meta_mapping, mapping_samples, sequence -> mapping_samples == null || mapping_samples == meta_reads.sample}
             .map
                 {
@@ -369,6 +369,9 @@ workflow VIRALGENIE {
                     return [new_meta, sequence_mapping]
                 }
             .set{ch_map_seq_anno_combined}
+
+        mapping_constrains_tmp.dump(tag:"mapping-raw", pretty:true)
+        ch_map_seq_anno_combined.dump(tag:"mapping", pretty:true)
 
         // Map with both reads and mapping constrains
         ch_map_seq_anno_combined
@@ -408,7 +411,6 @@ workflow VIRALGENIE {
             params.deduplicate,
             true,
             params.variant_caller,
-            true,
             params.consensus_caller,
             params.mapping_stats,
             params.min_mapped_reads,
@@ -426,9 +428,10 @@ workflow VIRALGENIE {
     ch_annotation_summary = Channel.empty()
 
     if ( !params.skip_consensus_qc  && (!params.skip_assembly || !params.skip_variant_calling) ) {
-
+        ch_consensus_filter = ch_consensus
+            .filter{meta, fasta -> WorkflowCommons.getLengthAndAmbigous(fasta).contig_size > 0}
         CONSENSUS_QC(
-            ch_consensus,
+            ch_consensus_filter,
             ch_unaligned_raw_contigs,
             ch_checkv_db,
             ch_blast_refdb,
@@ -436,54 +439,12 @@ workflow VIRALGENIE {
             )
         ch_versions           = ch_versions.mix(CONSENSUS_QC.out.versions)
         ch_multiqc_files      = ch_multiqc_files.mix(CONSENSUS_QC.out.mqc.collect{it[1]}.ifEmpty([]))
-        ch_checkv_summary     = CONSENSUS_QC.out.checkv_summary.collect{it[1]}.ifEmpty([])
-        ch_quast_summary      = CONSENSUS_QC.out.quast_summary.collect{it[1]}.ifEmpty([])
-        ch_blast_summary      = CONSENSUS_QC.out.blast_txt.collect{it[1]}.ifEmpty([])
-        ch_annotation_summary = CONSENSUS_QC.out.annotation_txt.collect{it[1]}.ifEmpty([])
+        ch_checkv_summary     = CONSENSUS_QC.out.checkv.collect{it[1]}.ifEmpty([])
+        ch_quast_summary      = CONSENSUS_QC.out.quast.collect{it[1]}.ifEmpty([])
+        ch_blast_summary      = CONSENSUS_QC.out.blast.collect{it[1]}.ifEmpty([])
+        ch_annotation_summary = CONSENSUS_QC.out.annotation.collect{it[1]}.ifEmpty([])
 
     }
-
-    MULTIQC_DATAPREP (
-        ch_multiqc_files.collect(),
-        ch_multiqc_config.toList(),
-        ch_multiqc_custom_config.toList(),
-        ch_multiqc_logo.toList(),
-    )
-
-    multiqc_data = MULTIQC_DATAPREP.out.data.ifEmpty([])
-
-    // Prepare MULTIQC custom tables
-    CUSTOM_MULTIQC_TABLES (
-            ch_clusters_summary.ifEmpty([]),
-            ch_metadata,
-            ch_checkv_summary.ifEmpty([]),
-            ch_quast_summary.ifEmpty([]),
-            ch_blast_summary.ifEmpty([]),
-            ch_constrain_meta,
-            ch_annotation_summary.ifEmpty([]),
-            ch_mash_screen.ifEmpty([]),
-            multiqc_data,
-            ch_multiqc_comment_headers.ifEmpty([]),
-            ch_multiqc_custom_table_headers.ifEmpty([])
-            )
-    ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_MULTIQC_TABLES.out.summary_clusters_mqc.ifEmpty([]))
-    ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_MULTIQC_TABLES.out.sample_metadata_mqc.ifEmpty([]))
-    ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_MULTIQC_TABLES.out.contigs_overview_mqc.ifEmpty([]))
-    ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_MULTIQC_TABLES.out.mapping_constrains_mqc.ifEmpty([]))
-    ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_MULTIQC_TABLES.out.constrains_summary_mqc.ifEmpty([]))
-    ch_versions      = ch_versions.mix(CUSTOM_MULTIQC_TABLES.out.versions)
-
-    //
-    // Collate and save software versions
-    //
-    softwareVersionsToYAML(ch_versions)
-        .collectFile(
-            storeDir: "${params.outdir}/pipeline_info",
-            name: 'nf_core_'  + 'pipeline_software_' +  'mqc_'  + 'versions.yml',
-            sort: true,
-            newLine: true
-        ).set { ch_collated_versions }
-
 
     //
     // MODULE: MultiQC
@@ -508,6 +469,17 @@ workflow VIRALGENIE {
     ch_methods_description                = Channel.value(
         methodsDescriptionText(ch_multiqc_custom_methods_description))
 
+    //
+    // Collate and save software versions
+    //
+    softwareVersionsToYAML(ch_versions)
+        .collectFile(
+            storeDir: "${params.outdir}/pipeline_info",
+            name: 'viralgenie_mqc_versions.yml',
+            sort: true,
+            newLine: true
+        ).set { ch_collated_versions }
+
     ch_multiqc_files = ch_multiqc_files.mix(ch_collated_versions)
     ch_multiqc_files = ch_multiqc_files.mix(
         ch_methods_description.collectFile(
@@ -516,15 +488,27 @@ workflow VIRALGENIE {
         )
     )
 
-    MULTIQC_REPORT (
+    // Prepare MULTIQC custom tables
+    CUSTOM_MULTIQC (
         ch_multiqc_files.collect(),
         ch_multiqc_config.toList(),
-        ch_multiqc_custom_config.toList(),
-        ch_multiqc_logo.toList(),
-    )
+        ch_clusters_summary.ifEmpty([]),
+        ch_metadata,
+        ch_checkv_summary.ifEmpty([]),
+        ch_quast_summary.ifEmpty([]),
+        ch_blast_summary.ifEmpty([]),
+        ch_constrain_meta,
+        ch_annotation_summary.ifEmpty([]),
+        ch_clusters_tsv.ifEmpty([]),
+        ch_mash_screen.ifEmpty([]),
+        ch_multiqc_comment_headers.ifEmpty([]),
+        ch_multiqc_custom_table_headers.ifEmpty([])
+        )
+    ch_versions = ch_versions.mix(CUSTOM_MULTIQC.out.versions)
 
-    emit:multiqc_report = MULTIQC_REPORT.out.report.toList() // channel: /path/to/multiqc_report.html
-    versions            = ch_versions                        // channel: [ path(versions.yml) ]
+    emit:
+    multiqc_report = CUSTOM_MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
+    versions       = ch_versions                               // channel: [ path(versions.yml) ]
 
 }
 

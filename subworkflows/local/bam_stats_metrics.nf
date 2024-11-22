@@ -41,7 +41,6 @@ workflow BAM_STATS_METRICS {
     ch_multiqc   = ch_multiqc.mix(BAM_STATS_SAMTOOLS.out.flagstat)
     // ch_multiqc   = ch_multiqc.mix(BAM_STATS_SAMTOOLS.out.idxstats)
 
-
     emit:
     bai      = SAMTOOLS_INDEX.out.bai          // channel: [ val(meta), [ bai ] ]
     mqc      = ch_multiqc                      // channel: [ multiqc  ]

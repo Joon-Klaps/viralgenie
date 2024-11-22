@@ -1,6 +1,6 @@
 // modules
 
-include { lowReadSamplesToMultiQC            } from '../../modules/local/functions'
+include { lowReadSamplesToMultiQC            } from '../../subworkflows/local/utils_nfcore_viralgenie_pipeline'
 include { PRINSEQPLUSPLUS as PRINSEQ_READS   } from '../../modules/nf-core/prinseqplusplus/main'
 include { HUMID                              } from '../../modules/nf-core/humid/main'
 include { BBMAP_BBDUK                        } from '../../modules/nf-core/bbmap/bbduk/main'
@@ -71,7 +71,7 @@ workflow PREPROCESSING_ILLUMINA {
         ch_reads_trim = FASTQ_FASTQC_UMITOOLS_FASTP.out.reads
     }
     else {
-        throw new Exception("Unknown trim tool: ${trim_tool}")
+        throw new Exception("Unknown trim tool: ${params.trim_tool}")
     }
 
     // Keeping track of failed reads for reporting

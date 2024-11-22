@@ -53,8 +53,8 @@ workflow FASTA_FASTQ_CLUST {
 
         createtsv_input = db_cluster
                 .join(MMSEQS_CREATEDB.out.db, by: [0])
-                .multiMap{ meta, db_cluster, db_in ->
-                    result: [meta, db_cluster]
+                .multiMap{ meta, db_clus, db_in ->
+                    result: [meta, db_clus]
                     query: [meta, db_in]
                     target: [meta, db_in]
                 }

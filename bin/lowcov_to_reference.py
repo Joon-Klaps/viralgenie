@@ -5,12 +5,12 @@ import logging
 import sys
 from pathlib import Path
 
-import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.collections import LineCollection
+import numpy as np
 from Bio import Align, SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
+from matplotlib.collections import LineCollection
 
 # global logger
 logger = logging.getLogger()
@@ -105,9 +105,7 @@ def annotate_ambiguous(reference, consensus, low_coverage_regions, args):
     return SeqRecord(seq=Seq(seq), id=ID, description=DESCRIPTION)
 
 
-def alignment_replacement(
-    reference_record, consensus_record, low_coverage_regions, args
-):
+def alignment_replacement(reference_record, consensus_record, low_coverage_regions, args):
     """
     Replaces the aligned low_coverage_regions in the consensus sequence with the corresponding regions from the reference sequence.
 
@@ -142,14 +140,10 @@ def alignment_replacement(
     # Account for the gaps in the alignment, by updating the consensus indexes
     # Needs to be double checked if the object is a tuple.
     logger.info("> Finding target tuples")
-    indexes_differences = determine_difference_target_query(
-        low_coverage_regions, target_locations
-    )
+    indexes_differences = determine_difference_target_query(low_coverage_regions, target_locations)
 
     logger.info("> Updating query tuples")
-    query_low_coverage_regions = update_query_tuple_with_difference(
-        query_locations, indexes_differences
-    )
+    query_low_coverage_regions = update_query_tuple_with_difference(query_locations, indexes_differences)
 
     logger.info("> Updating consensus sequence")
     ref_seq = np.array(list(str(reference_record.seq)))
@@ -185,9 +179,7 @@ def determine_difference_target_query(low_coverage_regions, target_matrix):
         logger.debug("target_matrix[%s]: start: %s - end: %s", block_index, start, end)
 
         # Filter low_coverage_regions to only include regions within the current block
-        relevant_regions = [
-            region for region in low_coverage_regions if start <= region <= end
-        ]
+        relevant_regions = [region for region in low_coverage_regions if start <= region <= end]
         logger.debug("relevant_regions: %s", relevant_regions)
         for region in relevant_regions:
             difference = region - start
@@ -199,9 +191,7 @@ def determine_difference_target_query(low_coverage_regions, target_matrix):
             result.append((block_index, difference))
 
         # Update low_coverage_regions to remove processed regions
-        low_coverage_regions = [
-            region for region in low_coverage_regions if region > end
-        ]
+        low_coverage_regions = [region for region in low_coverage_regions if region > end]
 
         if not low_coverage_regions:
             break  # All regions have been processed
@@ -268,15 +258,8 @@ def visualize_alignment(cons_seq, query_regions, filename, max_line_length) -> N
         end_idx = min((line + 1) * max_line_length, seq_length)
 
         # Create line segments for each line
-        segments = np.array(
-            [
-                [(i, line * -2), (i + 1, line * -2)]
-                for i in range(end_idx - start_idx - 1)
-            ]
-        )
-        colors = np.where(
-            np.isin(np.arange(start_idx, end_idx), query_regions), RED, GREEN
-        )
+        segments = np.array([[(i, line * -2), (i + 1, line * -2)] for i in range(end_idx - start_idx - 1)])
+        colors = np.where(np.isin(np.arange(start_idx, end_idx), query_regions), RED, GREEN)
         lc = LineCollection(segments, colors=colors, linewidths=2)
         ax.add_collection(lc)
 
@@ -355,18 +338,14 @@ def main(argv=None):
         sys.exit(4)
 
     # Extract regions with coverage & subtract 1 for 0 index base
-    low_coverage = (
-        mpileup[mpileup[:, 3].astype(int) <= args.minimum_depth, 1].astype(int) - 1
-    )
+    low_coverage = mpileup[mpileup[:, 3].astype(int) <= args.minimum_depth, 1].astype(int) - 1
 
     # Annotate the consensus sequence with the reference sequence defined by low_coverage positions
     if len(low_coverage) > 0:
         logger.info("Low coverage regions found.")
         consensus_hybrid = annotate_ambiguous(reference, consensus, low_coverage, args)
     else:
-        logger.info(
-            "No low coverage regions found. Writing out consensus sequence as is."
-        )
+        logger.info("No low coverage regions found. Writing out consensus sequence as is.")
         consensus_hybrid = consensus
 
     # Write out the annotated consensus sequence

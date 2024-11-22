@@ -7,11 +7,6 @@ include { FASTQC as FASTQC_TRIM } from '../../modules/nf-core/fastqc/main'
 include { UMITOOLS_EXTRACT      } from '../../modules/nf-core/umitools/extract/main'
 include { TRIMMOMATIC           } from '../../modules/nf-core/trimmomatic/main'
 
-//
-// Function that parses fastp json output file to get total number of reads after trimming
-//
-import groovy.json.JsonSlurper
-
 def getTrimmomaticReadsAfterFiltering(log_file) {
     def total_reads = 0
     def filtered_reads = 0

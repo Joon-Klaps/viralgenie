@@ -15,7 +15,7 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
     call_intermediate_variants     // val: [ true | false ]
     intermediate_variant_caller    // val: [ bcftools | ivar ]
     intermediate_consensus_caller  // val: [ bcftools | ivar ]
-    intermediate_mapping_stats         // val: [ true | false ]
+    intermediate_mapping_stats     // val: [ true | false ]
     min_mapped_reads               // integer: min_mapped_reads
     min_len                        // integer: min_length
     n_100                          // integer: n_100
@@ -25,7 +25,7 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
     ch_consensus_allsteps           = Channel.empty()
     ch_multiqc                      = Channel.empty()
     ch_versions                     = Channel.empty()
-
+    ch_bed                          = Channel.empty()
     if (repeats >= 1){
         ch_reference_reads_intermediate
             .map{meta, fasta, reads -> [meta + [iteration:'1', step:"it1", previous_step: meta.step], fasta, reads]}
@@ -38,7 +38,6 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
             deduplicate,
             call_intermediate_variants,
             intermediate_variant_caller,
-            true,
             intermediate_consensus_caller,
             intermediate_mapping_stats,
             min_mapped_reads,
@@ -67,7 +66,6 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
             deduplicate,
             call_intermediate_variants,
             intermediate_variant_caller,
-            true,
             intermediate_consensus_caller,
             intermediate_mapping_stats,
             min_mapped_reads,
@@ -96,7 +94,6 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
             deduplicate,
             call_intermediate_variants,
             intermediate_variant_caller,
-            true,
             intermediate_consensus_caller,
             intermediate_mapping_stats,
             min_mapped_reads,
@@ -125,7 +122,6 @@ workflow FASTQ_FASTA_ITERATIVE_CONSENSUS {
             deduplicate,
             call_intermediate_variants,
             intermediate_variant_caller,
-            true,
             intermediate_consensus_caller,
             intermediate_mapping_stats,
             min_mapped_reads,

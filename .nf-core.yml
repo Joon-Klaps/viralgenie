@@ -34,10 +34,6 @@ lint:
     - CITATIONS.md
     - conf/test.config
     - conf/test_full.config
-    - lib/Utils.groovy
-    - lib/WorkflowMain.groovy
-    - lib/NfcoreTemplate.groovy
-    - lib/WorkflowViralgenie.groovy
   actions_ci: false
 template:
   name: viralgenie
