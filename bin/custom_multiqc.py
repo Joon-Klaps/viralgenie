@@ -15,16 +15,7 @@ from multiqc.plots import bargraph, table
 from multiqc.types import Anchor
 from utils.constant_variables import CLUSTER_PCONFIG
 from utils.file_tools import filelist_to_df, get_module_selection, read_in_quast, write_df
-from utils.module_data_processing import (
-    filter_constrain,
-    generate_ignore_samples,
-    generate_indexed_df,
-    process_annotation_df,
-    process_blast_df,
-    reformat_constrain_df,
-    reformat_custom_df,
-    add_prefix_to_values_dict,
-)
+from utils.module_data_processing import *
 from utils.pandas_tools import (
     filter_and_rename_columns,
     join_df,
@@ -296,92 +287,51 @@ def get_module_data(mqc: object, module: str) -> Dict[str, any]:
     return {}
 
 
-def handle_module_data(
+def extract_module_data(
     module: str,
     section: Union[
         str,
-        List[
-            Union[
-                str,
-                Dict[str, str],
-                Dict[
-                    str,
-                    List[Union[str, Dict[str, str]]],  # module has multiple sections
-                ],
-            ]
-        ],
-    ],
-) -> Tuple[list[pd.DataFrame], List[Union[str, Dict[str, str]]]]:
+        None,
+        List[Union[str, Dict[str, str]]],
+        Dict[str, List[Union[str, Dict[str, str]]]]
+    ]
+) -> Tuple[List[pd.DataFrame], List[Union[str, Dict[str, str]]]]:
     """
-    Extract data from multiqc modules based on a nested yml file structure for filtering.
+    Extract and filter data from MultiQC modules based on specified section criteria.
 
     Args:
-        mqc (object): MultiQC object.
-        module (str): The module name.
-        section (Union[str, List[Union[str, Dict[str, str]]]): The section to extract data from.
+        module (str): The name of the MultiQC module to extract data from.
+        section (Union[str, None, List, Dict]): Specification for data extraction and filtering.
 
     Returns:
-        list[pd.DataFrame]: A list of dataframes that were extracted
-        List[Union[str, Dict[str, str]]]]: A list of columns containing both old and new names of columns.
+        Tuple containing:
+        - List of pandas DataFrames with extracted and filtered data
+        - List of column specifications
     """
-
-    def check_section_exists(module_data: Dict, section_key: str) -> bool:
-        """Check if a section exists in the module data."""
-        return any(section_key in key for key in module_data.keys())
-
-    # Get all module data first
+    # Retrieve all data for the specified module
     all_module_data = mqc.get_module_data(module=module)
-    logger.debug("All data for %s, %s", module, all_module_data)
 
+    # Early exit if no data is found
     if not all_module_data:
-        logger.warning("No data found for module: %s", module)
+        logger.warning(f"No data found for module: {module}")
         return [pd.DataFrame()], []
 
-    # Empty section, so we take all values from module
+    # Handle simple string or None section cases
     if isinstance(section, str) or section is None:
-        if not section:
-            return [pd.DataFrame.from_dict(all_module_data, orient="index")], []
-        else:
-            if check_section_exists(all_module_data, section):
-                return [pd.DataFrame.from_dict(all_module_data[section], orient="index")], []
-            else:
-                logger.warning("Section %s not found in module %s", section, module)
-                return [pd.DataFrame()], []
-    elif isinstance(section, list):
-        if isinstance(section[0], str):
-            # Section refers to column names
-            return [filter_and_rename_columns(pd.DataFrame.from_dict(all_module_data, orient="index"), section)], section
-        elif isinstance(section[0], dict):
-            first_value = next(iter(section[0].values()))
-            if isinstance(first_value, str):
-                # Already at column level
-                return [filter_and_rename_columns(pd.DataFrame.from_dict(all_module_data, orient="index"), section)], section
-            elif isinstance(first_value, list):
-                # Section could have multiple sections:
-                result_df = []
-                result_list = []
-                for subsection in section:
-                    subsection_data, columns = handle_module_data(module, subsection)
-                    if isinstance(subsection_data, pd.DataFrame):
-                        result_df.extend(subsection_data)
-                    if isinstance(columns, list):
-                        result_list.extend(columns)
-                return result_df, result_list
-    elif isinstance(section, dict):
-        # We just have {section: List[Union[column_name, Dict[column_name, column_rename]]}
-        section_name, columns = next(iter(section.items()))
-        if check_section_exists(all_module_data, section_name):
-            data = pd.DataFrame.from_dict(all_module_data[section_name], orient="index")
-            return [filter_and_rename_columns(data, columns)], columns
-        else:
-            logger.warning("Section '%s' not found in module '%s'", section_name, module)
-            return [pd.DataFrame()], []
+        return extract_mqc_from_simple_section(all_module_data, section, module)
 
+    # Handle list of strings or column specifications
+    if isinstance(section, list):
+        return extract_mqc_from_list_section(all_module_data, section, module)
+
+    # Handle dictionary-based section specification
+    if isinstance(section, dict):
+        return extract_mqc_from_dict_section(all_module_data, section, module)
+
+    # Fallback for unsupported section types
     logger.warning(
-        "Unsupported section type from module %s: %s for %s",
-        module,
-        type(section),
-        section,
+        f"Unsupported section type for module {module}: "
+        f"type={type(section)}, value={section}"
     )
     return [pd.DataFrame()], []
 
@@ -431,7 +381,8 @@ def extract_mqc_data(table_headers: Union[str, Path]) -> Optional[pd.DataFrame]:
 
         else:
             logger.info("Extracting %s data from multiqc", module)
-            module_data, columns = handle_module_data(module, section)
+            module_data, columns = extract_module_data(module, section)
+            logger.info("Data for %s: %s", module, module_data)
             logger.debug("Data for %s: %s", module, module_data)
 
         module_data = [df.add_prefix(f"({module}) ") for df in module_data]
@@ -535,6 +486,7 @@ def main(argv=None):
 
     # 5.2 Join with the custom contig tables
     mqc_custom_df = join_df(mqc_custom_df, custom_tables)
+
 
     if mqc_custom_df.empty:
         logger.warning("No data was found to create the contig overview table!")
