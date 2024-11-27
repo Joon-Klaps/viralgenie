@@ -238,3 +238,4 @@ extra_fn_clean_exts:
   - ".sort"
   - ".consensus_bcftools"
   - ".consensus_ivar"
+  - ".umi_deduplicated"

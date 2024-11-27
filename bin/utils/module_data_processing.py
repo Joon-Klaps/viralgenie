@@ -296,7 +296,7 @@ def generate_ignore_samples(dataframe: pd.DataFrame) -> pd.Series:
     Generate a Series of indices that are not part of the df_snip dataframe.
 
     Parameters:
-    dataframe (pd.DataFrame): The input DataFrame to    ocess.
+    dataframe (pd.DataFrame): The input DataFrame to process.
 
     Returns:
     pd.Series: A Series containing the indices that are not in df_snip.
