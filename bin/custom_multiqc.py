@@ -5,6 +5,7 @@
 import argparse
 import logging
 import sys
+from collections import defaultdict
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
 
@@ -23,7 +24,6 @@ from utils.pandas_tools import (
 )
 
 logger = logging.getLogger()
-
 
 def parse_args(argv=None):
     """Define and immediately parse command line arguments."""
@@ -260,6 +260,30 @@ def load_custom_data(args) -> List[pd.DataFrame]:
 
     return [checkv_df, quast_df, blast_df, annotation_df, screen_df]
 
+def get_general_stats_data_mod(sample: Optional[str] = None) -> Dict:
+    """
+    Return parsed general stats data, indexed by sample, then by data key. If sample is specified,
+    return only data for that sample.
+
+    @param sample: Sample name
+    @return: Dict of general stats data indexed by sample and data key
+    """
+
+    data: Dict[str, Dict] = defaultdict(dict)
+    for rows_by_group, header in zip(mqc.report.general_stats_data, mqc.report.general_stats_headers):
+        for s, rows in rows_by_group.items():
+            if sample and s != sample:
+                continue
+            for row in rows:
+                for key, val in row.data.items():
+                    if key in header:
+                        data[s][key] = val
+    if sample:
+        if not data:
+            return {}
+        return data[sample]
+
+    return data
 
 def get_module_data(mqc: object, module: str) -> Dict[str, any]:
     """
@@ -382,7 +406,6 @@ def extract_mqc_data(table_headers: Union[str, Path]) -> Optional[pd.DataFrame]:
         else:
             logger.info("Extracting %s data from multiqc", module)
             module_data, columns = extract_module_data(module, section)
-            logger.info("Data for %s: %s", module, module_data)
             logger.debug("Data for %s: %s", module, module_data)
 
         module_data = [df.add_prefix(f"({module}) ") for df in module_data]
@@ -399,12 +422,13 @@ def write_results(contigs_mqc, constrains_mqc, constrains_genstats, args) -> int
     """
     Write the results to files.
     """
-
+    samples = []
     if not contigs_mqc.empty:
-        logger.info("Writing Unfiltered Denovo constructs table file: contigs_all.tsv")
-        write_df(contigs_mqc, "contigs_all.tsv", [])
-        contigs_mqc.set_index("index", inplace=True)
+        logger.info("Writing Unfiltered Denovo constructs table file: contigs_overview.tsv")
+        samples.extend(contigs_mqc["sample"])
         table_plot = contigs_mqc[~contigs_mqc.index.isin(generate_ignore_samples(contigs_mqc))]
+        write_df(table_plot, "contigs_overview.tsv", [])
+        contigs_mqc.set_index("index", inplace=True)
         mqc.add_custom_content_section(
             name="Denovo Construct Overview",
             anchor=Anchor("contigs_all"),
@@ -413,8 +437,9 @@ def write_results(contigs_mqc, constrains_mqc, constrains_genstats, args) -> int
         )
 
     if not constrains_mqc.empty:
-        logger.info("Writing Unfiltered Mapping constructs table file: mapping_all.tsv")
-        write_df(constrains_mqc, "mapping_all.tsv", [])
+        logger.info("Writing Unfiltered Mapping constructs table file: mapping_overview.tsv")
+        write_df(constrains_mqc, "mapping_overview.tsv", [])
+        samples.extend(constrains_mqc["sample"])
         constrains_mqc.set_index("index", inplace=True)
         mqc.add_custom_content_section(
             name="Mapping Construct Overview",
@@ -424,12 +449,22 @@ def write_results(contigs_mqc, constrains_mqc, constrains_genstats, args) -> int
         )
 
     if not constrains_genstats.empty:
-        write_df(constrains_genstats, "mapping_constrains_summary.tsv", [])
         # Add to mqc
         module = mqc.BaseMultiqcModule(name="Mapping Constrains Summary", anchor=Anchor("custom_data"))
         content = constrains_genstats.to_dict(orient="index")
         module.general_stats_addcols(content)
         mqc.report.modules.append(module)
+
+    # Remove empty lines from the general stats data report
+    samples = list(set(samples))
+    mqc.report.general_stats_data = [
+        {k: v for k, v in d.items() if k in samples}
+        for d in mqc.report.general_stats_data
+    ]
+
+    if mqc.report.general_stats_data:
+        logger.info("Writing general stats file: samples_overview.tsv")
+        write_df(pd.DataFrame.from_dict(get_general_stats_data_mod(), orient="index"), "samples_overview.tsv", [])
 
     mqc.write_report(
         make_data_dir=True,
@@ -481,21 +516,19 @@ def main(argv=None):
     # 4. Parse our custom files into the correct tables
     custom_tables = load_custom_data(args)
 
-    # 5. Make our own summary excel
-    # 5.1 Extract the MQC data
+    # 5. Make our own summary files
 
-    # 5.2 Join with the custom contig tables
+    # 5.1 Join with the custom contig tables
     mqc_custom_df = join_df(mqc_custom_df, custom_tables)
-
 
     if mqc_custom_df.empty:
         logger.warning("No data was found to create the contig overview table!")
         return 0
 
-    # 5.3 reformat the dataframe
+    # 5.2 reformat the dataframe
     mqc_custom_df = reformat_custom_df(mqc_custom_df)
 
-    # 5.4 split up denovo constructs and mapping (-CONSTRAIN) results
+    # 5.3 split up denovo constructs and mapping (-CONSTRAIN) results
     logger.info("Splitting up denovo constructs and mapping (-CONSTRAIN) results")
     contigs_mqc, constrains_mqc = filter_constrain(mqc_custom_df, "cluster", "-CONSTRAIN")
 
