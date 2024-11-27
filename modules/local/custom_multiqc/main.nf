@@ -23,13 +23,14 @@ process CUSTOM_MULTIQC {
 
     output:
 
-    path "contigs_all.tsv"                    , emit: contigs_table         , optional: true
-    path "mapping_all.tsv"                    , emit: mapping_table         , optional: true
-    path "mapping_constrains_summary.tsv"     , emit: mapping_constrains    , optional: true
-    path "*multiqc_report.html"               , emit: report                , optional: true
-    path "*_data"                             , emit: data                  , optional: true
-    path "*_plots"                            , emit: plots                 , optional: true
-    path "versions.yml"                       , emit: versions
+    path "contigs_overview.tsv"                , emit: contigs_table         , optional: true
+    path "contigs_overview-with-iterations.tsv", emit: contigs_it            , optional: true
+    path "mapping_overview.tsv"                , emit: mapping_table         , optional: true
+    path "samples_overview.tsv"                , emit: samples_table         , optional: true
+    path "*multiqc_report.html"                , emit: report                , optional: true
+    path "*_data"                              , emit: data                  , optional: true
+    path "*_plots"                             , emit: plots                 , optional: true
+    path "versions.yml"                        , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
