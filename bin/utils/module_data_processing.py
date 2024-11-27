@@ -188,6 +188,8 @@ def create_constrain_summary(df_constrain: pd.DataFrame, file_columns: List[Unio
         else:
             dic_columns[item] = item
 
+    logger.info("dic_columns: %s", dic_columns)
+
     columns_of_interest = [dic_columns.get(key, key) for key in CONSTRAIN_GENERAL_STATS_COLUMNS]
 
     if not columns_of_interest:
@@ -219,6 +221,7 @@ def create_constrain_summary(df_constrain: pd.DataFrame, file_columns: List[Unio
     df_constrain = df_constrain[present_columns]
 
     if df_constrain.empty:
+        logger.warning("The constrain DataFrame is empty.")
         return df_constrain
 
     df_constrain = df_constrain.rename(columns=COLUMN_MAPPING)
@@ -260,7 +263,8 @@ def reformat_constrain_df(df, file_columns, args):
     """
     # Separate table for mapping constrains
     if df.empty:
-        return df
+        logger.warning("The constrain DataFrame is empty.")
+        return df,df
 
     # Add constrain metadata to the mapping constrain table
     constrain_meta = filelist_to_df([args.mapping_constrains])

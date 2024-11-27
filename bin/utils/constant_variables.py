@@ -21,8 +21,8 @@ BLAST_COLUMNS = [
 ]
 
 CONSTRAIN_GENERAL_STATS_COLUMNS = [
-    "read_mapped",
-    "reads_unmapped",
+    "(samtools) reads mapped",
+    "(samtools) reads_unmapped",
     "number_of_SNPs",
     "number_of_indels" "CLUSTER: mosdepth.mean_coverage",
     "CLUSTER: mosdepth.min_coverage",
