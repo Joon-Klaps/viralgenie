@@ -275,7 +275,9 @@ def get_general_stats_data_mod(sample: Optional[str] = None) -> Dict:
             for row in rows:
                 for key, val in row.data.items():
                     if key in header:
-                        data[s][key] = val
+                        namespace = header[key].get('namespace', key).replace("SAMPLE: ", "")
+                        final_key = f"{namespace}. {header[key].get('title', key)}" if header[key].get('title') else key
+                        data[s][final_key] = val
     if sample:
         if not data:
             return {}
