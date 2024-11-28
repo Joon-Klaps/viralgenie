@@ -419,25 +419,27 @@ def write_results(contigs_mqc, constrains_mqc, constrains_genstats, args) -> int
         write_df(contigs_mqc.sort_values(by=["sample", "cluster", "step"]), "contigs_overview-with-iterations.tsv", [])
         table_plot = contigs_mqc[~contigs_mqc.index.isin(generate_ignore_samples(contigs_mqc))]
         write_df(table_plot.sort_values(by=["sample", "cluster", "step"]), "contigs_overview.tsv", [])
-        contigs_mqc.set_index("index", inplace=True)
-        mqc.add_custom_content_section(
-            name="Denovo Construct Overview",
-            anchor=Anchor("contigs_all"),
-            description="The table below shows the overview of the denovo constructs with refinement.",
-            plot=table.plot(data=table_plot.to_dict(orient="index")),
-        )
+        # They make the MQC file to big when to many samples are present
+        # contigs_mqc.set_index("index", inplace=True)
+        # mqc.add_custom_content_section(
+        #     name="Denovo Construct Overview",
+        #     anchor=Anchor("contigs_all"),
+        #     description="The table below shows the overview of the denovo constructs with refinement.",
+        #     plot=table.plot(data=table_plot.to_dict(orient="index")),
+        # )
 
     if not constrains_mqc.empty:
         logger.info("Writing Unfiltered Mapping constructs table file: mapping_overview.tsv")
         write_df(constrains_mqc.sort_values(by=["sample", "cluster", "step"]), "mapping_overview.tsv", [])
         samples.extend(constrains_mqc["sample"])
-        constrains_mqc.set_index("index", inplace=True)
-        mqc.add_custom_content_section(
-            name="Mapping Construct Overview",
-            anchor=Anchor("mapping_all"),
-            description="The table below shows the overview of the mapping constructs with refinement.",
-            plot=table.plot(data=constrains_mqc.to_dict(orient="index")),
-        )
+        # They make the MQC file to big when to many samples are present
+        # constrains_mqc.set_index("index", inplace=True)
+        # mqc.add_custom_content_section(
+        #     name="Mapping Construct Overview",
+        #     anchor=Anchor("mapping_all"),
+        #     description="The table below shows the overview of the mapping constructs with refinement.",
+        #     plot=table.plot(data=constrains_mqc.to_dict(orient="index")),
+        # )
 
     if not constrains_genstats.empty:
         # Add to mqc
