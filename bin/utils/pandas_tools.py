@@ -7,6 +7,7 @@ from typing import Dict, List, Union
 
 import pandas as pd
 
+
 logger = logging.getLogger()
 
 
@@ -66,7 +67,7 @@ def coalesce_constrain(dataframe):
     return result.query('step == "constrain"')
 
 
-def split_index_column(df: pd.DataFrame, prefix: str = None, split_column: str = "index") -> pd.DataFrame:
+def split_index_column(dataframe: pd.DataFrame, prefix: str = None, split_column: str = "index") -> pd.DataFrame:
     """
     Split the index column of the DataFrame into separate columns for sample name, cluster, and step.
 
@@ -78,13 +79,14 @@ def split_index_column(df: pd.DataFrame, prefix: str = None, split_column: str =
     Returns:
         pd.DataFrame: The updated DataFrame with separate columns for sample name, cluster, and step.
     """
-    df_copy = df.copy()
+    df = dataframe.copy()
     # Reset the index and rename the index column
-    df_copy = df_copy.reset_index(drop=True).rename(columns={df_copy.index.name: split_column})
-    df_copy = df_copy[df_copy[split_column].str.contains("_", na=False)]
+    if split_column not in df.columns:
+        df[split_column] = df.index
+    df = df[df[split_column].str.contains("_", na=False)]
 
     # Apply the dynamic split function to each row in the column
-    split_data = df_copy[split_column].apply(dynamic_split).apply(pd.Series)
+    split_data = df[split_column].apply(dynamic_split).apply(pd.Series)
 
     # Take the first three columns and rename them
     split_data = split_data.iloc[:, :3]
@@ -97,11 +99,11 @@ def split_index_column(df: pd.DataFrame, prefix: str = None, split_column: str =
         inplace=True,
     )
 
-    df_copy = drop_columns(df_copy, ["sample", "cluster", "step"])
+    df = drop_columns(df, ["sample", "cluster", "step"])
     # Concatenate the original DataFrame and the split data
-    df_copy = pd.concat([df_copy, split_data], axis=1)
+    df = pd.concat([df, split_data], axis=1)
 
-    return df_copy
+    return df
 
 
 def fill_group_na(s):

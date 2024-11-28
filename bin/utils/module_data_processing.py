@@ -309,8 +309,6 @@ def generate_ignore_samples(dataframe: pd.DataFrame) -> pd.Series:
     pd.Series: A Series containing the indices that are not in df_snip.
     """
     df = dataframe.copy()
-    df = drop_columns(df, ["index"])
-    df["index"] = df.index
     df = split_index_column(df)
 
     df = reorder_rows(df)

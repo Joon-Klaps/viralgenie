@@ -426,9 +426,9 @@ def write_results(contigs_mqc, constrains_mqc, constrains_genstats, args) -> int
     if not contigs_mqc.empty:
         logger.info("Writing Unfiltered Denovo constructs table file: contigs_overview.tsv")
         samples.extend(contigs_mqc["sample"])
+        write_df(contigs_mqc, "contigs_overview-with-iterations.tsv", [])
         table_plot = contigs_mqc[~contigs_mqc.index.isin(generate_ignore_samples(contigs_mqc))]
         write_df(table_plot, "contigs_overview.tsv", [])
-        write_df(contigs_mqc, "contigs_overview-with-iterations.tsv", [])
         contigs_mqc.set_index("index", inplace=True)
         mqc.add_custom_content_section(
             name="Denovo Construct Overview",
