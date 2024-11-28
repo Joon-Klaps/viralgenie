@@ -17,13 +17,10 @@ from multiqc.types import Anchor
 from utils.constant_variables import CLUSTER_PCONFIG
 from utils.file_tools import filelist_to_df, get_module_selection, read_in_quast, write_df
 from utils.module_data_processing import *
-from utils.pandas_tools import (
-    filter_and_rename_columns,
-    join_df,
-    select_columns,
-)
+from utils.pandas_tools import filter_and_rename_columns, join_df, reorder_columns, select_columns
 
 logger = logging.getLogger()
+
 
 def parse_args(argv=None):
     """Define and immediately parse command line arguments."""
@@ -260,6 +257,7 @@ def load_custom_data(args) -> List[pd.DataFrame]:
 
     return [checkv_df, quast_df, blast_df, annotation_df, screen_df]
 
+
 def get_general_stats_data_mod(sample: Optional[str] = None) -> Dict:
     """
     Return parsed general stats data, indexed by sample, then by data key. If sample is specified,
@@ -284,6 +282,7 @@ def get_general_stats_data_mod(sample: Optional[str] = None) -> Dict:
         return data[sample]
 
     return data
+
 
 def get_module_data(mqc: object, module: str) -> Dict[str, any]:
     """
@@ -312,13 +311,7 @@ def get_module_data(mqc: object, module: str) -> Dict[str, any]:
 
 
 def extract_module_data(
-    module: str,
-    section: Union[
-        str,
-        None,
-        List[Union[str, Dict[str, str]]],
-        Dict[str, List[Union[str, Dict[str, str]]]]
-    ]
+    module: str, section: Union[str, None, List[Union[str, Dict[str, str]]], Dict[str, List[Union[str, Dict[str, str]]]]]
 ) -> Tuple[List[pd.DataFrame], List[Union[str, Dict[str, str]]]]:
     """
     Extract and filter data from MultiQC modules based on specified section criteria.
@@ -353,10 +346,7 @@ def extract_module_data(
         return extract_mqc_from_dict_section(all_module_data, section, module)
 
     # Fallback for unsupported section types
-    logger.warning(
-        f"Unsupported section type for module {module}: "
-        f"type={type(section)}, value={section}"
-    )
+    logger.warning(f"Unsupported section type for module {module}: " f"type={type(section)}, value={section}")
     return [pd.DataFrame()], []
 
 
@@ -426,9 +416,9 @@ def write_results(contigs_mqc, constrains_mqc, constrains_genstats, args) -> int
     if not contigs_mqc.empty:
         logger.info("Writing Unfiltered Denovo constructs table file: contigs_overview.tsv")
         samples.extend(contigs_mqc["sample"])
-        write_df(contigs_mqc, "contigs_overview-with-iterations.tsv", [])
+        write_df(contigs_mqc.sort_values(by=["sample", "cluster", "step"]), "contigs_overview-with-iterations.tsv", [])
         table_plot = contigs_mqc[~contigs_mqc.index.isin(generate_ignore_samples(contigs_mqc))]
-        write_df(table_plot, "contigs_overview.tsv", [])
+        write_df(table_plot.sort_values(by=["sample", "cluster", "step"]), "contigs_overview.tsv", [])
         contigs_mqc.set_index("index", inplace=True)
         mqc.add_custom_content_section(
             name="Denovo Construct Overview",
@@ -439,7 +429,7 @@ def write_results(contigs_mqc, constrains_mqc, constrains_genstats, args) -> int
 
     if not constrains_mqc.empty:
         logger.info("Writing Unfiltered Mapping constructs table file: mapping_overview.tsv")
-        write_df(constrains_mqc, "mapping_overview.tsv", [])
+        write_df(constrains_mqc.sort_values(by=["sample", "cluster", "step"]), "mapping_overview.tsv", [])
         samples.extend(constrains_mqc["sample"])
         constrains_mqc.set_index("index", inplace=True)
         mqc.add_custom_content_section(
@@ -458,14 +448,13 @@ def write_results(contigs_mqc, constrains_mqc, constrains_genstats, args) -> int
 
     # Remove empty lines from the general stats data report
     samples = list(set(samples))
-    mqc.report.general_stats_data = [
-        {k: v for k, v in d.items() if k in samples}
-        for d in mqc.report.general_stats_data
-    ]
+    mqc.report.general_stats_data = [{k: v for k, v in d.items() if k in samples} for d in mqc.report.general_stats_data]
 
     if mqc.report.general_stats_data:
         logger.info("Writing general stats file: samples_overview.tsv")
-        write_df(pd.DataFrame.from_dict(get_general_stats_data_mod(), orient="index"), "samples_overview.tsv", [])
+        samples_overview = pd.DataFrame.from_dict(get_general_stats_data_mod(), orient="index")
+        samples_overview["sample"] = samples_overview.index
+        write_df(reorder_columns(samples_overview, ["sample"]), "samples_overview.tsv", [])
 
     mqc.write_report(
         make_data_dir=True,

@@ -15,7 +15,7 @@ from utils.pandas_tools import (
     reorder_columns,
     reorder_rows,
     split_index_column,
-    filter_and_rename_columns
+    filter_and_rename_columns,
 )
 
 logger = logging.getLogger()
@@ -267,7 +267,7 @@ def reformat_constrain_df(df, file_columns, args):
     # Separate table for mapping constrains
     if df.empty:
         logger.warning("The constrain DataFrame is empty.")
-        return df,df
+        return df, df
 
     # Add constrain metadata to the mapping constrain table
     constrain_meta = filelist_to_df([args.mapping_constrains])
@@ -328,15 +328,13 @@ def add_prefix_to_values_dict(data: List[Union[str, Dict[str, str]]], prefix: st
             updated_items.extend({key: f"({prefix}) {value}"} for key, value in item.items())
     return updated_items
 
+
 def check_section_exists(module_data: Dict, section_key: str) -> bool:
     """Check if a section exists in the module data."""
     return any(section_key in key for key in module_data.keys())
 
-def extract_mqc_from_simple_section(
-    all_module_data: Dict,
-    section: Optional[str],
-    module: str
-) -> Tuple[List[pd.DataFrame], List[Any]]:
+
+def extract_mqc_from_simple_section(all_module_data: Dict, section: Optional[str], module: str) -> Tuple[List[pd.DataFrame], List[Any]]:
     """Handle simple string or None section cases."""
     logger.debug("Extracting data from simple str %s", module)
     if not section:
@@ -350,11 +348,8 @@ def extract_mqc_from_simple_section(
     logger.warning(f"Section {section} not found in module {module}")
     return [pd.DataFrame()], []
 
-def extract_mqc_from_list_section(
-    all_module_data: Dict,
-    section: List,
-    module: str
-) -> Tuple[List[pd.DataFrame], List[Any]]:
+
+def extract_mqc_from_list_section(all_module_data: Dict, section: List, module: str) -> Tuple[List[pd.DataFrame], List[Any]]:
     """Handle list-based section specifications."""
     logger.debug("Extracting data from list %s : %s", module, section)
     # Case for list of column names
@@ -386,11 +381,8 @@ def extract_mqc_from_list_section(
 
     return result_dfs, result_columns
 
-def extract_mqc_from_dict_section(
-    all_module_data: Dict,
-    section: Dict,
-    module: str
-) -> Tuple[List[pd.DataFrame], List[Any]]:
+
+def extract_mqc_from_dict_section(all_module_data: Dict, section: Dict, module: str) -> Tuple[List[pd.DataFrame], List[Any]]:
     """Handle dictionary-based section specifications."""
     logger.debug("Extracting data from dict %s, %s", module, section)
     # Extract section name and column specifications
@@ -399,10 +391,7 @@ def extract_mqc_from_dict_section(
     # Check if section exists
     if check_section_exists(all_module_data, section_name):
         # Find the matching section data
-        section_data = next(
-            (data for key, data in all_module_data.items() if section_name in key),
-            None
-        )
+        section_data = next((data for key, data in all_module_data.items() if section_name in key), None)
 
         if section_data:
             # Convert to DataFrame and filter columns
