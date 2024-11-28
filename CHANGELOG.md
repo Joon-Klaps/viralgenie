@@ -18,7 +18,7 @@ Initial release of Joon-Klaps/viralgenie, created with the [nf-core](https://nf-
 - Adding mash-screen output to result table ([#140](https://github.com/Joon-Klaps/viralgenie/pull/140))
 - Add logic to allow samples with no reference hits to be analysed ([#141](https://github.com/Joon-Klaps/viralgenie/pull/141))
 - Add visualisation for hybrid scaffold ([#143](https://github.com/Joon-Klaps/viralgenie/pull/143))
-
+- Update docs ([#150](https://github.com/Joon-Klaps/viralgenie/pull/150))
 
 ### `Fixed`
 
