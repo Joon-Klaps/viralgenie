@@ -191,40 +191,37 @@ def load_custom_data(args) -> List[pd.DataFrame]:
     """
     Load custom data from files and process it to a list of dataframes.
     """
-
+    result = []
     # Clusters overview - mini multiqc module
-    if args.clusters_summary:
-        clusters_df = filelist_to_df(args.clusters_summary)
-        if not clusters_df.empty:
-            clusters_df.set_index("Sample name", inplace=True)
-
-            # Adding to general stats
-            module = mqc.BaseMultiqcModule(name="Cluster Summary", anchor=Anchor("cluster-summary"))
-            module.general_stats_addcols(clusters_df.to_dict(orient="index"))
-
-            # Custom barplot -  Clusters sample
-            plot_df = select_columns(clusters_df, ["# Clusters", "# Removed clusters"])
-            plot = bargraph.plot(data=plot_df.to_dict(orient="index"), pconfig=CLUSTER_PCONFIG)
-            module.add_section(
-                anchor=Anchor("cluster-summary"), plot=plot, description="Number of identified contig clusters per sample after assembly."
-            )
-            mqc.report.modules.append(module)
+    clusters_summary_df = filelist_to_df(args.clusters_summary)
+    if not clusters_summary_df.empty:
+        clusters_summary_df.set_index("Sample name", inplace=True)
+        # Adding to general stats
+        module = mqc.BaseMultiqcModule(name="Cluster Summary", anchor=Anchor("cluster-summary"))
+        module.general_stats_addcols(clusters_summary_df.to_dict(orient="index"))
+        # Custom barplot -  Clusters sample
+        plot_df = select_columns(clusters_summary_df, ["# Clusters", "# Removed clusters"])
+        plot = bargraph.plot(data=plot_df.to_dict(orient="index"), pconfig=CLUSTER_PCONFIG)
+        module.add_section(
+            anchor=Anchor("cluster-summary"), plot=plot, description="Number of identified contig clusters per sample after assembly."
+        )
+        mqc.report.modules.append(module)
 
     # General Stats - Sample metadata
-    if args.sample_metadata:
-        metadata_df = filelist_to_df([args.sample_metadata])
-        if not metadata_df.empty:
-            sample_col = [col for col in metadata_df.columns if "sample" in col.lower()][0]
-            metadata_df.set_index(sample_col, inplace=True)
-            module = mqc.BaseMultiqcModule(name="Sample metadata", anchor=Anchor("custom_data"))
-            content = metadata_df.to_dict(orient="index")
-            module.general_stats_addcols(content)
-            mqc.report.modules.append(module)
+    metadata_df = filelist_to_df([args.sample_metadata])
+    if not metadata_df.empty:
+        sample_col = [col for col in metadata_df.columns if "sample" in col.lower()][0]
+        metadata_df.set_index(sample_col, inplace=True)
+        module = mqc.BaseMultiqcModule(name="Sample metadata", anchor=Anchor("custom_data"))
+        content = metadata_df.to_dict(orient="index")
+        module.general_stats_addcols(content)
+        mqc.report.modules.append(module)
 
     # CLuster table - Checkv summary
     checkv_df = filelist_to_df(args.checkv_files)
     if not checkv_df.empty:
         checkv_df = generate_indexed_df(checkv_df, "checkv", "contig_id")
+        result.extend([checkv_df])
 
     # Cluster table - Quast summary
     quast_df = read_in_quast(args.quast_files)
@@ -238,24 +235,35 @@ def load_custom_data(args) -> List[pd.DataFrame]:
         quast_df = quast_df.astype({"(quast) # N's": int})
         quast_df["(quast) % N's"] = round(pd.to_numeric(quast_df["(quast) # N's per 100 kbp"]) / 1000, 2)
         quast_df = quast_df[["(quast) # N's", "(quast) % N's", "(quast) # N's per 100 kbp"]]
+        result.extend([quast_df])
 
     # Cluster table - Blast summary
     blast_df = filelist_to_df(args.blast_files, header=None)
     if not blast_df.empty:
         blast_df = process_blast_df(blast_df)
+        result.extend([blast_df])
 
     # MASH screen used for reference selection summarisation
     screen_df = filelist_to_df(args.screen_files)
     if not screen_df.empty:
         screen_df = generate_indexed_df(screen_df, "mash-screen", "filename")
         screen_df = screen_df.astype(str)
+        result.extend([screen_df])
 
     # Cluster table - mmseqs easysearch summary (annotation section)
     annotation_df = filelist_to_df(args.annotation_files, header=None)
     if not annotation_df.empty:
         annotation_df = process_annotation_df(annotation_df)
+        result.extend([annotation_df])
 
-    return [checkv_df, quast_df, blast_df, annotation_df, screen_df]
+    # Figure out a way to join to create indexes for them based on the other files. (sample, cluster, step) as step is missing
+    # # Cluster table - cluster summary of members & centroids
+    # clusters_df  = filelist_to_df(args.clusters_files)
+    # if not clusters_df.empty:
+    #     clusters_df = generate_indexed_df(clusters_df, "clusters", "cluster")
+    #     result.extend([clusters_df])
+
+    return result
 
 
 def get_general_stats_data_mod(sample: Optional[str] = None) -> Dict:

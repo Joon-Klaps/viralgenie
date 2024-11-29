@@ -19,16 +19,12 @@ include { methodsDescriptionText          } from '../subworkflows/local/utils_nf
 include { createFileChannel               } from '../subworkflows/local/utils_nfcore_viralgenie_pipeline'
 include { createChannel                   } from '../subworkflows/local/utils_nfcore_viralgenie_pipeline'
 include { noContigSamplesToMultiQC        } from '../subworkflows/local/utils_nfcore_viralgenie_pipeline'
-
 // Preprocessing
 include { PREPROCESSING_ILLUMINA          } from '../subworkflows/local/preprocessing_illumina'
-
 // metagenomic diversity
 include { FASTQ_KRAKEN_KAIJU              } from '../subworkflows/local/fastq_kraken_kaiju'
-
 // Assembly
 include { FASTQ_ASSEMBLY                  } from '../subworkflows/local/fastq_assembly'
-
 // Consensus polishing of genome
 include { FASTA_CONTIG_CLUST              } from '../subworkflows/local/fasta_contig_clust'
 include { BLAST_MAKEBLASTDB               } from '../modules/nf-core/blast/makeblastdb/main'
@@ -37,19 +33,16 @@ include { ALIGN_COLLAPSE_CONTIGS          } from '../subworkflows/local/align_co
 include { UNPACK_DB                       } from '../subworkflows/local/unpack_db'
 include { FASTQ_FASTA_ITERATIVE_CONSENSUS } from '../subworkflows/local/fastq_fasta_iterative_consensus'
 include { SINGLETON_FILTERING             } from '../subworkflows/local/singleton_filtering'
-
 // Mapping constrains selection
 include { FASTQ_FASTA_MASH_SCREEN         } from '../subworkflows/local/fastq_fasta_mash_screen'
-
+// QC consensus
+include { CONSENSUS_QC                    } from '../subworkflows/local/consensus_qc'
+// Report generation
+include { CUSTOM_MULTIQC                  } from '../modules/local/custom_multiqc'
 // Variant calling
 include { RENAME_FASTA_HEADER as RENAME_FASTA_HEADER_CONSTRAIN } from '../modules/local/rename_fasta_header'
 include { FASTQ_FASTA_MAP_CONSENSUS                            } from '../subworkflows/local/fastq_fasta_map_consensus'
 
-// QC consensus
-include { CONSENSUS_QC                    } from '../subworkflows/local/consensus_qc'
-
-// Report generation
-include { CUSTOM_MULTIQC           } from '../modules/local/custom_multiqc'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
