@@ -40,7 +40,6 @@ include { CONSENSUS_QC                    } from '../subworkflows/local/consensu
 // Report generation
 include { CUSTOM_MULTIQC                  } from '../modules/local/custom_multiqc'
 // Variant calling
-include { RENAME_FASTA_HEADER as RENAME_FASTA_HEADER_CONSTRAIN } from '../modules/local/rename_fasta_header'
 include { FASTQ_FASTA_MAP_CONSENSUS                            } from '../subworkflows/local/fastq_fasta_map_consensus'
 
 
