@@ -113,8 +113,7 @@ def parse_annotation_data(annotation_str):
         annotation_dict[key] = value
     return annotation_dict
 
-
-def reformat_custom_df(df):
+def reformat_custom_df(df: pd.DataFrame, cluster_df: pd.DataFrame) -> pd.DataFrame:
     """
     Reformat the custom dataframe.
     """
@@ -125,6 +124,10 @@ def reformat_custom_df(df):
 
     df = split_index_column(df)
 
+    if not cluster_df.empty:
+        df = pd.merge(df, cluster_df, on=['sample', 'cluster'], how = "left")
+        df.index = df["index"]
+
     # Reorder the columns
     logger.info("Reordering columns")
     final_columns = ["index", "sample", "cluster", "step"] + [
@@ -134,13 +137,13 @@ def reformat_custom_df(df):
             "mash-screen",
             "blast",
             "checkv",
-            "QC check",
+            "cluster",
             "quast",
         ]
         for column in df.columns
         if group in column
     ]
-    return reorder_columns(df, final_columns)
+    return reorder_columns(df.dropna(subset=['step']), final_columns)
 
 
 def filter_constrain(df, column, value):

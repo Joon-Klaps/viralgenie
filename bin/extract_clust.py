@@ -326,7 +326,7 @@ def write_clusters_to_tsv(clusters, prefix):
     """
     with open(f"{prefix}.clusters.tsv", "w") as file:
         assemblers = [f"cumulative read depth - {assembler} [%]" for assembler in clusters[0].cumulative_read_depth.keys()]
-        file.write("\t".join(["sample", "taxon-id", "cluster-id", "centroid", "size"] + assemblers + ["members"]))
+        file.write("\t".join(["sample", "cluster", "taxon-id", "centroid", "number of members"] + assemblers + ["members"]))
         file.write("\n")
         for cluster in clusters:
             file.write(cluster._to_line(prefix))

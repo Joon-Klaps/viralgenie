@@ -256,14 +256,13 @@ def load_custom_data(args) -> List[pd.DataFrame]:
         annotation_df = process_annotation_df(annotation_df)
         result.extend([annotation_df])
 
-    # Figure out a way to join to create indexes for them based on the other files. (sample, cluster, step) as step is missing
-    # # Cluster table - cluster summary of members & centroids
-    # clusters_df  = filelist_to_df(args.clusters_files)
-    # if not clusters_df.empty:
-    #     clusters_df = generate_indexed_df(clusters_df, "clusters", "cluster")
-    #     result.extend([clusters_df])
+    # Cluster table - cluster summary of members & centroids
+    clusters_df  = filelist_to_df(args.clusters_files)
+    if not clusters_df.empty:
+        clusters_df = clusters_df.add_prefix("(cluster) ")
+        clusters_df = clusters_df.rename(columns={"(cluster) sample": "sample", "(cluster) cluster": "cluster"})
 
-    return result
+    return result, clusters_df
 
 
 def get_general_stats_data_mod(sample: Optional[str] = None) -> Dict:
@@ -429,27 +428,11 @@ def write_results(contigs_mqc, constrains_mqc, constrains_genstats, args) -> int
         write_df(contigs_mqc.sort_values(by=["sample", "cluster", "step"]), "contigs_overview-with-iterations.tsv", [])
         table_plot = contigs_mqc[~contigs_mqc.index.isin(generate_ignore_samples(contigs_mqc))]
         write_df(table_plot.sort_values(by=["sample", "cluster", "step"]), "contigs_overview.tsv", [])
-        # They make the MQC file to big when to many samples are present
-        # contigs_mqc.set_index("index", inplace=True)
-        # mqc.add_custom_content_section(
-        #     name="Denovo Construct Overview",
-        #     anchor=Anchor("contigs_all"),
-        #     description="The table below shows the overview of the denovo constructs with refinement.",
-        #     plot=table.plot(data=table_plot.to_dict(orient="index")),
-        # )
 
     if not constrains_mqc.empty:
         logger.info("Writing Unfiltered Mapping constructs table file: mapping_overview.tsv")
         write_df(constrains_mqc.sort_values(by=["sample", "cluster", "step"]), "mapping_overview.tsv", [])
         samples.extend(constrains_mqc["sample"])
-        # They make the MQC file to big when to many samples are present
-        # constrains_mqc.set_index("index", inplace=True)
-        # mqc.add_custom_content_section(
-        #     name="Mapping Construct Overview",
-        #     anchor=Anchor("mapping_all"),
-        #     description="The table below shows the overview of the mapping constructs with refinement.",
-        #     plot=table.plot(data=constrains_mqc.to_dict(orient="index")),
-        # )
 
     if not constrains_genstats.empty:
         # Add to mqc
@@ -516,10 +499,9 @@ def main(argv=None):
     mqc.parse_logs(args.multiqc_files, args.multiqc_config, ignore_samples=generate_ignore_samples(mqc_custom_df))
 
     # 4. Parse our custom files into the correct tables
-    custom_tables = load_custom_data(args)
+    custom_tables, cluster_df = load_custom_data(args)
 
     # 5. Make our own summary files
-
     # 5.1 Join with the custom contig tables
     mqc_custom_df = join_df(mqc_custom_df, custom_tables)
 
@@ -528,7 +510,7 @@ def main(argv=None):
         return 0
 
     # 5.2 reformat the dataframe
-    mqc_custom_df = reformat_custom_df(mqc_custom_df)
+    mqc_custom_df = reformat_custom_df(mqc_custom_df, cluster_df)
 
     # 5.3 split up denovo constructs and mapping (-CONSTRAIN) results
     logger.info("Splitting up denovo constructs and mapping (-CONSTRAIN) results")
