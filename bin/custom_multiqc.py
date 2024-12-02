@@ -5,6 +5,7 @@
 import argparse
 import logging
 import sys
+from collections import defaultdict
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
 
@@ -15,21 +16,8 @@ from multiqc.plots import bargraph, table
 from multiqc.types import Anchor
 from utils.constant_variables import CLUSTER_PCONFIG
 from utils.file_tools import filelist_to_df, get_module_selection, read_in_quast, write_df
-from utils.module_data_processing import (
-    filter_constrain,
-    generate_ignore_samples,
-    generate_indexed_df,
-    process_annotation_df,
-    process_blast_df,
-    reformat_constrain_df,
-    reformat_custom_df,
-    add_prefix_to_values_dict,
-)
-from utils.pandas_tools import (
-    filter_and_rename_columns,
-    join_df,
-    select_columns,
-)
+from utils.module_data_processing import *
+from utils.pandas_tools import filter_and_rename_columns, join_df, reorder_columns, select_columns
 
 logger = logging.getLogger()
 
@@ -203,40 +191,37 @@ def load_custom_data(args) -> List[pd.DataFrame]:
     """
     Load custom data from files and process it to a list of dataframes.
     """
-
+    result = []
     # Clusters overview - mini multiqc module
-    if args.clusters_summary:
-        clusters_df = filelist_to_df(args.clusters_summary)
-        if not clusters_df.empty:
-            clusters_df.set_index("Sample name", inplace=True)
-
-            # Adding to general stats
-            module = mqc.BaseMultiqcModule(name="Cluster Summary", anchor=Anchor("cluster-summary"))
-            module.general_stats_addcols(clusters_df.to_dict(orient="index"))
-
-            # Custom barplot -  Clusters sample
-            plot_df = select_columns(clusters_df, ["# Clusters", "# Removed clusters"])
-            plot = bargraph.plot(data=plot_df.to_dict(orient="index"), pconfig=CLUSTER_PCONFIG)
-            module.add_section(
-                anchor=Anchor("cluster-summary"), plot=plot, description="Number of identified contig clusters per sample after assembly."
-            )
-            mqc.report.modules.append(module)
+    clusters_summary_df = filelist_to_df(args.clusters_summary)
+    if not clusters_summary_df.empty:
+        clusters_summary_df.set_index("Sample name", inplace=True)
+        # Adding to general stats
+        module = mqc.BaseMultiqcModule(name="Cluster Summary", anchor=Anchor("cluster-summary"))
+        module.general_stats_addcols(clusters_summary_df.to_dict(orient="index"))
+        # Custom barplot -  Clusters sample
+        plot_df = select_columns(clusters_summary_df, ["# Clusters", "# Removed clusters"])
+        plot = bargraph.plot(data=plot_df.to_dict(orient="index"), pconfig=CLUSTER_PCONFIG)
+        module.add_section(
+            anchor=Anchor("cluster-summary"), plot=plot, description="Number of identified contig clusters per sample after assembly."
+        )
+        mqc.report.modules.append(module)
 
     # General Stats - Sample metadata
-    if args.sample_metadata:
-        metadata_df = filelist_to_df([args.sample_metadata])
-        if not metadata_df.empty:
-            sample_col = [col for col in metadata_df.columns if "sample" in col.lower()][0]
-            metadata_df.set_index(sample_col, inplace=True)
-            module = mqc.BaseMultiqcModule(name="Sample metadata", anchor=Anchor("custom_data"))
-            content = metadata_df.to_dict(orient="index")
-            module.general_stats_addcols(content)
-            mqc.report.modules.append(module)
+    metadata_df = filelist_to_df([args.sample_metadata])
+    if not metadata_df.empty:
+        sample_col = [col for col in metadata_df.columns if "sample" in col.lower()][0]
+        metadata_df.set_index(sample_col, inplace=True)
+        module = mqc.BaseMultiqcModule(name="Sample metadata", anchor=Anchor("custom_data"))
+        content = metadata_df.to_dict(orient="index")
+        module.general_stats_addcols(content)
+        mqc.report.modules.append(module)
 
     # CLuster table - Checkv summary
     checkv_df = filelist_to_df(args.checkv_files)
     if not checkv_df.empty:
         checkv_df = generate_indexed_df(checkv_df, "checkv", "contig_id")
+        result.extend([checkv_df])
 
     # Cluster table - Quast summary
     quast_df = read_in_quast(args.quast_files)
@@ -250,24 +235,62 @@ def load_custom_data(args) -> List[pd.DataFrame]:
         quast_df = quast_df.astype({"(quast) # N's": int})
         quast_df["(quast) % N's"] = round(pd.to_numeric(quast_df["(quast) # N's per 100 kbp"]) / 1000, 2)
         quast_df = quast_df[["(quast) # N's", "(quast) % N's", "(quast) # N's per 100 kbp"]]
+        result.extend([quast_df])
 
     # Cluster table - Blast summary
     blast_df = filelist_to_df(args.blast_files, header=None)
     if not blast_df.empty:
         blast_df = process_blast_df(blast_df)
+        result.extend([blast_df])
 
     # MASH screen used for reference selection summarisation
     screen_df = filelist_to_df(args.screen_files)
     if not screen_df.empty:
         screen_df = generate_indexed_df(screen_df, "mash-screen", "filename")
         screen_df = screen_df.astype(str)
+        result.extend([screen_df])
 
     # Cluster table - mmseqs easysearch summary (annotation section)
     annotation_df = filelist_to_df(args.annotation_files, header=None)
     if not annotation_df.empty:
         annotation_df = process_annotation_df(annotation_df)
+        result.extend([annotation_df])
 
-    return [checkv_df, quast_df, blast_df, annotation_df, screen_df]
+    # Cluster table - cluster summary of members & centroids
+    clusters_df = filelist_to_df(args.clusters_files)
+    if not clusters_df.empty:
+        clusters_df = clusters_df.add_prefix("(cluster) ")
+        clusters_df = clusters_df.rename(columns={"(cluster) sample": "sample", "(cluster) cluster": "cluster"})
+
+    return result, clusters_df
+
+
+def get_general_stats_data_mod(sample: Optional[str] = None) -> Dict:
+    """
+    Return parsed general stats data, indexed by sample, then by data key. If sample is specified,
+    return only data for that sample.
+
+    @param sample: Sample name
+    @return: Dict of general stats data indexed by sample and data key
+    """
+
+    data: Dict[str, Dict] = defaultdict(dict)
+    for rows_by_group, header in zip(mqc.report.general_stats_data, mqc.report.general_stats_headers):
+        for s, rows in rows_by_group.items():
+            if sample and s != sample:
+                continue
+            for row in rows:
+                for key, val in row.data.items():
+                    if key in header:
+                        namespace = header[key].get("namespace", key).replace("SAMPLE: ", "")
+                        final_key = f"{namespace}. {header[key].get('title', key)}" if header[key].get("title") else key
+                        data[s][final_key] = val
+    if sample:
+        if not data:
+            return {}
+        return data[sample]
+
+    return data
 
 
 def get_module_data(mqc: object, module: str) -> Dict[str, any]:
@@ -296,93 +319,43 @@ def get_module_data(mqc: object, module: str) -> Dict[str, any]:
     return {}
 
 
-def handle_module_data(
-    module: str,
-    section: Union[
-        str,
-        List[
-            Union[
-                str,
-                Dict[str, str],
-                Dict[
-                    str,
-                    List[Union[str, Dict[str, str]]],  # module has multiple sections
-                ],
-            ]
-        ],
-    ],
-) -> Tuple[list[pd.DataFrame], List[Union[str, Dict[str, str]]]]:
+def extract_module_data(
+    module: str, section: Union[str, None, List[Union[str, Dict[str, str]]], Dict[str, List[Union[str, Dict[str, str]]]]]
+) -> Tuple[List[pd.DataFrame], List[Union[str, Dict[str, str]]]]:
     """
-    Extract data from multiqc modules based on a nested yml file structure for filtering.
+    Extract and filter data from MultiQC modules based on specified section criteria.
 
     Args:
-        mqc (object): MultiQC object.
-        module (str): The module name.
-        section (Union[str, List[Union[str, Dict[str, str]]]): The section to extract data from.
+        module (str): The name of the MultiQC module to extract data from.
+        section (Union[str, None, List, Dict]): Specification for data extraction and filtering.
 
     Returns:
-        list[pd.DataFrame]: A list of dataframes that were extracted
-        List[Union[str, Dict[str, str]]]]: A list of columns containing both old and new names of columns.
+        Tuple containing:
+        - List of pandas DataFrames with extracted and filtered data
+        - List of column specifications
     """
-
-    def check_section_exists(module_data: Dict, section_key: str) -> bool:
-        """Check if a section exists in the module data."""
-        return any(section_key in key for key in module_data.keys())
-
-    # Get all module data first
+    # Retrieve all data for the specified module
     all_module_data = mqc.get_module_data(module=module)
-    logger.debug("All data for %s, %s", module, all_module_data)
 
+    # Early exit if no data is found
     if not all_module_data:
-        logger.warning("No data found for module: %s", module)
+        logger.warning(f"No data found for module: {module}")
         return [pd.DataFrame()], []
 
-    # Empty section, so we take all values from module
+    # Handle simple string or None section cases
     if isinstance(section, str) or section is None:
-        if not section:
-            return [pd.DataFrame.from_dict(all_module_data, orient="index")], []
-        else:
-            if check_section_exists(all_module_data, section):
-                return [pd.DataFrame.from_dict(all_module_data[section], orient="index")], []
-            else:
-                logger.warning("Section %s not found in module %s", section, module)
-                return [pd.DataFrame()], []
-    elif isinstance(section, list):
-        if isinstance(section[0], str):
-            # Section refers to column names
-            return [filter_and_rename_columns(pd.DataFrame.from_dict(all_module_data, orient="index"), section)], section
-        elif isinstance(section[0], dict):
-            first_value = next(iter(section[0].values()))
-            if isinstance(first_value, str):
-                # Already at column level
-                return [filter_and_rename_columns(pd.DataFrame.from_dict(all_module_data, orient="index"), section)], section
-            elif isinstance(first_value, list):
-                # Section could have multiple sections:
-                result_df = []
-                result_list = []
-                for subsection in section:
-                    subsection_data, columns = handle_module_data(module, subsection)
-                    if isinstance(subsection_data, pd.DataFrame):
-                        result_df.extend(subsection_data)
-                    if isinstance(columns, list):
-                        result_list.extend(columns)
-                return result_df, result_list
-    elif isinstance(section, dict):
-        # We just have {section: List[Union[column_name, Dict[column_name, column_rename]]}
-        section_name, columns = next(iter(section.items()))
-        if check_section_exists(all_module_data, section_name):
-            data = pd.DataFrame.from_dict(all_module_data[section_name], orient="index")
-            return [filter_and_rename_columns(data, columns)], columns
-        else:
-            logger.warning("Section '%s' not found in module '%s'", section_name, module)
-            return [pd.DataFrame()], []
+        return extract_mqc_from_simple_section(all_module_data, section, module)
 
-    logger.warning(
-        "Unsupported section type from module %s: %s for %s",
-        module,
-        type(section),
-        section,
-    )
+    # Handle list of strings or column specifications
+    if isinstance(section, list):
+        return extract_mqc_from_list_section(all_module_data, section, module)
+
+    # Handle dictionary-based section specification
+    if isinstance(section, dict):
+        return extract_mqc_from_dict_section(all_module_data, section, module)
+
+    # Fallback for unsupported section types
+    logger.warning(f"Unsupported section type for module {module}: " f"type={type(section)}, value={section}")
     return [pd.DataFrame()], []
 
 
@@ -431,7 +404,7 @@ def extract_mqc_data(table_headers: Union[str, Path]) -> Optional[pd.DataFrame]:
 
         else:
             logger.info("Extracting %s data from multiqc", module)
-            module_data, columns = handle_module_data(module, section)
+            module_data, columns = extract_module_data(module, section)
             logger.debug("Data for %s: %s", module, module_data)
 
         module_data = [df.add_prefix(f"({module}) ") for df in module_data]
@@ -448,37 +421,35 @@ def write_results(contigs_mqc, constrains_mqc, constrains_genstats, args) -> int
     """
     Write the results to files.
     """
-
+    samples = []
     if not contigs_mqc.empty:
-        logger.info("Writing Unfiltered Denovo constructs table file: contigs_all.tsv")
-        write_df(contigs_mqc, "contigs_all.tsv", [])
-        contigs_mqc.set_index("index", inplace=True)
+        logger.info("Writing Unfiltered Denovo constructs table file: contigs_overview.tsv")
+        samples.extend(contigs_mqc["sample"])
+        write_df(contigs_mqc.sort_values(by=["sample", "cluster", "step"]), "contigs_overview-with-iterations.tsv", [])
         table_plot = contigs_mqc[~contigs_mqc.index.isin(generate_ignore_samples(contigs_mqc))]
-        mqc.add_custom_content_section(
-            name="Denovo Construct Overview",
-            anchor=Anchor("contigs_all"),
-            description="The table below shows the overview of the denovo constructs with refinement.",
-            plot=table.plot(data=table_plot.to_dict(orient="index")),
-        )
+        write_df(table_plot.sort_values(by=["sample", "cluster", "step"]), "contigs_overview.tsv", [])
 
     if not constrains_mqc.empty:
-        logger.info("Writing Unfiltered Mapping constructs table file: mapping_all.tsv")
-        write_df(constrains_mqc, "mapping_all.tsv", [])
-        constrains_mqc.set_index("index", inplace=True)
-        mqc.add_custom_content_section(
-            name="Mapping Construct Overview",
-            anchor=Anchor("mapping_all"),
-            description="The table below shows the overview of the mapping constructs with refinement.",
-            plot=table.plot(data=constrains_mqc.to_dict(orient="index")),
-        )
+        logger.info("Writing Unfiltered Mapping constructs table file: mapping_overview.tsv")
+        write_df(constrains_mqc.sort_values(by=["sample", "cluster", "step"]), "mapping_overview.tsv", [])
+        samples.extend(constrains_mqc["sample"])
 
     if not constrains_genstats.empty:
-        write_df(constrains_genstats, "mapping_constrains_summary.tsv", [])
         # Add to mqc
         module = mqc.BaseMultiqcModule(name="Mapping Constrains Summary", anchor=Anchor("custom_data"))
         content = constrains_genstats.to_dict(orient="index")
         module.general_stats_addcols(content)
         mqc.report.modules.append(module)
+
+    # Remove empty lines from the general stats data report
+    samples = list(set(samples))
+    mqc.report.general_stats_data = [{k: v for k, v in d.items() if k in samples} for d in mqc.report.general_stats_data]
+
+    if mqc.report.general_stats_data:
+        logger.info("Writing general stats file: samples_overview.tsv")
+        samples_overview = pd.DataFrame.from_dict(get_general_stats_data_mod(), orient="index")
+        samples_overview["sample"] = samples_overview.index
+        write_df(reorder_columns(samples_overview, ["sample"]), "samples_overview.tsv", [])
 
     mqc.write_report(
         make_data_dir=True,
@@ -528,22 +499,21 @@ def main(argv=None):
     mqc.parse_logs(args.multiqc_files, args.multiqc_config, ignore_samples=generate_ignore_samples(mqc_custom_df))
 
     # 4. Parse our custom files into the correct tables
-    custom_tables = load_custom_data(args)
+    custom_tables, cluster_df = load_custom_data(args)
 
-    # 5. Make our own summary excel
-    # 5.1 Extract the MQC data
-
-    # 5.2 Join with the custom contig tables
+    # 5. Make our own summary files
+    # 5.1 Join with the custom contig tables
     mqc_custom_df = join_df(mqc_custom_df, custom_tables)
 
     if mqc_custom_df.empty:
         logger.warning("No data was found to create the contig overview table!")
         return 0
 
-    # 5.3 reformat the dataframe
-    mqc_custom_df = reformat_custom_df(mqc_custom_df)
+    # 5.2 reformat the dataframe
+    mqc_custom_df = reformat_custom_df(mqc_custom_df, cluster_df)
+    mqc_custom_df.to_csv("mqc_custom_df.after.tsv", sep="\t")
 
-    # 5.4 split up denovo constructs and mapping (-CONSTRAIN) results
+    # 5.3 split up denovo constructs and mapping (-CONSTRAIN) results
     logger.info("Splitting up denovo constructs and mapping (-CONSTRAIN) results")
     contigs_mqc, constrains_mqc = filter_constrain(mqc_custom_df, "cluster", "-CONSTRAIN")
 

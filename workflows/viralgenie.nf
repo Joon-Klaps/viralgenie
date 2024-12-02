@@ -19,16 +19,12 @@ include { methodsDescriptionText          } from '../subworkflows/local/utils_nf
 include { createFileChannel               } from '../subworkflows/local/utils_nfcore_viralgenie_pipeline'
 include { createChannel                   } from '../subworkflows/local/utils_nfcore_viralgenie_pipeline'
 include { noContigSamplesToMultiQC        } from '../subworkflows/local/utils_nfcore_viralgenie_pipeline'
-
 // Preprocessing
 include { PREPROCESSING_ILLUMINA          } from '../subworkflows/local/preprocessing_illumina'
-
 // metagenomic diversity
 include { FASTQ_KRAKEN_KAIJU              } from '../subworkflows/local/fastq_kraken_kaiju'
-
 // Assembly
 include { FASTQ_ASSEMBLY                  } from '../subworkflows/local/fastq_assembly'
-
 // Consensus polishing of genome
 include { FASTA_CONTIG_CLUST              } from '../subworkflows/local/fasta_contig_clust'
 include { BLAST_MAKEBLASTDB               } from '../modules/nf-core/blast/makeblastdb/main'
@@ -37,19 +33,15 @@ include { ALIGN_COLLAPSE_CONTIGS          } from '../subworkflows/local/align_co
 include { UNPACK_DB                       } from '../subworkflows/local/unpack_db'
 include { FASTQ_FASTA_ITERATIVE_CONSENSUS } from '../subworkflows/local/fastq_fasta_iterative_consensus'
 include { SINGLETON_FILTERING             } from '../subworkflows/local/singleton_filtering'
-
 // Mapping constrains selection
 include { FASTQ_FASTA_MASH_SCREEN         } from '../subworkflows/local/fastq_fasta_mash_screen'
-
-// Variant calling
-include { RENAME_FASTA_HEADER as RENAME_FASTA_HEADER_CONSTRAIN } from '../modules/local/rename_fasta_header'
-include { FASTQ_FASTA_MAP_CONSENSUS                            } from '../subworkflows/local/fastq_fasta_map_consensus'
-
 // QC consensus
 include { CONSENSUS_QC                    } from '../subworkflows/local/consensus_qc'
-
 // Report generation
-include { CUSTOM_MULTIQC           } from '../modules/local/custom_multiqc'
+include { CUSTOM_MULTIQC                  } from '../modules/local/custom_multiqc'
+// Variant calling
+include { FASTQ_FASTA_MAP_CONSENSUS                            } from '../subworkflows/local/fastq_fasta_map_consensus'
+
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -115,9 +107,7 @@ workflow VIRALGENIE {
         ch_db_raw = ch_db.mix(ch_ref_pool,ch_kraken2_db, ch_kaiju_db, ch_checkv_db, ch_bracken_db, ch_k2_host, ch_annotation_db)
         UNPACK_DB (ch_db_raw)
 
-        UNPACK_DB
-            .out
-            .db
+        UNPACK_DB.out.db
             .branch { meta, unpacked ->
                 k2_host: meta.id == 'k2_host'
                     return [ unpacked ]
@@ -140,12 +130,12 @@ workflow VIRALGENIE {
         // transfer to value channels so processes are not just done once
         // '.collect()' is necessary to transform to list so cartesian products are made downstream
         ch_ref_pool_raw     = ch_db.reference.collect{it[1]}.ifEmpty([]).map{it -> [[id: 'reference'], it]}
+        ch_annotation_db    = ch_db.annotation.collect{it[1]}.ifEmpty([]).map{it -> [[id: 'annotation'], it]}
         ch_kraken2_db       = ch_db.kraken2.collect().ifEmpty([])
         ch_kaiju_db         = ch_db.kaiju.collect().ifEmpty([])
         ch_checkv_db        = ch_db.checkv.collect().ifEmpty([])
         ch_bracken_db       = ch_db.bracken.collect().ifEmpty([])
         ch_k2_host          = ch_db.k2_host.collect().ifEmpty([])
-        ch_annotation_db    = ch_db.annotation.collect{it[1]}.ifEmpty([]).map{it -> [[id: 'annotation'], it]}
     }
 
     // Prepare blast DB
@@ -196,10 +186,10 @@ workflow VIRALGENIE {
     if (!params.skip_read_classification) {
         FASTQ_KRAKEN_KAIJU(
             ch_host_trim_reads,
+            read_classifiers,
             ch_kraken2_db,
             ch_bracken_db,
-            ch_kaiju_db,
-            read_classifiers
+            ch_kaiju_db
             )
         ch_multiqc_files = ch_multiqc_files.mix(FASTQ_KRAKEN_KAIJU.out.mqc.collect{it[1]}.ifEmpty([]))
         ch_versions      = ch_versions.mix(FASTQ_KRAKEN_KAIJU.out.versions)
@@ -369,9 +359,6 @@ workflow VIRALGENIE {
                     return [new_meta, sequence_mapping]
                 }
             .set{ch_map_seq_anno_combined}
-
-        mapping_constrains_tmp.dump(tag:"mapping-raw", pretty:true)
-        ch_map_seq_anno_combined.dump(tag:"mapping", pretty:true)
 
         // Map with both reads and mapping constrains
         ch_map_seq_anno_combined
