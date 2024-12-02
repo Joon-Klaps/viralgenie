@@ -4,8 +4,8 @@ process CUSTOM_MPILEUP {
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/8a/8a45adeea30a99d5e2b3775755942b42f32b5c0f2c7ebc91feb3ec5b3467ade4/data':
-        'community.wave.seqera.io/library/argparse_pysam_pysamstats_pandas:986069f6be2d09b3' }"
+        'https://depot.galaxyproject.org/singularity/pysamstats:1.1.2--py39he47c912_12':
+        'quay.io/biocontainers/pysamstats:1.1.2--py311h0152c62_12' }"
 
     input:
     tuple val(meta), path(bam), path(ref)
@@ -25,7 +25,7 @@ process CUSTOM_MPILEUP {
         $args \\
         --alignment ${bam} \\
         --reference ${ref} \\
-        --output ${prefix}.tsv
+        --prefix ${prefix}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
