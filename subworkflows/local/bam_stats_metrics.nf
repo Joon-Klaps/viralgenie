@@ -2,6 +2,7 @@ include { SAMTOOLS_INDEX                } from '../../modules/nf-core/samtools/i
 include { PICARD_COLLECTMULTIPLEMETRICS } from '../../modules/nf-core/picard/collectmultiplemetrics/main'
 include { MOSDEPTH                      } from '../../modules/nf-core/mosdepth/main'
 include { BAM_STATS_SAMTOOLS            } from '../nf-core/bam_stats_samtools/main'
+include { CUSTOM_MPILEUP                } from '../../modules/local/custom_mpileup/main'
 
 workflow BAM_STATS_METRICS {
 
@@ -26,6 +27,8 @@ workflow BAM_STATS_METRICS {
             ref: [meta, ref]
             bam_bai_bed: [meta, bam, bai, []]
         }
+
+    CUSTOM_MPILEUP (sort_bam_ref)
 
     PICARD_COLLECTMULTIPLEMETRICS ( input_metrics.bam_bai, input_metrics.ref, [[:], []] )
     ch_versions  = ch_versions.mix(PICARD_COLLECTMULTIPLEMETRICS.out.versions)

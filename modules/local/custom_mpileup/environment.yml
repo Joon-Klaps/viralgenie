@@ -1,0 +1,9 @@
+name: custom_mpileup
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - bioconda::argparse
+  - bioconda::pysam
+  - bioconda::pysamstats
+  - conda-forge::pandas
