@@ -25,7 +25,7 @@ def parse_args(argv=None):
     parser = argparse.ArgumentParser(description="Custom mpileup processing script.")
     parser.add_argument("--alignment", type=Path, help="Input BAM file prefix")
     parser.add_argument("--reference", type=Path, help="Reference FASTA file")
-    parser.add_argument("--output", type=str, help="Name of the output file")
+    parser.add_argument("--prefix", type=str, help="Name of the output file")
     parser.add_argument(
         "-l",
         "--log-level",
@@ -55,10 +55,20 @@ def process_mpileup(filename: Path, reference: Path) -> NDArray:
     # Convert generator to structured numpy array
     data = np.array(
         [
-            (r["pos"], r["A"], r["C"], r["G"], r["T"], r["insertions"], r["deletions"], "N")
+            (r["pos"], r["ref"], r["A"], r["C"], r["G"], r["T"], r["insertions"], r["deletions"], "N")
             for r in pysamstats.stat_variation(alignment_file, fafile=fasta)
         ],
-        dtype=[("pos", int), ("A", int), ("C", int), ("G", int), ("T", int), ("ins", int), ("del", int), ("consensus", "U1")],
+        dtype=[
+            ("pos", int),
+            ("ref", "U1"),
+            ("A", int),
+            ("C", int),
+            ("G", int),
+            ("T", int),
+            ("ins", int),
+            ("del", int),
+            ("consensus", "U1"),
+        ],
     )
 
     # Extract nucleotide counts for consensus calculation
@@ -73,7 +83,7 @@ def process_mpileup(filename: Path, reference: Path) -> NDArray:
     return data
 
 
-def write_csv(matrix: NDArray, output: Path) -> None:
+def write_csv(matrix: NDArray, prefix: str) -> None:
     """
     Write the matrix to a csv file
 
@@ -81,8 +91,8 @@ def write_csv(matrix: NDArray, output: Path) -> None:
         matrix: NumPy array containing the mpileup results
         output: Path to the output file
     """
-    header = ["Position", "A", "C", "G", "T", "Insertions", "Deletions", "Consensus"]
-    with open("${output}.tsv", "w", newline="", encoding="utf-8") as file:
+    header = ["Position", "Reference", "A", "C", "G", "T", "Insertions", "Deletions", "Consensus"]
+    with open(f"{prefix}.tsv", "w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file, delimiter="\t")
         writer.writerow(header)
         writer.writerows(matrix)
@@ -92,7 +102,7 @@ def main():
     args = parse_args()
     logger.info("Starting mpileup processing")
     matrix = process_mpileup(args.alignment, args.reference)
-    write_csv(matrix, args.output)
+    write_csv(matrix, args.prefix)
     logger.info("Mpileup processing completed")
 
 
