@@ -20,11 +20,13 @@ Initial release of Joon-Klaps/viralgenie, created with the [nf-core](https://nf-
 - Add visualisation for hybrid scaffold ([#143](https://github.com/Joon-Klaps/viralgenie/pull/143))
 - Add new module to inculde custom mpileup-vcf file for intra-host analyses ([#151](https://github.com/Joon-Klaps/viralgenie/pull/151))
 
+
 ### `Fixed`
 
 - OOM with longer contigs for lowcov_to_reference, uses more RAM now ([#125](https://github.com/Joon-Klaps/viralgenie/pull/125))
 - fixing null output from global prefix ([#147](https://github.com/Joon-Klaps/viralgenie/pull/147))
 - Fix empty filtered clusters ([#148](https://github.com/Joon-Klaps/viralgenie/pull/148))
+- Fixing missing columns from general stats & add general stats sample filtering ([#149](https://github.com/Joon-Klaps/viralgenie/pull/149))
 
 ### `Parameters`
 - New parameter mmseqs_cluster_mode default to 0 ([#130](https://github.com/Joon-Klaps/viralgenie/pull/130))

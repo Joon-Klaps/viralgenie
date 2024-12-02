@@ -21,15 +21,20 @@ BLAST_COLUMNS = [
 ]
 
 CONSTRAIN_GENERAL_STATS_COLUMNS = [
-    "read_mapped",
+    "reads_mapped",
+    "reads_mapped_percent",
     "reads_unmapped",
     "number_of_SNPs",
-    "number_of_indels" "CLUSTER: mosdepth.mean_coverage",
+    "number_of_indels",
+    "CLUSTER: mosdepth.mean_coverage",
     "CLUSTER: mosdepth.min_coverage",
     "CLUSTER: mosdepth.max_coverage",
     "CLUSTER: mosdepth.median_coverage",
     "CLUSTER: mosdepth.1_x_pc",
     "CLUSTER: mosdepth.10_x_pc",
+    "CLUSTER: mosdepth.50_x_pc",
+    "CLUSTER: mosdepth.100_x_pc",
+    "CLUSTER: mosdepth.200_x_pc",
     "qlen",
     "(quast) % N's",
     "(mash-screen) query-ID",

@@ -2,7 +2,7 @@
 
 import logging
 import re
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Tuple, Optional, Any
 
 import pandas as pd
 
@@ -15,6 +15,7 @@ from utils.pandas_tools import (
     reorder_columns,
     reorder_rows,
     split_index_column,
+    filter_and_rename_columns,
 )
 
 logger = logging.getLogger()
@@ -113,7 +114,7 @@ def parse_annotation_data(annotation_str):
     return annotation_dict
 
 
-def reformat_custom_df(df):
+def reformat_custom_df(df: pd.DataFrame, cluster_df: pd.DataFrame) -> pd.DataFrame:
     """
     Reformat the custom dataframe.
     """
@@ -124,6 +125,10 @@ def reformat_custom_df(df):
 
     df = split_index_column(df)
 
+    if not cluster_df.empty:
+        df = pd.merge(df, cluster_df, on=["sample", "cluster"], how="left")
+        df.index = df["index"]
+
     # Reorder the columns
     logger.info("Reordering columns")
     final_columns = ["index", "sample", "cluster", "step"] + [
@@ -133,27 +138,28 @@ def reformat_custom_df(df):
             "mash-screen",
             "blast",
             "checkv",
-            "QC check",
+            "cluster",
             "quast",
         ]
         for column in df.columns
         if group in column
     ]
-    return reorder_columns(df, final_columns)
+    return reorder_columns(df.dropna(subset=["step"]), list(dict.fromkeys(final_columns)))
 
 
-def filter_constrain(df, column, value):
+def filter_constrain(dataframe, column, value):
     """
     Filter a dataframe based on a column and a regex value.
 
     Args:
-        df (pd.DataFrame): The dataframe to be filtered.
+        dataframe (pd.DataFrame): The dataframe to be filtered.
         column (str): The column to filter on.
         regex_value (str): The regex value to filter on.
 
     Returns:
         pd.DataFrame, pd.DataFrame: The filtered dataframe with the regex value and the filtered dataframe without the regex value.
     """
+    df = dataframe.copy()
     # Find rows with the regex value
     locations = df[column].str.contains(value) | df["step"].str.contains("constrain")
 
@@ -188,7 +194,11 @@ def create_constrain_summary(df_constrain: pd.DataFrame, file_columns: List[Unio
         else:
             dic_columns[item] = item
 
+    logger.debug("dic_columns: %s", dic_columns)
+
     columns_of_interest = [dic_columns.get(key, key) for key in CONSTRAIN_GENERAL_STATS_COLUMNS]
+
+    logger.debug("columns_of_interest: %s", columns_of_interest)
 
     if not columns_of_interest:
         logger.warning("No columns of interest were found to create the constrain summary table!")
@@ -219,6 +229,7 @@ def create_constrain_summary(df_constrain: pd.DataFrame, file_columns: List[Unio
     df_constrain = df_constrain[present_columns]
 
     if df_constrain.empty:
+        logger.warning("The constrain DataFrame is empty.")
         return df_constrain
 
     df_constrain = df_constrain.rename(columns=COLUMN_MAPPING)
@@ -260,7 +271,8 @@ def reformat_constrain_df(df, file_columns, args):
     """
     # Separate table for mapping constrains
     if df.empty:
-        return df
+        logger.warning("The constrain DataFrame is empty.")
+        return df, df
 
     # Add constrain metadata to the mapping constrain table
     constrain_meta = filelist_to_df([args.mapping_constrains])
@@ -296,14 +308,12 @@ def generate_ignore_samples(dataframe: pd.DataFrame) -> pd.Series:
     Generate a Series of indices that are not part of the df_snip dataframe.
 
     Parameters:
-    dataframe (pd.DataFrame): The input DataFrame to    ocess.
+    dataframe (pd.DataFrame): The input DataFrame to process.
 
     Returns:
     pd.Series: A Series containing the indices that are not in df_snip.
     """
     df = dataframe.copy()
-    df = drop_columns(df, ["index"])
-    df["index"] = df.index
     df = split_index_column(df)
 
     df = reorder_rows(df)
@@ -322,3 +332,77 @@ def add_prefix_to_values_dict(data: List[Union[str, Dict[str, str]]], prefix: st
         else:
             updated_items.extend({key: f"({prefix}) {value}"} for key, value in item.items())
     return updated_items
+
+
+def check_section_exists(module_data: Dict, section_key: str) -> bool:
+    """Check if a section exists in the module data."""
+    return any(section_key in key for key in module_data.keys())
+
+
+def extract_mqc_from_simple_section(all_module_data: Dict, section: Optional[str], module: str) -> Tuple[List[pd.DataFrame], List[Any]]:
+    """Handle simple string or None section cases."""
+    logger.debug("Extracting data from simple str %s", module)
+    if not section:
+        # Return all data if no specific section is specified
+        return [pd.DataFrame.from_dict(all_module_data, orient="index")], []
+
+    # Check if specific section exists
+    if check_section_exists(all_module_data, section):
+        return [pd.DataFrame.from_dict(all_module_data[section], orient="index")], []
+
+    logger.warning(f"Section {section} not found in module {module}")
+    return [pd.DataFrame()], []
+
+
+def extract_mqc_from_list_section(all_module_data: Dict, section: List, module: str) -> Tuple[List[pd.DataFrame], List[Any]]:
+    """Handle list-based section specifications."""
+    logger.debug("Extracting data from list %s : %s", module, section)
+    # Case for list of column names
+    if all(not isinstance(item, dict) or not isinstance(list(item.values())[0], list) for item in section):
+        full_df = pd.DataFrame.from_dict(all_module_data, orient="index")
+        return [filter_and_rename_columns(full_df, section)], section
+
+    # Handle nested section lists
+    result_dfs = []
+    result_columns = []
+    for subsection in section:
+        # Handle different types of subsections
+        if isinstance(subsection, str):
+            # Simple section name
+            subsection_dfs, subsection_columns = extract_mqc_from_simple_section(all_module_data, subsection, module)
+        if isinstance(subsection, list):
+            # Simple section name
+            subsection_dfs, subsection_columns = extract_mqc_from_list_section(all_module_data, subsection, module)
+        elif isinstance(subsection, dict):
+            # Dictionary-based section specification
+            subsection_dfs, subsection_columns = extract_mqc_from_dict_section(all_module_data, subsection, module)
+        else:
+            # Unsupported subsection type
+            logger.warning(f"Unsupported subsection type: {type(subsection)}")
+            continue
+
+        result_dfs.extend(subsection_dfs)
+        result_columns.extend(subsection_columns)
+
+    return result_dfs, result_columns
+
+
+def extract_mqc_from_dict_section(all_module_data: Dict, section: Dict, module: str) -> Tuple[List[pd.DataFrame], List[Any]]:
+    """Handle dictionary-based section specifications."""
+    logger.debug("Extracting data from dict %s, %s", module, section)
+    # Extract section name and column specifications
+    section_name, columns = next(iter(section.items()))
+
+    # Check if section exists
+    if check_section_exists(all_module_data, section_name):
+        # Find the matching section data
+        section_data = next((data for key, data in all_module_data.items() if section_name in key), None)
+
+        if section_data:
+            # Convert to DataFrame and filter columns
+            data = pd.DataFrame.from_dict(section_data, orient="index")
+            filtered_data = filter_and_rename_columns(data, columns)
+            return [filtered_data], columns
+
+    logger.warning(f"Section '{section_name}' not found in module '{module}'")
+    return [pd.DataFrame()], []
