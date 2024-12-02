@@ -113,6 +113,7 @@ def parse_annotation_data(annotation_str):
         annotation_dict[key] = value
     return annotation_dict
 
+
 def reformat_custom_df(df: pd.DataFrame, cluster_df: pd.DataFrame) -> pd.DataFrame:
     """
     Reformat the custom dataframe.
@@ -125,7 +126,7 @@ def reformat_custom_df(df: pd.DataFrame, cluster_df: pd.DataFrame) -> pd.DataFra
     df = split_index_column(df)
 
     if not cluster_df.empty:
-        df = pd.merge(df, cluster_df, on=['sample', 'cluster'], how = "left")
+        df = pd.merge(df, cluster_df, on=["sample", "cluster"], how="left")
         df.index = df["index"]
 
     # Reorder the columns
@@ -143,21 +144,22 @@ def reformat_custom_df(df: pd.DataFrame, cluster_df: pd.DataFrame) -> pd.DataFra
         for column in df.columns
         if group in column
     ]
-    return reorder_columns(df.dropna(subset=['step']), final_columns)
+    return reorder_columns(df.dropna(subset=["step"]), list(dict.fromkeys(final_columns)))
 
 
-def filter_constrain(df, column, value):
+def filter_constrain(dataframe, column, value):
     """
     Filter a dataframe based on a column and a regex value.
 
     Args:
-        df (pd.DataFrame): The dataframe to be filtered.
+        dataframe (pd.DataFrame): The dataframe to be filtered.
         column (str): The column to filter on.
         regex_value (str): The regex value to filter on.
 
     Returns:
         pd.DataFrame, pd.DataFrame: The filtered dataframe with the regex value and the filtered dataframe without the regex value.
     """
+    df = dataframe.copy()
     # Find rows with the regex value
     locations = df[column].str.contains(value) | df["step"].str.contains("constrain")
 

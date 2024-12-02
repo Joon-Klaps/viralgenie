@@ -257,7 +257,7 @@ def load_custom_data(args) -> List[pd.DataFrame]:
         result.extend([annotation_df])
 
     # Cluster table - cluster summary of members & centroids
-    clusters_df  = filelist_to_df(args.clusters_files)
+    clusters_df = filelist_to_df(args.clusters_files)
     if not clusters_df.empty:
         clusters_df = clusters_df.add_prefix("(cluster) ")
         clusters_df = clusters_df.rename(columns={"(cluster) sample": "sample", "(cluster) cluster": "cluster"})
@@ -282,8 +282,8 @@ def get_general_stats_data_mod(sample: Optional[str] = None) -> Dict:
             for row in rows:
                 for key, val in row.data.items():
                     if key in header:
-                        namespace = header[key].get('namespace', key).replace("SAMPLE: ", "")
-                        final_key = f"{namespace}. {header[key].get('title', key)}" if header[key].get('title') else key
+                        namespace = header[key].get("namespace", key).replace("SAMPLE: ", "")
+                        final_key = f"{namespace}. {header[key].get('title', key)}" if header[key].get("title") else key
                         data[s][final_key] = val
     if sample:
         if not data:
@@ -511,6 +511,7 @@ def main(argv=None):
 
     # 5.2 reformat the dataframe
     mqc_custom_df = reformat_custom_df(mqc_custom_df, cluster_df)
+    mqc_custom_df.to_csv("mqc_custom_df.after.tsv", sep="\t")
 
     # 5.3 split up denovo constructs and mapping (-CONSTRAIN) results
     logger.info("Splitting up denovo constructs and mapping (-CONSTRAIN) results")

@@ -122,8 +122,8 @@ class Cluster:
         return "\t".join(
             [
                 str(prefix),
-                str(self.taxid),
                 str(self.cluster_id),
+                str(self.taxid),
                 str(self.centroid),
                 str(self.cluster_size),
                 "\t".join(map(str, rounded_depth)),
@@ -458,7 +458,10 @@ def filter_members(clusters, pattern):
             filtered_clusters.append(cluster)
     return filtered_clusters
 
-def filter_clusters_by_coverage(clusters: List[Cluster], coverages: Dict, threshold: float,keep_n_clusters: int) -> Tuple[List[Cluster], List[Cluster]]:
+
+def filter_clusters_by_coverage(
+    clusters: List[Cluster], coverages: Dict, threshold: float, keep_n_clusters: int
+) -> Tuple[List[Cluster], List[Cluster]]:
     """
     Filter clusters on coverage, only keep clusters with a coverage above the threshold. If no clusters are kept, return top 5.
     """
@@ -471,9 +474,9 @@ def filter_clusters_by_coverage(clusters: List[Cluster], coverages: Dict, thresh
             filtered_clusters.append(cluster)
 
     if filtered_clusters:
-        return clusters,filtered_clusters
+        return clusters, filtered_clusters
 
-    sorted_clusters = sorted(clusters, key=lambda x: sum(x.cumulative_read_depth), reverse= True)
+    sorted_clusters = sorted(clusters, key=lambda x: sum(x.cumulative_read_depth), reverse=True)
     return sorted_clusters, sorted_clusters[:keep_n_clusters]
 
 
@@ -610,7 +613,7 @@ def main(argv=None):
     # Filter clusters by coverage
     if args.coverages:
         coverages = read_coverages(args.coverages)
-        clusters,filtered_clusters = filter_clusters_by_coverage(filtered_clusters, coverages, args.perc_reads_contig, args.keep_clusters)
+        clusters, filtered_clusters = filter_clusters_by_coverage(filtered_clusters, coverages, args.perc_reads_contig, args.keep_clusters)
         logger.info("Filtered clusters by coverage, %d were removed.", len(clusters_renamed) - len(filtered_clusters))
 
     assert len(filtered_clusters) != 0, "No clusters left after filtering."
