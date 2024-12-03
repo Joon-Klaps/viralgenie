@@ -331,12 +331,12 @@ def failedContigsToMultiQC(tsv_data, min_len, n_100) {
 def failedMappedReadsToMultiQC(tsv_data, min_mapped_reads) {
     tsv_data
         .map { meta, bam, mapped_reads ->
-            ["$meta.id_\t$meta.previous_step\t$meta.sample\t$meta.cluster_id\t$meta.previous_step\t$mapped_reads"]
+            ["$meta.id\t$meta.sample\t$meta.cluster_id\t$meta.previous_step\t$mapped_reads"]
             }
         .collect()
         .map { tsv ->
             WorkflowCommons.multiqcTsvFromList(tsv,
-                ['Id','sample name', 'cluster','step','mapped reads'],
+                ['id','sample name', 'cluster','step','mapped reads'],
                 [
                     "id: 'failed_mapped'",
                     "anchor: 'WARNING: Filtered contigs'",

@@ -19,7 +19,7 @@ workflow SINGLETON_FILTERING {
     // Rename to avoid errors downstream
     RENAME_FASTA_HEADER_SINGLETON(
         contig,
-        "singleton.contig"
+        []
         )
     ch_versions = ch_versions.mix(RENAME_FASTA_HEADER_SINGLETON.out.versions)
 

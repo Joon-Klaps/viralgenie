@@ -6,7 +6,7 @@ include { SAMTOOLS_FAIDX                          } from '../../modules/nf-core/
 include { BAM_STATS_METRICS                       } from './bam_stats_metrics'
 include { BAM_CALL_VARIANTS                       } from './bam_call_variants'
 include { BAM_CALL_CONSENSUS                      } from './bam_call_consensus'
-include { BAM_FLAGSTAT_FILTER                     } from './bam_flagstat_filter'
+include { BAM_STATS_FILTER                        } from './bam_stats_filter'
 
 workflow FASTQ_FASTA_MAP_CONSENSUS {
 
@@ -43,11 +43,12 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
     ch_versions  = ch_versions.mix(SAMTOOLS_FAIDX.out.versions)
 
     // remove references-read combinations with low mapping rates
-    BAM_FLAGSTAT_FILTER ( ch_bam, min_mapped_reads )
-    ch_multiqc   = ch_multiqc.mix(BAM_FLAGSTAT_FILTER.out.bam_fail_mqc.ifEmpty([]))
-    ch_versions  = ch_versions.mix(BAM_FLAGSTAT_FILTER.out.versions)
+    BAM_STATS_FILTER ( ch_bam, ch_reference, min_mapped_reads )
+    ch_multiqc   = ch_multiqc.mix(BAM_STATS_FILTER.out.stats.collect{it[1]}.ifEmpty([]))
+    ch_multiqc   = ch_multiqc.mix(BAM_STATS_FILTER.out.bam_fail_mqc.ifEmpty([]))
+    ch_versions  = ch_versions.mix(BAM_STATS_FILTER.out.versions)
 
-    BAM_FLAGSTAT_FILTER
+    BAM_STATS_FILTER
         .out
         .bam_pass
         .join(ch_reference, by: [0])

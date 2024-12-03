@@ -2,12 +2,13 @@
 
 include {failedMappedReadsToMultiQC } from '../../subworkflows/local/utils_nfcore_viralgenie_pipeline'
 include { SAMTOOLS_INDEX            } from '../../modules/nf-core/samtools/index/main'
-include { SAMTOOLS_FLAGSTAT         } from '../../modules/nf-core/samtools/flagstat/main'
+include { SAMTOOLS_STATS            } from '../../modules/nf-core/samtools/stats/main'
 
-workflow BAM_FLAGSTAT_FILTER {
+workflow BAM_STATS_FILTER {
 
     take:
     ch_bam           // channel: [ val(meta), [ bam ] ]
+    ch_reference     // channel: [ val(meta), [ fasta ] ]
     min_mapped_reads // integer: min_mapped_reads
 
     main:
@@ -18,16 +19,22 @@ workflow BAM_FLAGSTAT_FILTER {
     SAMTOOLS_INDEX ( ch_bam )
     ch_versions = ch_versions.mix(SAMTOOLS_INDEX.out.versions.first())
 
-    ch_bam_bai = ch_bam.join(SAMTOOLS_INDEX.out.bai, by: [0])
+    stats_in = ch_bam
+        .join(SAMTOOLS_INDEX.out.bai, by: [0])
+        .join(ch_reference, by: [0])
+        .multiMap{ meta, bam, bai, ref ->
+            bam_bai : [meta, bam, bai ]
+            ref : [meta, ref ]
+        }
 
-    SAMTOOLS_FLAGSTAT ( ch_bam_bai )
-    ch_versions = ch_versions.mix(SAMTOOLS_FLAGSTAT.out.versions.first())
+    SAMTOOLS_STATS ( stats_in.bam_bai, stats_in.ref )
+    ch_versions = ch_versions.mix(SAMTOOLS_STATS.out.versions.first())
 
-    SAMTOOLS_FLAGSTAT
+    SAMTOOLS_STATS
         .out
-        .flagstat
+        .stats
         .join(ch_bam, by: [0] )
-        .map{ meta, flagstat, bam -> [ meta, bam, WorkflowCommons.getFlagstatMappedReads(flagstat) ] }
+        .map{ meta, stats, bam -> [ meta, bam, WorkflowCommons.getStatsMappedReads(stats) ] }
         .branch { meta, bam, mapped_reads ->
             pass: mapped_reads > min_mapped_reads
                 return [ meta, bam ]
@@ -42,9 +49,9 @@ workflow BAM_FLAGSTAT_FILTER {
     ch_fail_mapping_multiqc = failedMappedReadsToMultiQC(bam_fail, min_mapped_reads).collectFile(name:'failed_mapped_reads_mqc.tsv')
 
     emit:
-    bam_pass     = bam_pass                        // channel: [ val(meta), [ bam ] ]
-    flagstat     = SAMTOOLS_FLAGSTAT.out.flagstat  // channel: [ val(meta), [ flagstat ] ]
-    bam_fail_mqc = ch_fail_mapping_multiqc         // channel: [ val(meta), [ bam ] ]
+    bam_pass     = bam_pass                    // channel: [ val(meta), [ bam ] ]
+    stats        = SAMTOOLS_STATS.out.stats    // channel: [ val(meta), [ stats ] ]
+    bam_fail_mqc = ch_fail_mapping_multiqc     // channel: [ val(meta), [ bam ] ]
 
     versions = ch_versions                     // channel: [ versions.yml ]
 }

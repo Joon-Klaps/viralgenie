@@ -25,7 +25,6 @@ picard:
       - LIBRARY: "library"
 samtools:
   - multiqc_samtools_stats:
-      - sequences: "reads mapped"
       - reads_paired_percent: "reads paired %"
       - average_length
       - is_sorted
