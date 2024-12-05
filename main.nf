@@ -96,7 +96,7 @@ workflow {
 def getGlobalPrefix(workflow,params) {
     def date_stamp = new java.util.Date().format( 'yyyyMMdd')
     if (params.prefix) {
-        return "${params.prefix}_${date_stamp}_${workflow.manifest.version}_${workflow.runName}"
+        return "${params.prefix}_${date_stamp}_${workflow.manifest.version}_${workflow.runName}".replaceAll("\\s+", "_")
     }
     return null
 }
