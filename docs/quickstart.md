@@ -3,7 +3,7 @@
 Viralgenie needs two things:
 
  1. [Nextflow](https://www.nextflow.io/)
- 2. [Docker](https://www.docker.com/resources/what-container/) - [Singularity](https://docs.sylabs.io/guides/latest/user-guide/introduction.html) - [Conda](https://docs.conda.io/en/latest/)
+ 2. [Docker](https://www.docker.com/resources/what-container/) or [Singularity](https://docs.sylabs.io/guides/latest/user-guide/introduction.html) or [Conda](https://docs.conda.io/en/latest/)
 
 ```bash
 # Install nextflow with conda
