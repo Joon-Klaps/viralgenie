@@ -29,19 +29,20 @@ workflow BAM_STATS_METRICS {
         }
 
     CUSTOM_MPILEUP (sort_bam_ref)
+    ch_versions = ch_versions.mix(CUSTOM_MPILEUP.out.versions)
 
     PICARD_COLLECTMULTIPLEMETRICS ( input_metrics.bam_bai, input_metrics.ref, [[:], []] )
-    ch_versions  = ch_versions.mix(PICARD_COLLECTMULTIPLEMETRICS.out.versions)
+    ch_versions = ch_versions.mix(PICARD_COLLECTMULTIPLEMETRICS.out.versions)
 
     MOSDEPTH(input_metrics.bam_bai_bed, input_metrics.ref)
-    ch_versions  = ch_versions.mix(MOSDEPTH.out.versions)
-    ch_multiqc   = ch_multiqc.mix(MOSDEPTH.out.global_txt)
-    ch_multiqc   = ch_multiqc.mix(MOSDEPTH.out.summary_txt)
+    ch_versions = ch_versions.mix(MOSDEPTH.out.versions)
+    ch_multiqc  = ch_multiqc.mix(MOSDEPTH.out.global_txt)
+    ch_multiqc  = ch_multiqc.mix(MOSDEPTH.out.summary_txt)
 
     BAM_STATS_SAMTOOLS ( input_metrics.bam_bai, input_metrics.ref )
-    ch_versions  = ch_versions.mix(BAM_STATS_SAMTOOLS.out.versions)
-    ch_multiqc   = ch_multiqc.mix(BAM_STATS_SAMTOOLS.out.stats)
-    ch_multiqc   = ch_multiqc.mix(BAM_STATS_SAMTOOLS.out.flagstat)
+    ch_versions = ch_versions.mix(BAM_STATS_SAMTOOLS.out.versions)
+    ch_multiqc  = ch_multiqc.mix(BAM_STATS_SAMTOOLS.out.stats)
+    ch_multiqc  = ch_multiqc.mix(BAM_STATS_SAMTOOLS.out.flagstat)
     // ch_multiqc   = ch_multiqc.mix(BAM_STATS_SAMTOOLS.out.idxstats)
 
     emit:
