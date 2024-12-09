@@ -499,11 +499,11 @@ def main(argv=None):
     mqc.parse_logs(args.multiqc_files, args.multiqc_config, ignore_samples=generate_ignore_samples(mqc_custom_df))
 
     # 4. Parse our custom files into the correct tables
-    custom_tables, cluster_df = load_custom_data(args)
+    overview_tables, cluster_df = load_custom_data(args)
 
     # 5. Make our own summary files
     # 5.1 Join with the custom contig tables
-    mqc_custom_df = join_df(mqc_custom_df, custom_tables)
+    mqc_custom_df = join_df(mqc_custom_df, overview_tables)
 
     if mqc_custom_df.empty:
         logger.warning("No data was found to create the contig overview table!")

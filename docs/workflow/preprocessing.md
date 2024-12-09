@@ -24,9 +24,10 @@ graph LR;
     A[Raw reads] --> B["`**FastQC**`"];
     B --> C[Read processing];
     C --> D["`**FastQC**`"];
-    D --> E[Complexity filtering];
-    E --> G[Host read-removal];
-    G --> H["`**FastQC**`"];
+    D --> E[UMI deduplication];
+    E --> G[Complexity filtering];
+    G --> H[Host read-removal];
+    H --> I["`**FastQC**`"];
 ```
 
 ## Adapter trimming

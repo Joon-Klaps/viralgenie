@@ -2,7 +2,6 @@ name: Publish Docs On Change
 on:
   push:
     branches:
-      - main
       - dev
       - master
   workflow_dispatch:
@@ -45,7 +44,7 @@ jobs:
       - name: Read parameter tip
         id: read_tip
         run: |
-          tip=$(cat docs/parameter_tip.txt)
+          tip=$(cat docs/parameter_tip.md)
           echo "tip_content=$tip" >> $GITHUB_ENV
       - name: Append content to parameters.md
         run: |
@@ -53,7 +52,11 @@ jobs:
           echo "$modified_content" > docs/parameters.md
       - name: Build docs
         run: |
-          RELEASE=$(curl -sL https://api.github.com/repos/Joon-Klaps/viralgenie/releases | jq -r '.[0].tag_name')
-          echo "${RELEASE}"
-          mike deploy --push --update-aliases "${RELEASE}" latest
-          mike set-default --push latest
+          if [[ "${{ github.ref }}" == "refs/heads/dev" ]]; then
+            mike deploy --push --update-aliases "dev" dev
+          else
+            RELEASE=$(curl -sL https://api.github.com/repos/Joon-Klaps/viralgenie/releases | jq -r '.[0].tag_name')
+            echo "${RELEASE}"
+            mike deploy --push --update-aliases "${RELEASE}" latest
+            mike set-default --push latest
+          fi

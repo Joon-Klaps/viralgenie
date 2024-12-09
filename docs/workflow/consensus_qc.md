@@ -1,7 +1,7 @@
 
 # Report generation and quality control
 
-Viralgenie's report and result interpreation heavily relies on MultiQC. MultiQC is a tool to create a single report from multiple analysis results. It is designed to be used with a wide range of bioinformatics tools and is compatible with a wide range of data formats. Almost all tools are summarised within the MultiQC report that have interactive plots and data tables.
+Viralgenie's report and result interpreation heavily relies on MultiQC. MultiQC is a tool to create a single report from multiple analysis results. It is designed to be used with a wide range of bioinformatics tools and is compatible with a wide range of data formats. Almost all tools are summarised within the MultiQC report that have interactive plots and data tables. However, due to the number of tools included, some results are summarised in the directory `overview-tables` to reduce the size of the MultiQC report.
 
 !!! Tip
     Complete output descriptions of files and images can be found in the [output section](../output.md).
@@ -11,8 +11,8 @@ Within the multiqc report, viralgenie provides a number of custom tables based c
 - [QUAST](#quast): QUAST is a quality assessment tool for genome assemblies. It calculates various metrics such as N50, L50, number of contigs, and total length.
 - [CheckV](#checkv): CheckV is a tool for assessing the quality of metagenome-assembled viral genomes. It calculates various metrics such as completeness, contamination, and strain heterogeneity.
 - [blastn](#blastn): BLAST is a tool for comparing primary biological sequence information. It calculates the similarity between the consensus genome and the reference genome.
-- [mmseqs-search](#mmseqs-search): MMseqs is a ultra fast and sensitive search tool for protein and nucleotide databases. Viralgenie uses MMseqs to annotate the consensus genomes and assign them a species name, segment name, expected host etc.
-- [mafft - __not included in MultiQC__](#mafft): MAFFT is a multiple sequence alignment program.
+- [mmseqs-search](#mmseqs-search) - included as 'annotation': MMseqs is a ultra fast and sensitive search tool for protein and nucleotide databases. Viralgenie uses MMseqs to annotate the consensus genomes and assign them a species name, segment name, expected host etc.
+- [mafft - __not included in overview tables__](#mafft): MAFFT is a multiple sequence alignment program.
 
 > Consensus genome quality control can be skipped with `--skip_consensus_qc`.
 
