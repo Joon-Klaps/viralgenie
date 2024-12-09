@@ -37,7 +37,7 @@
 3. Metagenomic diveristy mapping
     - Performs taxonomic classification and/or profiling using one or more of:
         - [`Kraken2`](https://ccb.jhu.edu/software/kraken2/)
-        - [`Bracken`][https://ccb.jhu.edu/software/bracken/](optional)
+        - [`Bracken`](https://ccb.jhu.edu/software/bracken/)(optional)
         - [`Kaiju`](https://kaiju.binf.ku.dk/)
     - Plotting Kraken2 and Kaiju ([`Krona`](https://hpc.nih.gov/apps/kronatools.html))
 4. Denovo assembly ([`SPAdes`](http://cab.spbu.ru/software/spades/), [`TRINITY`](https://github.com/trinityrnaseq/trinityrnaseq), [`megahit`](https://github.com/voutcn/megahit)), combine contigs.
