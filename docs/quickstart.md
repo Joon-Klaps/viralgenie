@@ -22,7 +22,7 @@ nextflow run Joon-Klaps/viralgenie \
 
 ```bash
 nextflow run Joon-Klaps/viralgenie \
-    -profile test,docker \
+    -profile docker \
     --input my_samplesheet.csv
 ```
 
