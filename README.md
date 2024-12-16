@@ -18,7 +18,7 @@
 <!-- [![Get help on Slack](http://img.shields.io/badge/slack-nf--core%20%23viralgenie-4A154B?labelColor=000000&logo=slack)](https://nfcore.slack.com/channels/viralgenie)-->
 
 > [!TIP]
-> Make sure to checkout the [viralgenie website](https://joon-klaps.github.io/viralgenie/latest/) for more elaborate documentation!
+> Make sure to checkout the [viralgenie website](https://joon-klaps.github.io/viralgenie/dev/) for more elaborate documentation!
 
 ## Introduction
 
