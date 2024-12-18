@@ -55,7 +55,7 @@ def process_mpileup(filename: Path, reference: Path) -> NDArray:
     # Convert generator to structured numpy array
     data = np.array(
         [
-            (r["pos"], r["ref"], r["A"], r["C"], r["G"], r["T"], r["insertions"], r["deletions"], "N")
+            (r["pos"]+1, r["ref"], r["A"], r["C"], r["G"], r["T"], r["insertions"], r["deletions"], "N")
             for r in pysamstats.stat_variation(alignment_file, fafile=fasta)
         ],
         dtype=[
