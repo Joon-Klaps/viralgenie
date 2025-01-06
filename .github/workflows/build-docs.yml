@@ -41,15 +41,10 @@ jobs:
         uses: nf-core/setup-nextflow@v2
       - name: Build parameter docs
         run: nf-core pipelines schema docs --format markdown --columns parameter,description,default --output docs/parameters.md --force
-      - name: Read parameter tip
-        id: read_tip
+      - name: Prepend template to parameters.md
         run: |
-          tip=$(cat docs/template/parameter_tip.md)
-          echo "tip_content=$tip" >> $GITHUB_ENV
-      - name: Append content to parameters.md
-        run: |
-          modified_content=$(awk '/^#/ { print; print "${{ env.tip_content }}"; exit } 1' docs/parameters.md)
-          echo "$modified_content" > docs/parameters.md
+          cat docs/template/parameter_tip.md docs/parameters.md > tmp.md
+          mv tmp.md docs/parameters.md
       - name: Build docs
         run: |
           if [[ "${{ github.ref }}" == "refs/heads/dev" ]]; then
