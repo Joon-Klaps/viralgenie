@@ -121,14 +121,6 @@ def parse_args(argv=None):
         help="Checkv summary files for each sample",
         type=Path,
     )
-    parser.add_argument(
-        "--filter_level",
-        metavar="FILTER LEVEL",
-        choices=["normal", "strict", "none"],
-        default="normal",
-        type=str,
-        help="Specify how strict the filtering should be, default is normal.",
-    )
 
     parser.add_argument(
         "--clusters_files",

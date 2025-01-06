@@ -714,13 +714,6 @@
                     "description": "Skip creating an alignment of each the collapsed clusters and each iterative step",
                     "fa_icon": "fas fa-forward"
                 },
-                "contig_filter_level": {
-                    "type": "string",
-                    "default": "normal",
-                    "fa_icon": "fas fa-filter",
-                    "description": "Specify how strict the filtering should be.",
-                    "help_text": "none - don't filter the report of final contigs (not recomended)\nnormal - display only the consensus of the last iteration that had hits in the annotation set\nstrict - Group results by identified species & segment & lineage (if available) to report only the top hits"
-                },
                 "mmseqs_searchtype": {
                     "type": "integer",
                     "default": 4,
