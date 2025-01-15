@@ -32,6 +32,7 @@ lint:
     - assets/nf-core-viralgenie_logo_light.png
     - conf/test.config
     - conf/test_full.config
+    - docs/README.md
   actions_awsfulltest: false
   actions_ci: false
 template:
