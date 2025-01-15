@@ -133,7 +133,7 @@ Parameters relating to the analysis of variants associated to contigs and scaffo
 |-----------|-----------|-----------|
 | `skip_variant_calling` | Skip the analysis of variants for the external reference or contigs |  |
 | `mapper` | Define which mapping tool needs to be used when mapping reads to reference | bwamem2 |
-| `mapping_constrains` | Sequence to use as a mapping reference instead of the de novo contigs or scaffolds |  |
+| `mapping_constraints` | Sequence to use as a mapping reference instead of the de novo contigs or scaffolds |  |
 | `deduplicate` | deduplicate the reads <details><summary>Help</summary><small>If used with umi's, `umi tools` will be used to group and call consensus of each indiual read group. If not used with umi's use `PicardsMarkDuplicates`. </small></details>| True |
 | `variant_caller` | Define the variant caller to use: 'ivar' or 'bcftools' | ivar |
 | `consensus_caller` | consensus tool used for calling new consensus in final iteration | ivar |

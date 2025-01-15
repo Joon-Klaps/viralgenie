@@ -275,7 +275,7 @@ def reformat_constrain_df(df, file_columns, args):
         return df, df
 
     # Add constrain metadata to the mapping constrain table
-    constrain_meta = filelist_to_df([args.mapping_constrains])
+    constrain_meta = filelist_to_df([args.mapping_constraints])
 
     # drop unwanted columns & reorder
     constrain_meta = drop_columns(constrain_meta, ["sequence", "samples"])
@@ -295,12 +295,12 @@ def reformat_constrain_df(df, file_columns, args):
 
     # add mapping summary to sample overview table in ... wide format with species & segment combination
     logger.info("Creating mapping constrain summary (wide) table")
-    mapping_constrains_summary = create_constrain_summary(df, file_columns).set_index("sample")
+    mapping_constraints_summary = create_constrain_summary(df, file_columns).set_index("sample")
 
     logger.info("Coalescing columns")
     coalesced_constrains = coalesce_constrain(df)
     coalesced_constrains = drop_columns(coalesced_constrains, ["id", "selection", "rank"])
-    return coalesced_constrains, mapping_constrains_summary
+    return coalesced_constrains, mapping_constraints_summary
 
 
 def generate_ignore_samples(dataframe: pd.DataFrame) -> pd.Series:

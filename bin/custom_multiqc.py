@@ -101,7 +101,7 @@ def parse_args(argv=None):
     )
 
     parser.add_argument(
-        "--mapping_constrains",
+        "--mapping_constraints",
         metavar="MAPPING CONSTRAINS",
         help="Mapping constrains file containing information on the sequences that need to be used for mapping against the samples, supported formats: '.csv', '.tsv', '.yaml', '.yml'",
         type=lambda s: file_choices(("csv", "tsv", "yaml", "yml"), s),

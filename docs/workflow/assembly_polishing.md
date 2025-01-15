@@ -1,4 +1,3 @@
-
 # Assembly & polishing
 
 Viralgenie offers an elaborate workflow for the assembly and polishing of viral genomes:
@@ -9,17 +8,17 @@ Viralgenie offers an elaborate workflow for the assembly and polishing of viral 
 1. [Reference Matching](#4-reference-matching): comparing contigs to a reference sequence pool.
 1. [Taxonomy guided Clustering](#5-taxonomy-guided-clustering): clustering contigs based on taxonomy and nucleotide similarity.
     - [Pre-clustering](#51-pre-clustering-using-taxonomy): separating contigs based on identified taxonomy-id.
-    - [Actual clustering](#52-actual-clustering-on-nucloetide-similarity): clustering contigs based on nucleotide similarity.
-1. [Scaffolding](#scaffolding): scaffolding the contigs to the centroid of each bin.
-1. [Annotation with Reference](#annotation-with-reference): annotating regions with 0-depth coverage with the reference sequence.
+    - [Actual clustering](#52-actual-clustering-on-nucleotide-similarity): clustering contigs based on nucleotide similarity.
+1. [Scaffolding](#7-scaffolding): scaffolding the contigs to the centroid of each bin.
+1. [Annotation with Reference](#8-annotation-with-reference): annotating regions with 0-depth coverage with the reference sequence.
 
 ![assembly_polishing](../images/assembly_polishing.png)
 
-> The overal workflow of creating reference assisted assemblies can be skipped with the argument `--skip_assembly`. See the [parameters assembly section](../parameters.md#assembly) for all relevant arguments to control the assembly steps.
+> The overall workflow of creating reference assisted assemblies can be skipped with the argument `--skip_assembly`. See the [parameters assembly section](../parameters.md#assembly) for all relevant arguments to control the assembly steps.
 
 > The overall refinement of contigs can be skipped with the argument `--skip_polishing`. See the [parameters polishing section](../parameters.md#polishing) for all relevant arguments to control the polishing steps.
 
-The consensus genome of all clusters are then send to the [variant analysis & iterative refinement](variant_and_refinement.md) step.
+The consensus genome of all clusters are then sent to the [variant analysis & iterative refinement](variant_and_refinement.md) step.
 
 ## 1. De-novo Assembly
 
@@ -34,7 +33,7 @@ Low complexity contigs can be filtered out using prinseq++ with the `--skip_cont
 
 Contigs can be extended using [SSPACE Basic](https://github.com/nsoranzo/sspace_basic) with the `--skip_sspace_basic false` parameter. SSPACE is a tool for scaffolding contigs using paired-end reads. It is modified from SSAKE assembler and has the feature of extending contigs using reads that are unmappable in the contig assembly step. To maximize its efficiency, consider specifying the arguments `--read_distance`, `--read_distance_sd`, and `--read_orientation`.  For more information on these arguments, see the [parameters assembly section](../parameters.md#assembly).
 
-> The extension of contigs is ran by default, to skip this step, use `--skip_sspace_basic`.
+> The extension of contigs is run by default, to skip this step, use `--skip_sspace_basic`.
 
 ## 3. Coverage calculation
 
@@ -44,23 +43,22 @@ Processed reads are mapped back against the contigs to determine the number of r
 
 ## 4. Reference Matching
 
-The newly assembled contigs are compared to a reference sequence pool (--reference_pool) using a [BLASTn search](https://www.ncbi.nlm.nih.gov/books/NBK153387/). This process not only helps annotate the contigs but also assists in linking together sets of contigs that are distant within a single genome. Essentially, it aids in identifying contigs belonging to the same genomic segment and choosing the right reference for scaffolding purposes.
+The newly assembled contigs are compared to a reference sequence pool (`--reference_pool`) using a [BLASTn search](https://www.ncbi.nlm.nih.gov/books/NBK153387/). This process not only helps annotate the contigs but also assists in linking together sets of contigs that are distant within a single genome. Essentially, it aids in identifying contigs belonging to the same genomic segment and choosing the right reference for scaffolding purposes.
 
-The top 5 hits for each contig are combined with the denovo contigs and send to the clustering step.
+The top 5 hits for each contig are combined with the de novo contigs and sent to the clustering step.
 
 > The reference pool can be specified with the `--reference_pool` parameter. The default is the latest clustered [Reference Viral DataBase (RVDB)](https://rvdb.dbi.udel.edu/).
 
 ## 5. Taxonomy guided Clustering
 
-The clustering workflow of contigs consists out of 2 steps, the [pre-clustering using taxonomy](#51-pre-clustering-using-taxonomy) and
-[actual clustering on nucleotide similarity](#52-actual-clustering-on-nucloetide-similarity). The taxonomy guided clustering is used to separate contigs based on taxonomy and nucleotide similarity.
+The clustering workflow of contigs consists of 2 steps, the [pre-clustering using taxonomy](#51-pre-clustering-using-taxonomy) and
+[actual clustering on nucleotide similarity](#52-actual-clustering-on-nucleotide-similarity). The taxonomy guided clustering is used to separate contigs based on taxonomy and nucleotide similarity.
 
 ```mermaid
 graph LR;
     A[Contigs] --> B["`**Pre-clustering**`"];
     B --> C["`**Actual clustering**`"];
 ```
-
 
 ### 5.1 Pre-clustering using taxonomy
 
@@ -70,7 +68,7 @@ The contigs along with their references have their taxonomy assigned using [Krak
 > - Kraken2: viral refseq database, `--kraken2_db`
 > - Kaiju: clustered [RVDB](https://rvdb.dbi.udel.edu/), `--kaiju_db`
 
-As Kajiu and Kraken2 can have different taxonomic assignments, an additional step is performed to resolve potential inconsistencies in taxonomy and to identify the taxonomy of the contigs. This is done with a custom script that is based on `KrakenTools extract_kraken_reads.py` and `kaiju-Merge-Outputs`.
+As Kaiju and Kraken2 can have different taxonomic assignments, an additional step is performed to resolve potential inconsistencies in taxonomy and to identify the taxonomy of the contigs. This is done with a custom script that is based on `KrakenTools extract_kraken_reads.py` and `kaiju-Merge-Outputs`.
 
 ```mermaid
 graph LR;
@@ -94,7 +92,7 @@ graph LR;
 
 1. Options here are 'species', 'genus', 'family', 'order', 'class', 'phylum', 'kingdom' or 'superkingdom'.
 
-2. `--precluster_include_childeren`__"genus1"__ :
+2. `--precluster_include_children` __"genus1"__ :
 
     ```mermaid
     graph TD;
@@ -118,9 +116,9 @@ graph LR;
     ```
     Dotted lines represent exclusion of taxa.
 
-> The pre-clustering step will be run by default but can be skipped with the argument `--skip_preclustering`. Specify which classifier to use with `--precluster_classifiers` parameter. The default is `kaiju,kraken2`. Contig taxon filtering is still enabled despite not having to solve for inconsistencies if only Kaiju or Kraken2 is ran.
+> The pre-clustering step will be run by default but can be skipped with the argument `--skip_preclustering`. Specify which classifier to use with `--precluster_classifiers` parameter. The default is `kaiju,kraken2`. Contig taxon filtering is still enabled despite not having to solve for inconsistencies if only Kaiju or Kraken2 is run.
 
-### 5.2 Actual clustering on nucloetide similarity
+### 5.2 Actual clustering on nucleotide similarity
 
 The clustering is performed with one of the following tools:
 
@@ -130,7 +128,6 @@ The clustering is performed with one of the following tools:
 - [`mmseqs-cluster`](https://github.com/soedinglab/MMseqs2/wiki#cascaded-clustering)
 - [`vRhyme`](https://github.com/AnantharamanLab/vRhyme)
 - [`mash`](https://github.com/marbl/Mash)
-
 
 These methods all come with their own advantages and disadvantages. For example, cdhitest is very fast but cannot be used for large viruses >10Mb and similarity threshold cannot go below 80% which is not preferable for highly diverse RNA viruses. Vsearch is slower but accurate. Mmseqs-linclust is the fastest but tends to create a large amount of bins. Mmseqs-cluster is slower but can handle larger datasets and is more accurate. vRhyme is a new method that is still under development but has shown promising results but can sometimes not output any bins when segments are small. Mash is a very fast comparison method is linked with a custom script that identifies communities within a network.
 
@@ -143,28 +140,25 @@ These methods all come with their own advantages and disadvantages. For example,
 
 > The similarity threshold can be specified with the `--similarity_threshold` parameter. The default is `0.85`.
 
-
 ## 6. Coverage filtering
 
-The coverage of the contigs is calculated using the same method as in the [coverage calculation step](#3-coverage-calculation). A cumulative sum is taken across the contigs from every assembler. If these cumulative sums is above the specified `--perc_reads_contig` parameter, the contig is kept. If all cumulative sums is below the specified parameter, the contig is removed.
+The coverage of the contigs is calculated using the same method as in the [coverage calculation step](#3-coverage-calculation). A cumulative sum is taken across the contigs from every assembler. If these cumulative sums are above the specified `--perc_reads_contig` parameter, the contig is kept. If all cumulative sums are below the specified parameter, the contig is removed.
 
 !!! Info annotate "Show me an example how it works"
     If the `--perc_reads_contig` is set to `5`, the cumulative sum of the contigs from every assembler is calculated. For example:
 
-    -  Cluster 1: the cumulative sum of the contigs from SPAdes is 0.6, Megahit is 0.5, the cluster is kept.
+    - Cluster 1: the cumulative sum of the contigs from SPAdes is 0.6, Megahit is 0.5, the cluster is kept.
     - Cluster 2: the cumulative sum of the contigs from SPAdes is 0.1, Megahit is 0.1, the cluster is removed.
     - Cluster 3: the cumulative sum of the contigs from SPAdes is 0.5, Megahit is 0, the cluster is kept.
 
 > The default is `5` and can be specified with the `--perc_reads_contig` parameter.
 
-
 ## 7. Scaffolding
 
 After classifying all contigs and their top BLAST hits into distinct clusters or bins, the contigs are then scaffolded to the centroid of each bin. Any external references that are not centroids of the cluster are subsequently removed to prevent further bias. All members of the cluster are consequently mapped towards their centroid with [Minimap2](https://github.com/lh3/minimap2) and consensus is called using [iVar-consensus](https://andersen-lab.github.io/ivar/html/manualpage.html).
 
-
 ## 8. Annotation with Reference
 
-Regions with 0-depth coverage are annotated with the reference sequence. This is done with a [custom script](https://github.com/Joon-Klaps/viralgenie/blob/dev/bin/lowcov_to_reference.py) that uses the coverage of the denovo contigs towards the reference sequence to identify regions with 0-depth coverage. The reference sequence is then annotated to these regions.
+Regions with 0-depth coverage are annotated with the reference sequence. This is done with a [custom script](https://github.com/Joon-Klaps/viralgenie/blob/dev/bin/lowcov_to_reference.py) that uses the coverage of the de novo contigs towards the reference sequence to identify regions with 0-depth coverage. The reference sequence is then annotated to these regions.
 
 > This step can be skipped using `--skip_hybrid_consensus` parameter.

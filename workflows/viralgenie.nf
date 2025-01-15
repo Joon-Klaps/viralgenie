@@ -69,7 +69,7 @@ workflow VIRALGENIE {
     ch_contaminants   = createFileChannel(params.contaminants)
     ch_spades_yml     = createFileChannel(params.spades_yml)
     ch_spades_hmm     = createFileChannel(params.spades_hmm)
-    ch_constrain_meta = createFileChannel(params.mapping_constrains)
+    ch_constrain_meta = createFileChannel(params.mapping_constraints)
 
     // Databases, we really don't want to stage uncessary databases
     ch_ref_pool      = (!params.skip_assembly && !params.skip_polishing) || (!params.skip_consensus_qc && !params.skip_blast_qc)           ? createChannel( params.reference_pool, "reference", true )                                                         : Channel.empty()
@@ -326,22 +326,22 @@ workflow VIRALGENIE {
 
     ch_mash_screen = Channel.empty()
 
-    if (params.mapping_constrains && !params.skip_variant_calling ) {
+    if (params.mapping_constraints && !params.skip_variant_calling ) {
         // Importing samplesheet
         Channel
-            .fromList(samplesheetToList(params.mapping_constrains, "${projectDir}/assets/schemas/mapping_constrains.json"))
+            .fromList(samplesheetToList(params.mapping_constraints, "${projectDir}/assets/schemas/mapping_constraints.json"))
             .map{ meta, sequence ->
                 def samples = meta.samples == [] ? null : tuple(meta.samples.split(";"))  // Split up samples if meta.samples is not null
                 [meta, samples, sequence]
             }
-            .tap{mapping_constrains}
+            .tap{mapping_constraints}
             .transpose(remainder: true)                                                         // Unnest
-            .set{ch_mapping_constrains}
+            .set{ch_mapping_constraints}
 
         // Joining all the reads with the mapping constrains, filter for those specified or keep everything if none specified.
         ch_decomplex_trim_reads
-            .combine( ch_mapping_constrains )
-            .tap{mapping_constrains_tmp}
+            .combine( ch_mapping_constraints )
+            .tap{mapping_constraints_tmp}
             .filter{ meta_reads, fastq, meta_mapping, mapping_samples, sequence -> mapping_samples == null || mapping_samples == meta_reads.sample}
             .map
                 {
