@@ -46,13 +46,13 @@ An example samplesheet file consisting of both single- and paired-end data may l
 
     ```yaml title="input-samplesheet.yaml"
     - sample: sample1
-    fastq1: AEG588A1_S1_L002_R1_001.fastq.gz
-    fastq2: AEG588A1_S1_L002_R2_001.fastq.gz
+      fastq1: AEG588A1_S1_L002_R1_001.fastq.gz
+      fastq2: AEG588A1_S1_L002_R2_001.fastq.gz
     - sample: sample2
-    fastq1: AEG588A5_S5_L003_R1_001.fastq.gz
+      fastq1: AEG588A5_S5_L003_R1_001.fastq.gz
     - sample: sample3
-    fastq1: AEG588A3_S3_L002_R1_001.fastq.gz
-    fastq2: AEG588A3_S3_L002_R2_001.fastq.gz
+      fastq1: AEG588A3_S3_L002_R1_001.fastq.gz
+      fastq2: AEG588A3_S3_L002_R2_001.fastq.gz
     ```
 
 === "JSON"
@@ -61,16 +61,16 @@ An example samplesheet file consisting of both single- and paired-end data may l
         {
             "sample": "sample1",
             "fastq1": "AEG588A1_S1_L002_R1_001.fastq.gz",
-            "fastq2": "AEG588A1_S1_L002_R2_001.fastq.gz",
+            "fastq2": "AEG588A1_S1_L002_R2_001.fastq.gz"
         },
         {
             "sample": "sample2",
-            "fastq1": "AEG588A5_S5_L003_R1_001.fastq.gz",
+            "fastq1": "AEG588A5_S5_L003_R1_001.fastq.gz"
         },
         {
             "sample": "sample3",
             "fastq1": "AEG588A3_S3_L002_R1_001.fastq.gz",
-            "fastq2": "AEG588A3_S3_L002_R2_001.fastq.gz",
+            "fastq2": "AEG588A3_S3_L002_R2_001.fastq.gz"
         }
     ]
     ```
@@ -81,19 +81,19 @@ An example samplesheet file consisting of both single- and paired-end data may l
 | `fastq_1` | Full path (_not_ relative paths) to FastQ file for Illumina short reads 1. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz". |
 | `fastq_2` | Full path (_not_ relative paths) to FastQ file for Illumina short reads 2. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz". |
 
-### Mapping constrains
+### Mapping constraints
 
-Viralgenie can in addition to constructing denovo consensus genomes map the sample reads to a series of references. These references are provided through the parameter `--mapping_constrains`.
+Viralgenie can in addition to constructing de novo consensus genomes map the sample reads to a series of references. These references are provided through the parameter `--mapping_constraints`.
 
-An example mapping constrain samplesheet file consisting of 5 references, may look something like the one below.
+An example mapping constraint samplesheet file consisting of 5 references, may look something like the one below.
 > This is for 5 references, 2 of them being a multi-fasta file, only one of the multi-fasta needs to undergo [reference selection](./workflow/variant_and_refinement.md#selection-of-reference).
 
 
 === "TSV"
-    ```tsv title="constrains-samplesheet.tsv"
+    ```tsv title="constraints-samplesheet.tsv"
     id	species	segment	selection	samples	sequence	definition
-    Lassa-L-dataset	LASV	L	true		LASV_L.multi.fasta	Collection of LASV sequences used for hybrid capture bait design, all publicly availble sequences of the L segment clustered at 99.5% similarity
-    Lassa-S-dataset	LASV	S	false	sample1;sample3	LASV_S.multi.fasta	Collection of LASV sequences used for hybrid capture bait design, all publicly availble sequences of the S segment clustered at 99.5% similarity
+    Lassa-L-dataset	LASV	L	true		LASV_L.multi.fasta	Collection of LASV sequences used for hybrid capture bait design, all publicly available sequences of the L segment clustered at 99.5% similarity
+    Lassa-S-dataset	LASV	S	false	sample1;sample3	LASV_S.multi.fasta	Collection of LASV sequences used for hybrid capture bait design, all publicly available sequences of the S segment clustered at 99.5% similarity
     NC038709.1	HAZV	L	false	sample1;sample2	L-NC_038709.1.fasta	Hazara virus isolate JC280 segment L, complete sequence.
     NC038710.1	HAZV	M	false		M-NC_038710.1.fasta	Hazara virus isolate JC280 segment M, complete sequence.
     NC038711.1	HAZV	S	false		S-NC_038711.1.fasta	Hazara virus isolate JC280 segment S, complete sequence.
@@ -101,10 +101,10 @@ An example mapping constrain samplesheet file consisting of 5 references, may lo
     ```
 
 === "CSV"
-    ```csv title="constrains-samplesheet.csv"
+    ```csv title="constraints-samplesheet.csv"
     id,species,segment,selection,samples,sequence,definition
-    Lassa-L-dataset,LASV,L,true,,LASV_L.multi.fasta,"Collection of LASV sequences used for hybrid capture bait design, all publicly availble sequences of the L segment clustered at 99.5% similarity"
-    Lassa-S-dataset,LASV,S,false,"sample1;sample3",LASV_S.multi.fasta,"Collection of LASV sequences used for hybrid capture bait design, all publicly availble sequences of the S segment clustered at 99.5% similarity"
+    Lassa-L-dataset,LASV,L,true,,LASV_L.multi.fasta,"Collection of LASV sequences used for hybrid capture bait design, all publicly available sequences of the L segment clustered at 99.5% similarity"
+    Lassa-S-dataset,LASV,S,false,"sample1;sample3",LASV_S.multi.fasta,"Collection of LASV sequences used for hybrid capture bait design, all publicly available sequences of the S segment clustered at 99.5% similarity"
     NC038709.1,HAZV,L,false,"sample1;sample2",L-NC_038709.1.fasta,"Hazara virus isolate JC280 segment L, complete sequence."
     NC038710.1,HAZV,M,false,,M-NC_038710.1.fasta,"Hazara virus isolate JC280 segment M, complete sequence."
     NC038711.1,HAZV,S,false,,S-NC_038711.1.fasta,"Hazara virus isolate JC280 segment S, complete sequence."
@@ -113,64 +113,64 @@ An example mapping constrain samplesheet file consisting of 5 references, may lo
 
 === "YAML"
 
-    ```yaml title="constrains-samplesheet.yaml"
+    ```yaml title="constraints-samplesheet.yaml"
     - id: Lassa-L-dataset
-    species: LASV
-    segment: L
-    selection: true
-    sequence: LASV_L.multi.fasta
-    definition: 'Collection of LASV sequences used for hybrid capture bait design, all publicly availble sequences of the L segment clustered at 99.5% similarity'
+      species: LASV
+      segment: L
+      selection: true
+      sequence: LASV_L.multi.fasta
+      definition: 'Collection of LASV sequences used for hybrid capture bait design, all publicly available sequences of the L segment clustered at 99.5% similarity'
     - id: Lassa-S-dataset
-    species: LASV
-    segment: S
-    selection: false
-    samples: sample1;sample3
-    sequence: LASV_S.multi.fasta
-            definition: 'Collection of LASV sequences used for hybrid capture bait design, all publicly availble sequences of the S segment clustered at 99.5% similarity'
+      species: LASV
+      segment: S
+      selection: false
+      samples: sample1;sample3
+      sequence: LASV_S.multi.fasta
+      definition: 'Collection of LASV sequences used for hybrid capture bait design, all publicly available sequences of the S segment clustered at 99.5% similarity'
     - id: NC038709.1
-    species: HAZV
-    segment: L
-    selection: false
-    samples: sample1;sample2
-    sequence: L-NC_038709.1.fasta
-            definition: 'Hazara virus isolate JC280 segment L, complete sequence.'
+      species: HAZV
+      segment: L
+      selection: false
+      samples: sample1;sample2
+      sequence: L-NC_038709.1.fasta
+      definition: 'Hazara virus isolate JC280 segment L, complete sequence.'
     - id: NC038710.1
-    species: HAZV
-    segment: M
-    selection: false
-    sequence: M-NC_038710.1.fasta
-    definition: 'Hazara virus isolate JC280 segment M, complete sequence.'
+      species: HAZV
+      segment: M
+      selection: false
+      sequence: M-NC_038710.1.fasta
+      definition: 'Hazara virus isolate JC280 segment M, complete sequence.'
     - id: NC038711.1
-    species: HAZV
-    segment: S
-    selection: false
-    sequence: S-NC_038711.1.fasta
-    definition: 'Hazara virus isolate JC280 segment S, complete sequence.'
+      species: HAZV
+      segment: S
+      selection: false
+      sequence: S-NC_038711.1.fasta
+      definition: 'Hazara virus isolate JC280 segment S, complete sequence.'
     ```
 
 === "JSON"
     !!! Warning
-        JSON format is not supported for mapping constrains samplesheet.
+        JSON format is not supported for mapping constraints samplesheet.
 
 
 
 | Column       | Description                                                                                         |
 | ------------ | --------------------------------------------------------------------------------------------------- |
-| `id`         | Reference identifier, needs to be unique'                                                           |
+| `id`         | Reference identifier, needs to be unique                                                            |
 | `species`    | [Optional] Species name of the reference                                                            |
 | `segment`    | [Optional] Segment name of the reference                                                            |
-| `selection`  | [Optional] Specify if the multiFasta reference file needs to undergo [reference selection](./workflow/variant_and_refinement.md#selection-of-reference)            |
+| `selection`  | [Optional] Specify if the multi-fasta reference file needs to undergo [reference selection](./workflow/variant_and_refinement.md#1a-selection-of-reference)            |
 | `samples`    | [Optional] List of samples that need to be mapped towards the reference. If empty, map all samples. |
 | `sequence`   | Full path (_not_ relative paths) to the reference sequence file.                                    |
 | `definition` | [Optional] Definition of the reference sequence file.                                               |
 
 !!! Tip
     - The `samples` column is optional - if empty, all samples will be mapped towards the reference.
-    - Multi-fasta files can be provided and all reads will mapped to all genomes but stats will not be reported separately in the final report.
+    - Multi-fasta files can be provided and all reads will be mapped to all genomes but stats will not be reported separately in the final report.
 
 ### Metadata
 
-Sample metadata can be provided to the pipeline with the argument `--metadata`. This metadata will not affect the analysis in anyway and is only used to annotate the final report. Any metadata can be provided as long as the first value is the `sample` value.
+Sample metadata can be provided to the pipeline with the argument `--metadata`. This metadata will not affect the analysis in any way and is only used to annotate the final report. Any metadata can be provided as long as the first value is the `sample` value.
 
 === "TSV"
 
@@ -192,17 +192,17 @@ Sample metadata can be provided to the pipeline with the argument `--metadata`. 
 
     ```yaml title="metadata.yaml"
     - sample: sample1
-    sample_accession: SAMN14154201
-    secondary_sample_accession: SRS6189918
-    study_accession: PRJNA607948
-    run_alias: vero76_Illumina.fastq
-    library_layout: PAIRED
+      sample_accession: SAMN14154201
+      secondary_sample_accession: SRS6189918
+      study_accession: PRJNA607948
+      run_alias: vero76_Illumina.fastq
+      library_layout: PAIRED
     - sample: sample2
-    sample_accession: SAMN14154205
-    secondary_sample_accession: SRS6189924
-    study_accession: PRJNA607948
-    run_alias: veroSTAT-1KO_Illumina.fastq
-    library_layout: PAIRED
+      sample_accession: SAMN14154205
+      secondary_sample_accession: SRS6189924
+      study_accession: PRJNA607948
+      run_alias: veroSTAT-1KO_Illumina.fastq
+      library_layout: PAIRED
     ```
 
 === "JSON"
@@ -256,11 +256,11 @@ Pipeline settings can be provided in a `yaml` or `json` file via `-params-file <
     !!! info "`params.yaml` will contain:"
         ```json
         {
-            input: "./samplesheet.csv",
-            outdir: "./results/",
-            host_k2_db: "./databases/kraken2/host",
-            mapping_constrains: "./mapping_constrains.tsv",
-            cluster_method: "mmseqs-linclust"
+            "input": "./samplesheet.csv",
+            "outdir": "./results/",
+            "host_k2_db": "./databases/kraken2/host",
+            "mapping_constraints": "./mapping_constraints.tsv",
+            "cluster_method": "mmseqs-linclust"
             ...
         }
         ```
@@ -272,17 +272,17 @@ Pipeline settings can be provided in a `yaml` or `json` file via `-params-file <
         --input ./samplesheet.csv \
         --outdir ./results/ \
         --host_k2_db ./databases/kraken2/host \
-        --mapping_constrains ./mapping_constrains.tsv \
+        --mapping_constraints ./mapping_constraints.tsv \
         --cluster_method 'mmseqs-linclust' \
         ...
     ```
 
-You can also generate such `YAML`/`JSON` files via [`nf-core launch`](https://nf-co.re/tools#launch-a-pipeline)  if `nf-core` is [installed](https://nf-co.re/tools#installation).
+You can also generate such `YAML`/`JSON` files via [`nf-core launch`](https://nf-co.re/tools#launch-a-pipeline) if `nf-core` is [installed](https://nf-co.re/tools#installation).
 ```console
 nf-core launch Joon-Klaps/viralgenie
 ```
 !!! Tip
-    Use [`nf-core launch`](https://nf-co.re/tools#launch-a-pipeline) if it is the first time running the pipeline to explore all its features and options in an accesible way.
+    Use [`nf-core launch`](https://nf-co.re/tools#launch-a-pipeline) if it is the first time running the pipeline to explore all its features and options in an accessible way.
 
 ## Updating the pipeline
 
@@ -331,7 +331,7 @@ The pipeline also dynamically loads configurations from [https://github.com/nf-c
 Note that multiple profiles can be loaded, for example: `-profile test,docker` - the order of arguments is important!
 They are loaded in sequence, so later profiles can overwrite earlier profiles.
 
-If `-profile` is not specified, the pipeline will run locally and expect all software to be installed and available on the `PATH`. This is _not_ recommended, since it can lead to different results on different machines dependent on the computer enviroment.
+If `-profile` is not specified, the pipeline will run locally and expect all software to be installed and available on the `PATH`. This is _not_ recommended, since it can lead to different results on different machines dependent on the computer environment.
 
 -   `test`
     -   A profile with a complete configuration for automated testing
