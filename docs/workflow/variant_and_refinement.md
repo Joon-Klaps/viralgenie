@@ -4,7 +4,7 @@ This subworkflow supports two distinct starting points:
 
 #### A. External Reference-based Analysis:
 
-References are provided through the [samplesheet `--mapping_constraints`](../usage.md#mapping-constrains)
+References are provided through the [samplesheet `--mapping_constraints`](../usage.md#mapping-constraints)
 
 1. [Best matching reference genome is selected](#1a-selection-of-reference)
 2. [Reads are mapped to these reference genome(s)](#2-mapping-of-reads)
@@ -29,18 +29,16 @@ Both approaches use the same variant calling and consensus generation methods, b
 !!! info
     This schema is a simplification as there are some additional steps:
 
-      - [Deduplication](../workflow/variant_and_refinement.md#21-deduplication): (optional) deduplication of reads can be performed with [`Picard`](https://broadinstitute.github.io/picard/) or if UMI's are used [`UMI-tools`](https://umi-tools.readthedocs.io/en/latest/QUICK_START.html).
-      - [Variant filtering](../workflow/variant_and_refinement.md#variant-filtering): variant filtering, only variants with sufficient depth and quality are retained for consensus calling ( only for BCFtools).
+      - [Deduplication](../workflow/variant_and_refinement.md#21-deduplication): (optional) deduplication of reads can be performed with [`Picard`](https://broadinstitute.github.io/picard/) or if UMIs are used [`UMI-tools`](https://umi-tools.readthedocs.io/en/latest/QUICK_START.html).
+      - [Variant filtering](../workflow/variant_and_refinement.md#variant-filtering): variant filtering, only variants with sufficient depth and quality are retained for consensus calling (only for BCFtools).
       - [Mapping statistics](../workflow/variant_and_refinement.md#22-mapping-statistics): (optional) generate multiple summary statistics of the BAM files.
-
-
 
 !!! info
     The variant calling and consensus refinement step can be skipped with the argument `--skip_iterative_refinement` and `--skip_variant_calling`, see the [parameters iterative refinement section](../parameters.md#iterative-consensus-refinement) and [parameters variant analysis section](../parameters.md#variant-analysis), respectively, for all relevant arguments to control the variant analysis steps.
 
 ## 1a. Selection of reference
 
-The reference genome(s) can be supplied with the [samplesheet `--mapping_constraints`](../usage.md#mapping-constrains), here the reference can be a multiFasta file representing a range of genomes that could be valid reference genomes. Here, viralgenie supports a selection procedure where the reference genomes that shares the highest number of [k-mer's](https://ucdavis-bioinformatics-training.github.io/2020-Genome_Assembly_Workshop/kmers/kmers#:~:text=A%20K%2Dmer%20is%20a,%2C%20GGC%2C%20GCC%2C%20CCG.) with the read files will be selected and kept for read mapping, variant calling and consensus genome reconstruction.
+The reference genome(s) can be supplied with the [samplesheet `--mapping_constraints`](../usage.md#mapping-constraints), here the reference can be a multiFasta file representing a range of genomes that could be valid reference genomes. Here, viralgenie supports a selection procedure where the reference genomes that share the highest number of [k-mers](https://ucdavis-bioinformatics-training.github.io/2020-Genome_Assembly_Workshop/kmers/kmers#:~:text=A%20K%2Dmer%20is%20a,%2C%20GGC%2C%20GCC%2C%20CCG.) with the read files will be selected and kept for read mapping, variant calling and consensus genome reconstruction.
 
 ```mermaid
 graph LR
@@ -54,18 +52,15 @@ graph LR
     As with any mapping tool, the reference genome(s) should be as close as possible to the sample genome(s) to avoid mapping bias, especially for fast mutating viruses. If the reference genome is too different from the sample genome, the reads will likely not map correctly and could result in incorrect variants and consensus.
     For this reason, __use an extensive reference dataset__ like the [RVDB](https://rvdb.dbi.udel.edu/), if possible even the unclustered one.
 
-
-This procedure is done with [`Mash`](https://mash.readthedocs.io/en/latest/) where the reads are compared to the reference genomes and the reference genome with the highest number of shared k-mers is selected. The number of shared k-mers can be specified with the `--mash_sketch_kmer_size` (default: `15`), and the number of sketches to create with `--mash_sketch_kmer_size`, the default is `4000`.
+This procedure is done with [`Mash`](https://mash.readthedocs.io/en/latest/) where the reads are compared to the reference genomes and the reference genome with the highest number of shared k-mers is selected. The number of shared k-mers can be specified with the `--mash_sketch_kmer_size` (default: `15`), and the number of sketches to create with `--mash_sketch_size`, the default is `4000`.
 
 !!! Tip
 
-    - As in any k-mer based method, larger k-mers will provide more specificity, while smaller k-mers will provide more sensitivity. Larger genomes will also require larger k-mers to avoid k-mers that are shared by chance
-    - Sketch size corresponds to the number of (non-redundant) min-hashes that are kept. Larger sketches will better represent the sequence, but at the cost of larger sketch files and longer comparison times.
-
+    - As in any k-mer based method, larger k-mers will provide more specificity, while smaller k-mers will provide more sensitivity. Larger genomes will also require larger k-mers to avoid k-mers that are shared by chance.
 
 ## 2. Mapping of reads
 
-Mapping filtered reads to supercontig or mapping constrains is done with [`BowTie2`](http://bowtie-bio.sourceforge.net/bowtie2/),[`BWAmem2`](https://github.com/bwa-mem2/bwa-mem2) and [`BWA`](https://github.com/lh3/bwa).
+Mapping filtered reads to supercontig or mapping constraints is done with [`BowTie2`](http://bowtie-bio.sourceforge.net/bowtie2/),[`BWAmem2`](https://github.com/bwa-mem2/bwa-mem2) and [`BWA`](https://github.com/lh3/bwa).
 
 The comparison of Bowtie2 and BWA-mem was done for [Yao et al. (2020)](https://doi.org/10.1186/s12859-020-03704-1) where they found that BWA-MEM2 had a higher mapping rate (faster) and better accuracy. BWA-mem detected more variant bases in mapping reads than Bowtie2. The tool bwa-mem2 is the next version of the bwa-mem algorithm in [bwa](https://github.com/lh3/bwa). It produces alignment identical to bwa and is ~1.3-3.1x faster depending on the use-case, dataset and the running machine.
 
@@ -75,20 +70,20 @@ All three methods are supported to keep protocol compatibility with other pipeli
 
 ### 2.1 Deduplication
 
-Read deduplication is an optional step that can be performed with [`Picard`](https://broadinstitute.github.io/picard/) or if UMI's are used [`UMI-tools`](https://umi-tools.readthedocs.io/en/latest/QUICK_START.html). Unless you are using [UMIs](https://dnatech.genomecenter.ucdavis.edu/faqs/what-are-umis-and-why-are-they-used-in-high-throughput-sequencing/) it is not possible to establish whether the fragments you have sequenced from your sample were derived via true biological duplication (i.e. sequencing independent template fragments) or as a result of PCR biases introduced during the library preparation. To correct your reads, use picard MarkDuplicates to mark the duplicate reads identified amongst the alignments to allow you to gauge the overall level of duplication in your samples.
+Read deduplication is an optional step that can be performed with [`Picard`](https://broadinstitute.github.io/picard/) or if UMIs are used [`UMI-tools`](https://umi-tools.readthedocs.io/en/latest/QUICK_START.html). Unless you are using [UMIs](https://dnatech.genomecenter.ucdavis.edu/faqs/what-are-umis-and-why-are-they-used-in-high-throughput-sequencing/) it is not possible to establish whether the fragments you have sequenced from your sample were derived via true biological duplication (i.e. sequencing independent template fragments) or as a result of PCR biases introduced during the library preparation. To correct your reads, use picard MarkDuplicates to mark the duplicate reads identified amongst the alignments to allow you to gauge the overall level of duplication in your samples.
 So if you have UMI’s, no need to use Picard, instead use UMI-tools to deduplicate your reads. Where instead of mapping location and read similarity, UMI-tools uses the UMI to identify PCR duplicates.
 
-> Specify `--deduplicate` to enable deduplication, the default is `true`. If UMI's are used, specify `--with_umi` and `--umi_deduplicate 'mapping' | 'both'` to enable UMI-tools deduplication. UMI's can be in the read header, if it is not in the header specify `--skip_umi_extract false`, the default is `true`.
+> Specify `--deduplicate` to enable deduplication, the default is `true`. If UMIs are used, specify `--with_umi` and `--umi_deduplicate 'mapping' | 'both'` to enable UMI-tools deduplication. UMIs can be in the read header, if it is not in the header specify `--skip_umi_extract false`, the default is `true`.
 
-> By default the UMI's are seperated in the header by ':' if this is different, specify with "--umi_separator 'YOUR_SEPARATOR'".
+> By default the UMIs are separated in the header by ':' if this is different, specify with "--umi_separator 'YOUR_SEPARATOR'".
 
 ### 2.2 Mapping statistics
 
-Viralgenie uses multiple tools to get statitics on the variants and on the read mapping. These tools are:
+Viralgenie uses multiple tools to get statistics on the variants and on the read mapping. These tools are:
 
 - [`samtools flagstat`](https://www.htslib.org/doc/samtools-flagstat.html) to get the number of reads that are mapped, unmapped, paired, etc.
 - [`samtools idxstats`](https://www.htslib.org/doc/samtools-idxstats.html) to get the number of reads that are mapped to each reference sequence.
-- [`samtools stats`](https://www.htslib.org/doc/samtools-stats.html) to collects statistics from BAM files and outputs in a text format.
+- [`samtools stats`](https://www.htslib.org/doc/samtools-stats.html) to collect statistics from BAM files and outputs in a text format.
 - [`picard CollectMultipleMetrics`](https://broadinstitute.github.io/picard/command-line-overview.html#CollectMultipleMetrics) to collect multiple metrics from a BAM file.
 - [`mosdepth`](https://github.com/brentp/mosdepth) to calculate genome-wide sequencing coverage.
 
@@ -96,14 +91,13 @@ There is a little overlap between the tools, but they all provide a different pe
 
 > By default, all these tools are run, but they can be skipped with the argument `--mapping_stats false`. In case the intermediate mapping statistics (for intermediate refinement cycles) don't need to be determined set `--intermediate_mapping_stats false`.
 
-
 ## 3. Variant calling
 
 Variant calling is done with [`BCFTools`](http://samtools.github.io/bcftools/bcftools.html) and [`iVar`](https://andersen-lab.github.io/ivar/html/manualpage.html), here a SNP will need to have at least a depth of 10 and a base quality of 20.
 
 BCFtools is a set of utilities that manipulate variant calls in the Variant Call Format (VCF) and its binary counterpart BCF. iVar is a computational package that contains functions broadly useful for viral amplicon-based sequencing while each of iVar functions can be accomplished using existing tools, iVar contains an intersection of functionality from multiple tools that are required to call iSNVs and consensus sequences from viral sequencing data across multiple replicates.
 
-There are multiple studies on the benchmarking of variant callers as this is a area with active development. For instance [Bassano _et al._ (2023)](https://doi.org/10.1099/mgen.0.000933) noticed that BCFtools called mutations with higher precision and recall than iVar. However, the reason behind this is that iVar has a lower precision then the others within their setup as it detects a lot of ‘additional’ variants within the sample, resulting in a higher amount of false positives but also true positives.
+There are multiple studies on the benchmarking of variant callers as this is an area with active development. For instance [Bassano _et al._ (2023)](https://doi.org/10.1099/mgen.0.000933) noticed that BCFtools called mutations with higher precision and recall than iVar. However, the reason behind this is that iVar has a lower precision than the others within their setup as it detects a lot of ‘additional’ variants within the sample, resulting in a higher amount of false positives but also true positives.
 
 !!! Tip
     Bcftools doesn't handle well multiallelic sites, so if you have a lot of multiallelic sites, iVar is the better choice. iVar is also the better choice if you have a lot of low-frequency variants.
@@ -128,7 +122,7 @@ The consensus genome is updated with the variants of sufficient quality, either 
 There are again a couple of differences between the iVar and BCFtools:
 
 1.	Low frequency deletions in iVar.
-> Area’s of low frequency are more easily deleted and not carried along with iVar, this can be a bad thing during the iterative improvement of the consensus but is a good thing at the final consensus step.
+> Areas of low frequency are more easily deleted and not carried along with iVar, this can be a bad thing during the iterative improvement of the consensus but is a good thing at the final consensus step.
 2. Ambiguous nucleotides for multi-allelic sites in iVar.
 > iVar is capable to give lower frequency nucleotides ambiguous bases a summarising annotation instead of 'N'. For example at a certain position, the frequency of 'A' is 40% and of 'G' is 40%. Instead of reporting an 'N', iVar will report 'R'.
 >
@@ -138,5 +132,4 @@ There are again a couple of differences between the iVar and BCFtools:
 >
 > ![low depth ivar vs bcftools](../images/low_depth_ivar_vs_bcftools.png){.center}
 
-
-> The consensus caller can be specified with the `--consensus_caller` parameter, the default is `ivar`. The intermediate consensus caller (for intermediate refinement cycles) can be specififed with `--intermediate_consensus_caller` and is by default `bcftools`.
+> The consensus caller can be specified with the `--consensus_caller` parameter, the default is `ivar`. The intermediate consensus caller (for intermediate refinement cycles) can be specified with `--intermediate_consensus_caller` and is by default `bcftools`.
