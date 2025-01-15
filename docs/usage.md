@@ -1,3 +1,7 @@
+---
+hide:
+  - navigation
+---
 # Usage
 
 Try out the pipeline right now!

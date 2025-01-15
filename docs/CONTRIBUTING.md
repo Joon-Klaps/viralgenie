@@ -1,3 +1,7 @@
+---
+hide:
+  - navigation
+---
 # Contributing Guidelines
 
 Hi there!

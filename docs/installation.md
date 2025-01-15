@@ -1,3 +1,7 @@
+---
+hide:
+  - navigation
+---
 # Installation
 
 Viralgenie uses Nextflow, and a [package/container management system](https://www.nextflow.io/docs/latest/container.html#containers) ([Docker](https://www.docker.com/resources/what-container/), [Singularity](https://docs.sylabs.io/guides/latest/user-guide/introduction.html) or [Conda](https://docs.conda.io/en/latest/)) so both need to be installed on the system where you launch your analysis.
