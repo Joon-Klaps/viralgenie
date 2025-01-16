@@ -73,14 +73,14 @@
                 },
                 "with_umi": {
                     "type": "boolean",
-                    "description": "With or without umi detection",
+                    "description": "With or without UMI detection",
                     "fa_icon": "fas fa-align-center"
                 },
                 "skip_umi_extract": {
                     "type": "boolean",
                     "default": true,
                     "fa_icon": "fas fa-forward",
-                    "description": "With or without umi extraction"
+                    "description": "With or without UMI extraction"
                 },
                 "umi_deduplicate": {
                     "type": "string",
@@ -99,13 +99,13 @@
                     "type": "string",
                     "default": "directional",
                     "fa_icon": "fas fa-project-diagram",
-                    "description": "Specify the strategy for umi-deduplication directional vs cluster",
+                    "description": "Specify the strategy for UMI-deduplication directional vs cluster",
                     "enum": ["directional", "cluster"]
                 },
                 "umitools_dedup_strategy": {
                     "type": "string",
                     "fa_icon": "fas fa-project-diagram",
-                    "description": "Specify the strategy or method for umi-tools deduplication on mapping level",
+                    "description": "Specify the strategy or method for UMI-tools deduplication on mapping level",
                     "enum": ["directional", "unique", "adjacency", "cluster", "percentile"],
                     "default": "cluster"
                 },
@@ -135,7 +135,7 @@
                 "fastp_dedup_accuracy": {
                     "type": "number",
                     "fa_icon": "fas fa-filter",
-                    "description": "Define the accuracy used for hashes while deduplicating with faspt"
+                    "description": "Define the accuracy used for hashes while deduplicating with fastp"
                 },
                 "adapter_fasta": {
                     "type": "string",
@@ -150,7 +150,7 @@
                 "save_merged": {
                     "type": "boolean",
                     "fa_icon": "fas fa-file-download",
-                    "description": "Specify true to save all merged reads to the a file ending in `*.merged.fastq.gz`"
+                    "description": "Specify true to save all merged reads to a file ending in `*.merged.fastq.gz`"
                 },
                 "min_trimmed_reads": {
                     "type": "integer",
@@ -186,7 +186,7 @@
                     "type": "string",
                     "default": "s3://ngi-igenomes/test-data/viralrecon/kraken2_human.tar.gz",
                     "fa_icon": "fas fa-database",
-                    "description": "Kraken2 database used to remove host and conamination"
+                    "description": "Kraken2 database used to remove host and contamination"
                 },
                 "host_k2_library": {
                     "type": "string",
@@ -204,7 +204,7 @@
             "fa_icon": "fas fa-bahai"
         },
         "metagenomic_diveristy": {
-            "title": "Metagenomic diveristy",
+            "title": "Metagenomic diversity",
             "type": "object",
             "description": "Parameters used to determine the metagenomic diversity of the sample",
             "default": "",
@@ -236,7 +236,7 @@
                 "kraken2_save_reads": {
                     "type": "boolean",
                     "fa_icon": "fab fa-gitkraken",
-                    "description": "Save classified and unclassified reads  as fastq files"
+                    "description": "Save classified and unclassified reads as fastq files"
                 },
                 "kraken2_save_readclassification": {
                     "type": "boolean",
@@ -287,14 +287,14 @@
                     "type": "string",
                     "default": "spades,megahit",
                     "fa_icon": "fas fa-bezier-curve",
-                    "description": "The specified tools for denovo assembly, multiple options are possible",
+                    "description": "The specified tools for de novo assembly, multiple options are possible",
                     "pattern": "^(trinity|spades|megahit)(?:,(trinity|spades|megahit)){0,2}$"
                 },
                 "spades_mode": {
                     "type": "string",
                     "default": "rnaviral",
                     "fa_icon": "fas fa-bezier-curve",
-                    "description": "specific SPAdes mode to run",
+                    "description": "Specific SPAdes mode to run",
                     "enum": [
                         "rnaviral",
                         "corona",
@@ -345,7 +345,7 @@
                     "type": "number",
                     "default": 0.75,
                     "fa_icon": "fas fa-arrows-alt-h",
-                    "description": "Specify the a deviation of the mean distance that is allowed.",
+                    "description": "Specify the deviation of the mean distance that is allowed.",
                     "minimum": 0.01,
                     "maximum": 1,
                     "help_text": "For instance, a mean of 200 and a sd of 0.75. This means that any pair having a distance between 150 and 250 is allowed."
@@ -362,7 +362,7 @@
         "polishing": {
             "title": "Polishing",
             "type": "object",
-            "description": "Parameters relating to the refinement of denovo contigs",
+            "description": "Parameters relating to the refinement of de novo contigs",
             "default": "",
             "properties": {
                 "skip_polishing": {
@@ -373,7 +373,7 @@
                 "save_intermediate_polishing": {
                     "type": "boolean",
                     "description": "Save intermediate polishing files",
-                    "help_text": "There are multiple processes within the polishing subworkflow that might not contain relevant information  ",
+                    "help_text": "There are multiple processes within the polishing subworkflow that might not contain relevant information",
                     "fa_icon": "fas fa-file-download"
                 },
                 "reference_pool": {
@@ -392,7 +392,7 @@
                     "default": true,
                     "fa_icon": "fas fa-filter",
                     "description": "Keep the contigs that could not be classified with the taxonomic databases (`kaiju_db` & `kraken2_db`)",
-                    "help_text": "Within the preclustering step, all contigs will get a taxonomic classification using the provided databases for the metagenomic tools. In some cases, the number of unclassified contigs, can be very large if the database is restrictive. This will result in large clusters in downstream processing that can take up a lot of resources despite not being a priority in some analyses. So set it to `True` if you want to keep unclassified contigs and set it to `False` if you don't want to keep them. "
+                    "help_text": "Within the preclustering step, all contigs will get a taxonomic classification using the provided databases for the metagenomic tools. In some cases, the number of unclassified contigs can be very large if the database is restrictive. This will result in large clusters in downstream processing that can take up a lot of resources despite not being a priority in some analyses. So set it to `True` if you want to keep unclassified contigs and set it to `False` if you don't want to keep them. "
                 },
                 "precluster_classifiers": {
                     "type": "string",
@@ -496,7 +496,7 @@
                 "perc_reads_contig": {
                     "type": "integer",
                     "default": 5,
-                    "description": "minimum cumulated sum of mapped read percentages of each member from a cluster group, set to 0 to disable",
+                    "description": "Minimum cumulated sum of mapped read percentages of each member from a cluster group, set to 0 to disable",
                     "help_text": "Setting this variable will remove clusters that have a low cumulated sum of mapped read percentages. This can be used to remove clusters that have a low coverage and are likely to be false positives.",
                     "fa_icon": "fas fa-compress-alt",
                     "minimum": 0,
@@ -528,7 +528,7 @@
         "iterative_consensus_refinement": {
             "title": "Iterative consensus refinement",
             "type": "object",
-            "description": "Define parameters for iterations to update denovo consensus using  reference based improvements",
+            "description": "Define parameters for iterations to update de novo consensus using  reference based improvements",
             "default": "",
             "fa_icon": "fas fa-circle-notch",
             "properties": {
@@ -541,38 +541,38 @@
                     "type": "integer",
                     "default": 2,
                     "fa_icon": "fas fa-list-ol",
-                    "description": "number of iterations"
+                    "description": "Number of iterations"
                 },
                 "intermediate_mapper": {
                     "type": "string",
                     "default": "bwamem2",
                     "fa_icon": "fas fa-align-center",
                     "enum": ["bwamem2", "bowtie2", "bwa"],
-                    "description": "mapping tool used during iterations"
+                    "description": "Mapping tool used during iterations"
                 },
                 "intermediate_variant_caller": {
                     "type": "string",
                     "default": "ivar",
                     "fa_icon": "fas fa-layer-group",
                     "enum": ["ivar", "bcftools"],
-                    "description": "variant caller used during iterations"
+                    "description": "Variant caller used during iterations"
                 },
                 "call_intermediate_variants": {
                     "type": "boolean",
                     "fa_icon": "fas fa-align-center",
-                    "description": "call variants during the iterations",
+                    "description": "Call variants during the iterations",
                     "help_text": "Will always be done when iterative consensus caller is bcftools"
                 },
                 "intermediate_consensus_caller": {
                     "type": "string",
                     "default": "bcftools",
                     "fa_icon": "fas fa-compress-alt",
-                    "description": "consensus tool used for calling new consensus during iterations"
+                    "description": "Consensus tool used for calling new consensus during iterations"
                 },
                 "intermediate_mapping_stats": {
                     "type": "boolean",
                     "fa_icon": "fas fa-info",
-                    "description": "calculate summary statistics during iterations",
+                    "description": "Calculate summary statistics during iterations",
                     "default": true
                 }
             }
@@ -595,18 +595,18 @@
                     "description": "Define which mapping tool needs to be used when mapping reads to reference",
                     "enum": ["bwamem2", "bowtie2", "bwa"]
                 },
-                "mapping_constrains": {
+                "mapping_constraints": {
                     "type": "string",
                     "description": "Sequence to use as a mapping reference instead of the de novo contigs or scaffolds",
                     "fa_icon": "far fa-file-alt",
-                    "schema": "assets/schemas/mapping_constrains.json"
+                    "schema": "assets/schemas/mapping_constraints.json"
                 },
                 "deduplicate": {
                     "type": "boolean",
                     "default": true,
                     "fa_icon": "fas fa-compress-alt",
-                    "description": "deduplicate the reads",
-                    "help_text": "If used with umi's, `umi tools` will be used to group and call consensus of each indiual read group. If not used with umi's use `PicardsMarkDuplicates`. "
+                    "description": "Deduplicate the reads",
+                    "help_text": "If used with UMI's, `umi tools` will be used to group and call consensus of each individual read group. If not used with UMI's use `PicardsMarkDuplicates`. "
                 },
                 "variant_caller": {
                     "type": "string",
@@ -620,13 +620,13 @@
                     "default": "ivar",
                     "fa_icon": "fas fa-compress-alt",
                     "enum": ["ivar", "bcftools"],
-                    "description": "consensus tool used for calling new consensus in final iteration"
+                    "description": "Consensus tool used for calling new consensus in final iteration"
                 },
                 "umi_separator": {
                     "type": "string",
                     "default": ":",
                     "fa_icon": "fas fa-arrows-alt-h",
-                    "description": "UMI seperator in fastq header.",
+                    "description": "UMI separator in fastq header.",
                     "help_text": "If you have used an alternative method which does not separate the read id and UMI with a \u201c_\u201d, such as bcl2fastq which uses \u201c:\u201d, you can specify the separator with the option --umi_separator=<sep>, replacing <sep> with e.g \u201c:\u201d."
                 },
                 "mash_sketch_size": {
@@ -641,7 +641,7 @@
                     "default": 15,
                     "fa_icon": "fas fa-expand-arrows-alt",
                     "description": "Specify the kmer size for mash to create their hashes",
-                    "help_text": "larger k-mers will provide more specificity, while smaller k-mers will provide more sensitivity. Larger genomes will also require larger k-mers to avoid k-mers that are shared by chance"
+                    "help_text": "Larger k-mers will provide more specificity, while smaller k-mers will provide more sensitivity. Larger genomes will also require larger k-mers to avoid k-mers that are shared by chance"
                 },
                 "min_mapped_reads": {
                     "type": "integer",
@@ -654,7 +654,7 @@
                     "type": "boolean",
                     "default": true,
                     "fa_icon": "fas fa-info",
-                    "description": "calculate summary statistics in final iteration"
+                    "description": "Calculate summary statistics in final iteration"
                 },
                 "ivar_header": {
                     "type": "string",
@@ -696,8 +696,8 @@
                     "type": "string",
                     "default": "ftp://ftp.expasy.org/databases/viralzone/2020_4/virosaurus90_vertebrate-20200330.fas.gz",
                     "fa_icon": "fas fa-database",
-                    "description": "Database used for annotation of the cosensus constructs",
-                    "help_text": "The metada fields are stored in the fasta comment as `key1:\"value1\"|key2:\"value2\"|...` see docs/databases.md for more information."
+                    "description": "Database used for annotation of the consensus constructs",
+                    "help_text": "The metadata fields are stored in the fasta comment as `key1:\"value1\"|key2:\"value2\"|...` see docs/databases.md for more information."
                 },
                 "skip_quast": {
                     "type": "boolean",
@@ -713,13 +713,6 @@
                     "type": "boolean",
                     "description": "Skip creating an alignment of each the collapsed clusters and each iterative step",
                     "fa_icon": "fas fa-forward"
-                },
-                "contig_filter_level": {
-                    "type": "string",
-                    "default": "normal",
-                    "fa_icon": "fas fa-filter",
-                    "description": "Specify how strict the filtering should be.",
-                    "help_text": "none - don't filter the report of final contigs (not recomended)\nnormal - display only the consensus of the last iteration that had hits in the annotation set\nstrict - Group results by identified species & segment & lineage (if available) to report only the top hits"
                 },
                 "mmseqs_searchtype": {
                     "type": "integer",
@@ -871,7 +864,7 @@
                     "type": "string",
                     "default": "${projectDir}/assets/custom_table_headers.yml",
                     "fa_icon": "fas fa-heading",
-                    "description": "Custom yaml file contian g the table column names selection and new names.",
+                    "description": "Custom yaml file containing the table column names selection and new names.",
                     "hidden": true
                 },
                 "validate_params": {

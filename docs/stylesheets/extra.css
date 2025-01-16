@@ -12,8 +12,12 @@
     background-color: #4a6c6f;
   }
 
-  .md-nav {
-    margin-bottom: 0.9rem;
+  .md-sidebar {
+    width: 15%;
+  }
+
+  .md-grid {
+    max-width: 1440px;
   }
 
   .center {

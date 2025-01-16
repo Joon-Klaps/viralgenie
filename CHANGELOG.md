@@ -21,6 +21,7 @@ Initial release of Joon-Klaps/viralgenie, created with the [nf-core](https://nf-
 - Add new module to inculde custom mpileup-vcf file for intra-host analyses ([#151](https://github.com/Joon-Klaps/viralgenie/pull/151))
 - Update docs ([#150](https://github.com/Joon-Klaps/viralgenie/pull/150))
 - Make custom-mpileup.py postion 1 index based and not 0 index to follow bcftools ([#153](https://github.com/Joon-Klaps/viralgenie/pull/153))
+- Update docs for more streamlined docs & figures ([#154](https://github.com/Joon-Klaps/viralgenie/pull/154))
 
 ### `Fixed`
 

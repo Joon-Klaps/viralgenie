@@ -59,7 +59,7 @@
 10. [Optional] Remove clusters with low read coverage. `bin/extract_clusters.py`
 11. Scaffolding of contigs to centroid ([`Minimap2`](https://github.com/lh3/minimap2), [`iVar-consensus`](https://andersen-lab.github.io/ivar/html/manualpage.html))
 12. [Optional] Annotate 0-depth regions with external reference `bin/lowcov_to_reference.py`.
-13. [Optional] Select best reference from `--mapping_constrains`:
+13. [Optional] Select best reference from `--mapping_constraints`:
     - [`Mash sketch`](https://github.com/marbl/Mash)
     - [`Mash screen`](https://github.com/marbl/Mash)
 14. Mapping filtered reads to supercontig and mapping constrains([`BowTie2`](http://bowtie-bio.sourceforge.net/bowtie2/),[`BWAmem2`](https://github.com/bwa-mem2/bwa-mem2) and [`BWA`](https://github.com/lh3/bwa))
