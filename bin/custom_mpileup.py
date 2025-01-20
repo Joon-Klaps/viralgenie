@@ -95,7 +95,7 @@ def shannon_entropy(nucleotides: NDArray, total_coverage: NDArray) -> NDArray:
     shannon = np.nan_to_num(shannon)
 
     # Replace -0.0 with 0.0
-    shannon = np.where(shannon == -0.0, 0.0, shannon)
+    shannon = np.where(shannon == -0.0, 0.0, np.round(shannon, 3))
 
     return shannon
 
@@ -104,7 +104,7 @@ def corrected_shannon(shannon: NDArray, total_coverage: NDArray, k: int) -> NDAr
     Correct the Shannon entropy by multiplying it with N/(N+k)
     """
     correction = total_coverage / (total_coverage + k)
-    return shannon * correction
+    return np.round(shannon * correction, 3)
 
 
 def write_csv(matrix: NDArray, prefix: str) -> None:
