@@ -577,7 +577,12 @@ __Summary statistics__:
 
 #### Custom - mpileup like file
 
-To facilitate the intra host analysis, a mpileup like file is generated. This file contains the depth of every nucleotide at each position of the reference.
+To facilitate the intra host analysis, a mpileup like file is generated. This file contains the depth of every nucleotide at each position of the reference as well as the shannon entropy and a weighted shannon entropy based on the following formulae.
+
+- Shannon entropy: $$ H = -\sum_{i=1}^4 p_i \ln p_i $$
+- Weighted Shannon entropy: $$ w(H) = \frac{N}{N+k} \cdot H $$
+
+Where $N$ is the total bases at a position, $k$ is the pseudocount (default 50), and $p_i$ is the frequency of the nucleotide $i$.
 
 ???- abstract "Output files - variants"
 
