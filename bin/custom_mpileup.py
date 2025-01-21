@@ -52,7 +52,7 @@ def process_mpileup(filename: Path, reference: Path, k: int) -> NDArray:
     data = np.zeros(n_rows, dtype=[
         ("pos", int), ("ref", "U1"), ("A", int), ("C", int),
         ("G", int), ("T", int), ("ins", int), ("del", int),
-        ("consensus", "U1"), ("shannon", float), ("weighted_shannon", float)
+        ("consensus", "U1"), ("entropy", float), ("weighted_entropy", float)
     ])
 
     # Fill arrays using vectorized operations
@@ -74,8 +74,8 @@ def process_mpileup(filename: Path, reference: Path, k: int) -> NDArray:
     data["consensus"][mask] = np.array(["A", "C", "G", "T"])[np.argmax(nucleotides[mask], axis=1)]
 
     # Calculate shannon entropy
-    data["shannon"] = shannon_entropy(nucleotides, total_coverage)
-    data["weighted_shannon"] = corrected_shannon(data["shannon"], total_coverage, k)
+    data["entropy"] = shannon_entropy(nucleotides, total_coverage)
+    data["weighted_entropy"] = weighted_entropy(data["entropy"], total_coverage, k)
 
     return data
 
@@ -89,22 +89,22 @@ def shannon_entropy(nucleotides: NDArray, total_coverage: NDArray) -> NDArray:
     # Calculate the Shannon entropy
     with np.errstate(divide='ignore', invalid='ignore'):
         log2_freqs = np.log2(frequencies, where=frequencies > 0)
-        shannon = -np.sum(frequencies * log2_freqs, axis=1, where=~np.isnan(log2_freqs))
+        entropy = -np.sum(frequencies * log2_freqs, axis=1, where=~np.isnan(log2_freqs))
 
     # Replace NaN values with 0.0
-    shannon = np.nan_to_num(shannon)
+    entropy = np.nan_to_num(entropy)
 
     # Replace -0.0 with 0.0
-    shannon = np.where(shannon == -0.0, 0.0, np.round(shannon, 3))
+    entropy = np.where(entropy == -0.0, 0.0, np.round(entropy, 3))
 
-    return shannon
+    return entropy
 
-def corrected_shannon(shannon: NDArray, total_coverage: NDArray, k: int) -> NDArray:
+def weighted_entropy(entropy: NDArray, total_coverage: NDArray, k: int) -> NDArray:
     """
     Correct the Shannon entropy by multiplying it with N/(N+k)
     """
     correction = total_coverage / (total_coverage + k)
-    return np.round(shannon * correction, 3)
+    return np.round(entropy * correction, 3)
 
 
 def write_csv(matrix: NDArray, prefix: str) -> None:
@@ -115,7 +115,7 @@ def write_csv(matrix: NDArray, prefix: str) -> None:
         matrix: NumPy array containing the mpileup results
         output: Path to the output file
     """
-    header = ["Position", "Reference", "A", "C", "G", "T", "Insertions", "Deletions", "Consensus", "Shannon", "Weighted Shannon"]
+    header = ["Position", "Reference", "A", "C", "G", "T", "Insertions", "Deletions", "Consensus", "Entropy", "Weighted Entropy"]
     with open(f"{prefix}.tsv", "w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file, delimiter="\t")
         writer.writerow(header)
