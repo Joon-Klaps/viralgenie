@@ -1,5 +1,9 @@
 //
+<<<<<<< HEAD
 // Subworkflow with functionality specific to the nf-core/viralgenie pipeline
+=======
+// Subworkflow with functionality specific to the Joon-Klaps/viralgenie pipeline
+>>>>>>> TEMPLATE
 //
 
 /*
@@ -117,7 +121,7 @@ workflow PIPELINE_COMPLETION {
                 plaintext_email,
                 outdir,
                 monochrome_logs,
-                multiqc_report.toList()
+                multiqc_reports.getVal(),
             )
         }
 
@@ -138,7 +142,6 @@ workflow PIPELINE_COMPLETION {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-
 //
 // Validate channels from input samplesheet
 //
@@ -153,7 +156,6 @@ def validateInputSamplesheet(input) {
 
     return [ metas[0], fastqs ]
 }
-
 //
 // Generate methods description for MultiQC
 //
@@ -254,7 +256,7 @@ def toolBibliographyText() {
 }
 
 def methodsDescriptionText(mqc_methods_yaml) {
-    // Convert  to a named map so can be used as with familar NXF ${workflow} variable syntax in the MultiQC YML file
+    // Convert  to a named map so can be used as with familiar NXF ${workflow} variable syntax in the MultiQC YML file
     def meta = [:]
     meta.workflow = workflow.toMap()
     meta["manifest_map"] = workflow.manifest.toMap()

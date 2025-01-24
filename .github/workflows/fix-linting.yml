@@ -70,6 +70,7 @@ jobs:
           git add .
           git status
           git commit -m "[automated] Fix code linting"
+          git commit -m "[automated] Fix code linting"
           git push
 
       - name: react if linting errors were fixed

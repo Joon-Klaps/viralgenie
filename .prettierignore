@@ -11,3 +11,4 @@ testing*
 *.pyc
 bin/
 *.md
+ro-crate-metadata.json

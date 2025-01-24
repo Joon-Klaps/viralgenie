@@ -6,6 +6,5 @@ results/
 testing/
 testing*
 *.pyc
-.vscode/
 null/
-__pycache__/
+.vscode/

@@ -1,5 +1,5 @@
 name: Feature request
-description: Suggest an idea for the viralgenie pipeline
+description: Suggest an idea for the Joon-Klaps/viralgenie pipeline
 labels: enhancement
 body:
   - type: textarea
