@@ -53,7 +53,7 @@ workflow BAM_VARIANTS_BCFTOOLS {
     // Filter out low quality variants
     //
     BCFTOOLS_FILTER (
-        BCFTOOLS_NORM.out.vcf
+        BCFTOOLS_NORM.out.vcf.map{ meta, vcf -> [ meta, vcf, [] ] }
     )
     ch_versions = ch_versions.mix(BCFTOOLS_FILTER.out.versions.first())
 

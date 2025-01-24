@@ -1,4 +1,5 @@
-Changes in module 'nf-core/vrhyme/vrhyme'
+Changes in component 'nf-core/vrhyme/vrhyme'
+Changes in 'vrhyme/vrhyme/main.nf':
 --- modules/nf-core/vrhyme/vrhyme/main.nf
 +++ modules/nf-core/vrhyme/vrhyme/main.nf
 @@ -8,11 +8,9 @@
@@ -24,4 +25,8 @@ Changes in module 'nf-core/vrhyme/vrhyme'
      cat <<-END_VERSIONS > versions.yml
      "${task.process}":
 
+'modules/nf-core/vrhyme/vrhyme/environment.yml' is unchanged
+'modules/nf-core/vrhyme/vrhyme/meta.yml' is unchanged
+'modules/nf-core/vrhyme/vrhyme/tests/main.nf.test' is unchanged
+'modules/nf-core/vrhyme/vrhyme/tests/main.nf.test.snap' is unchanged
 ************************************************************

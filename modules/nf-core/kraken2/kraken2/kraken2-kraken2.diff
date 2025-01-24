@@ -1,4 +1,6 @@
-Changes in module 'nf-core/kraken2/kraken2'
+Changes in component 'nf-core/kraken2/kraken2'
+'modules/nf-core/kraken2/kraken2/environment.yml' is unchanged
+Changes in 'kraken2/kraken2/main.nf':
 --- modules/nf-core/kraken2/kraken2/main.nf
 +++ modules/nf-core/kraken2/kraken2/main.nf
 @@ -26,20 +26,21 @@
@@ -26,4 +28,8 @@ Changes in module 'nf-core/kraken2/kraken2'
          $classified_option \\
          $readclassification_option \\
 
+'modules/nf-core/kraken2/kraken2/meta.yml' is unchanged
+'modules/nf-core/kraken2/kraken2/tests/main.nf.test' is unchanged
+'modules/nf-core/kraken2/kraken2/tests/main.nf.test.snap' is unchanged
+'modules/nf-core/kraken2/kraken2/tests/tags.yml' is unchanged
 ************************************************************

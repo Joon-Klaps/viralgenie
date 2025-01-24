@@ -1,4 +1,6 @@
-Changes in module 'nf-core/prinseqplusplus'
+Changes in component 'nf-core/prinseqplusplus'
+'modules/nf-core/prinseqplusplus/environment.yml' is unchanged
+Changes in 'prinseqplusplus/main.nf':
 --- modules/nf-core/prinseqplusplus/main.nf
 +++ modules/nf-core/prinseqplusplus/main.nf
 @@ -8,14 +8,14 @@
@@ -79,4 +81,8 @@ Changes in module 'nf-core/prinseqplusplus'
 +    """
  }
 
+'modules/nf-core/prinseqplusplus/meta.yml' is unchanged
+'modules/nf-core/prinseqplusplus/tests/main.nf.test' is unchanged
+'modules/nf-core/prinseqplusplus/tests/main.nf.test.snap' is unchanged
+'modules/nf-core/prinseqplusplus/tests/nextflow.config' is unchanged
 ************************************************************

@@ -47,7 +47,7 @@ workflow ALIGN_COLLAPSE_CONTIGS {
     ch_index = ch_index_contigs.map{ meta, index, contigs -> [meta, index] }
     ch_contigs = ch_index_contigs.map{ meta, index, contigs -> [meta, contigs] }
 
-    MINIMAP2_CONTIG_ALIGN(ch_contigs, ch_index, true, false, false )
+    MINIMAP2_CONTIG_ALIGN(ch_contigs, ch_index, true, [], false, false )
     ch_versions = ch_versions.mix(MINIMAP2_CONTIG_ALIGN.out.versions.first())
 
     ch_references_members

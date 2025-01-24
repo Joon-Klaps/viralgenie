@@ -1,4 +1,6 @@
-Changes in module 'nf-core/vsearch/cluster'
+Changes in component 'nf-core/vsearch/cluster'
+'modules/nf-core/vsearch/cluster/environment.yml' is unchanged
+Changes in 'vsearch/cluster/main.nf':
 --- modules/nf-core/vsearch/cluster/main.nf
 +++ modules/nf-core/vsearch/cluster/main.nf
 @@ -1,6 +1,6 @@
@@ -10,4 +12,13 @@ Changes in module 'nf-core/vsearch/cluster'
      conda "${moduleDir}/environment.yml"
      container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
 
+'modules/nf-core/vsearch/cluster/meta.yml' is unchanged
+'modules/nf-core/vsearch/cluster/tests/main.nf.test' is unchanged
+'modules/nf-core/vsearch/cluster/tests/main.nf.test.snap' is unchanged
+'modules/nf-core/vsearch/cluster/tests/nextflow_fast.config' is unchanged
+'modules/nf-core/vsearch/cluster/tests/nextflow_size.config' is unchanged
+'modules/nf-core/vsearch/cluster/tests/nextflow_smallmem.config' is unchanged
+'modules/nf-core/vsearch/cluster/tests/nextflow_unoise.config' is unchanged
+'modules/nf-core/vsearch/cluster/tests/nextflow_userout.config' is unchanged
+'modules/nf-core/vsearch/cluster/tests/tags.yml' is unchanged
 ************************************************************

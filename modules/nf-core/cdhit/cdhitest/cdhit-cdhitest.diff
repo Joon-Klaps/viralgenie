@@ -1,4 +1,6 @@
-Changes in module 'nf-core/cdhit/cdhitest'
+Changes in component 'nf-core/cdhit/cdhitest'
+'modules/nf-core/cdhit/cdhitest/environment.yml' is unchanged
+Changes in 'cdhit/cdhitest/main.nf':
 --- modules/nf-core/cdhit/cdhitest/main.nf
 +++ modules/nf-core/cdhit/cdhitest/main.nf
 @@ -33,7 +33,7 @@
@@ -11,4 +13,7 @@ Changes in module 'nf-core/cdhit/cdhitest'
          -T $task.cpus
  
 
+'modules/nf-core/cdhit/cdhitest/meta.yml' is unchanged
+'modules/nf-core/cdhit/cdhitest/tests/main.nf.test' is unchanged
+'modules/nf-core/cdhit/cdhitest/tests/main.nf.test.snap' is unchanged
 ************************************************************
