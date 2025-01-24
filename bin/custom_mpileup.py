@@ -83,18 +83,39 @@ def shannon_entropy(nucleotides: NDArray, total_coverage: NDArray) -> NDArray:
     """
     Calculate the Shannon entropy of the nucleotide distribution
     """
-    # Calculate the frequency of each nucleotide
-    frequencies = np.divide(nucleotides, total_coverage[:, np.newaxis], where=total_coverage[:, np.newaxis] > 0)
+    # Define epsilon for numerical stability
+    eps = 1e-10
 
-    # Calculate the Shannon entropy
+    # Calculate the frequency of each nucleotide
+    # Add epsilon to avoid division by zero and set a minimum threshold
+    frequencies = np.divide(
+        nucleotides,
+        total_coverage[:, np.newaxis],
+        where=total_coverage[:, np.newaxis] > eps
+    )
+
+    # Set very small frequencies to zero to avoid floating point errors
+    frequencies = np.where(frequencies < eps, 0.0, frequencies)
+
+    # Normalize frequencies to ensure they sum to 1
+    row_sums = np.sum(frequencies, axis=1, keepdims=True)
+    frequencies = np.divide(frequencies, row_sums, where=row_sums > eps)
+
+    # Calculate the Shannon entropy only for non-zero frequencies
     with np.errstate(divide='ignore', invalid='ignore'):
-        log2_freqs = np.log2(frequencies, where=frequencies > 0)
-        entropy = -np.sum(frequencies * log2_freqs, axis=1, where=~np.isnan(log2_freqs))
+        entropy = -np.sum(
+            np.where(
+                frequencies > eps,
+                frequencies * np.log2(frequencies),
+                0.0
+            ),
+            axis=1
+        )
 
     # Replace NaN values with 0.0
     entropy = np.nan_to_num(entropy)
 
-    # Replace -0.0 with 0.0
+    # Round to 3 decimal places and ensure -0.0 is converted to 0.0
     entropy = np.where(entropy == -0.0, 0.0, np.round(entropy, 3))
 
     return entropy
