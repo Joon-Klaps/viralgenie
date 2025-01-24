@@ -1,4 +1,7 @@
-Changes in module 'nf-core/quast'
+Changes in component 'nf-core/quast'
+'modules/nf-core/quast/environment.yml' is unchanged
+'modules/nf-core/quast/meta.yml' is unchanged
+Changes in 'quast/main.nf':
 --- modules/nf-core/quast/main.nf
 +++ modules/nf-core/quast/main.nf
 @@ -1,6 +1,7 @@
@@ -10,4 +13,7 @@ Changes in module 'nf-core/quast'
      conda "${moduleDir}/environment.yml"
      container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
 
+'modules/nf-core/quast/tests/main.nf.test' is unchanged
+'modules/nf-core/quast/tests/main.nf.test.snap' is unchanged
+'modules/nf-core/quast/tests/tags.yml' is unchanged
 ************************************************************

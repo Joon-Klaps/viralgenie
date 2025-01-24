@@ -4,8 +4,8 @@ process IVAR_VARIANTS {
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/ivar:1.4--h6b7c446_1' :
-        'biocontainers/ivar:1.4--h6b7c446_1' }"
+        'https://depot.galaxyproject.org/singularity/ivar:1.4.3--h43eeafb_0' :
+        'biocontainers/ivar:1.4.3--h43eeafb_0' }"
 
     input:
     tuple val(meta), path(bam)
@@ -27,47 +27,37 @@ process IVAR_VARIANTS {
     def args2 = task.ext.args2 ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     def features = gff ? "-g $gff" : ""
-
-    def max_retries = 3
-
+    def mpileup = save_mpileup ? "| tee ${prefix}.mpileup" : ""
     """
-    set -e  # Exit on error
-    retry_count=0
-    while [ \$retry_count -lt $max_retries ]; do
-        samtools_log=\$(samtools mpileup --reference $fasta $args2 $bam --output ${prefix}.mpileup 2>&1)
-        error_message=\$(echo "\$samtools_log" | grep 'E::' | head -n1 || true)
-        if [ -n "\$error_message" ]; then
-            echo "Samtools error: \$error_message"
-            echo "Retrying (\$((\$retry_count + 1))/3)..."
-            retry_count=\$((\$retry_count + 1))
-        else
-            break
-        fi
-
-        sleep 10
-    done
-
-    # Check if the maximum number of retries is reached
-    if [ \$retry_count -eq $max_retries ]; then
-            echo ""
-            echo "Unable to solve: \$error_message"
-            echo "Maximum number of retries reached. Exiting."
-        exit 1
-    else
-        echo "Samtools mpileup successful"
-        cat ${prefix}.mpileup | ivar variants \\
-            -p $prefix \\
-            -r $fasta \\
+    samtools \\
+        mpileup \\
+        $args2 \\
+        --reference $fasta \\
+        $bam \\
+        $mpileup \\
+        | ivar \\
+            variants \\
             $args \\
-            $features
-    fi
+            $features \\
+            -r $fasta \\
+            -p $prefix
 
-    # Continue with the workflow
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        ivar: \$(echo \$(ivar version 2>&1) | sed 's/^.*iVar version //; s/ .*\$//')
-        samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
+        ivar: \$(ivar version | sed 's/^.*iVar version //; s/ .*\$//')
     END_VERSIONS
     """
 
+    stub:
+    def prefix = task.ext.prefix ?: "${meta.id}"
+    def touch_mpileup = save_mpileup ? "touch ${prefix}.mpileup" : ''
+    """
+    touch ${prefix}.tsv
+    $touch_mpileup
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        ivar: \$(ivar version | sed 's/^.*iVar version //; s/ .*\$//')
+    END_VERSIONS
+    """
 }

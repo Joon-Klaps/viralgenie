@@ -1,7 +1,9 @@
-Changes in module 'nf-core/ivar/consensus'
+Changes in component 'nf-core/ivar/consensus'
+'modules/nf-core/ivar/consensus/environment.yml' is unchanged
+Changes in 'ivar/consensus/main.nf':
 --- modules/nf-core/ivar/consensus/main.nf
 +++ modules/nf-core/ivar/consensus/main.nf
-@@ -41,6 +41,7 @@
+@@ -55,6 +55,7 @@
      cat <<-END_VERSIONS > versions.yml
      "${task.process}":
          ivar: \$(echo \$(ivar version 2>&1) | sed 's/^.*iVar version //; s/ .*\$//')
@@ -10,4 +12,8 @@ Changes in module 'nf-core/ivar/consensus'
      """
  }
 
+'modules/nf-core/ivar/consensus/meta.yml' is unchanged
+'modules/nf-core/ivar/consensus/tests/main.nf.test' is unchanged
+'modules/nf-core/ivar/consensus/tests/main.nf.test.snap' is unchanged
+'modules/nf-core/ivar/consensus/tests/nextflow.config' is unchanged
 ************************************************************

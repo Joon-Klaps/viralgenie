@@ -1,4 +1,6 @@
-Changes in module 'nf-core/mash/dist'
+Changes in component 'nf-core/mash/dist'
+'modules/nf-core/mash/dist/environment.yml' is unchanged
+Changes in 'mash/dist/main.nf':
 --- modules/nf-core/mash/dist/main.nf
 +++ modules/nf-core/mash/dist/main.nf
 @@ -1,6 +1,6 @@
@@ -26,4 +28,7 @@ Changes in module 'nf-core/mash/dist'
      mash \\
          dist \\
 
+'modules/nf-core/mash/dist/meta.yml' is unchanged
+'modules/nf-core/mash/dist/tests/main.nf.test' is unchanged
+'modules/nf-core/mash/dist/tests/main.nf.test.snap' is unchanged
 ************************************************************

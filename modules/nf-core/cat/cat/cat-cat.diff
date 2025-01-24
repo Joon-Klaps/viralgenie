@@ -1,6 +1,6 @@
-Changes in module 'nf-core/cat/cat'
+Changes in component 'nf-core/cat/cat'
 'modules/nf-core/cat/cat/environment.yml' is unchanged
-'modules/nf-core/cat/cat/meta.yml' is unchanged
+Changes in 'cat/cat/main.nf':
 --- modules/nf-core/cat/cat/main.nf
 +++ modules/nf-core/cat/cat/main.nf
 @@ -8,7 +8,7 @@
@@ -22,6 +22,7 @@ Changes in module 'nf-core/cat/cat'
          > ${prefix}
  
 
+'modules/nf-core/cat/cat/meta.yml' is unchanged
 'modules/nf-core/cat/cat/tests/main.nf.test' is unchanged
 'modules/nf-core/cat/cat/tests/main.nf.test.snap' is unchanged
 'modules/nf-core/cat/cat/tests/nextflow_unzipped_zipped.config' is unchanged
