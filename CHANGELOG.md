@@ -29,7 +29,7 @@ Initial release of Joon-Klaps/viralgenie, created with the [nf-core](https://nf-
 - fixing null output from global prefix ([#147](https://github.com/Joon-Klaps/viralgenie/pull/147))
 - Fix empty filtered clusters ([#148](https://github.com/Joon-Klaps/viralgenie/pull/148))
 - Fixing missing columns from general stats & add general stats sample filtering ([#149](https://github.com/Joon-Klaps/viralgenie/pull/149))
-- process.shell template fix ([#157](https://github.com/Joon-Klaps/viralgenie/pull/157))
+- process.shell template fix ([#157](https://github.com/Joon-Klaps/viralgenie/pull/157)) - see also [nf-core/tools #3416](https://github.com/nf-core/tools/pull/3416)
 
 ### `Parameters`
 - New parameter mmseqs_cluster_mode default to 0 ([#130](https://github.com/Joon-Klaps/viralgenie/pull/130))
