@@ -26,6 +26,7 @@ def parse_args(argv=None):
     parser.add_argument("--alignment", type=Path, help="Input BAM file prefix")
     parser.add_argument("--reference", type=Path, help="Reference FASTA file")
     parser.add_argument("--prefix", type=str, help="Name of the output file")
+    parser.add_argument("--k", type=int, help="Pseudocount to add to the total for shannon entropy calculation", default=50)
     parser.add_argument(
         "-l",
         "--log-level",
@@ -36,51 +37,95 @@ def parse_args(argv=None):
     return parser.parse_args(argv)
 
 
-def process_mpileup(filename: Path, reference: Path) -> NDArray:
+def process_mpileup(filename: Path, reference: Path, k: int) -> NDArray:
     """
     Process mpileup data using numpy vectorized operations.
-
-    Args:
-        filename: Path to the alignment file (BAM/CRAM/SAM)
-        reference: Path to the reference FASTA file
-
-    Returns:
-        NDArray: Array with columns [position, A, C, G, T, insertions, deletions, consensus]
     """
-    # Initialize FASTA file properly
     fasta = pysam.FastaFile(str(reference))
-
     alignment_file = pysam.AlignmentFile(filename, "rc" if filename.suffix == ".cram" else "rb", reference_filename=str(reference))
 
     # Convert generator to structured numpy array
-    data = np.array(
-        [
-            (r["pos"]+1, r["ref"], r["A"], r["C"], r["G"], r["T"], r["insertions"], r["deletions"], "N")
-            for r in pysamstats.stat_variation(alignment_file, fafile=fasta)
-        ],
-        dtype=[
-            ("pos", int),
-            ("ref", "U1"),
-            ("A", int),
-            ("C", int),
-            ("G", int),
-            ("T", int),
-            ("ins", int),
-            ("del", int),
-            ("consensus", "U1"),
-        ],
-    )
+    stats = list(pysamstats.stat_variation(alignment_file, fafile=fasta))
+    n_rows = len(stats)
 
-    # Extract nucleotide counts for consensus calculation
-    nucleotides = np.vstack([data[base] for base in "ACGT"]).T
-    total_coverage = nucleotides.sum(axis=1)
-    max_counts = nucleotides.max(axis=1)
+    # Create structured array in one go
+    data = np.zeros(n_rows, dtype=[
+        ("pos", int), ("ref", "U1"), ("A", int), ("C", int),
+        ("G", int), ("T", int), ("ins", int), ("del", int),
+        ("consensus", "U1"), ("entropy", float), ("weighted_entropy", float)
+    ])
 
-    # Update consensus column where conditions are met
+    # Fill arrays using vectorized operations
+    data["pos"] = np.array([r["pos"] + 1 for r in stats])
+    data["ref"] = np.array([r["ref"] for r in stats])
+    for base in "ACGT":
+        data[base] = np.array([r[base] for r in stats])
+    data["ins"] = np.array([r["insertions"] for r in stats])
+    data["del"] = np.array([r["deletions"] for r in stats])
+    data["consensus"] = "N"
+
+    # Create nucleotide matrix for vectorized operations
+    nucleotides = np.stack([data[base] for base in "ACGT"], axis=1)
+    total_coverage = np.sum(nucleotides, axis=1)
+
+    # Vectorized consensus calculation
+    max_counts = np.max(nucleotides, axis=1)
     mask = np.divide(max_counts, total_coverage, where=total_coverage > 0) >= 0.7
-    data["consensus"][mask] = np.array(["A", "C", "G", "T"])[nucleotides[mask].argmax(axis=1)]
+    data["consensus"][mask] = np.array(["A", "C", "G", "T"])[np.argmax(nucleotides[mask], axis=1)]
+
+    # Calculate shannon entropy
+    data["entropy"] = shannon_entropy(nucleotides, total_coverage)
+    data["weighted_entropy"] = weighted_entropy(data["entropy"], total_coverage, k)
 
     return data
+
+def shannon_entropy(nucleotides: NDArray, total_coverage: NDArray) -> NDArray:
+    """
+    Calculate the Shannon entropy of the nucleotide distribution
+    """
+    # Define epsilon for numerical stability
+    eps = 1e-10
+
+    # Calculate the frequency of each nucleotide
+    # Add epsilon to avoid division by zero and set a minimum threshold
+    frequencies = np.divide(
+        nucleotides,
+        total_coverage[:, np.newaxis],
+        where=total_coverage[:, np.newaxis] > eps
+    )
+
+    # Set very small frequencies to zero to avoid floating point errors
+    frequencies = np.where(frequencies < eps, 0.0, frequencies)
+
+    # Normalize frequencies to ensure they sum to 1
+    row_sums = np.sum(frequencies, axis=1, keepdims=True)
+    frequencies = np.divide(frequencies, row_sums, where=row_sums > eps)
+
+    # Calculate the Shannon entropy only for non-zero frequencies
+    with np.errstate(divide='ignore', invalid='ignore'):
+        entropy = -np.sum(
+            np.where(
+                frequencies > eps,
+                frequencies * np.log2(frequencies),
+                0.0
+            ),
+            axis=1
+        )
+
+    # Replace NaN values with 0.0
+    entropy = np.nan_to_num(entropy)
+
+    # Round to 3 decimal places and ensure -0.0 is converted to 0.0
+    entropy = np.where(entropy == -0.0, 0.0, np.round(entropy, 3))
+
+    return entropy
+
+def weighted_entropy(entropy: NDArray, total_coverage: NDArray, k: int) -> NDArray:
+    """
+    Correct the Shannon entropy by multiplying it with N/(N+k)
+    """
+    correction = total_coverage / (total_coverage + k)
+    return np.round(entropy * correction, 3)
 
 
 def write_csv(matrix: NDArray, prefix: str) -> None:
@@ -91,7 +136,7 @@ def write_csv(matrix: NDArray, prefix: str) -> None:
         matrix: NumPy array containing the mpileup results
         output: Path to the output file
     """
-    header = ["Position", "Reference", "A", "C", "G", "T", "Insertions", "Deletions", "Consensus"]
+    header = ["Position", "Reference", "A", "C", "G", "T", "Insertions", "Deletions", "Consensus", "Entropy", "Weighted Entropy"]
     with open(f"{prefix}.tsv", "w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file, delimiter="\t")
         writer.writerow(header)
@@ -101,7 +146,7 @@ def write_csv(matrix: NDArray, prefix: str) -> None:
 def main():
     args = parse_args()
     logger.info("Starting mpileup processing")
-    matrix = process_mpileup(args.alignment, args.reference)
+    matrix = process_mpileup(args.alignment, args.reference, args.k)
     write_csv(matrix, args.prefix)
     logger.info("Mpileup processing completed")
 

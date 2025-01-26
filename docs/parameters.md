@@ -51,7 +51,7 @@ Options related to the trimming, low complexity and host removal steps of the re
 | `host_k2_library` | Kraken2 library(s) required to remove host and contamination <details><summary>Help</summary><small>Only used when no host kraken2 database is specified.</small></details>| human |
 | `skip_host_fastqc` | Skip the fastqc step after host & contaminants were removed |  |
 
-## Metagenomic diveristy
+## Metagenomic diversity
 
 Parameters used to determine the metagenomic diversity of the sample
 

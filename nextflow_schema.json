@@ -203,7 +203,7 @@
             },
             "fa_icon": "fas fa-bahai"
         },
-        "metagenomic_diveristy": {
+        "metagenomic_diversity": {
             "title": "Metagenomic diversity",
             "type": "object",
             "description": "Parameters used to determine the metagenomic diversity of the sample",
@@ -903,7 +903,7 @@
             "$ref": "#/$defs/preprocessing_options"
         },
         {
-            "$ref": "#/$defs/metagenomic_diveristy"
+            "$ref": "#/$defs/metagenomic_diversity"
         },
         {
             "$ref": "#/$defs/assembly"
