@@ -1,9 +1,5 @@
 //
-<<<<<<< HEAD
-// Subworkflow with functionality specific to the nf-core/viralgenie pipeline
-=======
 // Subworkflow with functionality specific to the Joon-Klaps/viralgenie pipeline
->>>>>>> TEMPLATE
 //
 
 /*
