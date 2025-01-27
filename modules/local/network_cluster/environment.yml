@@ -2,7 +2,6 @@ name: network_cluster
 channels:
   - conda-forge
   - bioconda
-  - defaults
 dependencies:
   - conda-forge::leidenalg=0.10.1
   - conda-forge::python-igraph=0.11.3

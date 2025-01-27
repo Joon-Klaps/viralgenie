@@ -1,6 +1,6 @@
-bump_version: null
+bump_version:
 nf_core_version: 3.1.0
-org_path: null
+org_path:
 repository_type: pipeline
 lint:
   files_unchanged:
@@ -37,7 +37,9 @@ lint:
   actions_ci: false
 template:
   name: viralgenie
-  description: a bioinformatics best-practice analysis pipeline for reconstructing consensus genomes and to identify intra-host variants from metagenomic sequencing data or enriched based sequencing data like hybrid capture.
+  description: a bioinformatics best-practice analysis pipeline for reconstructing
+    consensus genomes and to identify intra-host variants from metagenomic sequencing
+    data or enriched based sequencing data like hybrid capture.
   author: "Joon Klaps, Philippe Lemey, Liana Kafetzopoulou"
   is_nfcore: false
   org: Joon-Klaps
@@ -45,5 +47,5 @@ template:
     - igenomes
   force: false
   outdir: .
-  version: 0.1.1dev
-update: null
+  version: 0.1.2
+update:
