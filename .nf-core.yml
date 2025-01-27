@@ -1,8 +1,13 @@
-bump_version: null
-nf_core_version: 3.1.0
-org_path: null
-repository_type: pipeline
 lint:
+  actions_awsfulltest: false
+  actions_ci: false
+  files_exist:
+    - .github/CONTRIBUTING.md
+    - CITATIONS.md
+    - assets/nf-core-viralgenie_logo_light.png
+    - conf/test.config
+    - conf/test_full.config
+    - docs/README.md
   files_unchanged:
     - docs/images/nf-core-viralgenie_logo_light.png
     - docs/images/nf-core-viralgenie_logo_dark.png
@@ -19,31 +24,25 @@ lint:
     - assets/sendmail_template.txt
     - pyproject.toml
     - .gitignore
+  multiqc_config: false
   nextflow_config:
     - manifest.name
     - manifest.homePage
     - config_defaults:
         - params.multiqc_comment_headers
         - params.custom_table_headers
-  multiqc_config: false
-  files_exist:
-    - .github/CONTRIBUTING.md
-    - CITATIONS.md
-    - assets/nf-core-viralgenie_logo_light.png
-    - conf/test.config
-    - conf/test_full.config
-    - docs/README.md
-  actions_awsfulltest: false
-  actions_ci: false
+nf_core_version: 3.1.2
+repository_type: pipeline
 template:
-  name: viralgenie
-  description: a bioinformatics best-practice analysis pipeline for reconstructing consensus genomes and to identify intra-host variants from metagenomic sequencing data or enriched based sequencing data like hybrid capture.
-  author: "Joon Klaps, Philippe Lemey, Liana Kafetzopoulou"
+  author: Joon Klaps, Philippe Lemey, Liana Kafetzopoulou
+  description: a bioinformatics best-practice analysis pipeline for reconstructing
+    consensus genomes and to identify intra-host variants from metagenomic sequencing
+    data or enriched based sequencing data like hybrid capture.
+  force: false
   is_nfcore: false
+  name: viralgenie
   org: Joon-Klaps
+  outdir: .
   skip_features:
     - igenomes
-  force: false
-  outdir: .
   version: 0.1.1dev
-update: null

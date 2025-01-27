@@ -1,8 +1,8 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://raw.githubusercontent.com/Joon-Klaps/viralgenie/master/nextflow_schema.json",
-    "title": "Viralgenie pipeline parameters",
-    "description": "A pipeline to reconstruct consensus genomes and identify intrahost variants from metagenomic sequencing data or enriched based sequencing data like hybrid capture.",
+    "title": "Joon-Klaps/viralgenie pipeline parameters",
+    "description": "a bioinformatics best-practice analysis pipeline for reconstructing consensus genomes and to identify intra-host variants from metagenomic sequencing data or enriched based sequencing data like hybrid capture.",
     "type": "object",
     "$defs": {
         "input_output_options": {

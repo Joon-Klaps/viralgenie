@@ -46,5 +46,6 @@ body:
         * Hardware _(eg. HPC, Desktop, Cloud)_
         * Executor _(eg. slurm, local, awsbatch)_
         * Container engine: _(e.g. Docker, Singularity, Conda, Podman, Shifter, Charliecloud, or Apptainer)_
+        * Container engine: _(e.g. Docker, Singularity, Conda, Podman, Shifter, Charliecloud, or Apptainer)_
         * OS _(eg. CentOS Linux, macOS, Linux Mint)_
-        * Version of nf-core/viralgenie _(eg. 1.1, 1.5, 1.8.2)_
+        * Version of Joon-Klaps/viralgenie _(eg. 1.1, 1.5, 1.8.2)_

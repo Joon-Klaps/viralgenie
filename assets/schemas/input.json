@@ -1,6 +1,6 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://raw.githubusercontent.com/Joon-Klaps/viralgenie/master/assets/schemas/input.json",
+    "$id": "https://raw.githubusercontent.com/Joon-Klaps/viralgenie/master/assets/schema_input.json",
     "title": "Joon-Klaps/viralgenie pipeline - params.input schema",
     "description": "Schema for the file provided with params.input",
     "type": "array",

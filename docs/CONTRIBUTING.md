@@ -31,8 +31,11 @@ If you're not used to this workflow with git, you can start with some [docs from
 
 ## Tests
 
-You can optionally test your changes by running the pipeline locally. Then it is recommended to use the `debug` profile to
-receive warnings about process selectors and other debug info. Example: `nextflow run . -profile debug,test,docker --outdir <OUTDIR>`.
+You have the option to test your changes locally by running the pipeline. For receiving warnings about process selectors and other `debug` information, it is recommended to use the debug profile. Execute all the tests with the following command:
+
+```bash
+nf-test test --profile debug,test,docker --verbose
+```
 
 When you create a pull request with changes, [GitHub Actions](https://github.com/features/actions) will run automatic tests.
 Typically, pull-requests are only fully reviewed when these tests are passing, though of course we can help out before then.
@@ -41,8 +44,8 @@ There are typically two types of tests that run:
 
 ### Lint tests
 
-`nf-core` has a [set of guidelines](https://nf-co.re/developers/guidelines) which viralgenie adheres to.
-To enforce these and ensure that viralgenie stays in sync, we have developed a helper tool which runs checks on the pipeline code. This is in the [nf-core/tools repository](https://github.com/nf-core/tools) and once installed can be run locally with the `nf-core lint <pipeline-directory>` command.
+`nf-core` has a [set of guidelines](https://nf-co.re/developers/guidelines) which all pipelines must adhere to.
+To enforce these and ensure that all pipelines stay in sync, we have developed a helper tool which runs checks on the pipeline code. This is in the [nf-core/tools repository](https://github.com/nf-core/tools) and once installed can be run locally with the `nf-core pipelines lint <pipeline-directory>` command.
 
 If any failures or warnings are encountered, please follow the listed URL for more documentation.
 
@@ -72,7 +75,7 @@ To make the Joon-Klaps/viralgenie code and processing logic more understandable 
 
 If you wish to contribute a new step, please use the following coding standards:
 
-1. Define the corresponding input channel into your new process from the expected previous process channel
+1. Define the corresponding input channel into your new process from the expected previous process channel.
 2. Write the process block (see below).
 3. Define the output channel if needed (see below).
 4. Add any new parameters to `nextflow.config` with a default (see below).
@@ -85,7 +88,7 @@ If you wish to contribute a new step, please use the following coding standards:
 
 ### Default values
 
-Parameters should be initialised / defined with default values in `nextflow.config` under the `params` scope.
+Parameters should be initialised / defined with default values within the `params` scope in `nextflow.config`.
 
 Once there, use `nf-core pipelines schema build` to add to `nextflow_schema.json`.
 
@@ -116,11 +119,11 @@ This repo includes a devcontainer configuration which will create a GitHub Codes
 
 To get started:
 
--   Open the repo in [Codespaces](https://github.com/Joon-Klaps/viralgenie/codespaces)
--   Tools installed
-    -   nf-core
-    -   Nextflow
+- Open the repo in [Codespaces](https://github.com/Joon-Klaps/viralgenie/codespaces)
+- Tools installed
+  - nf-core
+  - Nextflow
 
 Devcontainer specs:
 
--   [DevContainer config](https://github.com/Joon-Klaps/viralgenie/blob/master/.devcontainer/devcontainer.json)
+- [DevContainer config](.devcontainer/devcontainer.json)

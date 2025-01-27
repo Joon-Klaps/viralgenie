@@ -3,7 +3,10 @@ process FASTQC {
     label 'process_medium'
 
     conda "${moduleDir}/environment.yml"
+    conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'https://depot.galaxyproject.org/singularity/fastqc:0.12.1--hdfd78af_0' :
+        'biocontainers/fastqc:0.12.1--hdfd78af_0' }"
         'https://depot.galaxyproject.org/singularity/fastqc:0.12.1--hdfd78af_0' :
         'biocontainers/fastqc:0.12.1--hdfd78af_0' }"
 
@@ -41,8 +44,15 @@ process FASTQC {
         --memory $fastqc_memory \\
         $renamed_files
 
+    fastqc \\
+        $args \\
+        --threads $task.cpus \\
+        --memory $fastqc_memory \\
+        $renamed_files
+
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
+        fastqc: \$( fastqc --version | sed '/FastQC v/!d; s/.*v//' )
         fastqc: \$( fastqc --version | sed '/FastQC v/!d; s/.*v//' )
     END_VERSIONS
     """
@@ -55,6 +65,7 @@ process FASTQC {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
+        fastqc: \$( fastqc --version | sed '/FastQC v/!d; s/.*v//' )
         fastqc: \$( fastqc --version | sed '/FastQC v/!d; s/.*v//' )
     END_VERSIONS
     """

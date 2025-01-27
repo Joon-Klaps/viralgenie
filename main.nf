@@ -2,6 +2,7 @@
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Joon-Klaps/viralgenie
+    Joon-Klaps/viralgenie
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Github : https://github.com/Joon-Klaps/viralgenie
     Website: https://joon-klaps.github.io/viralgenie/latest/
@@ -13,6 +14,7 @@ params.global_prefix = getGlobalPrefix(workflow, params)
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    IMPORT FUNCTIONS / MODULES / SUBWORKFLOWS / WORKFLOWS
     IMPORT FUNCTIONS / MODULES / SUBWORKFLOWS / WORKFLOWS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
@@ -30,7 +32,7 @@ include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_vira
 //
 // WORKFLOW: Run main analysis pipeline depending on type of input
 //
-workflow NFCORE_VIRALGENIE {
+workflow JOONKLAPS_VIRALGENIE {
 
     take:
     samplesheet // channel: samplesheet read in from --input
@@ -48,7 +50,7 @@ workflow NFCORE_VIRALGENIE {
 }
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    RUN MAIN WORKFLOW
+    NAMED WORKFLOWS FOR PIPELINE
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
@@ -70,7 +72,7 @@ workflow {
     //
     // WORKFLOW: Run main workflow
     //
-    NFCORE_VIRALGENIE (
+    JOONKLAPS_VIRALGENIE (
         PIPELINE_INITIALISATION.out.samplesheet
     )
     //
@@ -83,7 +85,7 @@ workflow {
         params.outdir,
         params.monochrome_logs,
         params.hook_url,
-        NFCORE_VIRALGENIE.out.multiqc_report
+        JOONKLAPS_VIRALGENIE.out.multiqc_report
     )
 }
 

@@ -94,14 +94,8 @@ def getWorkflowVersion() {
 //
 def processVersionsFromYAML(yaml_file) {
     def yaml = new org.yaml.snakeyaml.Yaml()
-    try {
-        def versions = yaml.load(yaml_file).collectEntries { k, v -> [k.tokenize(':')[-1], v] }
-        return yaml.dumpAsMap(versions).trim()
-    } catch (Exception e) {
-        println "An error occurred while processing the YAML file. Printing the entire content:"
-        println yaml_file
-        throw e  // Re-throw the exception after printing the file content
-    }
+    def versions = yaml.load(yaml_file).collectEntries { k, v -> [k.tokenize(':')[-1], v] }
+    return yaml.dumpAsMap(versions).trim()
 }
 
 //
@@ -251,28 +245,24 @@ def logColours(monochrome_logs=true) {
     return colorcodes
 }
 
+// Return a single report from an object that may be a Path or List
 //
-// Attach the multiqc report to email
-//
-def attachMultiqcReport(multiqc_report) {
-    def mqc_report = null
-    try {
-        if (workflow.success) {
-            mqc_report = multiqc_report.getVal()
-            if (mqc_report.getClass() == ArrayList && mqc_report.size() >= 1) {
-                if (mqc_report.size() > 1) {
-                    log.warn("[${workflow.manifest.name}] Found multiple reports from process 'MULTIQC', will use only one")
-                }
-                mqc_report = mqc_report[0]
-            }
+def getSingleReport(multiqc_reports) {
+    if (multiqc_reports instanceof Path) {
+        return multiqc_reports
+    } else if (multiqc_reports instanceof List) {
+        if (multiqc_reports.size() == 0) {
+            log.warn("[${workflow.manifest.name}] No reports found from process 'MULTIQC'")
+            return null
+        } else if (multiqc_reports.size() == 1) {
+            return multiqc_reports.first()
+        } else {
+            log.warn("[${workflow.manifest.name}] Found multiple reports from process 'MULTIQC', will use only one")
+            return multiqc_reports.first()
         }
+    } else {
+        return null
     }
-    catch (Exception all) {
-        if (multiqc_report) {
-            log.warn("[${workflow.manifest.name}] Could not attach MultiQC report to summary email")
-        }
-    }
-    return mqc_report
 }
 
 //
@@ -326,7 +316,7 @@ def completionEmail(summary_params, email, email_on_fail, plaintext_email, outdi
     email_fields['summary']      = summary << misc_fields
 
     // On success try attach the multiqc report
-    def mqc_report = attachMultiqcReport(multiqc_report)
+    def mqc_report = getSingleReport(multiqc_report)
 
     // Check if we are only sending emails on failure
     def email_address = email
@@ -346,7 +336,7 @@ def completionEmail(summary_params, email, email_on_fail, plaintext_email, outdi
     def email_html    = html_template.toString()
 
     // Render the sendmail template
-    def max_multiqc_email_size = (params.containsKey('max_multiqc_email_size') ? params.max_multiqc_email_size : 0) as nextflow.util.MemoryUnit
+    def max_multiqc_email_size = (params.containsKey('max_multiqc_email_size') ? params.max_multiqc_email_size : 0) as MemoryUnit
     def smail_fields           = [email: email_address, subject: subject, email_txt: email_txt, email_html: email_html, projectDir: "${workflow.projectDir}", mqcFile: mqc_report, mqcMaxSize: max_multiqc_email_size.toBytes()]
     def sf                     = new File("${workflow.projectDir}/assets/sendmail_template.txt")
     def sendmail_template      = engine.createTemplate(sf).make(smail_fields)
@@ -357,14 +347,17 @@ def completionEmail(summary_params, email, email_on_fail, plaintext_email, outdi
     if (email_address) {
         try {
             if (plaintext_email) {
-new org.codehaus.groovy.GroovyException('Send plaintext e-mail, not HTML')            }
+                new org.codehaus.groovy.GroovyException('Send plaintext e-mail, not HTML')
+            }
             // Try to send HTML e-mail using sendmail
             def sendmail_tf = new File(workflow.launchDir.toString(), ".sendmail_tmp.html")
             sendmail_tf.withWriter { w -> w << sendmail_html }
             ['sendmail', '-t'].execute() << sendmail_html
             log.info("-${colors.purple}[${workflow.manifest.name}]${colors.green} Sent summary e-mail to ${email_address} (sendmail)-")
         }
-        catch (Exception all) {
+        catch (Exception msg) {
+            log.debug(msg.toString())
+            log.debug("Trying with mail instead of sendmail")
             // Catch failures and try with plaintext
             def mail_cmd = ['mail', '-s', subject, '--content-type=text/html', email_address]
             mail_cmd.execute() << email_html

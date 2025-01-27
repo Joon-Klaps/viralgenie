@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - dev
-  pull_request:
+  pull_request_target:
   release:
     types: [published]
   workflow_dispatch:
@@ -15,7 +15,7 @@ env:
   NXF_SINGULARITY_LIBRARYDIR: ${{ github.workspace }}/.singularity
 
 concurrency:
-  group: "${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}"
+  group: "${{ github.workflow }}-${{ github.event.pull_request_target.number || github.ref }}"
   cancel-in-progress: true
 
 jobs:
@@ -195,6 +195,7 @@ jobs:
     strategy:
       matrix:
         NXF_VER:
+          - "24.04.2"
           - "24.04.2"
           - "latest-everything"
         profile:

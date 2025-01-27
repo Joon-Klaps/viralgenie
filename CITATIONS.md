@@ -1,4 +1,4 @@
-# Citations
+# Joon-Klaps/viralgenie: Citations
 
 ## [Viralgenie](https://github.com/Joon-Klaps/viralgenie)
 

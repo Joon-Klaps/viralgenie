@@ -154,10 +154,10 @@ Actions taken by the nf-core’s Safety Team may include, but are not limited to
 
 ## Attribution and Acknowledgements
 
--   The [Contributor Covenant, version 1.4](http://contributor-covenant.org/version/1/4)
--   The [OpenCon 2017 Code of Conduct](http://www.opencon2017.org/code_of_conduct) (CC BY 4.0 OpenCon organisers, SPARC and Right to Research Coalition)
--   The [eLife innovation sprint 2020 Code of Conduct](https://sprint.elifesciences.org/code-of-conduct/)
--   The [Mozilla Community Participation Guidelines v3.1](https://www.mozilla.org/en-US/about/governance/policies/participation/) (version 3.1, CC BY-SA 3.0 Mozilla)
+- The [Contributor Covenant, version 1.4](http://contributor-covenant.org/version/1/4)
+- The [OpenCon 2017 Code of Conduct](http://www.opencon2017.org/code_of_conduct) (CC BY 4.0 OpenCon organisers, SPARC and Right to Research Coalition)
+- The [eLife innovation sprint 2020 Code of Conduct](https://sprint.elifesciences.org/code-of-conduct/)
+- The [Mozilla Community Participation Guidelines v3.1](https://www.mozilla.org/en-US/about/governance/policies/participation/) (version 3.1, CC BY-SA 3.0 Mozilla)
 
 ## Changelog
 
@@ -179,20 +179,4 @@ Actions taken by the nf-core’s Safety Team may include, but are not limited to
 
 ### v1.0 - March 15th, 2021
 
--   Included a new member of the Safety Team. Corrected a typographical error in the text.
-
-### v1.3 - December 10th, 2021
-
--   Added a statement that the CoC applies to nf-core gather.town workspaces. Corrected typographical errors in the text.
-
-### v1.2 - November 12th, 2021
-
--   Removed information specific to reporting CoC violations at the Hackathon in October 2021.
-
-### v1.1 - October 14th, 2021
-
--   Updated with names of new Safety Officers and specific information for the hackathon in October 2021.
-
-### v1.0 - March 15th, 2021
-
--   Complete rewrite from original [Contributor Covenant](http://contributor-covenant.org/) CoC.
+- Complete rewrite from original [Contributor Covenant](http://contributor-covenant.org/) CoC.
