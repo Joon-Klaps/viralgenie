@@ -7,7 +7,7 @@ from typing import Dict, List, Union, Tuple, Optional, Any
 import pandas as pd
 
 from utils.constant_variables import BLAST_COLUMNS, CONSTRAINT_GENERAL_STATS_COLUMNS, COLUMN_MAPPING
-from utils.file_tools import filelist_to_df,write_df
+from utils.file_tools import filelist_to_df
 from utils.pandas_tools import (
     coalesce_constraint,
     drop_columns,
@@ -279,8 +279,6 @@ def reformat_constraint_df(df, file_columns, args):
 
     # drop unwanted columns & reorder
     constraint_meta = drop_columns(constraint_meta, ["sequence", "samples"])
-    write_df(df, "df.tsv")
-    write_df(constraint_meta, "constraint.tsv")
     df = df.merge(constraint_meta, how="left", left_on="cluster", right_on="id")
     df = reorder_columns(
         df,
