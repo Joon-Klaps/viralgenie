@@ -3,7 +3,8 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
-  - bioconda::argparse
-  - bioconda::pysam
-  - bioconda::pysamstats
-  - conda-forge::pandas
+  - bioconda::pysam==0.22.1
+  - bioconda::pysamstats==1.1.2
+  - pip
+  - pip:
+      - numpy==1.26.4

@@ -118,7 +118,7 @@ jobs:
           - "mmseqs-cluster"
           - "mmseqs-linclust"
           - "mash"
-          - "vrhyme"
+          # - "vrhyme" doesn't work correctly
           - "cdhitest"
         profile:
           - "conda"

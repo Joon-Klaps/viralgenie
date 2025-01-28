@@ -30,8 +30,8 @@ process CUSTOM_MPILEUP {
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         python: \$(python --version | sed 's/Python //g')
-        pandas: \$(pip show pandas | grep Version: | sed 's/Version: //g')
         pysam: \$(pip show pysam | grep Version: | sed 's/Version: //g')
+        numpy: \$(pip show numpy | grep Version: | sed 's/Version: //g')
         pysamstats: \$(pip show pysamstats | grep Version: | sed 's/Version: //g')
     END_VERSIONS
     """
@@ -45,7 +45,7 @@ process CUSTOM_MPILEUP {
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         python: \$(python --version | sed 's/Python //g')
-        pandas: \$(pip show pandas | grep Version: | sed 's/Version: //g')
+        numpy: \$(pip show numpy | grep Version: | sed 's/Version: //g')
         pysam: \$(pip show pysam | grep Version: | sed 's/Version: //g')
         pysamstats: \$(pip show pysamstats | grep Version: | sed 's/Version: //g')
     """
