@@ -6,10 +6,10 @@ from typing import Dict, List, Union, Tuple, Optional, Any
 
 import pandas as pd
 
-from utils.constant_variables import BLAST_COLUMNS, CONSTRAIN_GENERAL_STATS_COLUMNS, COLUMN_MAPPING
-from utils.file_tools import filelist_to_df
+from utils.constant_variables import BLAST_COLUMNS, CONSTRAINT_GENERAL_STATS_COLUMNS, COLUMN_MAPPING
+from utils.file_tools import filelist_to_df,write_df
 from utils.pandas_tools import (
-    coalesce_constrain,
+    coalesce_constraint,
     drop_columns,
     generate_indexed_df,
     reorder_columns,
@@ -147,7 +147,7 @@ def reformat_custom_df(df: pd.DataFrame, cluster_df: pd.DataFrame) -> pd.DataFra
     return reorder_columns(df.dropna(subset=["step"]), list(dict.fromkeys(final_columns)))
 
 
-def filter_constrain(dataframe, column, value):
+def filter_constraint(dataframe, column, value):
     """
     Filter a dataframe based on a column and a regex value.
 
@@ -161,7 +161,7 @@ def filter_constrain(dataframe, column, value):
     """
     df = dataframe.copy()
     # Find rows with the regex value
-    locations = df[column].str.contains(value) | df["step"].str.contains("constrain")
+    locations = df[column].str.contains(value) | df["step"].str.contains("constraint")
 
     # Filter
     df_with_value = df[locations]
@@ -173,16 +173,16 @@ def filter_constrain(dataframe, column, value):
     return df_without_value.dropna(axis=1, how="all"), df_with_value.dropna(axis=1, how="all")
 
 
-def create_constrain_summary(df_constrain: pd.DataFrame, file_columns: List[Union[str, Dict[str, str]]]) -> pd.DataFrame:
+def create_constraint_summary(df_constraint: pd.DataFrame, file_columns: List[Union[str, Dict[str, str]]]) -> pd.DataFrame:
     """
-    Create a summary table for the constrain data.
+    Create a summary table for the constraint data.
 
     Args:
-        df_constrain (pd.DataFrame): The constrain data DataFrame.
+        df_constraint (pd.DataFrame): The constraint data DataFrame.
         file_columns (List): A columns dictionary with old names & new names.
 
     Returns:
-        pd.DataFrame: The constrain summary table.
+        pd.DataFrame: The constraint summary table.
     """
 
     # Filter only for columns of interest
@@ -196,12 +196,12 @@ def create_constrain_summary(df_constrain: pd.DataFrame, file_columns: List[Unio
 
     logger.debug("dic_columns: %s", dic_columns)
 
-    columns_of_interest = [dic_columns.get(key, key) for key in CONSTRAIN_GENERAL_STATS_COLUMNS]
+    columns_of_interest = [dic_columns.get(key, key) for key in CONSTRAINT_GENERAL_STATS_COLUMNS]
 
     logger.debug("columns_of_interest: %s", columns_of_interest)
 
     if not columns_of_interest:
-        logger.warning("No columns of interest were found to create the constrain summary table!")
+        logger.warning("No columns of interest were found to create the constraint summary table!")
         return pd.DataFrame()
 
     columns_of_interest.extend(
@@ -214,7 +214,7 @@ def create_constrain_summary(df_constrain: pd.DataFrame, file_columns: List[Unio
         ]
     )
 
-    df_columns = df_constrain.columns.tolist()
+    df_columns = df_constraint.columns.tolist()
 
     present_columns = []
     for name in columns_of_interest:
@@ -226,33 +226,33 @@ def create_constrain_summary(df_constrain: pd.DataFrame, file_columns: List[Unio
                 matched_column = matches[0]
                 present_columns.append(matched_column)
 
-    df_constrain = df_constrain[present_columns]
+    df_constraint = df_constraint[present_columns]
 
-    if df_constrain.empty:
-        logger.warning("The constrain DataFrame is empty.")
-        return df_constrain
+    if df_constraint.empty:
+        logger.warning("The constraint DataFrame is empty.")
+        return df_constraint
 
-    df_constrain = df_constrain.rename(columns=COLUMN_MAPPING)
+    df_constraint = df_constraint.rename(columns=COLUMN_MAPPING)
 
     # Reformat dataframe to long based on following:
     #   Species & Segment
     #   Species
     #   ID (Cluster)
-    df_constrain.loc[:, "idgroup"] = df_constrain.apply(
+    df_constraint.loc[:, "idgroup"] = df_constraint.apply(
         lambda row: (
             f"{row['species']} ({row['segment']})"
-            if "segment" in df_constrain.columns and pd.notnull(row["species"]) and pd.notnull(row["segment"])
-            else (row["species"] if "species" in df_constrain.columns and pd.notnull(row["species"]) else row["cluster"])
+            if "segment" in df_constraint.columns and pd.notnull(row["species"]) and pd.notnull(row["segment"])
+            else (row["species"] if "species" in df_constraint.columns and pd.notnull(row["species"]) else row["cluster"])
         ),
         axis=1,
     )
-    df_constrain = df_constrain.rename(columns={"cluster": "Constrain id"})
+    df_constraint = df_constraint.rename(columns={"cluster": "Constraint id"})
 
     # Remove columns that are not needed anymore
-    df_constrain = drop_columns(df_constrain, ["species", "segment"])
+    df_constraint = drop_columns(df_constraint, ["species", "segment"])
 
     # Convert dataframe to long and then extra wide
-    df_long = df_constrain.melt(id_vars=["idgroup", "sample"], var_name="variable", value_name="Value")
+    df_long = df_constraint.melt(id_vars=["idgroup", "sample"], var_name="variable", value_name="Value")
     # Remove rows with NaN values & duplicates
     df_long = df_long.dropna()
     df_long = df_long.drop_duplicates()
@@ -265,21 +265,23 @@ def create_constrain_summary(df_constrain: pd.DataFrame, file_columns: List[Unio
     return df_wide
 
 
-def reformat_constrain_df(df, file_columns, args):
+def reformat_constraint_df(df, file_columns, args):
     """
-    Reformat the constrain dataframe.
+    Reformat the constraint dataframe.
     """
-    # Separate table for mapping constrains
+    # Separate table for mapping constraints
     if df.empty:
-        logger.warning("The constrain DataFrame is empty.")
+        logger.warning("The constraint DataFrame is empty.")
         return df, df
 
-    # Add constrain metadata to the mapping constrain table
-    constrain_meta = filelist_to_df([args.mapping_constraints])
+    # Add constraint metadata to the mapping constraint table
+    constraint_meta = filelist_to_df([args.mapping_constraints])
 
     # drop unwanted columns & reorder
-    constrain_meta = drop_columns(constrain_meta, ["sequence", "samples"])
-    df = df.merge(constrain_meta, how="left", left_on="cluster", right_on="id")
+    constraint_meta = drop_columns(constraint_meta, ["sequence", "samples"])
+    write_df(df, "df.tsv")
+    write_df(constraint_meta, "constraint.tsv")
+    df = df.merge(constraint_meta, how="left", left_on="cluster", right_on="id")
     df = reorder_columns(
         df,
         [
@@ -294,13 +296,13 @@ def reformat_constrain_df(df, file_columns, args):
     )
 
     # add mapping summary to sample overview table in ... wide format with species & segment combination
-    logger.info("Creating mapping constrain summary (wide) table")
-    mapping_constraints_summary = create_constrain_summary(df, file_columns).set_index("sample")
+    logger.info("Creating mapping constraint summary (wide) table")
+    mapping_constraints_summary = create_constraint_summary(df, file_columns).set_index("sample")
 
     logger.info("Coalescing columns")
-    coalesced_constrains = coalesce_constrain(df)
-    coalesced_constrains = drop_columns(coalesced_constrains, ["id", "selection", "rank"])
-    return coalesced_constrains, mapping_constraints_summary
+    coalesced_constraints = coalesce_constraint(df)
+    coalesced_constraints = drop_columns(coalesced_constraints, ["id", "selection", "rank"])
+    return coalesced_constraints, mapping_constraints_summary
 
 
 def generate_ignore_samples(dataframe: pd.DataFrame) -> pd.Series:

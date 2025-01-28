@@ -5,11 +5,13 @@
 import argparse
 import logging
 import sys
+import os
 from pathlib import Path
 
 import pandas as pd
 from utils.constant_variables import MASH_SCREEN_COLUMNS
 from Bio import SeqIO
+
 
 logger = logging.getLogger()
 
@@ -105,6 +107,10 @@ def read_mash_screen(file) -> pd.DataFrame:
     """
 
     logger.info("Reading in the mash screen file...")
+
+    if not os.stat(file).st_size > 0:
+        return pd.DataFrame()
+
     try:
         df = pd.read_csv(file, sep="\t", header=None, names=MASH_SCREEN_COLUMNS)
     except pd.errors.EmptyDataError as e:

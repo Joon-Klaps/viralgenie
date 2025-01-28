@@ -38,7 +38,7 @@ def reorder_rows(dataframe):
     """
 
     df = dataframe.copy()
-    ordered_list = ["constrain"] + [f"it{i}" for i in range(100, 0, -1)] + ["itvariant-calling", "consensus", "singleton"]
+    ordered_list = ["constraint"] + [f"it{i}" for i in range(100, 0, -1)] + ["itvariant-calling", "consensus", "singleton"]
     rank_dict = {step: rank for rank, step in enumerate(ordered_list, start=1)}
 
     # Sort the DataFrame by 'step' based on the ranking dictionary
@@ -48,7 +48,7 @@ def reorder_rows(dataframe):
     return df
 
 
-def coalesce_constrain(dataframe):
+def coalesce_constraint(dataframe):
     """
     Fill missing values in the dataframe based on the group values.
 
@@ -65,7 +65,7 @@ def coalesce_constrain(dataframe):
     result = df.copy()
     result[coalesce_columns] = result.groupby(grouping_cols)[coalesce_columns].transform(fill_group_na)
 
-    return result.query('step == "constrain"')
+    return result.query('step == "constraint"')
 
 
 def split_index_column(dataframe: pd.DataFrame, prefix: str = None, split_column: str = "index") -> pd.DataFrame:
