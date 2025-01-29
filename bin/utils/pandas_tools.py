@@ -42,7 +42,7 @@ def reorder_rows(dataframe):
     rank_dict = {step: rank for rank, step in enumerate(ordered_list, start=1)}
 
     # Sort the DataFrame by 'step' based on the ranking dictionary
-    df["rank"] = df["step"].replace(rank_dict)
+    df["rank"] = df["step"].map(pd.Series(rank_dict))
     df = df.sort_values(["sample", "cluster", "rank"])
 
     return df

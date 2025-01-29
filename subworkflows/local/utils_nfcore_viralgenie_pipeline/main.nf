@@ -381,7 +381,7 @@ def lowReadSamplesToMultiQC(tsv_data, min_trimmed_reads) {
                 [
                     "id: 'samples_low_reads'",
                     "anchor: 'WARNING: Filtered samples'",
-                    "section_name: 'Samples with to few reads'",
+                    "section_name: 'Samples with too few reads'",
                     "format: 'tsv'",
                     "description: 'Samples that did not have the minimum number of reads (<${min_trimmed_reads}) after trimming, complexity filtering & host removal'",
                     "plot_type: 'table'"

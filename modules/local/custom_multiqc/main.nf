@@ -3,8 +3,8 @@ process CUSTOM_MULTIQC {
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/73/73a8b9ad157a08e5aa8a83cdb1975f9d4ff46f112351ebb9427b27dc32763c76/data':
-        'community.wave.seqera.io/library/pip_multiqc_pandas:d84d38acb8d47ed1' }"
+        'oras://community.wave.seqera.io/library/pip_multiqc_pandas:2c12fd808e751af1':
+        'community.wave.seqera.io/library/pip_multiqc_pandas:bffcc4521f62d9ac' }"
 
     input:
     path multiqc_files, stageAs: "multiqc_files/?/*"
