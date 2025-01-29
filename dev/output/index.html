@@ -2402,7 +2402,7 @@
 <p>The results from variant calling, resulting from the <a href="../workflow/variant_and_refinement/">mapping constraints</a> &amp; the final round of polishing are stored in the directory <code>variant_calling/</code>.</p>
 <div class="admonition info">
 <p class="admonition-title">Info</p>
-<p>Mapping constraints are combined with the specified samples, here, the identifier of the mapping constraint combined with the sample identifier. All results will have a new prefix which is <code>&lt;sample-id&gt;_&lt;mapping_constrain_id&gt;-CONSTRAIN</code>.</p>
+<p>Mapping constraints are combined with the specified samples, here, the identifier of the mapping constraint combined with the sample identifier. All results will have a new prefix which is <code>&lt;sample-id&gt;_&lt;mapping_constraint_id&gt;-CONSTRAINT</code>.</p>
 </div>
 <p>The results from the iterations are stored with the same structure as the final round of polishing in the <code>assembly/polishing/iterations/it#</code> directory.</p>
 <div class="admonition info">
@@ -2422,9 +2422,9 @@
 <summary>Output files</summary>
 <ul>
 <li><code>variants/mapping-info/mash</code><ul>
-<li><code>sketch/&lt;sample-id&gt;_&lt;constrain-id&gt;.msh</code>: The sketch file of the reads.</li>
-<li><code>screen/&lt;sample-id&gt;_&lt;constrain-id&gt;.screen</code>: The tab results file of the comparisons between references and reads.</li>
-<li><code>select-ref/&lt;sample-id&gt;_&lt;constrain-id&gt;.json</code>: The reference with the highest estimated ANI and shared hashes.</li>
+<li><code>sketch/&lt;sample-id&gt;_&lt;constraint-id&gt;.msh</code>: The sketch file of the reads.</li>
+<li><code>screen/&lt;sample-id&gt;_&lt;constraint-id&gt;.screen</code>: The tab results file of the comparisons between references and reads.</li>
+<li><code>select-ref/&lt;sample-id&gt;_&lt;constraint-id&gt;.json</code>: The reference with the highest estimated ANI and shared hashes.</li>
 </ul>
 </li>
 </ul>
@@ -2449,22 +2449,22 @@
 <ul>
 <li><code>variants/mapping-info/</code><ul>
 <li><code>bwamem2/</code><ul>
-<li><code>index/&lt;sample-id&gt;_&lt;constrain-id&gt;/*</code>: The index files of the consensus.</li>
-<li><code>bam/&lt;sample-id&gt;/&lt;sample-id&gt;_&lt;constrain-id&gt;-CONSTRAIN.bam</code>: A BAM file containing the alignment of contigs to the consensus.</li>
-<li><code>unmapped/&lt;sample-id&gt;/&lt;sample-id&gt;_&lt;constrain-id&gt;-CONSTRAIN.fastq.gz</code>: A fastq file containing the unmapped reads.</li>
+<li><code>index/&lt;sample-id&gt;_&lt;constraint-id&gt;/*</code>: The index files of the consensus.</li>
+<li><code>bam/&lt;sample-id&gt;/&lt;sample-id&gt;_&lt;constraint-id&gt;-CONSTRAINT.bam</code>: A BAM file containing the alignment of contigs to the consensus.</li>
+<li><code>unmapped/&lt;sample-id&gt;/&lt;sample-id&gt;_&lt;constraint-id&gt;-CONSTRAINT.fastq.gz</code>: A fastq file containing the unmapped reads.</li>
 </ul>
 </li>
 <li><code>bwamem/</code><ul>
-<li><code>index/&lt;sample-id&gt;_&lt;constrain-id&gt;/*</code>: The index files of the consensus.</li>
-<li><code>bam/&lt;sample-id&gt;/&lt;sample-id&gt;_&lt;constrain-id&gt;-CONSTRAIN.bam</code>: A BAM file containing the alignment of contigs to the consensus.</li>
-<li><code>unmapped/&lt;sample-id&gt;/&lt;sample-id&gt;_&lt;constrain-id&gt;-CONSTRAIN.fastq.gz</code>: A fastq file containing the unmapped reads.</li>
+<li><code>index/&lt;sample-id&gt;_&lt;constraint-id&gt;/*</code>: The index files of the consensus.</li>
+<li><code>bam/&lt;sample-id&gt;/&lt;sample-id&gt;_&lt;constraint-id&gt;-CONSTRAINT.bam</code>: A BAM file containing the alignment of contigs to the consensus.</li>
+<li><code>unmapped/&lt;sample-id&gt;/&lt;sample-id&gt;_&lt;constraint-id&gt;-CONSTRAINT.fastq.gz</code>: A fastq file containing the unmapped reads.</li>
 </ul>
 </li>
 <li><code>bowtie2/</code><ul>
-<li><code>build/&lt;sample-id&gt;_&lt;constrain-id&gt;/*</code>: The index files of the consensus.</li>
-<li><code>bam/&lt;sample-id&gt;/&lt;sample-id&gt;_&lt;constrain-id&gt;-CONSTRAIN.bam</code>: A BAM file containing the alignment of contigs to the consensus.</li>
-<li><code>unmapped/&lt;sample-id&gt;/&lt;sample-id&gt;_&lt;constrain-id&gt;-CONSTRAIN.fastq.gz</code>: A fastq file containing the unmapped reads.</li>
-<li><code>log/&lt;sample-id&gt;_&lt;constrain-id&gt;-CONSTRAIN.log</code>: A log file of the bowtie2 run.</li>
+<li><code>build/&lt;sample-id&gt;_&lt;constraint-id&gt;/*</code>: The index files of the consensus.</li>
+<li><code>bam/&lt;sample-id&gt;/&lt;sample-id&gt;_&lt;constraint-id&gt;-CONSTRAINT.bam</code>: A BAM file containing the alignment of contigs to the consensus.</li>
+<li><code>unmapped/&lt;sample-id&gt;/&lt;sample-id&gt;_&lt;constraint-id&gt;-CONSTRAINT.fastq.gz</code>: A fastq file containing the unmapped reads.</li>
+<li><code>log/&lt;sample-id&gt;_&lt;constraint-id&gt;-CONSTRAINT.log</code>: A log file of the bowtie2 run.</li>
 </ul>
 </li>
 </ul>
@@ -2511,12 +2511,12 @@
 <summary>Output files - variants</summary>
 <ul>
 <li><code>variants/mapping-info/deduplicate/</code><ul>
-<li><code>bam/&lt;sample-id&gt;/&lt;sample-id&gt;_&lt;constrain-id&gt;-CONSTRAIN.umi_deduplicated.bam</code>: A BAM file containing the alignment of contigs to the consensus.</li>
+<li><code>bam/&lt;sample-id&gt;/&lt;sample-id&gt;_&lt;constraint-id&gt;-CONSTRAINT.umi_deduplicated.bam</code>: A BAM file containing the alignment of contigs to the consensus.</li>
 <li><code>log/</code><ul>
-<li><code>&lt;sample-id&gt;_&lt;constrain-id&gt;-CONSTRAIN.umi_deduplicated.log</code>: A log file of the UMI-tools run.</li>
-<li><code>&lt;sample-id&gt;_&lt;constrain-id&gt;-CONSTRAIN.umi_deduplicated_edit_distance.tsv</code>: Reports the (binned) average edit distance between the UMIs at each position.</li>
-<li><code>&lt;sample-id&gt;_&lt;constrain-id&gt;-CONSTRAIN.umi_deduplicated_per_umi.tsv</code>: UMI-level summary statistics.</li>
-<li><code>&lt;sample-id&gt;_&lt;constrain-id&gt;-CONSTRAIN.umi_deduplicated_per_umi_per_position.tsv</code>: Tabulates the counts for unique combinations of UMI and position.</li>
+<li><code>&lt;sample-id&gt;_&lt;constraint-id&gt;-CONSTRAINT.umi_deduplicated.log</code>: A log file of the UMI-tools run.</li>
+<li><code>&lt;sample-id&gt;_&lt;constraint-id&gt;-CONSTRAINT.umi_deduplicated_edit_distance.tsv</code>: Reports the (binned) average edit distance between the UMIs at each position.</li>
+<li><code>&lt;sample-id&gt;_&lt;constraint-id&gt;-CONSTRAINT.umi_deduplicated_per_umi.tsv</code>: UMI-level summary statistics.</li>
+<li><code>&lt;sample-id&gt;_&lt;constraint-id&gt;-CONSTRAINT.umi_deduplicated_per_umi_per_position.tsv</code>: Tabulates the counts for unique combinations of UMI and position.</li>
 </ul>
 </li>
 </ul>
@@ -2547,8 +2547,8 @@
 <ul>
 <li><code>variants/mapping-info/deduplicate/</code><ul>
 <li><code>picard/</code><ul>
-<li><code>bam/&lt;sample-id&gt;/&lt;sample-id&gt;_&lt;constrain-id&gt;-CONSTRAIN.bam</code>: A BAM file containing the alignment of contigs to the consensus.</li>
-<li><code>log/&lt;sample-id&gt;_&lt;constrain-id&gt;-CONSTRAIN.dedup.MarkDuplicates.metrics.txt</code>: Deduplication metrics from Picard.</li>
+<li><code>bam/&lt;sample-id&gt;/&lt;sample-id&gt;_&lt;constraint-id&gt;-CONSTRAINT.bam</code>: A BAM file containing the alignment of contigs to the consensus.</li>
+<li><code>log/&lt;sample-id&gt;_&lt;constraint-id&gt;-CONSTRAINT.dedup.MarkDuplicates.metrics.txt</code>: Deduplication metrics from Picard.</li>
 </ul>
 </li>
 </ul>
@@ -2581,9 +2581,9 @@
 <summary>Output files - variants</summary>
 <ul>
 <li><code>variants/mapping-info/metrics</code><ul>
-<li><code>flagstat/&lt;sample-id&gt;_&lt;constrain-id&gt;-CONSTRAIN.flagstat</code>: A text file containing the flagstat output.</li>
-<li><code>idxstats/&lt;sample-id&gt;_&lt;constrain-id&gt;-CONSTRAIN.idxstats</code>: A text file containing the idxstats output.</li>
-<li><code>stats/&lt;sample-id&gt;_&lt;constrain-id&gt;-CONSTRAIN.stats</code>: A text file containing the stats output.</li>
+<li><code>flagstat/&lt;sample-id&gt;_&lt;constraint-id&gt;-CONSTRAINT.flagstat</code>: A text file containing the flagstat output.</li>
+<li><code>idxstats/&lt;sample-id&gt;_&lt;constraint-id&gt;-CONSTRAINT.idxstats</code>: A text file containing the idxstats output.</li>
+<li><code>stats/&lt;sample-id&gt;_&lt;constraint-id&gt;-CONSTRAINT.stats</code>: A text file containing the stats output.</li>
 </ul>
 </li>
 </ul>
@@ -2654,10 +2654,10 @@
 <summary>Output files - variants</summary>
 <ul>
 <li><code>variants/mapping-info/metrics/mosdepth</code><ul>
-<li><code>&lt;sample-id&gt;_&lt;constrain-id&gt;-CONSTRAIN.per-base.bed.gz</code>: A bed file containing the coverage values in 200bp windows.</li>
-<li><code>&lt;sample-id&gt;_&lt;constrain-id&gt;-CONSTRAIN.per-base.bed.gz.csi</code>: Indexed bed file.</li>
-<li><code>&lt;sample-id&gt;_&lt;constrain-id&gt;-CONSTRAIN.mosdepth.summary.txt</code>: Summary metrics including mean, min and max coverage values.</li>
-<li><code>&lt;sample-id&gt;_&lt;constrain-id&gt;-CONSTRAIN.mosdepth.global.dist.txt</code>: A cumulative distribution indicating the proportion of total bases that were covered for at least a given coverage value.</li>
+<li><code>&lt;sample-id&gt;_&lt;constraint-id&gt;-CONSTRAINT.per-base.bed.gz</code>: A bed file containing the coverage values in 200bp windows.</li>
+<li><code>&lt;sample-id&gt;_&lt;constraint-id&gt;-CONSTRAINT.per-base.bed.gz.csi</code>: Indexed bed file.</li>
+<li><code>&lt;sample-id&gt;_&lt;constraint-id&gt;-CONSTRAINT.mosdepth.summary.txt</code>: Summary metrics including mean, min and max coverage values.</li>
+<li><code>&lt;sample-id&gt;_&lt;constraint-id&gt;-CONSTRAINT.mosdepth.global.dist.txt</code>: A cumulative distribution indicating the proportion of total bases that were covered for at least a given coverage value.</li>
 </ul>
 </li>
 </ul>
@@ -2683,19 +2683,19 @@
 <ul>
 <li><code>variants/variant_calling</code><ul>
 <li><code>bcftools/</code><ul>
-<li><code>&lt;sample-id&gt;/&lt;sample-id&gt;_&lt;constrain-id&gt;-CONSTRAIN.vcf.gz</code>: A VCF file containing the variant calls.</li>
-<li><code>&lt;sample-id&gt;/&lt;sample-id&gt;_&lt;constrain-id&gt;-CONSTRAIN.norm.vcf.gz</code>: A compressed VCF file where multiallelic sites are split up into biallelic records and SNPs and indels should be merged into a single record.</li>
-<li><code>&lt;sample-id&gt;/&lt;sample-id&gt;_&lt;constrain-id&gt;-CONSTRAIN.filtered.vcf.gz</code>: A compressed VCF file containing the filtered variants.</li>
-<li><code>&lt;sample-id&gt;/&lt;sample-id&gt;_&lt;constrain-id&gt;-CONSTRAIN.vcf.gz.tbi</code>: An index file for the compressed VCF file.</li>
-<li><code>&lt;sample-id&gt;/&lt;sample-id&gt;_&lt;constrain-id&gt;-CONSTRAIN_stats.txt</code>: A text file stats which is suitable for machine processing and can be plotted using plot-vcfstats.</li>
+<li><code>&lt;sample-id&gt;/&lt;sample-id&gt;_&lt;constraint-id&gt;-CONSTRAINT.vcf.gz</code>: A VCF file containing the variant calls.</li>
+<li><code>&lt;sample-id&gt;/&lt;sample-id&gt;_&lt;constraint-id&gt;-CONSTRAINT.norm.vcf.gz</code>: A compressed VCF file where multiallelic sites are split up into biallelic records and SNPs and indels should be merged into a single record.</li>
+<li><code>&lt;sample-id&gt;/&lt;sample-id&gt;_&lt;constraint-id&gt;-CONSTRAINT.filtered.vcf.gz</code>: A compressed VCF file containing the filtered variants.</li>
+<li><code>&lt;sample-id&gt;/&lt;sample-id&gt;_&lt;constraint-id&gt;-CONSTRAINT.vcf.gz.tbi</code>: An index file for the compressed VCF file.</li>
+<li><code>&lt;sample-id&gt;/&lt;sample-id&gt;_&lt;constraint-id&gt;-CONSTRAINT_stats.txt</code>: A text file stats which is suitable for machine processing and can be plotted using plot-vcfstats.</li>
 </ul>
 </li>
 <li><code>ivar/</code><ul>
-<li><code>&lt;sample-id&gt;/&lt;sample-id&gt;_&lt;constrain-id&gt;-CONSTRAIN.ivar.tsv</code>: A tabular file containing the variant calls.</li>
-<li><code>&lt;sample-id&gt;/&lt;sample-id&gt;_&lt;constrain-id&gt;-CONSTRAIN.ivar.vcf</code>: A VCF file containing the variant calls.</li>
-<li><code>&lt;sample-id&gt;/&lt;sample-id&gt;_&lt;constrain-id&gt;-CONSTRAIN.ivar.variant_counts.log</code>: A summary file containing the number of indels and SNPs.</li>
-<li><code>&lt;sample-id&gt;/&lt;sample-id&gt;_&lt;constrain-id&gt;-CONSTRAIN.filtered.vcf.gz</code>: A compressed VCF file containing the variant calls.</li>
-<li><code>&lt;sample-id&gt;/&lt;sample-id&gt;_&lt;constrain-id&gt;-CONSTRAIN_stats.txt</code>: A text file stats which is suitable for machine processing and can be plotted using plot-vcfstats.</li>
+<li><code>&lt;sample-id&gt;/&lt;sample-id&gt;_&lt;constraint-id&gt;-CONSTRAINT.ivar.tsv</code>: A tabular file containing the variant calls.</li>
+<li><code>&lt;sample-id&gt;/&lt;sample-id&gt;_&lt;constraint-id&gt;-CONSTRAINT.ivar.vcf</code>: A VCF file containing the variant calls.</li>
+<li><code>&lt;sample-id&gt;/&lt;sample-id&gt;_&lt;constraint-id&gt;-CONSTRAINT.ivar.variant_counts.log</code>: A summary file containing the number of indels and SNPs.</li>
+<li><code>&lt;sample-id&gt;/&lt;sample-id&gt;_&lt;constraint-id&gt;-CONSTRAINT.filtered.vcf.gz</code>: A compressed VCF file containing the variant calls.</li>
+<li><code>&lt;sample-id&gt;/&lt;sample-id&gt;_&lt;constraint-id&gt;-CONSTRAINT_stats.txt</code>: A text file stats which is suitable for machine processing and can be plotted using plot-vcfstats.</li>
 </ul>
 </li>
 </ul>
@@ -2726,11 +2726,11 @@
 <summary>Output files - iterations &amp; variants</summary>
 <ul>
 <li><code>consensus</code><ul>
-<li><code>seq/&lt;it# | scaffold_consensus | variant-calling | constrain&gt;/</code><ul>
+<li><code>seq/&lt;it# | scaffold_consensus | variant-calling | constraint&gt;/</code><ul>
 <li><code>&lt;sample-id&gt;/*.fasta</code>: A fasta file containing the consensus sequence.</li>
 </ul>
 </li>
-<li><code>mask/&lt;it# | variant-calling | constrain&gt;</code><ul>
+<li><code>mask/&lt;it# | variant-calling | constraint&gt;</code><ul>
 <li><code>&lt;sample-id&gt;/*.qual.txt</code>: A log file of the consensus run containing statistics. [<code>iVar</code> only]</li>
 <li><code>&lt;sample-id&gt;/*.bed</code>: A bed file containing the masked regions. [<code>BCFtools</code> only]</li>
 <li><code>&lt;sample-id&gt;/*.mpileup</code>: A mpileup file containing information on the depth and the quality of each aligned base.</li>
@@ -2748,12 +2748,12 @@
 <summary>Output files</summary>
 <ul>
 <li><code>consensus/quality_control/quast/</code><ul>
-<li><code>&lt;sample-id&gt;/&lt;iteration&gt;/&lt;sample-id&gt;_&lt;cl# | constrain-id&gt;.tsv</code>: A tabular file containing the QUAST report.</li>
+<li><code>&lt;sample-id&gt;/&lt;iteration&gt;/&lt;sample-id&gt;_&lt;cl# | constraint-id&gt;.tsv</code>: A tabular file containing the QUAST report.</li>
 </ul>
 </li>
 </ul>
 <blockquote>
-<p>If no iterative refinement was run, the output will be in the <code>consensus/quality_control/quast/&lt;sample-id&gt;/constrain</code> directory.</p>
+<p>If no iterative refinement was run, the output will be in the <code>consensus/quality_control/quast/&lt;sample-id&gt;/constraint</code> directory.</p>
 </blockquote>
 </details>
 <h3 id="checkv">CheckV</h3>
@@ -2762,10 +2762,10 @@
 <summary>Output files</summary>
 <ul>
 <li><code>consensus/quality_control/checkv/</code><ul>
-<li><code>&lt;sample-id&gt;/&lt;sample-id&gt;_&lt;cl# | constrain-id&gt;/quality_summary.tsv</code>: A tabular file that integrates the results from the three main modules of checkv and should be the main output referred to.</li>
-<li><code>&lt;sample-id&gt;/&lt;sample-id&gt;_&lt;cl# | constrain-id&gt;/completeness.tsv</code>: A detailed overview of how completeness was estimated.</li>
-<li><code>&lt;sample-id&gt;/&lt;sample-id&gt;_&lt;cl# | constrain-id&gt;/contamination.tsv</code>: A detailed overview of how contamination was estimated.</li>
-<li><code>&lt;sample-id&gt;/&lt;sample-id&gt;_&lt;cl# | constrain-id&gt;/complete_genomes.tsv</code>: A detailed overview of putative genomes identified.</li>
+<li><code>&lt;sample-id&gt;/&lt;sample-id&gt;_&lt;cl# | constraint-id&gt;/quality_summary.tsv</code>: A tabular file that integrates the results from the three main modules of checkv and should be the main output referred to.</li>
+<li><code>&lt;sample-id&gt;/&lt;sample-id&gt;_&lt;cl# | constraint-id&gt;/completeness.tsv</code>: A detailed overview of how completeness was estimated.</li>
+<li><code>&lt;sample-id&gt;/&lt;sample-id&gt;_&lt;cl# | constraint-id&gt;/contamination.tsv</code>: A detailed overview of how contamination was estimated.</li>
+<li><code>&lt;sample-id&gt;/&lt;sample-id&gt;_&lt;cl# | constraint-id&gt;/complete_genomes.tsv</code>: A detailed overview of putative genomes identified.</li>
 </ul>
 </li>
 </ul>
