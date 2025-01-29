@@ -423,7 +423,7 @@ def extract_mqc_data(table_headers: Union[str, Path]) -> Optional[pd.DataFrame]:
     return join_df(result, data) if data else result, columns_result
 
 
-def write_results(contigs_mqc: pd.DataFrame, constrains_mqc: pd.DataFrame, constrains_genstats: pd.DataFrame) -> int:
+def write_results(contigs_mqc: pd.DataFrame, constraints_mqc: pd.DataFrame, constraints_genstats: pd.DataFrame) -> int:
 
     """
     Write the results to files.
@@ -527,7 +527,7 @@ def main(argv=None):
 
     coalesced_constraints, constraints_genstats = reformat_constraint_df(constraints_mqc, renamed_columns, args)
 
-    write_results(contigs_mqc, coalesced_constrains, constrains_genstats)
+    write_results(contigs_mqc, coalesced_constraints, constraints_genstats)
 
     return 0
 
