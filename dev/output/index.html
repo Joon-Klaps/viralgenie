@@ -2726,11 +2726,11 @@
 <summary>Output files - iterations &amp; variants</summary>
 <ul>
 <li><code>consensus</code><ul>
-<li><code>seq/&lt;it# | consensus | singleton | constrain&gt;/</code><ul>
+<li><code>seq/&lt;it# | scaffold_consensus | variant-calling | constrain&gt;/</code><ul>
 <li><code>&lt;sample-id&gt;/*.fasta</code>: A fasta file containing the consensus sequence.</li>
 </ul>
 </li>
-<li><code>mask/&lt;it# | consensus | singleton | constrain&gt;</code><ul>
+<li><code>mask/&lt;it# | variant-calling | constrain&gt;</code><ul>
 <li><code>&lt;sample-id&gt;/*.qual.txt</code>: A log file of the consensus run containing statistics. [<code>iVar</code> only]</li>
 <li><code>&lt;sample-id&gt;/*.bed</code>: A bed file containing the masked regions. [<code>BCFtools</code> only]</li>
 <li><code>&lt;sample-id&gt;/*.mpileup</code>: A mpileup file containing information on the depth and the quality of each aligned base.</li>
