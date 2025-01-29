@@ -23,6 +23,7 @@ Initial release of Joon-Klaps/viralgenie, created with the [nf-core](https://nf-
 - Make custom-mpileup.py postion 1 index based and not 0 index to follow bcftools ([#153](https://github.com/Joon-Klaps/viralgenie/pull/153))
 - Update docs for more streamlined docs & figures ([#154](https://github.com/Joon-Klaps/viralgenie/pull/154))
 - Add column in custom mpileup - Shannon entropy ([#156](https://github.com/Joon-Klaps/viralgenie/pull/156))
+- include empty samples in multiqc sample overview ([#162](https://github.com/Joon-Klaps/viralgenie/pull/162))
 
 ### `Fixed`
 
