@@ -10,9 +10,8 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
 
 import multiqc as mqc
-import numpy as np
 import pandas as pd
-from multiqc.plots import bargraph, table
+from multiqc.plots import bargraph
 from multiqc.types import Anchor
 from utils.constant_variables import CLUSTER_PCONFIG
 from utils.file_tools import filelist_to_df, get_module_selection, read_in_quast, write_df
@@ -178,6 +177,21 @@ def parse_args(argv=None):
     )
     return parser.parse_args(argv)
 
+def get_failed_samples(samples: List[str]) -> List[str]:
+    """
+    Get failed samples from the modules
+        - sample_low_reads
+        - samples_without_contigs
+    """
+    if (samples_low_reads :=  get_module_data(mqc, 'samples_low_reads')):
+        logger.info("samples_low_reads %s", samples_low_reads)
+        samples.extend([k for k in samples_low_reads.keys()])
+
+    if (samples_without_contigs := get_module_data(mqc, 'samples_without_contigs')):
+        logger.info("samples_without_contigs %s", samples_without_contigs)
+        samples.extend([k for k in samples_without_contigs.keys() ])
+
+    return samples
 
 def load_custom_data(args) -> List[pd.DataFrame]:
     """
@@ -409,11 +423,12 @@ def extract_mqc_data(table_headers: Union[str, Path]) -> Optional[pd.DataFrame]:
     return join_df(result, data) if data else result, columns_result
 
 
-def write_results(contigs_mqc, constrains_mqc, constrains_genstats, args) -> int:
+def write_results(contigs_mqc: pd.DataFrame, constrains_mqc: pd.DataFrame, constrains_genstats: pd.DataFrame) -> int:
     """
     Write the results to files.
     """
-    samples = []
+    samples = get_failed_samples([])
+    logger.info("samples %s", samples)
     if not contigs_mqc.empty:
         logger.info("Writing Unfiltered Denovo constructs table file: contigs_overview.tsv")
         samples.extend(contigs_mqc["sample"])
@@ -511,7 +526,7 @@ def main(argv=None):
 
     coalesced_constrains, constrains_genstats = reformat_constrain_df(constrains_mqc, renamed_columns, args)
 
-    write_results(contigs_mqc, coalesced_constrains, constrains_genstats, args)
+    write_results(contigs_mqc, coalesced_constrains, constrains_genstats)
     return 0
 
 
