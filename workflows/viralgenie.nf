@@ -33,7 +33,7 @@ include { ALIGN_COLLAPSE_CONTIGS          } from '../subworkflows/local/align_co
 include { UNPACK_DB                       } from '../subworkflows/local/unpack_db'
 include { FASTQ_FASTA_ITERATIVE_CONSENSUS } from '../subworkflows/local/fastq_fasta_iterative_consensus'
 include { SINGLETON_FILTERING             } from '../subworkflows/local/singleton_filtering'
-// Mapping constrains selection
+// Mapping constraints selection
 include { FASTQ_FASTA_MASH_SCREEN         } from '../subworkflows/local/fastq_fasta_mash_screen'
 // QC consensus
 include { CONSENSUS_QC                    } from '../subworkflows/local/consensus_qc'
@@ -69,7 +69,7 @@ workflow VIRALGENIE {
     ch_contaminants   = createFileChannel(params.contaminants)
     ch_spades_yml     = createFileChannel(params.spades_yml)
     ch_spades_hmm     = createFileChannel(params.spades_hmm)
-    ch_constrain_meta = createFileChannel(params.mapping_constraints)
+    ch_constraint_meta = createFileChannel(params.mapping_constraints)
 
     // Databases, we really don't want to stage uncessary databases
     ch_ref_pool      = (!params.skip_assembly && !params.skip_polishing) || (!params.skip_consensus_qc && !params.skip_blast_qc)           ? createChannel( params.reference_pool, "reference", true )                                                         : Channel.empty()
@@ -338,7 +338,7 @@ workflow VIRALGENIE {
             .transpose(remainder: true)                                                         // Unnest
             .set{ch_mapping_constraints}
 
-        // Joining all the reads with the mapping constrains, filter for those specified or keep everything if none specified.
+        // Joining all the reads with the mapping constraints, filter for those specified or keep everything if none specified.
         ch_decomplex_trim_reads
             .combine( ch_mapping_constraints )
             .tap{mapping_constraints_tmp}
@@ -346,21 +346,21 @@ workflow VIRALGENIE {
             .map
                 {
                     meta, reads, meta_mapping, samples, sequence_mapping ->
-                    def id = "${meta.sample}_${meta_mapping.id}-CONSTRAIN"
+                    def id = "${meta.sample}_${meta_mapping.id}-CONSTRAINT"
                     def new_meta = meta + meta_mapping + [
                         id: id,
                         cluster_id: "${meta_mapping.id}",
-                        step: "constrain",
-                        constrain: true,
+                        step: "constraint",
+                        constraint: true,
                         reads: reads,
                         iteration: 'variant-calling',
-                        previous_step: 'constrain'
+                        previous_step: 'constraint'
                         ]
                     return [new_meta, sequence_mapping]
                 }
             .set{ch_map_seq_anno_combined}
 
-        // Map with both reads and mapping constrains
+        // Map with both reads and mapping constraints
         ch_map_seq_anno_combined
             .map{ it -> return [it[0], it[1], it[0].reads] }
             .branch{
@@ -368,24 +368,24 @@ workflow VIRALGENIE {
                 multiFastaSelection : meta.selection == true
                 singleFastaSelection : meta.selection == false
             }
-            .set{constrain_consensus_reads}
+            .set{constraint_consensus_reads}
 
         // Select the correct reference
         FASTQ_FASTA_MASH_SCREEN (
-            constrain_consensus_reads.multiFastaSelection
+            constraint_consensus_reads.multiFastaSelection
         )
         ch_versions = ch_versions.mix(FASTQ_FASTA_MASH_SCREEN.out.versions)
         ch_mash_screen = FASTQ_FASTA_MASH_SCREEN.out.json.collect{it[1]}
 
         // For QC we keep original sequence to compare to
         ch_unaligned_raw_contigs = ch_unaligned_raw_contigs
-            .mix(constrain_consensus_reads.singleFastaSelection.map{meta, fasta, reads -> [meta, fasta]})
+            .mix(constraint_consensus_reads.singleFastaSelection.map{meta, fasta, reads -> [meta, fasta]})
             .mix(FASTQ_FASTA_MASH_SCREEN.out.reference_fastq.map{meta, fasta, reads -> [meta, fasta]})
 
         //Add to the consensus channel, which will be used for variant calling
         ch_consensus_results_reads = ch_consensus_results_reads
             .mix(FASTQ_FASTA_MASH_SCREEN.out.reference_fastq)
-            .mix(constrain_consensus_reads.singleFastaSelection)
+            .mix(constraint_consensus_reads.singleFastaSelection)
     }
 
     // After consensus sequences have been made, we still have to map against it and call variants
@@ -484,7 +484,7 @@ workflow VIRALGENIE {
         ch_checkv_summary.ifEmpty([]),
         ch_quast_summary.ifEmpty([]),
         ch_blast_summary.ifEmpty([]),
-        ch_constrain_meta,
+        ch_constraint_meta,
         ch_annotation_summary.ifEmpty([]),
         ch_clusters_tsv.ifEmpty([]),
         ch_mash_screen.ifEmpty([]),

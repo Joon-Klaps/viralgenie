@@ -419,7 +419,7 @@
                 "precluster_exclude_taxa": {
                     "type": "string",
                     "fa_icon": "fas fa-filter",
-                    "description": "Hard constrain for taxa to exclude from the preclustering, if multiple given make sure to enclose with '\"' and separate with a space.",
+                    "description": "Hard constraint for taxa to exclude from the preclustering, if multiple given make sure to enclose with '\"' and separate with a space.",
                     "help_text": "The taxonomic classification of the contigs can be filtered. This can be done by specifying a list of taxa that should be excluded from the results.",
                     "pattern": "^[\\d +]+$"
                 },

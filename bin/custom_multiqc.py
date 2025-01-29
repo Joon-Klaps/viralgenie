@@ -101,8 +101,8 @@ def parse_args(argv=None):
 
     parser.add_argument(
         "--mapping_constraints",
-        metavar="MAPPING CONSTRAINS",
-        help="Mapping constrains file containing information on the sequences that need to be used for mapping against the samples, supported formats: '.csv', '.tsv', '.yaml', '.yml'",
+        metavar="MAPPING CONSTRAINTS",
+        help="Mapping constraints file containing information on the sequences that need to be used for mapping against the samples, supported formats: '.csv', '.tsv', '.yaml', '.yml'",
         type=lambda s: file_choices(("csv", "tsv", "yaml", "yml"), s),
     )
 
@@ -423,7 +423,8 @@ def extract_mqc_data(table_headers: Union[str, Path]) -> Optional[pd.DataFrame]:
     return join_df(result, data) if data else result, columns_result
 
 
-def write_results(contigs_mqc: pd.DataFrame, constrains_mqc: pd.DataFrame, constrains_genstats: pd.DataFrame) -> int:
+def write_results(contigs_mqc: pd.DataFrame, constraints_mqc: pd.DataFrame, constraints_genstats: pd.DataFrame) -> int:
+
     """
     Write the results to files.
     """
@@ -436,15 +437,15 @@ def write_results(contigs_mqc: pd.DataFrame, constrains_mqc: pd.DataFrame, const
         table_plot = contigs_mqc[~contigs_mqc.index.isin(generate_ignore_samples(contigs_mqc))]
         write_df(table_plot.sort_values(by=["sample", "cluster", "step"]), "contigs_overview.tsv", [])
 
-    if not constrains_mqc.empty:
+    if not constraints_mqc.empty:
         logger.info("Writing Unfiltered Mapping constructs table file: mapping_overview.tsv")
-        write_df(constrains_mqc.sort_values(by=["sample", "cluster", "step"]), "mapping_overview.tsv", [])
-        samples.extend(constrains_mqc["sample"])
+        write_df(constraints_mqc.sort_values(by=["sample", "cluster", "step"]), "mapping_overview.tsv", [])
+        samples.extend(constraints_mqc["sample"])
 
-    if not constrains_genstats.empty:
+    if not constraints_genstats.empty:
         # Add to mqc
-        module = mqc.BaseMultiqcModule(name="Mapping Constrains Summary", anchor=Anchor("custom_data"))
-        content = constrains_genstats.to_dict(orient="index")
+        module = mqc.BaseMultiqcModule(name="Mapping Constraints Summary", anchor=Anchor("custom_data"))
+        content = constraints_genstats.to_dict(orient="index")
         module.general_stats_addcols(content)
         mqc.report.modules.append(module)
 
@@ -520,13 +521,14 @@ def main(argv=None):
     mqc_custom_df = reformat_custom_df(mqc_custom_df, cluster_df)
     mqc_custom_df.to_csv("mqc_custom_df.after.tsv", sep="\t")
 
-    # 5.3 split up denovo constructs and mapping (-CONSTRAIN) results
-    logger.info("Splitting up denovo constructs and mapping (-CONSTRAIN) results")
-    contigs_mqc, constrains_mqc = filter_constrain(mqc_custom_df, "cluster", "-CONSTRAIN")
+    # 5.3 split up denovo constructs and mapping (-CONSTRAINT) results
+    logger.info("Splitting up denovo constructs and mapping (-CONSTRAINT) results")
+    contigs_mqc, constraints_mqc = filter_constraint(mqc_custom_df, "cluster", "-CONSTRAINT")
 
-    coalesced_constrains, constrains_genstats = reformat_constrain_df(constrains_mqc, renamed_columns, args)
+    coalesced_constraints, constraints_genstats = reformat_constraint_df(constraints_mqc, renamed_columns, args)
 
-    write_results(contigs_mqc, coalesced_constrains, constrains_genstats)
+    write_results(contigs_mqc, coalesced_constraints, constraints_genstats)
+
     return 0
 
 

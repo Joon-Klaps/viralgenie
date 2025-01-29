@@ -20,7 +20,7 @@ BLAST_COLUMNS = [
     "bitscore",
 ]
 
-CONSTRAIN_GENERAL_STATS_COLUMNS = [
+CONSTRAINT_GENERAL_STATS_COLUMNS = [
     "reads_mapped",
     "reads_mapped_percent",
     "reads_unmapped",

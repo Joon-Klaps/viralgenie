@@ -29,6 +29,9 @@ def check_file_exists(file: str, throw_error=True) -> bool:
     Returns:
         bool: True if the file exists and is not empty, False otherwise.
     """
+    if not file:
+        logger.warning("The given input file %s was not a file!", file)
+        return False
     if not Path(file).exists():
         if throw_error:
             logger.error("The given input file %s was not found!", file)
@@ -213,7 +216,7 @@ def df_from_json(file: str, **kwargs) -> pd.DataFrame:
             # Get the filename without path and suffix
             filename = os.path.splitext(os.path.basename(file))[0]
             # Add new key-value pair
-            data["filename"] = filename + "_constrain"
+            data["filename"] = filename + "_constraint"
         df = pd.DataFrame([data])
     return df
 
