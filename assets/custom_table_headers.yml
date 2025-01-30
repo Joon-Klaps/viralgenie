@@ -1,6 +1,6 @@
 failed_mapped:
   - mapped reads
-samtools-1="samtools Raw":
+'cluster: samtools stats (raw)="samtools Raw"':
   - total_length: "total length"
   - average_length: "average length"
   - average_quality: "average quality"
@@ -31,14 +31,14 @@ samtools-1="samtools Raw":
   - bases_duplicated: "bases duplicated"
 umitools:
   - multiqc_umitools_dedup:
-      - input_reads: "mapped reads"
-      - removed_reads: "removed reads"
-      - output_reads: "deduplicated reads"
+      - dedup_input_reads: "mapped reads"
+      - dedup_removed_reads: "removed reads"
+      - dedup_output_reads: "deduplicated reads"
       - positions_deduplicated: "positions deduplicated"
       - max_umi_per_pos: "max UMI per position"
       - mean_umi_per_pos: "mean UMI per position"
       - total_umis: "total UMIs"
-      - percent_passing_dedup: "% passing dedup"
+      - dedup_percent_passing: "% passing"
       - unique_umis: "unique UMIs"
 picard:
   - multiqc_picard_dups:
@@ -52,7 +52,7 @@ picard:
       - READ_PAIR_DUPLICATES: "read pair duplicates"
       - PERCENT_DUPLICATION: "% duplication"
       - LIBRARY: "library"
-samtools="samtools Post-dedup":
+'cluster: samtools stats (post-dedup)="samtools Post-dedup"':
   - multiqc_samtools_stats:
       - total_length: "total length"
       - average_length: "average length"

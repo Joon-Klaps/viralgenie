@@ -299,28 +299,35 @@ def get_general_stats_data_mod(sample: Optional[str] = None) -> Dict:
     return data
 
 
-def get_module_data(mqc: object, module: str) -> Dict[str, any]:
+def get_module_data(mqc: object, m: str) -> Dict[str, any]:
     """
-    Attempt to get data for a module that might be a partial match.
+    Attempt to get data for a m that might be a partial match.
 
     Args:
         mqc (object): MultiQC object.
-        module (str): Module name to search for.
+        m (str): Module name to search for.
 
     Returns:
         Dict[str, Any]: Module data if found, otherwise an empty dict.
     """
-    if module in mqc.list_modules():
-        data = mqc.get_module_data(module)
-        return data
+    module_names = [m.name.lower() for m in mqc.report.modules]
+    module_anchors = mqc.list_modules()
 
-    module_basename = module.split("_")[0]
-    if module_basename in mqc.list_modules():
-        all_data = mqc.get_module_data(module_basename)
+    if m in module_anchors:
+        return mqc.get_module_data(m)
+
+    if m.lower() in module_names:
+        m_anchor = get_anchor(mqc,m)
+        logger.info("anchor %s : found for %s", m_anchor, m)
+        return mqc.get_module_data(m_anchor)
+
+    m_basename = m.replace('-', '_').split("_")[0]
+    if m_basename in module_anchors:
+        all_data = mqc.get_module_data(m_basename)
         if all_data:
-            matching_key = next((key for key in all_data.keys() if module in key), None)
+            matching_key = next((key for key in all_data.keys() if m in key), None)
             if matching_key:
-                logger.debug("Data found for %s in MultiQC under key %s", module, matching_key)
+                logger.debug("Data found for %s in MultiQC under key %s", m, matching_key)
                 return all_data[matching_key]
     return {}
 
@@ -341,7 +348,7 @@ def extract_module_data(
         - List of column specifications
     """
     # Retrieve all data for the specified module
-    all_module_data = mqc.get_module_data(module=module)
+    all_module_data = get_module_data(mqc, module)
 
     # Early exit if no data is found
     if not all_module_data:
@@ -350,7 +357,7 @@ def extract_module_data(
 
     # Handle simple string or None section cases
     if isinstance(section, str) or section is None:
-        return extract_mqc_from_simple_section(all_module_data, section, module)
+        return extract_mqc_from_str_section(all_module_data, section, module)
 
     # Handle list of strings or column specifications
     if isinstance(section, list):
@@ -395,9 +402,12 @@ def extract_mqc_data(table_headers: Union[str, Path]) -> Optional[pd.DataFrame]:
     """
     result = pd.DataFrame()
     module_selection = get_module_selection(table_headers)
-    av_modules = mqc.list_modules()
+    av_modules = [m.name.lower() for m in mqc.report.modules]
+    av_modules.extend(mqc.list_modules())
     data = []
     columns_result = []
+
+    logger.info("av_modules %s", av_modules)
 
     for module, section in module_selection.items():
         new_module_name = module.split("=")[1].strip('\"') if "=" in module else module
@@ -495,7 +505,7 @@ def main(argv=None):
     )
 
     for module in [m for m in mqc.list_modules() if "viralgenie" not in m]:
-        module_data = mqc.get_module_data(module)
+        module_data = get_module_data(mqc, module)
         logger.info("Data for %s: %s", module, module_data.keys())
 
     # 2. Extract MQC data

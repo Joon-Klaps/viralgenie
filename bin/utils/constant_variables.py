@@ -45,6 +45,8 @@ CONSTRAINT_GENERAL_STATS_COLUMNS = [
     "(mash-screen) query-ID",
     "(mash-screen) shared-hashes",
     "(failed_mapped) mapped reads",
+    "(umitools) removed reads",
+    "(umitools) deduplicated reads"
 ]
 
 COLUMN_MAPPING = {"(blast) qlen": "consensus length", "(annotation) qlen": "consensus length"}
