@@ -400,6 +400,8 @@ def extract_mqc_data(table_headers: Union[str, Path]) -> Optional[pd.DataFrame]:
     columns_result = []
 
     for module, section in module_selection.items():
+        new_module_name = module.split("=")[1].strip('\"') if "=" in module else module
+        module = module.split('=', maxsplit=1)[0].strip('\"') if "=" in module else module
         if module == "general_stats":
             logger.info("Extracting general stats data from multiqc")
             module_data, columns = handle_general_stats(section)
@@ -413,7 +415,7 @@ def extract_mqc_data(table_headers: Union[str, Path]) -> Optional[pd.DataFrame]:
             module_data, columns = extract_module_data(module, section)
             logger.debug("Data for %s: %s", module, module_data)
 
-        module_data = [df.add_prefix(f"({module}) ") for df in module_data]
+        module_data = [df.add_prefix(f"({new_module_name}) ") for df in module_data]
         columns = add_prefix_to_values_dict(columns, module)
         data.extend(module_data)
         columns_result.extend(columns)

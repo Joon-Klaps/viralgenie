@@ -88,7 +88,13 @@ module_order:
   - "umitools":
       name: "CLUSTER: UMI-tools"
   - "samtools":
-      name: "CLUSTER: Samtools Stats"
+      name: "CLUSTER: Samtools Stats (Post-dedup)"
+      path_filters_exclude:
+        - "*.raw.stats"
+  - "samtools":
+      name: "CLUSTER: Samtools Stats (Raw)"
+      path_filters:
+        - "*.raw.stats"
   - "mosdepth":
       name: "CLUSTER: mosdepth"
   - "bcftools":
@@ -237,6 +243,7 @@ extra_fn_clean_exts:
   - ".filtered"
   - ".norm"
   - ".sort"
+  - ".raw"
   - ".consensus_bcftools"
   - ".consensus_ivar"
   - ".umi_deduplicated"

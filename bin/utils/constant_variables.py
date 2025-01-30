@@ -21,9 +21,14 @@ BLAST_COLUMNS = [
 ]
 
 CONSTRAINT_GENERAL_STATS_COLUMNS = [
-    "reads_mapped",
-    "reads_mapped_percent",
-    "reads_unmapped",
+    "(samtools Post-dedup) reads mapped %",
+    "(samtools Post-dedup) reads mapped",
+    "(samtools Post-dedup) reads unmapped %",
+    "(samtools Post-dedup) reads unmapped",
+    "(samtools Raw) reads mapped %",
+    "(samtools Raw) reads mapped",
+    "(samtools Raw) reads unmapped %",
+    "(samtools Raw) reads unmapped",
     "number_of_SNPs",
     "number_of_indels",
     "CLUSTER: mosdepth.mean_coverage",
@@ -45,12 +50,14 @@ CONSTRAINT_GENERAL_STATS_COLUMNS = [
 COLUMN_MAPPING = {"(blast) qlen": "consensus length", "(annotation) qlen": "consensus length"}
 
 FILES_OF_INTEREST = {
-    "samtools": "multiqc_samtools_stats",
+    "failed_mapped": "",
+    'samtools-1="samtools Raw"': "",
     "umitools": "multiqc_umitools_dedup",
-    "multiqc_general_stats": "",
     "picard": "mutliqc_picard_dups",
+    'samtools="samtools Post-dedup"': "multiqc_samtools_stats",
     "ivar_variants": "",
     "bcftools": "multiqc_bcftools_stats",
+    "multiqc_general_stats": "",
 }
 
 CLUSTER_HEADERS = {
