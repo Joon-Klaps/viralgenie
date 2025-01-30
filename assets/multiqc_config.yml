@@ -83,6 +83,10 @@ module_order:
         - "*_trinity.tsv"
   - "cluster-summary":
       name: "SAMPLE: Contig clustering"
+  - "samtools":
+      name: "CLUSTER: Samtools Stats (Raw)"
+      path_filters:
+        - "*.raw.stats"
   - "picard":
       name: "CLUSTER: Picard"
   - "umitools":
@@ -90,10 +94,6 @@ module_order:
   - "samtools":
       name: "CLUSTER: Samtools Stats (Post-dedup)"
       path_filters_exclude:
-        - "*.raw.stats"
-  - "samtools":
-      name: "CLUSTER: Samtools Stats (Raw)"
-      path_filters:
         - "*.raw.stats"
   - "mosdepth":
       name: "CLUSTER: mosdepth"
