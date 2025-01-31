@@ -200,13 +200,13 @@ def create_constraint_summary(df_constraint: pd.DataFrame, file_columns: List[Un
         else:
             dic_columns[item] = item
 
-    logger.info("dic_columns: %s", dic_columns)
+    logger.debug("dic_columns: %s", dic_columns)
 
     columns_of_interest = [dic_columns.get(key, key) for key in CONSTRAINT_GENERAL_STATS_COLUMNS]
 
-    logger.info("columns_of_interest: %s", columns_of_interest)
+    logger.debug("columns_of_interest: %s", columns_of_interest)
 
-    logger.info("available columns: %s", df_constraint.columns)
+    logger.debug("available columns: %s", df_constraint.columns)
 
     if not columns_of_interest:
         logger.warning("No columns of interest were found to create the constraint summary table!")
