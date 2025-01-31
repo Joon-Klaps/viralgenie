@@ -36,18 +36,14 @@ module_order:
       name: "SAMPLE: FastQC (Raw)"
       path_filters:
         - "*_raw*fastqc.zip"
-  - "fastqc":
-      name: "SAMPLE: FastQC (Post-trimming)"
-      path_filters:
-        - "*_trim*fastqc.zip"
-  - "fastqc":
-      name: "SAMPLE: FastQC (post-Host-removal)"
-      path_filters:
-        - "*_host*fastqc.zip"
   - "fastp":
       name: "SAMPLE: fastp"
   - "trimmomatic":
       name: "SAMPLE: trimmomatic"
+  - "fastqc":
+      name: "SAMPLE: FastQC (Post-trimming)"
+      path_filters:
+        - "*_trim*fastqc.zip"
   - "humid":
       name: "SAMPLE: humid"
   - "bbduk":
@@ -56,6 +52,10 @@ module_order:
       name: "SAMPLE: Kraken2 (Host-removal)"
       path_filters:
         - "*_kraken2_host.kraken2.report.txt"
+  - "fastqc":
+      name: "SAMPLE: FastQC (post-Host-removal)"
+      path_filters:
+        - "*_host*fastqc.zip"
   - "kraken":
       name: "SAMPLE: Kraken2 (Diversity)"
       path_filters:
@@ -66,6 +66,8 @@ module_order:
         - "*bracken.kraken2.report.txt"
   - "kaiju":
       name: "SAMPLE: Kaiju (Diversity)"
+  - "cluster-summary":
+      name: "SAMPLE: Contig clustering"
   - "quast":
       name: "SAMPLE: Quast (Spades)"
       anchor: "quast_spades"
@@ -81,8 +83,6 @@ module_order:
       anchor: "quast_trinity"
       path_filters:
         - "*_trinity.tsv"
-  - "cluster-summary":
-      name: "SAMPLE: Contig clustering"
   - "samtools":
       name: "CLUSTER: Samtools Stats (Raw)"
       path_filters:
