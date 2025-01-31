@@ -180,7 +180,8 @@
                     "krakentools/kreport2krona": {
                         "branch": "master",
                         "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
-                        "installed_by": ["modules"]
+                        "installed_by": ["modules"],
+                        "patch": "modules/nf-core/krakentools/kreport2krona/krakentools-kreport2krona.diff"
                     },
                     "krona/ktimporttext": {
                         "branch": "master",
