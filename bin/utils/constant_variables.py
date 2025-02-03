@@ -29,6 +29,17 @@ READ_DECLARATION = {
         'namespace_patterns': 'fastp',
         'suffix': 'R1+R2'
     },
+    'unique reads': {
+        'namespace_patterns': 'humid',
+        'suffix': 'R1,R2'
+    },
+    'reads assigned': {
+        'namespace_patterns': 'kaiju',
+        'suffix': 'R1+R2'
+    }
+    #TODO:
+    # - prinseq ++
+    # - bbduk
 
 }
 
