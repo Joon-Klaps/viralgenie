@@ -13,7 +13,7 @@ import multiqc as mqc
 import pandas as pd
 from multiqc.plots import bargraph
 from multiqc.types import Anchor
-from utils.constant_variables import CLUSTER_PCONFIG
+from utils.constant_variables import CLUSTER_PCONFIG, READ_DECLARATION
 from utils.file_tools import filelist_to_df, get_module_selection, read_in_quast, write_df
 from utils.module_data_processing import *
 from utils.pandas_tools import filter_and_rename_columns, join_df, reorder_columns, select_columns
@@ -279,8 +279,8 @@ def get_general_stats_data_mod(sample: Optional[str] = None) -> Dict:
     @param sample: Sample name
     @return: Dict of general stats data indexed by sample and data key
     """
-
     data: Dict[str, Dict] = defaultdict(dict)
+
     for rows_by_group, header in zip(mqc.report.general_stats_data, mqc.report.general_stats_headers):
         for s, rows in rows_by_group.items():
             if sample and s != sample:
@@ -289,14 +289,22 @@ def get_general_stats_data_mod(sample: Optional[str] = None) -> Dict:
                 for key, val in row.data.items():
                     if key in header:
                         namespace = header[key].get("namespace", key).replace("SAMPLE: ", "")
-                        final_key = f"{namespace}. {header[key].get('title', key)}" if header[key].get("title") else key
-                        data[s][final_key] = val
+                        title = header[key].get("title", key)
+                        column_name = f"{namespace}. {title}" if title else key
+
+                        # Declare if read counts are R1,R2 or R1+R2
+                        read_suffix = get_read_suffix(namespace.lower(), title.lower())
+                        if read_suffix:
+                            column_name += f" ({read_suffix})"
+
+                        data[s][column_name] = val
+
     if sample:
-        if not data:
-            return {}
-        return data[sample]
+        return data.get(sample, {})
 
     return data
+
+
 
 
 def get_module_data(mqc: object, m: str) -> Dict[str, any]:

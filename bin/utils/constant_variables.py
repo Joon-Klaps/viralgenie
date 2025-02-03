@@ -20,6 +20,19 @@ BLAST_COLUMNS = [
     "bitscore",
 ]
 
+READ_DECLARATION = {
+    'seqs': {
+        'namespace_patterns': 'fastqc',
+        'suffix': 'R1,R2'
+    },
+    'reads after filtering': {
+        'namespace_patterns': 'fastp',
+        'suffix': 'R1+R2'
+    },
+
+}
+
+
 CONSTRAINT_GENERAL_STATS_COLUMNS = [
     "(samtools Post-dedup) reads mapped %",
     "(samtools Post-dedup) reads mapped",

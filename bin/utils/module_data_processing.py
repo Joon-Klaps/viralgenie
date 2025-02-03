@@ -6,7 +6,7 @@ from typing import Dict, List, Union, Tuple, Optional, Any
 
 import pandas as pd
 
-from utils.constant_variables import BLAST_COLUMNS, CONSTRAINT_GENERAL_STATS_COLUMNS, COLUMN_MAPPING
+from utils.constant_variables import BLAST_COLUMNS, CONSTRAINT_GENERAL_STATS_COLUMNS, COLUMN_MAPPING, READ_DECLARATION
 from utils.file_tools import filelist_to_df
 from utils.pandas_tools import (
     coalesce_constraint,
@@ -416,3 +416,23 @@ def extract_mqc_from_dict_section(all_module_data: Dict, section: Dict, module: 
 
     logger.warning(f"Section '{section_name}' not found in module '{module}'")
     return [pd.DataFrame()], []
+
+def get_read_suffix(namespace: str, title: str) -> str | None:
+    """
+    Get the read suffix based on the namespace and title.
+
+    Args:
+        namespace: The namespace to check
+        title: The title to lookup
+
+    Returns:
+        str | None: The read suffix if found, None otherwise
+    """
+    if title not in READ_DECLARATION:
+        return None
+
+    title_config = READ_DECLARATION[title]
+    if any(pattern in namespace for pattern in title_config['namespace_patterns']):
+        return title_config['suffix']
+
+    return None
