@@ -46,6 +46,8 @@ module_order:
         - "*_trim*fastqc.zip"
   - "humid":
       name: "SAMPLE: humid"
+  - "prinseqplusplus":
+      name: "SAMPLE: prinseq++"
   - "bbduk":
       name: "SAMPLE: bbduk"
   - "kraken":

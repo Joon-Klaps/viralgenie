@@ -442,6 +442,31 @@ def extract_mqc_data(table_headers: Union[str, Path]) -> Optional[pd.DataFrame]:
 
     return join_df(result, data) if data else result, columns_result
 
+def add_n_consensus_clusters_to_mqc(dataframe: pd.DataFrame)-> pd.DataFrame:
+    """
+    Add the number of consensus clusters to the multiqc general stats data.
+    """
+    df = dataframe.copy()
+    ordered_list = ["constraint"] + [f"it{i}" for i in range(100, 0, -1)] + ["itvariant-calling", "consensus", "singleton"]
+    df["step"] = pd.Categorical(df["step"], categories=ordered_list, ordered=True)
+
+    last_iteration = df["step"].max()
+    logger.info("Last iteration: %s", last_iteration)
+
+    # Count how often samples have the last iteration
+    last_iteration_count = df[df["step"] == last_iteration].groupby("sample").size().to_frame(name="# Final denovo clusters")
+
+    if last_iteration_count.empty:
+        return None
+
+    # Add the number of consensus clusters to the general stats data
+    module = mqc.BaseMultiqcModule(name="Consensus Count", anchor=Anchor("custom_data"))
+    content = last_iteration_count.to_dict(orient="index")
+    module.general_stats_addcols(content)
+    mqc.report.modules.append(module)
+    return 0
+
+
 
 def write_results(contigs_mqc: pd.DataFrame, constraints_mqc: pd.DataFrame, constraints_genstats: pd.DataFrame) -> int:
 
@@ -455,6 +480,7 @@ def write_results(contigs_mqc: pd.DataFrame, constraints_mqc: pd.DataFrame, cons
         samples.extend(contigs_mqc["sample"])
         write_df(contigs_mqc.sort_values(by=["sample", "cluster", "step"]), "contigs_overview-with-iterations.tsv", [])
         table_plot = contigs_mqc[~contigs_mqc.index.isin(generate_ignore_samples(contigs_mqc))]
+        add_n_consensus_clusters_to_mqc(table_plot)
         write_df(table_plot.sort_values(by=["sample", "cluster", "step"]), "contigs_overview.tsv", [])
 
     if not constraints_mqc.empty:
