@@ -447,10 +447,10 @@ def add_n_consensus_clusters_to_mqc(dataframe: pd.DataFrame)-> pd.DataFrame:
     Add the number of consensus clusters to the multiqc general stats data.
     """
     df = dataframe.copy()
-    ordered_list = ["constraint"] + [f"it{i}" for i in range(100, 0, -1)] + ["itvariant-calling", "consensus", "singleton"]
+    ordered_list = [f"it{i}" for i in range(100, 0, -1)] + ["itvariant-calling", "consensus", "singleton"]
     df["step"] = pd.Categorical(df["step"], categories=ordered_list, ordered=True)
 
-    last_iteration = df["step"].max()
+    last_iteration = df["step"].min()
     logger.info("Last iteration: %s", last_iteration)
 
     # Count how often samples have the last iteration
