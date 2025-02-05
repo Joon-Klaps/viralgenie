@@ -13,7 +13,7 @@ import multiqc as mqc
 import pandas as pd
 from multiqc.plots import bargraph
 from multiqc.types import Anchor
-from utils.constant_variables import CLUSTER_PCONFIG, READ_DECLARATION
+from utils.constant_variables import CLUSTER_PCONFIG
 from utils.file_tools import filelist_to_df, get_module_selection, read_in_quast, write_df
 from utils.module_data_processing import *
 from utils.pandas_tools import filter_and_rename_columns, join_df, reorder_columns, select_columns
@@ -488,13 +488,6 @@ def write_results(contigs_mqc: pd.DataFrame, constraints_mqc: pd.DataFrame, cons
         write_df(constraints_mqc.sort_values(by=["sample", "cluster", "step"]), "mapping_overview.tsv", [])
         samples.extend(constraints_mqc["sample"])
 
-    if not constraints_genstats.empty:
-        # Add to mqc
-        module = mqc.BaseMultiqcModule(name="Mapping Constraints Summary", anchor=Anchor("custom_data"))
-        content = constraints_genstats.to_dict(orient="index")
-        module.general_stats_addcols(content)
-        mqc.report.modules.append(module)
-
     # Remove empty lines from the general stats data report
     samples = list(set(samples))
     mqc.report.general_stats_data = [{k: v for k, v in d.items() if k in samples} for d in mqc.report.general_stats_data]
@@ -503,6 +496,9 @@ def write_results(contigs_mqc: pd.DataFrame, constraints_mqc: pd.DataFrame, cons
         logger.info("Writing general stats file: samples_overview.tsv")
         samples_overview = pd.DataFrame.from_dict(get_general_stats_data_mod(), orient="index")
         samples_overview["sample"] = samples_overview.index
+        if not constraints_genstats.empty:
+            samples_overview = samples_overview.join(constraints_genstats, on="sample", how="left")
+
         write_df(reorder_columns(samples_overview, ["sample"]), "samples_overview.tsv", [])
 
     mqc.write_report(
