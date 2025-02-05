@@ -279,8 +279,8 @@ def get_general_stats_data_mod(sample: Optional[str] = None) -> Dict:
     @param sample: Sample name
     @return: Dict of general stats data indexed by sample and data key
     """
-
     data: Dict[str, Dict] = defaultdict(dict)
+
     for rows_by_group, header in zip(mqc.report.general_stats_data, mqc.report.general_stats_headers):
         for s, rows in rows_by_group.items():
             if sample and s != sample:
@@ -289,38 +289,53 @@ def get_general_stats_data_mod(sample: Optional[str] = None) -> Dict:
                 for key, val in row.data.items():
                     if key in header:
                         namespace = header[key].get("namespace", key).replace("SAMPLE: ", "")
-                        final_key = f"{namespace}. {header[key].get('title', key)}" if header[key].get("title") else key
-                        data[s][final_key] = val
+                        title = header[key].get("title", key)
+                        column_name = f"{namespace}. {title}" if title else key
+
+                        # Declare if read counts are R1,R2 or R1+R2
+                        read_suffix = get_read_suffix(namespace.lower(), title.lower())
+                        if read_suffix:
+                            column_name += f" ({read_suffix})"
+
+                        data[s][column_name] = val
+
     if sample:
-        if not data:
-            return {}
-        return data[sample]
+        return data.get(sample, {})
 
     return data
 
 
-def get_module_data(mqc: object, module: str) -> Dict[str, any]:
+
+
+def get_module_data(mqc: object, m: str) -> Dict[str, any]:
     """
-    Attempt to get data for a module that might be a partial match.
+    Attempt to get data for a m that might be a partial match.
 
     Args:
         mqc (object): MultiQC object.
-        module (str): Module name to search for.
+        m (str): Module name to search for.
 
     Returns:
         Dict[str, Any]: Module data if found, otherwise an empty dict.
     """
-    if module in mqc.list_modules():
-        data = mqc.get_module_data(module)
-        return data
+    module_names = [m.name.lower() for m in mqc.report.modules]
+    module_anchors = mqc.list_modules()
 
-    module_basename = module.split("_")[0]
-    if module_basename in mqc.list_modules():
-        all_data = mqc.get_module_data(module_basename)
+    if m in module_anchors:
+        return mqc.get_module_data(m)
+
+    if m.lower() in module_names:
+        m_anchor = get_anchor(mqc,m)
+        logger.info("anchor %s : found for %s", m_anchor, m)
+        return mqc.get_module_data(m_anchor)
+
+    m_basename = m.replace('-', '_').split("_")[0]
+    if m_basename in module_anchors:
+        all_data = mqc.get_module_data(m_basename)
         if all_data:
-            matching_key = next((key for key in all_data.keys() if module in key), None)
+            matching_key = next((key for key in all_data.keys() if m in key), None)
             if matching_key:
-                logger.debug("Data found for %s in MultiQC under key %s", module, matching_key)
+                logger.debug("Data found for %s in MultiQC under key %s", m, matching_key)
                 return all_data[matching_key]
     return {}
 
@@ -341,7 +356,7 @@ def extract_module_data(
         - List of column specifications
     """
     # Retrieve all data for the specified module
-    all_module_data = mqc.get_module_data(module=module)
+    all_module_data = get_module_data(mqc, module)
 
     # Early exit if no data is found
     if not all_module_data:
@@ -350,7 +365,7 @@ def extract_module_data(
 
     # Handle simple string or None section cases
     if isinstance(section, str) or section is None:
-        return extract_mqc_from_simple_section(all_module_data, section, module)
+        return extract_mqc_from_str_section(all_module_data, section, module)
 
     # Handle list of strings or column specifications
     if isinstance(section, list):
@@ -395,11 +410,16 @@ def extract_mqc_data(table_headers: Union[str, Path]) -> Optional[pd.DataFrame]:
     """
     result = pd.DataFrame()
     module_selection = get_module_selection(table_headers)
-    av_modules = mqc.list_modules()
+    av_modules = [m.name.lower() for m in mqc.report.modules]
+    av_modules.extend(mqc.list_modules())
     data = []
     columns_result = []
 
+    logger.info("av_modules %s", av_modules)
+
     for module, section in module_selection.items():
+        new_module_name = module.split("=")[1].strip('\"') if "=" in module else module
+        module = module.split('=', maxsplit=1)[0].strip('\"') if "=" in module else module
         if module == "general_stats":
             logger.info("Extracting general stats data from multiqc")
             module_data, columns = handle_general_stats(section)
@@ -413,7 +433,7 @@ def extract_mqc_data(table_headers: Union[str, Path]) -> Optional[pd.DataFrame]:
             module_data, columns = extract_module_data(module, section)
             logger.debug("Data for %s: %s", module, module_data)
 
-        module_data = [df.add_prefix(f"({module}) ") for df in module_data]
+        module_data = [df.add_prefix(f"({new_module_name}) ") for df in module_data]
         columns = add_prefix_to_values_dict(columns, module)
         data.extend(module_data)
         columns_result.extend(columns)
@@ -421,6 +441,31 @@ def extract_mqc_data(table_headers: Union[str, Path]) -> Optional[pd.DataFrame]:
     logger.debug("Data list: %s", data)
 
     return join_df(result, data) if data else result, columns_result
+
+def add_n_consensus_clusters_to_mqc(dataframe: pd.DataFrame)-> pd.DataFrame:
+    """
+    Add the number of consensus clusters to the multiqc general stats data.
+    """
+    df = dataframe.copy()
+    ordered_list = [f"it{i}" for i in range(100, 0, -1)] + ["itvariant-calling", "consensus", "singleton"]
+    df["step"] = pd.Categorical(df["step"], categories=ordered_list, ordered=True)
+
+    last_iteration = df["step"].min()
+    logger.info("Last iteration: %s", last_iteration)
+
+    # Count how often samples have the last iteration
+    last_iteration_count = df[df["step"] == last_iteration].groupby("sample").size().to_frame(name="# Final denovo clusters")
+
+    if last_iteration_count.empty:
+        return None
+
+    # Add the number of consensus clusters to the general stats data
+    module = mqc.BaseMultiqcModule(name="Consensus Count", anchor=Anchor("custom_data"))
+    content = last_iteration_count.to_dict(orient="index")
+    module.general_stats_addcols(content)
+    mqc.report.modules.append(module)
+    return 0
+
 
 
 def write_results(contigs_mqc: pd.DataFrame, constraints_mqc: pd.DataFrame, constraints_genstats: pd.DataFrame) -> int:
@@ -435,19 +480,13 @@ def write_results(contigs_mqc: pd.DataFrame, constraints_mqc: pd.DataFrame, cons
         samples.extend(contigs_mqc["sample"])
         write_df(contigs_mqc.sort_values(by=["sample", "cluster", "step"]), "contigs_overview-with-iterations.tsv", [])
         table_plot = contigs_mqc[~contigs_mqc.index.isin(generate_ignore_samples(contigs_mqc))]
+        add_n_consensus_clusters_to_mqc(table_plot)
         write_df(table_plot.sort_values(by=["sample", "cluster", "step"]), "contigs_overview.tsv", [])
 
     if not constraints_mqc.empty:
         logger.info("Writing Unfiltered Mapping constructs table file: mapping_overview.tsv")
         write_df(constraints_mqc.sort_values(by=["sample", "cluster", "step"]), "mapping_overview.tsv", [])
         samples.extend(constraints_mqc["sample"])
-
-    if not constraints_genstats.empty:
-        # Add to mqc
-        module = mqc.BaseMultiqcModule(name="Mapping Constraints Summary", anchor=Anchor("custom_data"))
-        content = constraints_genstats.to_dict(orient="index")
-        module.general_stats_addcols(content)
-        mqc.report.modules.append(module)
 
     # Remove empty lines from the general stats data report
     samples = list(set(samples))
@@ -457,6 +496,9 @@ def write_results(contigs_mqc: pd.DataFrame, constraints_mqc: pd.DataFrame, cons
         logger.info("Writing general stats file: samples_overview.tsv")
         samples_overview = pd.DataFrame.from_dict(get_general_stats_data_mod(), orient="index")
         samples_overview["sample"] = samples_overview.index
+        if not constraints_genstats.empty:
+            samples_overview = samples_overview.join(constraints_genstats, on="sample", how="left")
+
         write_df(reorder_columns(samples_overview, ["sample"]), "samples_overview.tsv", [])
 
     mqc.write_report(
@@ -493,7 +535,7 @@ def main(argv=None):
     )
 
     for module in [m for m in mqc.list_modules() if "viralgenie" not in m]:
-        module_data = mqc.get_module_data(module)
+        module_data = get_module_data(mqc, module)
         logger.info("Data for %s: %s", module, module_data.keys())
 
     # 2. Extract MQC data

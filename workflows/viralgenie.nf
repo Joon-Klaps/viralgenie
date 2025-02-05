@@ -165,8 +165,9 @@ workflow VIRALGENIE {
         ch_versions     = ch_versions.mix(BLAST_MAKEBLASTDB.out.versions)
     }
 
-    ch_host_trim_reads      = ch_reads
-    ch_decomplex_trim_reads = ch_reads
+    // If we don't preprocess reads, remove samples with 0 reads
+    ch_host_trim_reads      = ch_reads.filter{ meta, reads -> meta.single_end ? reads.countFastq() > 0 : reads[0].countFastq() > 0}
+    ch_decomplex_trim_reads = ch_reads.filter{ meta, reads -> meta.single_end ? reads.countFastq() > 0 : reads[0].countFastq() > 0}
     // preprocessing illumina reads
     if (!params.skip_preprocessing){
         PREPROCESSING_ILLUMINA (

@@ -1,21 +1,50 @@
 failed_mapped:
   - mapped reads
+'cluster: samtools stats (raw)="samtools Raw"':
+  - total_length: "total length"
+  - average_length: "average length"
+  - average_quality: "average quality"
+  - error_rate: "error rate"
+  - mismatches: "mismatches"
+  - reads_MQ0: "reads MQ0"
+  - reads_mapped: "reads mapped (R1+R2)"
+  - reads_mapped_percent: "reads mapped %"
+  - reads_unmapped: "reads unmapped (R1+R2)"
+  - reads_unmapped_percent: "reads unmapped %"
+  - reads_QC_failed: "reads QC failed"
+  - reads_QC_failed_percent: "reads QC failed %"
+  - reads_paired: "reads paired"
+  - reads_paired_percent: "reads paired %"
+  - reads_properly_paired: "reads properly paired"
+  - reads_properly_paired_percent: "reads properly paired %"
+  - reads_duplicated: "reads duplicated"
+  - reads_duplicated_percent: "reads duplicated %"
+  - non-primary_alignments: "non primary alignments"
+  - supplementary_alignments: "supplementary alignments"
+  - outward_oriented_pairs: "outward oriented pairs"
+  - inward_oriented_pairs: "inward oriented pairs"
+  - insert_size_average: "insert size average"
+  - insert_size_standard_deviation: "insert size standard deviation"
+  - bases_mapped: "bases mapped"
+  - bases_mapped_(cigar): "bases mapped cigar"
+  - bases_trimmed: "bases trimmed"
+  - bases_duplicated: "bases duplicated"
 umitools:
   - multiqc_umitools_dedup:
-      - input_reads: "mapped reads"
-      - removed_reads
-      - output_reads: "deduplicated reads"
-      - positions_deduplicated
-      - max_umi_per_pos
-      - mean_umi_per_pos
-      - total_umis
-      - percent_passing_dedup: "% passing dedup"
-      - unique_umis
+      - dedup_input_reads: "mapped reads (R1,R2)"
+      - dedup_removed_reads: "removed reads (R1,R2)"
+      - dedup_output_reads: "deduplicated reads (R1,R2)"
+      - positions_deduplicated: "positions deduplicated"
+      - max_umi_per_pos: "max UMI per position"
+      - mean_umi_per_pos: "mean UMI per position"
+      - total_umis: "total UMIs"
+      - dedup_percent_passing: "% passing"
+      - unique_umis: "unique UMIs"
 picard:
   - multiqc_picard_dups:
       - UNPAIRED_READS_EXAMINED: "unpaired reads examined"
       - READ_PAIR_OPTICAL_DUPLICATES: "read pair optical duplicates"
-      - UNMAPPED_READS: "unmapped reads"
+      - UNMAPPED_READS: "unmapped reads (R1+R2)"
       - ESTIMATED_LIBRARY_SIZE: "estimated library size"
       - UNPAIRED_READ_DUPLICATES: "unpaired read duplicates"
       - SECONDARY_OR_SUPPLEMENTARY_RDS: "secondary or supplementary rds"
@@ -23,37 +52,36 @@ picard:
       - READ_PAIR_DUPLICATES: "read pair duplicates"
       - PERCENT_DUPLICATION: "% duplication"
       - LIBRARY: "library"
-samtools:
+'cluster: samtools stats (post-dedup)="samtools Post-dedup"':
   - multiqc_samtools_stats:
-      - reads_paired_percent: "reads paired %"
-      - average_length
-      - is_sorted
-      - bases_mapped_(cigar)
-      - reads_QC_failed_percent: "reads QC failed %"
-      - reads_unmapped
-      - reads_unmapped_percent: "reads unmapped %"
-      - reads_properly_paired_percent: "reads properly paired %"
-      - average_quality
-      - reads_paired
-      - non-primary_alignments
-      - supplementary_alignments
-      - reads_mapped
+      - total_length: "total length"
+      - average_length: "average length"
+      - average_quality: "average quality"
+      - error_rate: "error rate"
+      - mismatches: "mismatches"
+      - reads_MQ0: "reads MQ0"
+      - reads_mapped: "reads mapped (R1+R2)"
       - reads_mapped_percent: "reads mapped %"
-      - bases_trimmed
-      - bases_duplicated
-      - reads_properly_paired
-      - outward_oriented_pairs
-      - reads_duplicated
+      - reads_unmapped: "reads unmapped (R1+R2)"
+      - reads_unmapped_percent: "reads unmapped %"
+      - reads_QC_failed: "reads QC failed"
+      - reads_QC_failed_percent: "reads QC failed %"
+      - reads_paired: "reads paired"
+      - reads_paired_percent: "reads paired %"
+      - reads_properly_paired: "reads properly paired"
+      - reads_properly_paired_percent: "reads properly paired %"
+      - reads_duplicated: "reads duplicated"
       - reads_duplicated_percent: "reads duplicated %"
-      - bases_mapped
-      - insert_size_average
-      - insert_size_standard_deviation
-      - inward_oriented_pairs
-      - error_rate
-      - mismatches
-      - reads_MQ0
-      - total_length
-      - reads_QC_failed
+      - non-primary_alignments: "non primary alignments"
+      - supplementary_alignments: "supplementary alignments"
+      - outward_oriented_pairs: "outward oriented pairs"
+      - inward_oriented_pairs: "inward oriented pairs"
+      - insert_size_average: "insert size average"
+      - insert_size_standard_deviation: "insert size standard deviation"
+      - bases_mapped: "bases mapped"
+      - bases_mapped_(cigar): "bases mapped cigar"
+      - bases_trimmed: "bases trimmed"
+      - bases_duplicated: "bases duplicated"
 ivar_variants:
   - INS: "raw inserts"
   - SNP: "raw SNPs"

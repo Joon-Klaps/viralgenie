@@ -6,7 +6,7 @@ from typing import Dict, List, Union, Tuple, Optional, Any
 
 import pandas as pd
 
-from utils.constant_variables import BLAST_COLUMNS, CONSTRAINT_GENERAL_STATS_COLUMNS, COLUMN_MAPPING
+from utils.constant_variables import BLAST_COLUMNS, CONSTRAINT_GENERAL_STATS_COLUMNS, COLUMN_MAPPING, READ_DECLARATION
 from utils.file_tools import filelist_to_df
 from utils.pandas_tools import (
     coalesce_constraint,
@@ -144,6 +144,7 @@ def reformat_custom_df(df: pd.DataFrame, cluster_df: pd.DataFrame) -> pd.DataFra
         for column in df.columns
         if group in column
     ]
+    df = df.loc[:, ~df.columns.duplicated()]
     return reorder_columns(df.dropna(subset=["step"]), list(dict.fromkeys(final_columns)))
 
 
@@ -172,6 +173,11 @@ def filter_constraint(dataframe, column, value):
 
     return df_without_value.dropna(axis=1, how="all"), df_with_value.dropna(axis=1, how="all")
 
+def get_anchor(mqc: object, module: str) -> str | None:
+    for m in mqc.report.modules:
+        if m.name.lower() == module.lower():
+            return m.anchor
+    return None
 
 def create_constraint_summary(df_constraint: pd.DataFrame, file_columns: List[Union[str, Dict[str, str]]]) -> pd.DataFrame:
     """
@@ -199,6 +205,8 @@ def create_constraint_summary(df_constraint: pd.DataFrame, file_columns: List[Un
     columns_of_interest = [dic_columns.get(key, key) for key in CONSTRAINT_GENERAL_STATS_COLUMNS]
 
     logger.debug("columns_of_interest: %s", columns_of_interest)
+
+    logger.debug("available columns: %s", df_constraint.columns)
 
     if not columns_of_interest:
         logger.warning("No columns of interest were found to create the constraint summary table!")
@@ -339,7 +347,7 @@ def check_section_exists(module_data: Dict, section_key: str) -> bool:
     return any(section_key in key for key in module_data.keys())
 
 
-def extract_mqc_from_simple_section(all_module_data: Dict, section: Optional[str], module: str) -> Tuple[List[pd.DataFrame], List[Any]]:
+def extract_mqc_from_str_section(all_module_data: Dict, section: Optional[str], module: str) -> Tuple[List[pd.DataFrame], List[Any]]:
     """Handle simple string or None section cases."""
     logger.debug("Extracting data from simple str %s", module)
     if not section:
@@ -348,6 +356,7 @@ def extract_mqc_from_simple_section(all_module_data: Dict, section: Optional[str
 
     # Check if specific section exists
     if check_section_exists(all_module_data, section):
+        logger.info("Str-Section: %s found of module %s", section, module)
         return [pd.DataFrame.from_dict(all_module_data[section], orient="index")], []
 
     logger.warning(f"Section {section} not found in module {module}")
@@ -369,7 +378,7 @@ def extract_mqc_from_list_section(all_module_data: Dict, section: List, module: 
         # Handle different types of subsections
         if isinstance(subsection, str):
             # Simple section name
-            subsection_dfs, subsection_columns = extract_mqc_from_simple_section(all_module_data, subsection, module)
+            subsection_dfs, subsection_columns = extract_mqc_from_str_section(all_module_data, subsection, module)
         if isinstance(subsection, list):
             # Simple section name
             subsection_dfs, subsection_columns = extract_mqc_from_list_section(all_module_data, subsection, module)
@@ -395,6 +404,7 @@ def extract_mqc_from_dict_section(all_module_data: Dict, section: Dict, module: 
 
     # Check if section exists
     if check_section_exists(all_module_data, section_name):
+        logger.info("Dict-Section: %s found of module %s", section_name, module)
         # Find the matching section data
         section_data = next((data for key, data in all_module_data.items() if section_name in key), None)
 
@@ -406,3 +416,23 @@ def extract_mqc_from_dict_section(all_module_data: Dict, section: Dict, module: 
 
     logger.warning(f"Section '{section_name}' not found in module '{module}'")
     return [pd.DataFrame()], []
+
+def get_read_suffix(namespace: str, title: str) -> str | None:
+    """
+    Get the read suffix based on the namespace and title.
+
+    Args:
+        namespace: The namespace to check
+        title: The title to lookup
+
+    Returns:
+        str | None: The read suffix if found, None otherwise
+    """
+    if title not in READ_DECLARATION:
+        return None
+
+    title_config = READ_DECLARATION[title]
+    if any(pattern in namespace for pattern in title_config['namespace_patterns']):
+        return title_config['suffix']
+
+    return None

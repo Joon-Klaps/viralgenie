@@ -1,0 +1,17 @@
+Changes in component 'nf-core/krakentools/kreport2krona'
+'modules/nf-core/krakentools/kreport2krona/environment.yml' is unchanged
+Changes in 'krakentools/kreport2krona/main.nf':
+--- modules/nf-core/krakentools/kreport2krona/main.nf
++++ modules/nf-core/krakentools/kreport2krona/main.nf
+@@ -23,6 +23,8 @@
+     def prefix = task.ext.prefix ?: "${meta.id}"
+     def VERSION = '1.2' // WARN: Version information not provided by tool on CLI. Please update this string when bumping container versions.
+     """
++    cp ${kreport} tmp; echo >> tmp
++
+     kreport2krona.py \\
+         -r ${kreport} \\
+         -o ${prefix}.txt \\
+
+'modules/nf-core/krakentools/kreport2krona/meta.yml' is unchanged
+************************************************************

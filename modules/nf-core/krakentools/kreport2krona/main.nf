@@ -23,8 +23,10 @@ process KRAKENTOOLS_KREPORT2KRONA {
     def prefix = task.ext.prefix ?: "${meta.id}"
     def VERSION = '1.2' // WARN: Version information not provided by tool on CLI. Please update this string when bumping container versions.
     """
+    cp ${kreport} tmp; echo >> tmp
+
     kreport2krona.py \\
-        -r ${kreport} \\
+        -r tmp \\
         -o ${prefix}.txt \\
         ${args}
 
