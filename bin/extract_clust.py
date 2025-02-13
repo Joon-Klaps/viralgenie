@@ -20,15 +20,6 @@ logger = logging.getLogger()
 # Global variables
 PATTERN = "^(TRINITY)|(NODE)|(k\d+)|(scaffold\d+)"
 
-CLUSTER_PARSERS = {
-    "mash":            {"func": parse_clusters_vrhyme, "skip_header": False},
-    "vrhyme":          {"func": parse_clusters_vrhyme },
-    "vsearch":         {"func": parse_clusters_vsearch },
-    "cdhitest":        {"func": parse_clusters_chdit },
-    "mmseqs-cluster":  {"func": parse_clusters_mmseqs },
-    "mmseqs-linclust": {"func": parse_clusters_mmseqs }
-}
-
 class Cluster:
     """
     A cluster contains the centroid sequence, members of the cluster, cluster_size of centroid.
@@ -545,6 +536,15 @@ def parse_args(argv=None):
 
 
 def main(argv=None):
+    CLUSTER_PARSERS = {
+        "mash":            {"func": parse_clusters_vrhyme, "skip_header": False},
+        "vrhyme":          {"func": parse_clusters_vrhyme },
+        "vsearch":         {"func": parse_clusters_vsearch },
+        "cdhitest":        {"func": parse_clusters_chdit },
+        "mmseqs-cluster":  {"func": parse_clusters_mmseqs },
+        "mmseqs-linclust": {"func": parse_clusters_mmseqs }
+    }
+
     """Coordinate argument parsing and program execution."""
     args = parse_args(argv)
     logging.basicConfig(level=args.log_level, format="[%(levelname)s] %(message)s")
