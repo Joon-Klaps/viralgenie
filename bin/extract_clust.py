@@ -18,10 +18,147 @@ from Bio import SeqIO
 logger = logging.getLogger()
 
 # Global variables
-PATTERN = "^(TRINITY)|(NODE)|(k\d+)|(scaffold\d+)"  # Default pattern matches Trinity, SPAdes, MEGAHIT, sspace_basic assembly names
+PATTERN = "^(TRINITY)|(NODE)|(k\d+)|(scaffold\d+)"
+
+CLUSTER_PARSERS = {
+    "mash":            {"func": parse_clusters_vrhyme, "skip_header": False},
+    "vrhyme":          {"func": parse_clusters_vrhyme },
+    "vsearch":         {"func": parse_clusters_vsearch },
+    "cdhitest":        {"func": parse_clusters_chdit },
+    "mmseqs-cluster":  {"func": parse_clusters_mmseqs },
+    "mmseqs-linclust": {"func": parse_clusters_mmseqs }
+}
+
+class Cluster:
+    """
+    A cluster contains the centroid sequence, members of the cluster, cluster_size of centroid.
+    """
+
+    def __init__(self, cluster_id, centroid, members, taxid=None):
+        # Having only a number get's removed by multiqc which causes merging errors downstream
+        self.cluster_id = cluster_id
+        self.centroid = centroid
+        self.members = members
+        self.external_reference = None
+        self.taxid = taxid
+        if members is not None:
+            self.cluster_size = len(members)
+        else:
+            self.cluster_size = 0
+        self.cumulative_read_depth = {}
+
+    def _set_centroid(self, centroid):
+        """
+        Set the centroid sequence for the cluster.
+        """
+        self.centroid = centroid
+
+    def set_cluster_id(self, id):
+        """
+        Set the centroid sequence for the cluster.
+        """
+        self.cluster_id = id
+
+    def set_external_reference(self, pattern):
+        """
+        Set the external reference for the cluster.
+        """
+        regex = re.compile(pattern)
+        self.external_reference = not bool(regex.search(self.centroid))
+
+    def __iter__(self):
+        yield "cluster_id", self.cluster_id
+        yield "centroid", self.centroid
+        yield "members", self.members
+        yield "cluster_size", self.cluster_size
+        yield "taxid", self.taxid
+
+    def __str__(self):
+        return f"Cluster {self.cluster_id}, taxid {self.taxid} with centroid {self.centroid}, external {self.external_reference} and {self.cluster_size} members {self.members}"
+
+    def save_cluster_members(self, prefix):
+        """
+        Save the cluster to a file.
+        """
+        with open(f"{prefix}_{self.cluster_id}_members.txt", "w") as file:
+            if self.members:
+                for member in self.members:
+                    file.write(f"{member}\n")
+            else:
+                file.write(f"")
+
+    def save_cluster_centroid(self, prefix):
+        """
+        Save the cluster to a file.
+        """
+        with open(f"{prefix}_{self.cluster_id}_centroid.txt", "w") as file:
+            file.write(f"{self.centroid}\n")
+
+    def save_cluster_json(self, prefix):
+        with open(f"{prefix}_{self.cluster_id}_cluster.json", "w") as file:
+            json.dump(
+                self,
+                file,
+                default=lambda o: o.tolist() if isinstance(o, np.ndarray) else o.__dict__,
+                sort_keys=True,
+                indent=4,
+            )
+
+    def save_centroid_fasta(self, sequences, prefix):
+        """
+        Extract the centroid sequence using memory-efficient processing.
+        """
+        centroid_id = self.centroid.split(" ")[0]
+        with open(f"{prefix}_{self.cluster_id}_centroid.fa", "w") as file:
+            for record in SeqIO.parse(sequences, "fasta"):
+                if record.id == centroid_id:
+                    SeqIO.write(record, file, "fasta")
+                    break
+
+    def save_members_fasta(self, sequences, prefix):
+        """
+        Extract member sequences using memory-efficient processing.
+        """
+        needed_members = set(member.split(" ")[0] for member in self.members) if self.members else set()
+
+        if not needed_members:
+            with open(f"{prefix}_{self.cluster_id}_members.fa", "w") as file:
+                file.write("\n")
+            return
+
+        with open(f"{prefix}_{self.cluster_id}_members.fa", "w") as file:
+            for record in SeqIO.parse(sequences, "fasta"):
+                if record.id in needed_members:
+                    SeqIO.write(record, file, "fasta")
+                    needed_members.remove(record.id)
+                    if not needed_members:  # Exit early if we found all sequences
+                        break
+
+    def _to_line(self, prefix):
+        rounded_depth = np.round(list(self.cumulative_read_depth.values()), 2).tolist()
+        return "\t".join(
+            [
+                str(prefix),
+                str(self.cluster_id),
+                str(self.taxid),
+                str(self.centroid),
+                str(self.cluster_size),
+                "\t".join(map(str, rounded_depth)),
+                ",".join(self.members),
+            ]
+        )
+
+    def determine_cumulative_read_depth(self, coverages: Dict) -> Dict:
+        """
+        Determine the cumulative read depth for each member of the cluster.
+        """
+        self.cumulative_read_depth = sum_dict_values_by_assembler(self.centroid, self.members, coverages)
+
 
 def parse_clusters_chdit(file_in: Path, **kwargs) -> List["Cluster"]:
-    """Extract sequence names from cdhit's cluster files."""
+    """
+    Extract sequence names from cdhit's cluster files.
+    """
     with open(file_in, "r") as file:
         lines = file.readlines()
 
@@ -138,14 +275,6 @@ def parse_clusters_vrhyme(file_in: Path, skip_header: bool = True, **kwargs) -> 
 
     return list(clusters.values())
 
-CLUSTER_PARSERS = {
-    "mash":            {"func": parse_clusters_vrhyme, "skip_header": False},
-    "vrhyme":          {"func": parse_clusters_vrhyme },
-    "vsearch":         {"func": parse_clusters_vsearch },
-    "cdhitest":        {"func": parse_clusters_chdit },
-    "mmseqs-cluster":  {"func": parse_clusters_mmseqs },
-    "mmseqs-linclust": {"func": parse_clusters_mmseqs }
-}
 
 def get_taxid(file_in: Path) -> Optional[str]:
     """Extract taxid from file name."""
@@ -414,124 +543,6 @@ def parse_args(argv=None):
     )
     return parser.parse_args(argv)
 
-class Cluster:
-    """
-    A cluster contains the centroid sequence, members of the cluster, cluster_size of centroid.
-    """
-
-    def __init__(self, cluster_id, centroid, members, taxid=None):
-        # Having only a number get's removed by multiqc which causes merging errors downstream
-        self.cluster_id = cluster_id
-        self.centroid = centroid
-        self.members = members
-        self.external_reference = None
-        self.taxid = taxid
-        if members is not None:
-            self.cluster_size = len(members)
-        else:
-            self.cluster_size = 0
-        self.cumulative_read_depth = {}
-
-    def _set_centroid(self, centroid):
-        """
-        Set the centroid sequence for the cluster.
-        """
-        self.centroid = centroid
-
-    def set_cluster_id(self, id):
-        """
-        Set the centroid sequence for the cluster.
-        """
-        self.cluster_id = id
-
-    def set_external_reference(self, pattern):
-        """
-        Set the external reference for the cluster.
-        """
-        regex = re.compile(pattern)
-        self.external_reference = not bool(regex.search(self.centroid))
-
-    def __iter__(self):
-        yield "cluster_id", self.cluster_id
-        yield "centroid", self.centroid
-        yield "members", self.members
-        yield "cluster_size", self.cluster_size
-        yield "taxid", self.taxid
-
-    def __str__(self):
-        return f"Cluster {self.cluster_id}, taxid {self.taxid} with centroid {self.centroid}, external {self.external_reference} and {self.cluster_size} members {self.members}"
-
-    def save_cluster_members(self, prefix):
-        """
-        Save the cluster to a file.
-        """
-        with open(f"{prefix}_{self.cluster_id}_members.txt", "w") as file:
-            if self.members:
-                for member in self.members:
-                    file.write(f"{member}\n")
-            else:
-                file.write(f"")
-
-    def save_cluster_centroid(self, prefix):
-        """
-        Save the cluster to a file.
-        """
-        with open(f"{prefix}_{self.cluster_id}_centroid.txt", "w") as file:
-            file.write(f"{self.centroid}\n")
-
-    def save_cluster_json(self, prefix):
-        with open(f"{prefix}_{self.cluster_id}_cluster.json", "w") as file:
-            json.dump(
-                self,
-                file,
-                default=lambda o: o.tolist() if isinstance(o, np.ndarray) else o.__dict__,
-                sort_keys=True,
-                indent=4,
-            )
-
-    def save_centroid_fasta(self, sequences, prefix):
-        """
-        Extract the sequences from the input file based on the groups.
-        """
-        sequence_dict = SeqIO.to_dict(SeqIO.parse(sequences, "fasta"))
-        with open(f"{prefix}_{self.cluster_id}_centroid.fa", "w") as file:
-            centroid_id = self.centroid.split(" ")[0]
-            if centroid_id in sequence_dict:
-                SeqIO.write(sequence_dict[centroid_id], file, "fasta")
-
-    def save_members_fasta(self, sequences, prefix):
-        """
-        Extract the sequences from the input file based on the groups.
-        """
-        sequence_dict = SeqIO.to_dict(SeqIO.parse(sequences, "fasta"))
-        with open(f"{prefix}_{self.cluster_id}_members.fa", "w") as file:
-            if self.members:
-                for member in self.members:
-                    seq_name = member.split(" ")[0]
-                    if seq_name in sequence_dict:
-                        SeqIO.write(sequence_dict[seq_name], file, "fasta")
-            else:
-                file.write(f"\n")
-
-    def _to_line(self, prefix):
-        rounded_depth = np.round(list(self.cumulative_read_depth.values()), 2).tolist()
-        return "\t".join(
-            [
-                str(prefix),
-                str(self.cluster_id),
-                str(self.taxid),
-                str(self.centroid),
-                str(self.cluster_size),
-                "\t".join(map(str, rounded_depth)),
-                ",".join(self.members),
-            ]
-        )
-
-    def determine_cumulative_read_depth(self, coverages: Dict) -> Dict:
-        """
-        Determine the cumulative read depth for each member of the cluster.
-        """
-        self.cumulative_read_depth = sum_dict_values_by_assembler(self.centroid, self.members, coverages)
 
 def main(argv=None):
     """Coordinate argument parsing and program execution."""

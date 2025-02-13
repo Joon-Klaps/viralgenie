@@ -115,6 +115,7 @@ def to_dict_remove_dups(sequences):
 def extract_contigs_hits(df, contigs, references, prefix):
     """
     Extracts contigs hits from a DataFrame and writes them to a FASTA file.
+    Processes reference sequences in chunks to avoid memory issues.
 
     Args:
         df (pandas.DataFrame): DataFrame containing the hits information.
@@ -125,22 +126,29 @@ def extract_contigs_hits(df, contigs, references, prefix):
     Returns:
         None
     """
-    try:
-        ref_records = SeqIO.to_dict(SeqIO.parse(references, "fasta"))
-    except ValueError as e:
-        logger.warning(
-            "Indexing the reference pool file causes an error: %s \n Make sure all fasta headers are unique and it is in fasta format! \n AUTOFIX: Taking last occurence of duplicates to continue analysis",
-            e,
-        )
-        ref_records = to_dict_remove_dups(SeqIO.parse(references, "fasta"))
-    with open(contigs, "r") as contigs_file:
-        contig_content = contigs_file.read()
-    with open(f"{prefix}_withref.fa", "w") as f:
-        f.write(contig_content)
-        for hit in df["subject"].unique():
-            hit_name = hit.split(" ")[0]
-            if hit_name in ref_records:
-                SeqIO.write(ref_records[hit_name], f, "fasta")
+    # Get unique hit IDs we need to find
+    needed_hits = set(hit.split(" ")[0] for hit in df["subject"].unique())
+
+    # Copy contigs to output file first
+    with open(contigs, "r") as contigs_file, open(f"{prefix}_withref.fa", "w") as out_file:
+        out_file.write(contigs_file.read())
+
+        # Process reference sequences in chunks
+        found_hits = set()
+        for record in SeqIO.parse(references, "fasta"):
+            hit_name = record.id
+            if hit_name in needed_hits:
+                SeqIO.write(record, out_file, "fasta")
+                found_hits.add(hit_name)
+
+                # Exit early if we found all needed sequences
+                if found_hits == needed_hits:
+                    break
+
+        # Warn if some sequences weren't found
+        missing_hits = needed_hits - found_hits
+        if missing_hits:
+            logger.warning(f"Could not find the following reference sequences: {', '.join(missing_hits)}")
 
 
 def write_hits(df, contigs, references, prefix):

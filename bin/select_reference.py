@@ -12,7 +12,6 @@ import pandas as pd
 from utils.constant_variables import MASH_SCREEN_COLUMNS
 from Bio import SeqIO
 
-
 logger = logging.getLogger()
 
 
@@ -63,36 +62,42 @@ def to_dict_remove_dups(sequences) -> dict:
 
 def write_hits(df, references, prefix) -> None:
     """
-    write contigs hits from a DataFrame and writes them to a FASTA file.
+    Write contigs hits from a DataFrame to a FASTA file using memory-efficient processing.
 
     Args:
         df (pandas.DataFrame): DataFrame containing the hits information.
-        contigs (str): Path to the contigs file.
         references (str): Path to the references file in FASTA format.
         prefix (str): Prefix for the output file.
 
     Returns:
         None
     """
-    try:
-        ref_records = SeqIO.to_dict(SeqIO.parse(references, "fasta"))
-    except ValueError as e:
-        logger.warning(
-            "Indexing the reference pool file causes an error: %s \n Make sure all fasta headers are unique and it is in fasta format! \n AUTOFIX: Taking last occurence of duplicates to continue analysis",
-            e,
-        )
-        ref_records = to_dict_remove_dups(SeqIO.parse(references, "fasta"))
+    needed_hits = set(hit.split(" ")[0] for hit in df["query-ID"].unique())
+    found_hits = set()
+
     with open(f"{prefix}_reference.fa", "w") as f:
         init_position = f.tell()
-        for hit in df["query-ID"].unique():
-            hit_name = hit.split(" ")[0]
-            if hit_name in ref_records:
-                # Sometimes reads can have illegal characters in the header
-                ref_records[hit_name].id = ref_records[hit_name].id.replace("\\", "-")
-                ref_records[hit_name].description = ref_records[hit_name].description.replace("\\", "-")
-                SeqIO.write(ref_records[hit_name], f, "fasta")
+
+        for record in SeqIO.parse(references, "fasta"):
+            hit_name = record.id
+            if hit_name in needed_hits:
+                # Clean up illegal characters in headers
+                record.id = record.id.replace("\\", "-")
+                record.description = record.description.replace("\\", "-")
+                SeqIO.write(record, f, "fasta")
+                found_hits.add(hit_name)
+
+                # Exit early if we found all needed sequences
+                if found_hits == needed_hits:
+                    break
+
         if f.tell() == init_position:
             logger.error("No reference sequences found in the hits. Exiting...")
+
+        # Warn about missing sequences
+        missing_hits = needed_hits - found_hits
+        if missing_hits:
+            logger.warning(f"Could not find the following reference sequences: {', '.join(missing_hits)}")
 
 
 def read_mash_screen(file) -> pd.DataFrame:
