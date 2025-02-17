@@ -31,6 +31,7 @@ process UMITOOLS_DEDUP {
 
     if (!(args ==~ /.*--random-seed.*/)) {args += " --random-seed=100"}
     """
+    export TMPDIR=\$( mktemp -d --tmpdir=\$PWD )
     PYTHONHASHSEED=0 umi_tools \\
         dedup \\
         -I $bam \\
@@ -39,6 +40,8 @@ process UMITOOLS_DEDUP {
         $stats \\
         $paired \\
         $args
+
+    rm -rf \$TMPDIR
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

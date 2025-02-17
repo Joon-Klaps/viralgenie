@@ -1,0 +1,29 @@
+Changes in component 'nf-core/umitools/dedup'
+Changes in 'umitools/dedup/main.nf':
+--- modules/nf-core/umitools/dedup/main.nf
++++ modules/nf-core/umitools/dedup/main.nf
+@@ -31,6 +31,7 @@
+
+     if (!(args ==~ /.*--random-seed.*/)) {args += " --random-seed=100"}
+     """
++    export TMPDIR=\$( mktemp -d --tmpdir=\$PWD )
+     PYTHONHASHSEED=0 umi_tools \\
+         dedup \\
+         -I $bam \\
+@@ -39,6 +40,8 @@
+         $stats \\
+         $paired \\
+         $args
++
++    rm -rf \$TMPDIR
+
+     cat <<-END_VERSIONS > versions.yml
+     "${task.process}":
+
+'modules/nf-core/umitools/dedup/meta.yml' is unchanged
+'modules/nf-core/umitools/dedup/environment.yml' is unchanged
+'modules/nf-core/umitools/dedup/tests/main.nf.test' is unchanged
+'modules/nf-core/umitools/dedup/tests/main.nf.test.snap' is unchanged
+'modules/nf-core/umitools/dedup/tests/nextflow.config' is unchanged
+'modules/nf-core/umitools/dedup/tests/tags.yml' is unchanged
+************************************************************
