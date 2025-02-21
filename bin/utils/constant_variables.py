@@ -45,16 +45,23 @@ READ_DECLARATION = {
 
 
 CONSTRAINT_GENERAL_STATS_COLUMNS = [
-    "(samtools Post-dedup) reads mapped %",
-    "(samtools Post-dedup) reads mapped",
-    "(samtools Post-dedup) reads unmapped %",
-    "(samtools Post-dedup) reads unmapped",
+    "(mash-screen) query-ID",
+    "(mash-screen) shared-hashes",
     "(samtools Raw) reads mapped %",
     "(samtools Raw) reads mapped",
     "(samtools Raw) reads unmapped %",
     "(samtools Raw) reads unmapped",
+    "(umitools) removed reads",
+    "(umitools) deduplicated reads",
+    "(picard) read pair duplicates",
+    "(samtools Post-dedup) reads mapped %",
+    "(samtools Post-dedup) reads mapped",
+    "(samtools Post-dedup) reads unmapped %",
+    "(samtools Post-dedup) reads unmapped",
     "number_of_SNPs",
     "number_of_indels",
+    "qlen",
+    "(quast) % N's",
     "CLUSTER: mosdepth.mean_coverage",
     "CLUSTER: mosdepth.min_coverage",
     "CLUSTER: mosdepth.max_coverage",
@@ -64,19 +71,11 @@ CONSTRAINT_GENERAL_STATS_COLUMNS = [
     "CLUSTER: mosdepth.50_x_pc",
     "CLUSTER: mosdepth.100_x_pc",
     "CLUSTER: mosdepth.200_x_pc",
-    "qlen",
-    "(quast) % N's",
-    "(mash-screen) query-ID",
-    "(mash-screen) shared-hashes",
-    "(failed_mapped) mapped reads",
-    "(umitools) removed reads",
-    "(umitools) deduplicated reads"
 ]
 
 COLUMN_MAPPING = {"(blast) qlen": "consensus length", "(annotation) qlen": "consensus length"}
 
 FILES_OF_INTEREST = {
-    "failed_mapped": "",
     'samtools-1="samtools Raw"': "",
     "umitools": "multiqc_umitools_dedup",
     "picard": "mutliqc_picard_dups",

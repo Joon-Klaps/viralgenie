@@ -259,6 +259,9 @@ def create_constraint_summary(df_constraint: pd.DataFrame, file_columns: List[Un
     # Remove columns that are not needed anymore
     df_constraint = drop_columns(df_constraint, ["species", "segment"])
 
+    # Get original column order from df_constraint (excluding sample)
+    original_columns = df_constraint.columns.drop(['sample']).tolist()
+
     # Convert dataframe to long and then extra wide
     df_long = df_constraint.melt(id_vars=["idgroup", "sample"], var_name="variable", value_name="Value")
     # Remove rows with NaN values & duplicates
@@ -266,14 +269,22 @@ def create_constraint_summary(df_constraint: pd.DataFrame, file_columns: List[Un
     df_long = df_long.drop_duplicates()
     df_long["grouped variable"] = df_long["idgroup"] + " - " + df_long["variable"]
     df_long.drop(columns=["idgroup", "variable"], inplace=True)
+
     # Convert to wide format
     df_wide = df_long.pivot(index=["sample"], columns="grouped variable", values="Value")
+
+    # Reorder columns based on original order
+    ordered_columns = []
+    for col in original_columns:
+        ordered_columns.extend([c for c in df_wide.columns if c.endswith(f" - {col}")])
+    df_wide = df_wide[ordered_columns]
+
     df_wide.reset_index(inplace=True)
 
     return df_wide
 
 
-def reformat_constraint_df(df, file_columns, args):
+def reformat_constraint_df(df, columns, args):
     """
     Reformat the constraint dataframe.
     """
@@ -303,7 +314,7 @@ def reformat_constraint_df(df, file_columns, args):
 
     # add mapping summary to sample overview table in ... wide format with species & segment combination
     logger.info("Creating mapping constraint summary (wide) table")
-    mapping_constraints_summary = create_constraint_summary(df, file_columns).set_index("sample")
+    mapping_constraints_summary = create_constraint_summary(df, columns).set_index("sample")
 
     logger.info("Coalescing columns")
     coalesced_constraints = coalesce_constraint(df)
