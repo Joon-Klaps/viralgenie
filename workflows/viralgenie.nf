@@ -352,7 +352,7 @@ workflow VIRALGENIE {
                         id: id,
                         cluster_id: "${meta_mapping.id}",
                         step: "constraint",
-                        constraint: true,
+                        isConstraint: true,
                         reads: reads,
                         iteration: 'variant-calling',
                         previous_step: 'constraint'

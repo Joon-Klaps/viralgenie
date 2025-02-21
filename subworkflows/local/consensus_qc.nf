@@ -4,6 +4,7 @@ include { QUAST  as QUAST_QC                } from '../../modules/nf-core/quast/
 include { BLAST_BLASTN as BLASTN_QC         } from '../../modules/nf-core/blast/blastn/main'
 include { MAFFT as MAFFT_ITERATIONS         } from '../../modules/nf-core/mafft/main'
 include { MAFFT as MAFFT_QC                 } from '../../modules/nf-core/mafft/main'
+include { PRODIGAL                          } from '../../modules/nf-core/prodigal/main'
 include { MMSEQS_ANNOTATE                   } from './mmseqs_annotate.nf'
 
 workflow CONSENSUS_QC  {
@@ -23,20 +24,22 @@ workflow CONSENSUS_QC  {
     checkv              = Channel.empty()
     quast               = Channel.empty()
     annotation          = Channel.empty()
+    prodigal            = Channel.empty()
     ch_genome_grouped   = Channel.empty()
 
+    // Combine all genomes into a single file
     ch_genome
         .collectFile(name: "all_genomes.fa"){it[1]}
         .map{it -> [[id:"all_genomes"], it]}
         .set{ch_genomes_all}
 
+    // combine the different iterations of a single consensus
     ch_genome
         .multiMap{ meta, fasta ->
             metadata: [meta.id, meta.subMap('id','cluster_id','sample')]
             fasta: [meta.id, fasta]
         }
         .set{ch_genomes_mapped}
-
     ch_genomes_mapped.fasta.collectFile{ id, genome ->
             ["${id}.fa", genome]
         }.map{ file -> [file.simpleName, file]}
@@ -65,6 +68,21 @@ workflow CONSENSUS_QC  {
         ch_versions = ch_versions.mix(MMSEQS_ANNOTATE.out.versions)
     }
 
+    // Annotate proteins with prodigal
+    if (!params.skip_prodigal){
+        // Run
+        ch_genome
+            .filter{ meta, genome ->
+                meta.iteration == params.iterative_refinement_cycles || meta.isConstraint?.toBoolean()
+                }
+            .set { ch_genomes_final }
+
+        PRODIGAL(ch_genomes_final,"gff")
+        ch_versions = ch_versions.mix(PRODIGAL.out.versions)
+    }
+
+
+    // use Checkv to estimate Completeness and Contamination
     if ( !params.skip_checkv ) {
         if ( !params.checkv_db ) {
             CHECKV_DOWNLOADDATABASE()

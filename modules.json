@@ -279,6 +279,11 @@
                         "installed_by": ["modules"],
                         "patch": "modules/nf-core/prinseqplusplus/prinseqplusplus.diff"
                     },
+                    "prodigal": {
+                        "branch": "master",
+                        "git_sha": "81880787133db07d9b4c1febd152c090eb8325dc",
+                        "installed_by": ["modules"]
+                    },
                     "quast": {
                         "branch": "master",
                         "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
