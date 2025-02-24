@@ -4,5 +4,4 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
-  - bioconda::prodigal=2.6.3
-  - conda-forge::pigz=2.6
+  - xz=5.2.6

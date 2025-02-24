@@ -4,7 +4,7 @@ include { QUAST  as QUAST_QC                } from '../../modules/nf-core/quast/
 include { BLAST_BLASTN as BLASTN_QC         } from '../../modules/nf-core/blast/blastn/main'
 include { MAFFT as MAFFT_ITERATIONS         } from '../../modules/nf-core/mafft/main'
 include { MAFFT as MAFFT_QC                 } from '../../modules/nf-core/mafft/main'
-include { PRODIGAL                          } from '../../modules/nf-core/prodigal/main'
+include { PROKKA                            } from '../../modules/nf-core/prokka/main'
 include { MMSEQS_ANNOTATE                   } from './mmseqs_annotate.nf'
 
 workflow CONSENSUS_QC  {
@@ -14,7 +14,8 @@ workflow CONSENSUS_QC  {
     ch_aligned_raw_contigs // channel: [ val(meta), [ genome ] ]
     checkv_db              // channel: [ checkv_db ]
     refpool_db             // channel: [ val(meta), [refpool_db] ]
-    annotation_db          // channel: [ val(meta), [annotation_db] ]s
+    annotation_db          // channel: [ val(meta), [annotation_db] ]
+    prokka_db              // channel: [ val(meta), [prokka_db] ]
 
     main:
 
@@ -24,7 +25,6 @@ workflow CONSENSUS_QC  {
     checkv              = Channel.empty()
     quast               = Channel.empty()
     annotation          = Channel.empty()
-    prodigal            = Channel.empty()
     ch_genome_grouped   = Channel.empty()
 
     // Combine all genomes into a single file
@@ -68,8 +68,8 @@ workflow CONSENSUS_QC  {
         ch_versions = ch_versions.mix(MMSEQS_ANNOTATE.out.versions)
     }
 
-    // Annotate proteins with prodigal
-    if (!params.skip_prodigal){
+    // Annotate proteins with prokka
+    if (!params.skip_prokka){
         // Run
         ch_genome
             .filter{ meta, genome ->
@@ -77,8 +77,8 @@ workflow CONSENSUS_QC  {
                 }
             .set { ch_genomes_final }
 
-        PRODIGAL(ch_genomes_final,"gff")
-        ch_versions = ch_versions.mix(PRODIGAL.out.versions)
+        PROKKA(ch_genomes_final, prokka_db, [])
+        ch_versions = ch_versions.mix(PROKKA.out.versions)
     }
 
 
