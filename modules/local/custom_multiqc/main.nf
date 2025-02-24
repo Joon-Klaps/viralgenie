@@ -47,7 +47,6 @@ process CUSTOM_MULTIQC {
     def clusters_files                 = clusters_tsv           ? "--clusters_files ${clusters_tsv}"             : ''
     def mapping_constraints_command     = mapping_constraints     ? "--mapping_constraints ${mapping_constraints}"   : ''
     def screen_files_command           = screen_files           ? "--screen_files ${screen_files}"               : ''
-    def comment_headers_command        = comment_headers        ? "--comment_dir ${comment_headers}"             : ''
     def custom_table_headers_command   = custom_table_headers   ? "--table_headers ${custom_table_headers}"      : ''
 
     """
@@ -64,7 +63,6 @@ process CUSTOM_MULTIQC {
         $clusters_files \\
         $mapping_constraints_command \\
         $screen_files_command \\
-        $comment_headers_command \\
         $custom_table_headers_command \\
 
 
