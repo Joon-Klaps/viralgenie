@@ -790,11 +790,15 @@ Furthermore, viralgenie runs MultiQC 2 times, as it uses the output from multiqc
 
 ???- abstract "Output files"
     -   `multiqc/`
-        -   `overview-tables/`: a directory with a set of commented TSV (comments taken from `--multiqc_comment_headers`) that summarize aspects of the pipeline runs.
         -   `multiqc_report.html`: a standalone HTML file that can be viewed in your web browser.
         -   `multiqc_data/`: directory containing parsed statistics from the different tools used in the pipeline.
         -   `multiqc_dataprep/`: preparation files for the generated custom tables.
         -   `multiqc_plots/`: directory containing static images from the report in various formats.
+    -   `overview-tables/`: a directory with a set of summary TSV files.
+      - `contigs_overview_with_iterations.tsv`: A tabular file containing the contig information of the final __contig consensus__ genome and their intermediate iterations.
+      - `contigs_overview.tsv`: A tabular file containing the contig information of the final __contig consensus__ genome.
+      - `mapping_overview.tsv`: A tabular file containing the mapping information of the final __mapped consensus__ genome, from the argument `--mapping_constraints`.
+      - `samples_overview.tsv`: A tabular file containing the sample information combining information from both `contigs_overview.tsv` & `mapping_overview.tsv`.
 
 ## Pipeline information
 

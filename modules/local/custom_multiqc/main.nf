@@ -18,7 +18,6 @@ process CUSTOM_MULTIQC {
     path anno_files, stageAs: "?/annotation/*"
     path clusters_tsv, stageAs: "?/clusters/*"
     path screen_files, stageAs: "?/screen/*"
-    path comment_headers
     path custom_table_headers
 
     output:

@@ -23,7 +23,6 @@ lint:
     - manifest.name
     - manifest.homePage
     - config_defaults:
-        - params.multiqc_comment_headers
         - params.custom_table_headers
   multiqc_config: false
   files_exist:

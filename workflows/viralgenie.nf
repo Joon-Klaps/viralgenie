@@ -91,7 +91,6 @@ workflow VIRALGENIE {
     ch_multiqc_custom_config              = params.multiqc_config ? Channel.fromPath( params.multiqc_config, checkIfExists: true ) : Channel.empty()
     ch_multiqc_logo                       = params.multiqc_logo   ? Channel.fromPath( params.multiqc_logo, checkIfExists: true ) : Channel.empty()
     ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
-    ch_multiqc_comment_headers            = params.multiqc_comment_headers     ? Channel.fromPath(params.multiqc_comment_headers, checkIfExists:true ) : Channel.empty()
     ch_multiqc_custom_table_headers       = params.custom_table_headers        ? Channel.fromPath(params.custom_table_headers, checkIfExists:true ) : Channel.empty()
 
 
@@ -492,7 +491,6 @@ workflow VIRALGENIE {
         ch_annotation_summary.ifEmpty([]),
         ch_clusters_tsv.ifEmpty([]),
         ch_mash_screen.ifEmpty([]),
-        ch_multiqc_comment_headers.ifEmpty([]),
         ch_multiqc_custom_table_headers.ifEmpty([])
         )
     ch_versions = ch_versions.mix(CUSTOM_MULTIQC.out.versions)
