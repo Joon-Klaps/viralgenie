@@ -58,7 +58,7 @@
     - [`Mash`](https://github.com/marbl/Mash)
 10. [Optional] Remove clusters with low read coverage. `bin/extract_clusters.py`
 11. Scaffolding of contigs to centroid ([`Minimap2`](https://github.com/lh3/minimap2), [`iVar-consensus`](https://andersen-lab.github.io/ivar/html/manualpage.html))
-12. [Optional] Annotate 0-depth regions with external reference `bin/lowcov_to_reference.py`.
+12. [Optional] Annotate 0-depth regions with external reference `bin/nocov_to_reference.py`.
 13. [Optional] Select best reference from `--mapping_constraints`:
     - [`Mash sketch`](https://github.com/marbl/Mash)
     - [`Mash screen`](https://github.com/marbl/Mash)

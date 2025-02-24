@@ -1,4 +1,4 @@
-name: lowcov_to_reference
+name: nocov_to_reference
 channels:
   - conda-forge
   - bioconda

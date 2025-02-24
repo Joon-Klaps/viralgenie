@@ -3,7 +3,7 @@ include { MINIMAP2_INDEX as MINIMAP2_CONTIG_INDEX                     } from '..
 include { MINIMAP2_ALIGN as MINIMAP2_CONTIG_ALIGN                     } from '../../modules/nf-core/minimap2/align/main'
 include { IVAR_CONSENSUS as IVAR_CONTIG_CONSENSUS                     } from '../../modules/nf-core/ivar/consensus/main'
 include { RENAME_FASTA_HEADER as RENAME_FASTA_HEADER_CONTIG_CONSENSUS } from '../../modules/local/rename_fasta_header'
-include { LOWCOV_TO_REFERENCE                                         } from '../../modules/local/lowcov_to_reference/main'
+include { NOCOV_TO_REFERENCE                                         } from '../../modules/local/nocov_to_reference/main'
 
 workflow ALIGN_COLLAPSE_CONTIGS {
 
@@ -85,12 +85,12 @@ workflow ALIGN_COLLAPSE_CONTIGS {
 
     aligned_txt = Channel.empty()
     // Custom script that replaces region in consensus with orignally 0 coverage with regions from the reference.
-    if (!params.skip_hybrid_consensus) {
-        LOWCOV_TO_REFERENCE( ch_ref_cons_mpileup)
-        ch_versions = ch_versions.mix(LOWCOV_TO_REFERENCE.out.versions.first())
-        aligned_txt = LOWCOV_TO_REFERENCE.out.txt
+    if (!params.skip_nocov_to_reference) {
+        NOCOV_TO_REFERENCE( ch_ref_cons_mpileup)
+        ch_versions = ch_versions.mix(NOCOV_TO_REFERENCE.out.versions.first())
+        aligned_txt = NOCOV_TO_REFERENCE.out.txt
 
-        LOWCOV_TO_REFERENCE
+        NOCOV_TO_REFERENCE
             .out
             .sequence
             .mix( ch_consensus.internal )
