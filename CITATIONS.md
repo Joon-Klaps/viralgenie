@@ -103,6 +103,10 @@
 
 - [picard-tools](http://broadinstitute.github.io/picard)
 
+- [prokka](https://pubmed.ncbi.nlm.nih.gov/24642063/)
+
+    > Seemann, Torsten. “Prokka: rapid prokaryotic genome annotation.” Bioinformatics (Oxford, England) vol. 30,14 (2014): 2068-9. doi:10.1093/bioinformatics/btu153
+
 - [QUAST](https://www.ncbi.nlm.nih.gov/pubmed/23422339/)
 
     > Gurevich, Alexey et al. “QUAST: quality assessment tool for genome assemblies.” Bioinformatics (Oxford, England) vol. 29,8 (2013): 1072-5. doi:10.1093/bioinformatics/btt086

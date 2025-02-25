@@ -40,7 +40,7 @@ include { CONSENSUS_QC                    } from '../subworkflows/local/consensu
 // Report generation
 include { CUSTOM_MULTIQC                  } from '../modules/local/custom_multiqc'
 // Variant calling
-include { FASTQ_FASTA_MAP_CONSENSUS                            } from '../subworkflows/local/fastq_fasta_map_consensus'
+include { FASTQ_FASTA_MAP_CONSENSUS       } from '../subworkflows/local/fastq_fasta_map_consensus'
 
 
 /*
@@ -79,6 +79,7 @@ workflow VIRALGENIE {
     ch_bracken_db    = !params.skip_read_classification                                                                                    ? createChannel( params.bracken_db, "bracken", ('bracken' in read_classifiers) )                                    : Channel.empty()
     ch_k2_host       = !params.skip_preprocessing                                                                                          ? createChannel( params.host_k2_db, "k2_host", !params.skip_hostremoval )                                           : Channel.empty()
     ch_annotation_db = !params.skip_consensus_qc                                                                                           ? createChannel( params.annotation_db, "annotation", !params.skip_annotation )                                      : Channel.empty()
+    ch_prokka_db     = !params.skip_consensus_qc                                                                                           ? createChannel( params.prokka_db, "prokka", !params.skip_prokka )                                                  : Channel.empty()
 
     /*
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -90,7 +91,6 @@ workflow VIRALGENIE {
     ch_multiqc_custom_config              = params.multiqc_config ? Channel.fromPath( params.multiqc_config, checkIfExists: true ) : Channel.empty()
     ch_multiqc_logo                       = params.multiqc_logo   ? Channel.fromPath( params.multiqc_logo, checkIfExists: true ) : Channel.empty()
     ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
-    ch_multiqc_comment_headers            = params.multiqc_comment_headers     ? Channel.fromPath(params.multiqc_comment_headers, checkIfExists:true ) : Channel.empty()
     ch_multiqc_custom_table_headers       = params.custom_table_headers        ? Channel.fromPath(params.custom_table_headers, checkIfExists:true ) : Channel.empty()
 
 
@@ -123,6 +123,8 @@ workflow VIRALGENIE {
                     return [ unpacked ]
                 annotation: meta.id == 'annotation'
                     return [ meta, unpacked ]
+                prokka: meta.id == 'prokka'
+                    return [ unpacked ]
             }
             .set{ch_db}
         ch_versions         = ch_versions.mix(UNPACK_DB.out.versions)
@@ -136,6 +138,7 @@ workflow VIRALGENIE {
         ch_checkv_db        = ch_db.checkv.collect().ifEmpty([])
         ch_bracken_db       = ch_db.bracken.collect().ifEmpty([])
         ch_k2_host          = ch_db.k2_host.collect().ifEmpty([])
+        ch_prokka_db        = ch_db.prokka.collect().ifEmpty([])
     }
 
     // Prepare blast DB
@@ -335,14 +338,12 @@ workflow VIRALGENIE {
                 def samples = meta.samples == [] ? null : tuple(meta.samples.split(";"))  // Split up samples if meta.samples is not null
                 [meta, samples, sequence]
             }
-            .tap{mapping_constraints}
             .transpose(remainder: true)                                                         // Unnest
             .set{ch_mapping_constraints}
 
         // Joining all the reads with the mapping constraints, filter for those specified or keep everything if none specified.
         ch_decomplex_trim_reads
             .combine( ch_mapping_constraints )
-            .tap{mapping_constraints_tmp}
             .filter{ meta_reads, fastq, meta_mapping, mapping_samples, sequence -> mapping_samples == null || mapping_samples == meta_reads.sample}
             .map
                 {
@@ -352,7 +353,7 @@ workflow VIRALGENIE {
                         id: id,
                         cluster_id: "${meta_mapping.id}",
                         step: "constraint",
-                        constraint: true,
+                        isConstraint: true,
                         reads: reads,
                         iteration: 'variant-calling',
                         previous_step: 'constraint'
@@ -424,6 +425,7 @@ workflow VIRALGENIE {
             ch_checkv_db,
             ch_blast_refdb,
             ch_annotation_db,
+            ch_prokka_db,
             )
         ch_versions           = ch_versions.mix(CONSENSUS_QC.out.versions)
         ch_multiqc_files      = ch_multiqc_files.mix(CONSENSUS_QC.out.mqc.collect{it[1]}.ifEmpty([]))
@@ -489,7 +491,6 @@ workflow VIRALGENIE {
         ch_annotation_summary.ifEmpty([]),
         ch_clusters_tsv.ifEmpty([]),
         ch_mash_screen.ifEmpty([]),
-        ch_multiqc_comment_headers.ifEmpty([]),
         ch_multiqc_custom_table_headers.ifEmpty([])
         )
     ch_versions = ch_versions.mix(CUSTOM_MULTIQC.out.versions)

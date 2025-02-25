@@ -279,6 +279,11 @@
                         "installed_by": ["modules"],
                         "patch": "modules/nf-core/prinseqplusplus/prinseqplusplus.diff"
                     },
+                    "prokka": {
+                        "branch": "master",
+                        "git_sha": "81880787133db07d9b4c1febd152c090eb8325dc",
+                        "installed_by": ["modules"]
+                    },
                     "quast": {
                         "branch": "master",
                         "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
@@ -368,6 +373,11 @@
                         "git_sha": "d97b335eb448073c1b680710303c02a55f40c77c",
                         "installed_by": ["modules"],
                         "patch": "modules/nf-core/vsearch/cluster/vsearch-cluster.diff"
+                    },
+                    "xz/decompress": {
+                        "branch": "master",
+                        "git_sha": "81880787133db07d9b4c1febd152c090eb8325dc",
+                        "installed_by": ["modules"]
                     }
                 }
             },
