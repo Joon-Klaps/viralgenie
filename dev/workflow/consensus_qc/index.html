@@ -827,9 +827,18 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#blastn" class="md-nav__link">
+  <a href="#prokka" class="md-nav__link">
     <span class="md-ellipsis">
-      BLASTn
+      Prokka
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#blast" class="md-nav__link">
+    <span class="md-ellipsis">
+      BLAST
     </span>
   </a>
   
@@ -1077,9 +1086,18 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#blastn" class="md-nav__link">
+  <a href="#prokka" class="md-nav__link">
     <span class="md-ellipsis">
-      BLASTn
+      Prokka
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#blast" class="md-nav__link">
+    <span class="md-ellipsis">
+      BLAST
     </span>
   </a>
   
@@ -1162,7 +1180,20 @@
 <blockquote>
 <p>CheckV can be skipped with <code>--skip_checkv</code>.</p>
 </blockquote>
-<h2 id="blastn">BLASTn</h2>
+<h2 id="prokka">Prokka</h2>
+<p><a href="https://github.com/tseemann/prokka">Prokka</a> is a whole genome annotation pipeline for identifying features of interest in a set of genomic DNA sequences, and labelling them with useful information. Prokka is a software tool to annotate bacterial, archaeal and viral genomes.</p>
+<div class="admonition tip">
+<p class="admonition-title">Suboptimal annotation</p>
+<p>Prokka was initially designed for bacterial and archaeal genomes, and may not be optimal for viral genomes. <a href="https://github.com/JCVenterInstitute/VIGOR4">VIGOR4</a> is a good alternative but is species specific.</p>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Custom protein database</p>
+<p>Prokka can be given a custom protein database to annotate your genomes with, have a look at <a href="https://rvdb-prot.pasteur.fr/">prot-RVDB</a> for viral protein databases. Supply the database using <code>--prokka_db</code>.</p>
+</div>
+<blockquote>
+<p>Prokka can be skipped with <code>--skip_prokka</code>.</p>
+</blockquote>
+<h2 id="blast">BLAST</h2>
 <p><a href="https://blast.ncbi.nlm.nih.gov/Blast.cgi">blastn</a> is a tool for comparing primary biological sequence information. It calculates the similarity between the consensus genome and the reference genome. The similarity is calculated based on the number of identical bases between the two sequences. Viralgenie uses blastn to compare the sequences against the supplied <code>--reference_pool</code> dataset.</p>
 <blockquote>
 <p>BLASTn can be skipped with <code>--skip_blast_qc</code>.</p>

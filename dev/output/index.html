@@ -1060,6 +1060,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#prokka" class="md-nav__link">
+    <span class="md-ellipsis">
+      Prokka
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#blastn" class="md-nav__link">
     <span class="md-ellipsis">
       BLASTn
@@ -1908,6 +1917,15 @@
   <a href="#checkv" class="md-nav__link">
     <span class="md-ellipsis">
       CheckV
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prokka" class="md-nav__link">
+    <span class="md-ellipsis">
+      Prokka
     </span>
   </a>
   
@@ -2791,6 +2809,17 @@
 </li>
 </ul>
 </details>
+<h3 id="prokka">Prokka</h3>
+<p><a href="https://github.com/tseemann/prokka"><code>Prokka</code></a> is a whole genome annotation pipeline for identifying features of interest in a set of genomic DNA sequences, and labelling them with useful information. Prokka is a software tool to annotate bacterial, archaeal and viral genomes.)</p>
+<details class="- abstract">
+<summary>Output files</summary>
+<ul>
+<li><code>consensus/quality_control/prokka/</code><ul>
+<li>`<sample-id>/<iteration>/* directories containing the prokka output files.</li>
+</ul>
+</li>
+</ul>
+</details>
 <h3 id="blastn">BLASTn</h3>
 <p><a href="https://blast.ncbi.nlm.nih.gov/Blast.cgi">BLAST</a> is a tool for comparing primary biological sequence information. The output from the BLAST run is stored in the directory <code>consensus/quality_control/blast/</code>. Final consensus genomes are searched against the <code>--reference_pool</code>.</p>
 <details class="- info">
@@ -2882,13 +2911,17 @@
 <summary>Output files</summary>
 <ul>
 <li><code>multiqc/</code><ul>
-<li><code>overview-tables/</code>: a directory with a set of commented TSV (comments taken from <code>--multiqc_comment_headers</code>) that summarize aspects of the pipeline runs.</li>
 <li><code>multiqc_report.html</code>: a standalone HTML file that can be viewed in your web browser.</li>
 <li><code>multiqc_data/</code>: directory containing parsed statistics from the different tools used in the pipeline.</li>
 <li><code>multiqc_dataprep/</code>: preparation files for the generated custom tables.</li>
 <li><code>multiqc_plots/</code>: directory containing static images from the report in various formats.</li>
 </ul>
 </li>
+<li><code>overview-tables/</code>: a directory with a set of summary TSV files.</li>
+<li><code>contigs_overview_with_iterations.tsv</code>: A tabular file containing the contig information of the final <strong>contig consensus</strong> genome and their intermediate iterations.</li>
+<li><code>contigs_overview.tsv</code>: A tabular file containing the contig information of the final <strong>contig consensus</strong> genome.</li>
+<li><code>mapping_overview.tsv</code>: A tabular file containing the mapping information of the final <strong>mapped consensus</strong> genome, from the argument <code>--mapping_constraints</code>.</li>
+<li><code>samples_overview.tsv</code>: A tabular file containing the sample information combining information from both <code>contigs_overview.tsv</code> &amp; <code>mapping_overview.tsv</code>.</li>
 </ul>
 </details>
 <h2 id="pipeline-information">Pipeline information</h2>
