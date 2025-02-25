@@ -30,7 +30,19 @@ Within the MultiQC report, Viralgenie provides a number of custom tables based o
 
 > CheckV can be skipped with `--skip_checkv`.
 
-## BLASTn
+
+## Prokka
+[Prokka](https://github.com/tseemann/prokka) is a whole genome annotation pipeline for identifying features of interest in a set of genomic DNA sequences, and labelling them with useful information. Prokka is a software tool to annotate bacterial, archaeal and viral genomes.
+
+!!! Tip "Suboptimal annotation"
+    Prokka was initially designed for bacterial and archaeal genomes, and may not be optimal for viral genomes. [VIGOR4](https://github.com/JCVenterInstitute/VIGOR4) is a good alternative but is species specific.
+
+!!! Tip "Custom protein database"
+    Prokka can be given a custom protein database to annotate your genomes with, have a look at [prot-RVDB](https://rvdb-prot.pasteur.fr/) for viral protein databases. Supply the database using `--prokka_db`.
+
+> Prokka can be skipped with `--skip_prokka`.
+
+## BLAST
 
 [blastn](https://blast.ncbi.nlm.nih.gov/Blast.cgi) is a tool for comparing primary biological sequence information. It calculates the similarity between the consensus genome and the reference genome. The similarity is calculated based on the number of identical bases between the two sequences. Viralgenie uses blastn to compare the sequences against the supplied `--reference_pool` dataset.
 

@@ -26,7 +26,7 @@ Initial release of Joon-Klaps/viralgenie, created with the [nf-core](https://nf-
 - Constrain -> Constraint & further python script debugging ([#161](https://github.com/Joon-Klaps/viralgenie/pull/161))
 - include empty samples in multiqc sample overview ([#162](https://github.com/Joon-Klaps/viralgenie/pull/162))
 - Include samtools stats pre dedup & post dedup in overview tables ([#163](https://github.com/Joon-Klaps/viralgenie/pull/163))
-- adding prodigal with fitler setup for selecting final result genomes ([#165](https://github.com/Joon-Klaps/viralgenie/pull/165))
+- adding prokka for gene detection & annotation ([#165](https://github.com/Joon-Klaps/viralgenie/pull/165))
 - Refactor module arguments to pipeline arguments ([#166](https://github.com/Joon-Klaps/viralgenie/pull/166))
 
 ### `Fixed`
