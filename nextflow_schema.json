@@ -89,26 +89,6 @@
                     "description": "Specify at what level UMI deduplication should occur.",
                     "enum": ["read", "mapping", "both"]
                 },
-                "humid_mismatches": {
-                    "type": "integer",
-                    "default": 1,
-                    "fa_icon": "fas fa-sort-numeric-down",
-                    "description": "Specify the maximum number of mismatches between reads for them to still be considered neighbors."
-                },
-                "humid_strategy": {
-                    "type": "string",
-                    "default": "directional",
-                    "fa_icon": "fas fa-project-diagram",
-                    "description": "Specify the strategy for UMI-deduplication directional vs cluster",
-                    "enum": ["directional", "cluster"]
-                },
-                "umitools_dedup_strategy": {
-                    "type": "string",
-                    "fa_icon": "fas fa-project-diagram",
-                    "description": "Specify the strategy or method for UMI-tools deduplication on mapping level",
-                    "enum": ["directional", "unique", "adjacency", "cluster", "percentile"],
-                    "default": "cluster"
-                },
                 "umi_discard_read": {
                     "type": "integer",
                     "default": 0,
@@ -126,16 +106,6 @@
                     "type": "boolean",
                     "fa_icon": "fas fa-forward",
                     "description": "Skip read trimming"
-                },
-                "fastp_deduplicate": {
-                    "type": "boolean",
-                    "fa_icon": "fas fa-filter",
-                    "description": "Use Fastp's deduplicate option"
-                },
-                "fastp_dedup_accuracy": {
-                    "type": "number",
-                    "fa_icon": "fas fa-filter",
-                    "description": "Define the accuracy used for hashes while deduplicating with fastp"
                 },
                 "adapter_fasta": {
                     "type": "string",
@@ -199,6 +169,51 @@
                     "type": "boolean",
                     "fa_icon": "fas fa-forward",
                     "description": "Skip the fastqc step after host & contaminants were removed"
+                },
+                "arguments_fastqc": {
+                    "type": "string",
+                    "default": "--quiet",
+                    "description": "Arguments for FastQC tool",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_fastp": {
+                    "type": "string",
+                    "default": "--cut_front --cut_tail --trim_poly_x --cut_mean_quality 30 --qualified_quality_phred 30 --unqualified_percent_limit 10 --length_required 50",
+                    "description": "Arguments for Fastp tool",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_trimmomatic": {
+                    "type": "string",
+                    "default": "ILLUMINACLIP:null:2:30:10",
+                    "description": "Arguments for Trimmomatic tool",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_umitools_extract": {
+                    "type": "string",
+                    "description": "Arguments for UMI-tools extract",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_humid": {
+                    "type": "string",
+                    "default": "-a -m 1",
+                    "description": "Arguments for Humid tool",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_bbduk": {
+                    "type": "string",
+                    "default": "entropy=0.3 entropywindow=50 entropymask=f",
+                    "description": "Arguments for BBDuk tool",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_prinseq_reads": {
+                    "type": "string",
+                    "description": "Arguments for Prinseq tool for reads",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_kraken2_host": {
+                    "type": "string",
+                    "description": "Arguments for Kraken2 tool for host removal",
+                    "fa_icon": "fas fa-cogs"
                 }
             },
             "fa_icon": "fas fa-bahai"
@@ -233,21 +248,6 @@
                     "format": "path",
                     "description": "Location of the Kraken2 database"
                 },
-                "kraken2_save_reads": {
-                    "type": "boolean",
-                    "fa_icon": "fab fa-gitkraken",
-                    "description": "Save classified and unclassified reads as fastq files"
-                },
-                "kraken2_save_readclassification": {
-                    "type": "boolean",
-                    "fa_icon": "fab fa-gitkraken",
-                    "description": "Save summary overview of read classifications in a txt file"
-                },
-                "kraken2_save_minimizers": {
-                    "type": "boolean",
-                    "fa_icon": "fab fa-gitkraken",
-                    "description": "Save kraken2's used minimizers"
-                },
                 "bracken_db": {
                     "type": "string",
                     "fa_icon": "fas fa-database",
@@ -262,12 +262,34 @@
                     "fa_icon": "fas fa-database",
                     "description": "Location of Kaiju database"
                 },
-                "kaiju_taxon_rank": {
+                "arguments_kraken2": {
                     "type": "string",
-                    "default": "species",
-                    "fa_icon": "fas fa-align-justify",
-                    "description": "Level of taxa rank that needs to be determined",
-                    "enum": ["superkingdom", "phylum", "class", "order", "family", "genus", "species"]
+                    "default": "--report-minimizer-data",
+                    "description": "Arguments for Kraken2 tool",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_kaiju": {
+                    "type": "string",
+                    "default": "-v",
+                    "description": "Arguments for Kaiju tool",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_kaiju2table": {
+                    "type": "string",
+                    "default": "-e -l species",
+                    "description": "Arguments for Kaiju2Table tool",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_kaiju2krona": {
+                    "type": "string",
+                    "default": "-v -u",
+                    "description": "Arguments for Kaiju2Krona tool",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_krona": {
+                    "type": "string",
+                    "description": "Arguments for Krona tool",
+                    "fa_icon": "fas fa-cogs"
                 }
             },
             "fa_icon": "fas fa-chart-bar"
@@ -319,11 +341,6 @@
                     "description": "Path to yml file containing read information.",
                     "help_text": "The raw FASTQ files listed in this YAML file MUST be supplied to the respective illumina/pacbio/nanopore input channel(s) _in addition_ to this YML. File entries in this yml must contain only the file name and no paths."
                 },
-                "assembler_patterns": {
-                    "type": "string",
-                    "description": "Regex pattern to identify contigs that have been made by the assemblers",
-                    "fa_icon": "fab fa-behance"
-                },
                 "skip_contig_prinseq": {
                     "type": "boolean",
                     "fa_icon": "fas fa-forward",
@@ -355,6 +372,41 @@
                     "default": "FR",
                     "fa_icon": "fas fa-exchange-alt",
                     "description": "Specify the read orientation."
+                },
+                "arguments_spades": {
+                    "type": "string",
+                    "default": "--rnaviral",
+                    "description": "Arguments for SPAdes tool",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_megahit": {
+                    "type": "string",
+                    "description": "Arguments for MEGAHIT tool",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_trinity": {
+                    "type": "string",
+                    "default": "--max_reads_per_graph 100000",
+                    "description": "Arguments for Trinity tool",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_quast": {
+                    "type": "string",
+                    "default": "--min-contig 0",
+                    "description": "Arguments for QUAST tool",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_sspace_basic": {
+                    "type": "string",
+                    "default": "-x 1 -o 15 -r 0.75",
+                    "description": "Arguments for SSPACE Basic tool",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_prinseq_contigs": {
+                    "type": "string",
+                    "default": "-out_format 1 -lc_dust .20",
+                    "description": "Arguments for Prinseq tool for contigs",
+                    "fa_icon": "fas fa-cogs"
                 }
             },
             "fa_icon": "fas fa-bezier-curve"
@@ -387,13 +439,6 @@
                     "fa_icon": "fas fa-forward",
                     "description": "Skip the preclustering of assemblies to facilitate downstream processing of assemblies"
                 },
-                "keep_unclassified": {
-                    "type": "boolean",
-                    "default": true,
-                    "fa_icon": "fas fa-filter",
-                    "description": "Keep the contigs that could not be classified with the taxonomic databases (`kaiju_db` & `kraken2_db`)",
-                    "help_text": "Within the preclustering step, all contigs will get a taxonomic classification using the provided databases for the metagenomic tools. In some cases, the number of unclassified contigs can be very large if the database is restrictive. This will result in large clusters in downstream processing that can take up a lot of resources despite not being a priority in some analyses. So set it to `True` if you want to keep unclassified contigs and set it to `False` if you don't want to keep them. "
-                },
                 "precluster_classifiers": {
                     "type": "string",
                     "default": "kraken2,kaiju",
@@ -401,71 +446,12 @@
                     "description": "Specify the metagenomic classifiers to use for contig taxonomy classification: 'kraken2,kaiju'",
                     "pattern": "^(kaiju|kraken2)(,(kaiju|kraken2))?$"
                 },
-                "precluster_merge_strategy": {
-                    "type": "string",
-                    "default": "lca",
-                    "fa_icon": "far fa-object-ungroup",
-                    "description": "Taxon conflict resolution mode, must be 1 (Kaiju), 2 (Kraken),  lca, or lowest.",
-                    "help_text": "The option -c determines the method of resolving conflicts in the taxonomic assignment for a read.\nPossible values are '1', '2', 'lca', 'lowest':\n  '1' -> the taxon id from Kaiju is used.\n  '2' -> the taxon id from Kraken is used.\n  'lca' -> the least common ancestor of the two taxon ids from both input files is used.\n  'lowest' -> the lower rank of the two taxa is used if they are within the same lineage. Otherwise the LCA is used.",
-                    "enum": ["1", "2", "lca", "lowest"]
-                },
-                "precluster_simplification_level": {
-                    "type": "string",
-                    "description": "Level of taxonomic simplification",
-                    "help_text": "The taxonomic classification of the contigs can be simplified to a certain level. This can be done by specifying the taxonomic rank to which the classification should be simplified.",
-                    "enum": ["species", "genus", "family", "order", "class", "phylum", "kingdom", "superkingdom"],
-                    "fa_icon": "fas fa-compress-alt"
-                },
-                "precluster_exclude_taxa": {
-                    "type": "string",
-                    "fa_icon": "fas fa-filter",
-                    "description": "Hard constraint for taxa to exclude from the preclustering, if multiple given make sure to enclose with '\"' and separate with a space.",
-                    "help_text": "The taxonomic classification of the contigs can be filtered. This can be done by specifying a list of taxa that should be excluded from the results.",
-                    "pattern": "^[\\d +]+$"
-                },
-                "precluster_exclude_children": {
-                    "type": "string",
-                    "fa_icon": "fas fa-filter",
-                    "description": "Taxon ids to exclude along with all their children from the preclustering, if multiple given make sure to enclose with '\"' and separate with a space.",
-                    "help_text": "The taxonomic classification of the contigs can be filtered. This can be done by specifying a list of taxa that should be excluded along with all their children from the results.",
-                    "pattern": "^[\\d +]+$"
-                },
-                "precluster_exclude_parents": {
-                    "type": "string",
-                    "fa_icon": "fas fa-filter",
-                    "description": "Taxon ids to exclude along with all their parents from the preclustering, if multiple given make sure to enclose with '\"' and separate with a space.",
-                    "help_text": "The taxonomic classification of the contigs can be filtered. This can be done by specifying a list of taxa that should be excluded along with all their parents from the results.",
-                    "pattern": "^[\\d +]+$"
-                },
-                "precluster_include_children": {
-                    "type": "string",
-                    "fa_icon": "fas fa-filter",
-                    "description": "Taxon ids to include along with all their children from the preclustering, if multiple given make sure to enclose with '\"' and separate with a space.",
-                    "help_text": "The taxonomic classification of the contigs can be filtered. This can be done by specifying a list of taxa that should be included along with all their children from the results.",
-                    "pattern": "^[\\d +]+$"
-                },
-                "precluster_include_parents": {
-                    "type": "string",
-                    "fa_icon": "fas fa-filter",
-                    "description": "Taxon ids to include along with all their parents from the preclustering, if multiple given make sure to enclose with '\"' and separate with a space.",
-                    "help_text": "The taxonomic classification of the contigs can be filtered. This can be done by specifying a list of taxa that should be included along with all their parents from the results.",
-                    "pattern": "^[\\d +]+$"
-                },
                 "cluster_method": {
                     "type": "string",
                     "default": "cdhitest",
                     "description": "Cluster algorithm used for contigs",
                     "enum": ["cdhitest", "vsearch", "mmseqs-linclust", "mmseqs-cluster", "vrhyme", "mash", "diamond"],
                     "fa_icon": "fas fa-bezier-curve"
-                },
-                "mmseqs_cluster_mode": {
-                    "type": "integer",
-                    "default": 0,
-                    "fa_icon": "fas fa-project-diagram",
-                    "description": "Specify the algorithm to partition the network graph from mmseqs",
-                    "help_text": "The Greedy Set cover (0) algorithm is an approximation for the NP-complete optimization problem called set cover.\nConnected component (1) uses transitive connection to cover more remote homologs.\nGreedy incremental (2) works analogous to CD-HIT clustering algorithm.",
-                    "minimum": 0,
-                    "maximum": 3
                 },
                 "network_clustering": {
                     "type": "string",
@@ -493,15 +479,6 @@
                     "help_text": "Setting this to a low value will result in a large number of questionable contigs and an increase in computation time ",
                     "fa_icon": "fas fa-compress-alt"
                 },
-                "perc_reads_contig": {
-                    "type": "integer",
-                    "default": 5,
-                    "description": "Minimum cumulated sum of mapped read percentages of each member from a cluster group, set to 0 to disable",
-                    "help_text": "Setting this variable will remove clusters that have a low cumulated sum of mapped read percentages. This can be used to remove clusters that have a low coverage and are likely to be false positives.",
-                    "fa_icon": "fas fa-compress-alt",
-                    "minimum": 0,
-                    "maximum": 99
-                },
                 "max_contig_size": {
                     "type": "integer",
                     "default": 10000000,
@@ -521,6 +498,110 @@
                     "description": "Skip the filtering of contigs that did not cluster together with other contigs",
                     "help_text": "Setting this to true will cause the pipeline not to remove contigs that don't have similar contigs. Filtering settings can be further specified with `min_contig_size` and `max_n_100kbp`.",
                     "fa_icon": "fas fa-forward"
+                },
+                "arguments_blast_makeblastdb": {
+                    "type": "string",
+                    "default": "-dbtype nucl",
+                    "description": "Arguments for BLAST makeblastdb tool",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_blastn": {
+                    "type": "string",
+                    "default": "-max_target_seqs 5",
+                    "description": "Arguments for BLASTN tool",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_blast_filter": {
+                    "type": "string",
+                    "default": "--escore 0.01 --bitscore 50 --percent-alignment 0.80",
+                    "description": "Arguments for BLAST filter tool",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_kraken2_contig": {
+                    "type": "string",
+                    "description": "Arguments for Kraken2 tool for contigs",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_kaiju_contig": {
+                    "type": "string",
+                    "default": "-v",
+                    "description": "Arguments for Kaiju tool for contigs",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_extract_precluster": {
+                    "type": "string",
+                    "default": "--keep-unclassified --merge-strategy lca",
+                    "description": "Arguments for precluster extraction",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_cdhit": {
+                    "type": "string",
+                    "default": "-c 0.85 -mask rRyYkKsSwWmMbBdDhHvVnN",
+                    "description": "Arguments for CD-HIT tool",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_vsearch": {
+                    "type": "string",
+                    "default": "--maxseqlength 10000000 --id 0.85 --strand both --iddef 0 --no_progress --qmask none",
+                    "description": "Arguments for VSEARCH tool",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_mmseqs_linclust": {
+                    "type": "string",
+                    "default": "--min-seq-id 10000000 -c 0.700 --cov-mode 2 -s 7 --cluster-mode 0",
+                    "description": "Arguments for MMseqs2 linclust tool",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_mmseqs_cluster": {
+                    "type": "string",
+                    "default": "--min-seq-id 10000000 -c 0.700 --cov-mode 2 -s 7 --cluster-mode 0",
+                    "description": "Arguments for MMseqs2 cluster tool",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_vrhyme": {
+                    "type": "string",
+                    "default": "--mems 50",
+                    "description": "Arguments for VRhyme tool",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_mash_dist": {
+                    "type": "string",
+                    "default": "-s 4000 -k 15",
+                    "description": "Arguments for Mash distance tool",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_network_cluster": {
+                    "type": "string",
+                    "default": "--score 0.85",
+                    "description": "Arguments for network clustering",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_extract_cluster": {
+                    "type": "string",
+                    "default": "--perc_reads_contig 5",
+                    "description": "Arguments for cluster extraction",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_minimap2_align": {
+                    "type": "string",
+                    "description": "Arguments for Minimap2 alignment",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_mash_sketch": {
+                    "type": "string",
+                    "default": "-i",
+                    "description": "Arguments for Mash sketch tool",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_mash_screen": {
+                    "type": "string",
+                    "description": "Arguments for Mash screen tool",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_select_reference": {
+                    "type": "string",
+                    "description": "Arguments for selecting reference",
+                    "fa_icon": "fas fa-cogs"
                 }
             },
             "fa_icon": "fas fa-hand-sparkles"
@@ -622,33 +703,18 @@
                     "enum": ["ivar", "bcftools"],
                     "description": "Consensus tool used for calling new consensus in final iteration"
                 },
-                "umi_separator": {
-                    "type": "string",
-                    "default": ":",
-                    "fa_icon": "fas fa-arrows-alt-h",
-                    "description": "UMI separator in fastq header.",
-                    "help_text": "If you have used an alternative method which does not separate the read id and UMI with a \u201c_\u201d, such as bcl2fastq which uses \u201c:\u201d, you can specify the separator with the option --umi_separator=<sep>, replacing <sep> with e.g \u201c:\u201d."
-                },
-                "mash_sketch_size": {
-                    "type": "integer",
-                    "default": 4000,
-                    "fa_icon": "fas fa-expand-arrows-alt",
-                    "description": "Specify the sketch size, the number of (non-redundant) min-hashes that are kept.",
-                    "help_text": "Larger sketches will better represent the sequence, but at the cost of larger sketch files and longer comparison times."
-                },
-                "mash_sketch_kmer_size": {
-                    "type": "integer",
-                    "default": 15,
-                    "fa_icon": "fas fa-expand-arrows-alt",
-                    "description": "Specify the kmer size for mash to create their hashes",
-                    "help_text": "Larger k-mers will provide more specificity, while smaller k-mers will provide more sensitivity. Larger genomes will also require larger k-mers to avoid k-mers that are shared by chance"
-                },
                 "min_mapped_reads": {
                     "type": "integer",
                     "default": 200,
                     "fa_icon": "fas fa-align-center",
                     "description": "Define the minimum number of mapped reads in order to continue the variant and consensus calling",
                     "minimum": 1
+                },
+                "allele_frequency": {
+                    "type": "number",
+                    "default": 0.75,
+                    "minimum": 0.01,
+                    "maximum": 1
                 },
                 "mapping_stats": {
                     "type": "boolean",
@@ -660,6 +726,140 @@
                     "type": "string",
                     "hidden": true,
                     "fa_icon": "fas fa-heading"
+                },
+                "arguments_bwamem2_index": {
+                    "type": "string",
+                    "description": "Arguments for BWA-MEM2 index",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_bwa_index": {
+                    "type": "string",
+                    "description": "Arguments for BWA index",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_bwa_mem": {
+                    "type": "string",
+                    "description": "Arguments for BWA MEM",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_bowtie2_build": {
+                    "type": "string",
+                    "description": "Arguments for Bowtie2 build",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_bowtie2_align": {
+                    "type": "string",
+                    "default": "--local --very-sensitive-local --seed 1",
+                    "description": "Arguments for Bowtie2 alignment",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_umitools_dedup": {
+                    "type": "string",
+                    "default": "--umi-separator=\\':\\' --method cluster --unmapped-reads use",
+                    "description": "Arguments for UMI-tools deduplication",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_picard_markduplicates": {
+                    "type": "string",
+                    "default": "--ASSUME_SORTED true --VALIDATION_STRINGENCY LENIENT --TMP_DIR tmp --REMOVE_DUPLICATES true",
+                    "description": "Arguments for Picard MarkDuplicates",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_picard_collectmultiplemetrics": {
+                    "type": "string",
+                    "default": "--ASSUME_SORTED true --VALIDATION_STRINGENCY LENIENT --TMP_DIR tmp",
+                    "description": "Arguments for Picard CollectMultipleMetrics",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_custom_mpileup": {
+                    "type": "string",
+                    "description": "Arguments for custom mpileup",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_mosdepth": {
+                    "type": "string",
+                    "description": "Arguments for Mosdepth tool",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_bcftools_mpileup1": {
+                    "type": "string",
+                    "default": "--ignore-overlaps --count-orphans --max-depth 800000 --min-BQ 20 --annotate FORMAT/AD,FORMAT/ADF,FORMAT/ADR,FORMAT/DP,FORMAT/SP,INFO/AD,INFO/ADF,INFO/ADR",
+                    "description": "Arguments for BCFtools mpileup step 1",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_bcftools_mpileup2": {
+                    "type": "string",
+                    "default": "--ploidy 2 --keep-alts --keep-masked-ref --multiallelic-caller --variants-only",
+                    "description": "Arguments for BCFtools mpileup step 2",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_bcftools_mpileup3": {
+                    "type": "string",
+                    "default": "--include \\'INFO/DP>=10\\",
+                    "description": "Arguments for BCFtools mpileup step 3",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_bcftools_norm": {
+                    "type": "string",
+                    "default": "--do-not-normalize --output-type z --multiallelics -any",
+                    "description": "Arguments for BCFtools norm",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_bcftools_stats": {
+                    "type": "string",
+                    "description": "Arguments for BCFtools stats",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_tabix": {
+                    "type": "string",
+                    "default": "-p vcf -f",
+                    "description": "Arguments for Tabix tool",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_bedtools_merge": {
+                    "type": "string",
+                    "description": "Arguments for Bedtools merge",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_bedtools_maskfasta": {
+                    "type": "string",
+                    "description": "Arguments for Bedtools maskfasta",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_bcftools_consensus": {
+                    "type": "string",
+                    "description": "Arguments for BCFtools consensus",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_ivar_variants1": {
+                    "type": "string",
+                    "default": "-q 20 -m 10",
+                    "description": "Arguments for iVar variants step 1",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_ivar_variants2": {
+                    "type": "string",
+                    "default": "--ignore-overlaps --count-orphans --max-depth 0 --no-BAQ --min-BQ 0",
+                    "description": "Arguments for iVar variants step 2",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_make_bed_mask": {
+                    "type": "string",
+                    "default": "-a --ignore-overlaps --count-orphans --max-depth 0 --no-BAQ --min-BQ 0",
+                    "description": "Arguments for making BED mask",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_ivar_consensus1": {
+                    "type": "string",
+                    "default": "-t 0 -q 20 -m 10 -n N",
+                    "description": "Arguments for iVar consensus step 1",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_ivar_consensus2": {
+                    "type": "string",
+                    "default": "--count-orphans --max-depth 0 --min-BQ 20 --no-BAQ -aa",
+                    "description": "Arguments for iVar consensus step 2",
+                    "fa_icon": "fas fa-cogs"
                 }
             },
             "fa_icon": "fas fa-layer-group"
@@ -731,6 +931,42 @@
                     "fa_icon": "fas fa-search",
                     "description": "Specify the search algorithm to use for mmseqs. 0: auto 1: amino acid, 2: translated, 3: nucleotide, 4: translated nucleotide alignment",
                     "help_text": "Only search-type 3 supports both forward and reverse search\n1 - BLASTP;\n2 - TBLASTN;\n3 - BLASTN;\n4 - TBLASTX"
+                },
+                "arguments_checkv": {
+                    "type": "string",
+                    "default": "--remove_tmp",
+                    "description": "Arguments for CheckV tool",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_mafft_iterations": {
+                    "type": "string",
+                    "default": "--auto --adjustdirection",
+                    "description": "Arguments for MAFFT iterations",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_mafft_qc": {
+                    "type": "string",
+                    "default": "--auto --adjustdirection",
+                    "description": "Arguments for MAFFT QC",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_blastn_qc": {
+                    "type": "string",
+                    "default": "-max_target_seqs 5",
+                    "description": "Arguments for BLASTN QC",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_prokka": {
+                    "type": "string",
+                    "default": "--centre X --compliant --force --kingdom Viruses",
+                    "description": "Arguments for Prokka tool",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_mmseqs_search": {
+                    "type": "string",
+                    "default": "--search-type 4 --rescore-mode 3",
+                    "description": "Arguments for MMseqs2 search",
+                    "fa_icon": "fas fa-cogs"
                 }
             },
             "fa_icon": "fas fa-balance-scale"
@@ -873,7 +1109,7 @@
                 },
                 "custom_table_headers": {
                     "type": "string",
-                    "default": "${projectDir}/assets/custom_table_headers.yml",
+                    "default": "https://github.com/Joon-Klaps/viralgenie/raw/refs/heads/dev/assets/custom_table_headers.yml",
                     "fa_icon": "fas fa-heading",
                     "description": "Custom yaml file containing the table column names selection and new names.",
                     "hidden": true
