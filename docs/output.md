@@ -700,6 +700,16 @@ Consensus quality control is done with multiple tools, the results are stored in
         - `<sample-id>/<sample-id>_<cl# | constraint-id>/contamination.tsv`: A detailed overview of how contamination was estimated.
         - `<sample-id>/<sample-id>_<cl# | constraint-id>/complete_genomes.tsv`: A detailed overview of putative genomes identified.
 
+
+### Prokka
+
+[`Prokka`](https://github.com/tseemann/prokka) is a whole genome annotation pipeline for identifying features of interest in a set of genomic DNA sequences, and labelling them with useful information. Prokka is a software tool to annotate bacterial, archaeal and viral genomes.)
+
+???- abstract "Output files"
+
+    - `consensus/quality_control/prokka/`
+        - `<sample-id>/<iteration>/* directories containing the prokka output files.
+
 ### BLASTn
 
 [BLAST](https://blast.ncbi.nlm.nih.gov/Blast.cgi) is a tool for comparing primary biological sequence information. The output from the BLAST run is stored in the directory `consensus/quality_control/blast/`. Final consensus genomes are searched against the `--reference_pool`.
