@@ -290,6 +290,15 @@
                     "type": "string",
                     "description": "Arguments for Krona tool",
                     "fa_icon": "fas fa-cogs"
+                },
+                "arguments_bracken": {
+                    "type": "string"
+                },
+                "arguments_kreport2krona": {
+                    "type": "string"
+                },
+                "arguments_minimap2_index": {
+                    "type": "string"
                 }
             },
             "fa_icon": "fas fa-chart-bar"
@@ -402,7 +411,7 @@
                     "description": "Arguments for SSPACE Basic tool",
                     "fa_icon": "fas fa-cogs"
                 },
-                "arguments_prinseq_contigs": {
+                "arguments_prinseq_contig": {
                     "type": "string",
                     "default": "-out_format 1 -lc_dust .20",
                     "description": "Arguments for Prinseq tool for contigs",
@@ -471,6 +480,15 @@
                     "default": 0.85,
                     "description": "Identity threshold value used in clustering algorithms",
                     "fa_icon": "fas fa-list-ol"
+                },
+                "perc_reads_contig": {
+                    "type": "integer",
+                    "default": 5,
+                    "description": "Minimum cumulated sum of mapped read percentages of each member from a cluster group, set to 0 to disable",
+                    "help_text": "Setting this variable will remove clusters that have a low cumulated sum of mapped read percentages. This can be used to remove clusters that have a low coverage and are likely to be false positives.",
+                    "fa_icon": "fas fa-compress-alt",
+                    "minimum": 0,
+                    "maximum": 99
                 },
                 "min_contig_size": {
                     "type": "integer",
@@ -548,13 +566,13 @@
                 },
                 "arguments_mmseqs_linclust": {
                     "type": "string",
-                    "default": "--min-seq-id 10000000 -c 0.700 --cov-mode 2 -s 7 --cluster-mode 0",
+                    "default": "--min-seq-id 10000000 -c 0.85 --cov-mode 2 -s 7 --cluster-mode 0",
                     "description": "Arguments for MMseqs2 linclust tool",
                     "fa_icon": "fas fa-cogs"
                 },
                 "arguments_mmseqs_cluster": {
                     "type": "string",
-                    "default": "--min-seq-id 10000000 -c 0.700 --cov-mode 2 -s 7 --cluster-mode 0",
+                    "default": "--min-seq-id 10000000 -c 0.85 --cov-mode 2 -s 7 --cluster-mode 0",
                     "description": "Arguments for MMseqs2 cluster tool",
                     "fa_icon": "fas fa-cogs"
                 },
@@ -714,7 +732,9 @@
                     "type": "number",
                     "default": 0.75,
                     "minimum": 0.01,
-                    "maximum": 1
+                    "maximum": 1,
+                    "fa_icon": "fas fa-percentage",
+                    "description": "Minimum allele frequency threshold for calling consensus"
                 },
                 "mapping_stats": {
                     "type": "boolean",
@@ -809,6 +829,21 @@
                     "type": "string",
                     "description": "Arguments for BCFtools stats",
                     "fa_icon": "fas fa-cogs"
+                },
+                "arguments_samtools_stats": {
+                    "type": "string",
+                    "fa_icon": "fas fa-cogs",
+                    "description": "Arguments for Samtools stats command"
+                },
+                "arguments_samtools_idxstats": {
+                    "type": "string",
+                    "fa_icon": "fas fa-cogs",
+                    "description": "Arguments for Samtools idxstats command"
+                },
+                "arguments_samtools_flagstat": {
+                    "type": "string",
+                    "fa_icon": "fas fa-cogs",
+                    "description": "Arguments for Samtools flagstat command"
                 },
                 "arguments_tabix": {
                     "type": "string",
@@ -967,6 +1002,11 @@
                     "default": "--search-type 4 --rescore-mode 3",
                     "description": "Arguments for MMseqs2 search",
                     "fa_icon": "fas fa-cogs"
+                },
+                "arguments_quast_qc": {
+                    "type": "string",
+                    "fa_icon": "fas fa-cogs",
+                    "description": "Arguments for QUAST quality control"
                 }
             },
             "fa_icon": "fas fa-balance-scale"
