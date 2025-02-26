@@ -248,6 +248,21 @@
                     "format": "path",
                     "description": "Location of the Kraken2 database"
                 },
+                "kraken2_save_reads": {
+                    "type": "boolean",
+                    "fa_icon": "fab fa-gitkraken",
+                    "description": "Save classified and unclassified reads as fastq files"
+                },
+                "kraken2_save_readclassification": {
+                    "type": "boolean",
+                    "fa_icon": "fab fa-gitkraken",
+                    "description": "Save summary overview of read classifications in a txt file"
+                },
+                "kraken2_save_minimizers": {
+                    "type": "boolean",
+                    "fa_icon": "fab fa-gitkraken",
+                    "description": "Save kraken2's used minimizers"
+                },
                 "bracken_db": {
                     "type": "string",
                     "fa_icon": "fas fa-database",
@@ -261,6 +276,12 @@
                     "format": "path",
                     "fa_icon": "fas fa-database",
                     "description": "Location of Kaiju database"
+                },
+                "kaiju_taxon_rank": {
+                    "default": "species",
+                    "fa_icon": "fas fa-align-justify",
+                    "description": "Level of taxa rank that needs to be determined",
+                    "enum": ["superkingdom", "phylum", "class", "order", "family", "genus", "species"]
                 },
                 "arguments_kraken2": {
                     "type": "string",
@@ -292,13 +313,14 @@
                     "fa_icon": "fas fa-cogs"
                 },
                 "arguments_bracken": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Arguments for Bracken tool",
+                    "fa_icon": "fas fa-cogs"
                 },
                 "arguments_kreport2krona": {
-                    "type": "string"
-                },
-                "arguments_minimap2_index": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Arguments for Kreport2Krona tool",
+                    "fa_icon": "fas fa-cogs"
                 }
             },
             "fa_icon": "fas fa-chart-bar"
@@ -447,6 +469,13 @@
                     "type": "boolean",
                     "fa_icon": "fas fa-forward",
                     "description": "Skip the preclustering of assemblies to facilitate downstream processing of assemblies"
+                },
+                "keep_unclassified": {
+                    "type": "boolean",
+                    "default": true,
+                    "fa_icon": "fas fa-filter",
+                    "description": "Keep the contigs that could not be classified with the taxonomic databases (`kaiju_db` & `kraken2_db`)",
+                    "help_text": "Within the preclustering step, all contigs will get a taxonomic classification using the provided databases for the metagenomic tools. In some cases, the number of unclassified contigs can be very large if the database is restrictive. This will result in large clusters in downstream processing that can take up a lot of resources despite not being a priority in some analyses. So set it to `True` if you want to keep unclassified contigs and set it to `False` if you don't want to keep them. "
                 },
                 "precluster_classifiers": {
                     "type": "string",
@@ -603,6 +632,11 @@
                 "arguments_minimap2_align": {
                     "type": "string",
                     "description": "Arguments for Minimap2 alignment",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "arguments_minimap2_index": {
+                    "type": "string",
+                    "description": "Arguments for Minimap2 index",
                     "fa_icon": "fas fa-cogs"
                 },
                 "arguments_mash_sketch": {
@@ -942,7 +976,8 @@
                 "prokka_db": {
                     "type": "string",
                     "fa_icon": "fas fa-database",
-                    "description": "Define a prokka `--protein` database for protein annotation"
+                    "description": "Define a prokka `--protein` database for protein annotation",
+                    "help_text": "Specify a custom protein database for Prokka annotation"
                 },
                 "skip_quast": {
                     "type": "boolean",
@@ -1169,8 +1204,8 @@
                 },
                 "global_prefix": {
                     "type": "string",
-                    "fa_icon": "fab fa-autoprefixer",
-                    "description": "Global prefix set if you don't want metadata embedded in the prefix"
+                    "fa_icon": "fas fa-tag",
+                    "description": "Global prefix set if you don't want metadata embedded in the output filenames"
                 },
                 "pipelines_testdata_base_path": {
                     "type": "string",
