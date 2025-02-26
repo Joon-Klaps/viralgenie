@@ -278,6 +278,7 @@
                     "description": "Location of Kaiju database"
                 },
                 "kaiju_taxon_rank": {
+                    "type": "string",
                     "default": "species",
                     "fa_icon": "fas fa-align-justify",
                     "description": "Level of taxa rank that needs to be determined",
@@ -577,7 +578,7 @@
                 },
                 "arguments_extract_precluster": {
                     "type": "string",
-                    "default": "--keep-unclassified --merge-strategy lca",
+                    "default": "--keep-unclassified true --merge-strategy lca",
                     "description": "Arguments for precluster extraction",
                     "fa_icon": "fas fa-cogs"
                 },
@@ -595,13 +596,13 @@
                 },
                 "arguments_mmseqs_linclust": {
                     "type": "string",
-                    "default": "--min-seq-id 10000000 -c 0.85 --cov-mode 2 -s 7 --cluster-mode 0",
+                    "default": "--min-seq-id 0.85 -c 0.700 --cov-mode 2 --cluster-mode 0",
                     "description": "Arguments for MMseqs2 linclust tool",
                     "fa_icon": "fas fa-cogs"
                 },
                 "arguments_mmseqs_cluster": {
                     "type": "string",
-                    "default": "--min-seq-id 10000000 -c 0.85 --cov-mode 2 -s 7 --cluster-mode 0",
+                    "default": "--min-seq-id 0.85 -c 0.700 --cov-mode 2 --cluster-mode 0",
                     "description": "Arguments for MMseqs2 cluster tool",
                     "fa_icon": "fas fa-cogs"
                 },
