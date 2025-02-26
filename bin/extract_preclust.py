@@ -866,7 +866,6 @@ def parse_args(argv=None):
         const=True,  # Value when flag is present but no value provided
         default=False,
         type=lambda x: (str(x).lower() == 'true') if x is not None else True,
-        default= False,
         help="Keep unclassified reads in the output.",
     )
 
