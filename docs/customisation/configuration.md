@@ -1,5 +1,29 @@
 # Custom configuration of modules
 
+## Using `--argument_tool_name` parameters
+
+The viralgenie pipeline uses a set of tools to perform the analysis. Each tool has its own set of arguments that can be modified. The pipeline has a default configuration but this can be overwritten by supplying a custom configuration file. This file can be provided to viralgenie using the `--argument_tool_name` Nextflow option.
+
+For example, to change the minimum depth to call consensus to 5 and the minimum quality score of base to 30 for the `ivar consensus` module, we can use the `--ivar_consensus` parameter:
+```bash hl_lines="3-4"
+nextflow run Joon-Klaps/viralgenie \
+    -profile docker \
+    --arguments_ivar_consensus1 '-q 30 -m 5' \
+    --arguments_ivar_consensus2 '--min-BQ 30' \
+    --input samplesheet.csv ...
+```
+!!! info
+This will overwrite all default arguments of viralgenie for the `ivar consensus` module. Similarly the remove the default values of viralgenie, specifiy the argument with an empty string:
+```bash hl_lines="3-4"
+nextflow run Joon-Klaps/viralgenie \
+    -profile docker \
+    --arguments_ivar_consensus1 '' \
+    --arguments_ivar_consensus2 '' \
+    --input samplesheet.csv ...
+```
+
+## Supplying a custom configuration file
+
 Within viralgenie, all modules (tools, e.g., `FASTP`, `FASTQC`) can be run with specific arguments. The pipeline has a default configuration but this can be overwritten by supplying a custom configuration file. This file can be provided to viralgenie using the `-c` Nextflow option.
 
 To see which specific arguments or variables are used for a module or tool, have a look at the [`modules.config` file](https://github.com/Joon-Klaps/viralgenie/blob/dev/conf/modules.config). Here the arguments of a module are specified as follows:

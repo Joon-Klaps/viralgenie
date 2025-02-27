@@ -84,11 +84,11 @@ graph LR;
     The pre-clustering step can be used to simplify the taxonomy of the contigs, let [NCBI's taxonomy browser](https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi) help you identify taxon-id's for simplification. The simplification can be done in several ways:
 
     - Make sure your contamination database is up to date and removes the relevant taxa.
-    - Exclude unclassified contigs with `--keep_unclassified false` parameter.
-    - Simplify the taxonomy of the contigs to a higher rank using `--precluster_simplify_taxa` parameter (1).
-    - Specify the taxa to include or exclude with `--precluster_include_children`(2), `--precluster_include_parents`(3), `--precluster_exclude_children`, `--precluster_exclude_parents`, `--precluster_exclude_taxa` parameters.
+    - Exclude unclassified contigs with `--arguments_extract_precluster "--keep-unclassified false"` parameter.
+    - Simplify the taxonomy of the contigs to a higher rank using `--arguments_extract_precluster "--precluster-simplify-taxa <value>"` parameter (1).
+    - Specify the taxa to include or exclude with `--arguments_extract_precluster "--precluster-include-children <taxa>"`, `--arguments_extract_precluster "--precluster-include-parents <taxa>"`, `--arguments_extract_precluster "--precluster-exclude-children <taxa>"`, `--arguments_extract_precluster "--precluster-exclude-parents <taxa>"`, `--arguments_extract_precluster "--precluster-exclude-taxa <taxa>"` parameters.
     !!! warning
-        Providing lists to nextflow is done by encapsulating values with `"` and separating them with a space. For example: `--precluster_exclude_taxa "taxon1 taxon2 taxon3"`.
+        Providing lists to the extract precluster script is done by encapsulating values with `"` and separating them with a space. For example: `--arguments_extract_precluster "--precluster-exclude-taxa taxon1 taxon2 taxon3"`.
 
 1. Options here are 'species', 'genus', 'family', 'order', 'class', 'phylum', 'kingdom' or 'superkingdom'.
 
