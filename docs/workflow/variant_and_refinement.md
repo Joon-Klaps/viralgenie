@@ -52,7 +52,7 @@ graph LR
     As with any mapping tool, the reference genome(s) should be as close as possible to the sample genome(s) to avoid mapping bias, especially for fast mutating viruses. If the reference genome is too different from the sample genome, the reads will likely not map correctly and could result in incorrect variants and consensus.
     For this reason, __use an extensive reference dataset__ like the [RVDB](https://rvdb.dbi.udel.edu/), if possible even the unclustered one.
 
-This procedure is done with [`Mash`](https://mash.readthedocs.io/en/latest/) where the reads are compared to the reference genomes and the reference genome with the highest number of shared k-mers is selected. The number of shared k-mers can be specified with the `--mash_sketch_kmer_size` (default: `15`), and the number of sketches to create with `--mash_sketch_size`, the default is `4000`.
+This procedure is done with [`Mash`](https://mash.readthedocs.io/en/latest/) where the reads are compared to the reference genomes and the reference genome with the highest number of shared k-mers is selected. The number of shared k-mers can be specified with `--arguments_mash_dist "-k 15"` (default k-mer size: `15`), and the number of sketches to create with `--arguments_mash_dist "-s 4000"` (default sketch size: `4000`). These parameters can be combined as `--arguments_mash_dist "-s 4000 -k 15"`.
 
 !!! Tip
 
@@ -75,7 +75,7 @@ So if you have UMI’s, no need to use Picard, instead use UMI-tools to deduplic
 
 > Specify `--deduplicate` to enable deduplication, the default is `true`. If UMIs are used, specify `--with_umi` and `--umi_deduplicate 'mapping' | 'both'` to enable UMI-tools deduplication. UMIs can be in the read header, if it is not in the header specify `--skip_umi_extract false`, the default is `true`.
 
-> By default the UMIs are separated in the header by ':' if this is different, specify with "--umi_separator 'YOUR_SEPARATOR'".
+> By default the UMIs are separated in the header by ':' (for `bcl2fastq` when demultiplexing) if this is different, specify with `arguments_umitools_extract '--umi-separator "_"'` and `arguments_umitools_dedup '--umi-separator "_"'` .
 
 ### 2.2 Mapping statistics
 

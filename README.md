@@ -58,7 +58,7 @@
     - [`Mash`](https://github.com/marbl/Mash)
 10. [Optional] Remove clusters with low read coverage. `bin/extract_clusters.py`
 11. Scaffolding of contigs to centroid ([`Minimap2`](https://github.com/lh3/minimap2), [`iVar-consensus`](https://andersen-lab.github.io/ivar/html/manualpage.html))
-12. [Optional] Annotate 0-depth regions with external reference `bin/lowcov_to_reference.py`.
+12. [Optional] Annotate 0-depth regions with external reference `bin/nocov_to_reference.py`.
 13. [Optional] Select best reference from `--mapping_constraints`:
     - [`Mash sketch`](https://github.com/marbl/Mash)
     - [`Mash screen`](https://github.com/marbl/Mash)
@@ -67,7 +67,7 @@
 16. Variant calling and filtering ([`BCFTools`](http://samtools.github.io/bcftools/bcftools.html),[`iVar`](https://andersen-lab.github.io/ivar/html/manualpage.html))
 17. Create consensus genome ([`BCFTools`](http://samtools.github.io/bcftools/bcftools.html),[`iVar`](https://andersen-lab.github.io/ivar/html/manualpage.html))
 18. Repeat step 12-15 multiple times for the denovo contig route
-19. Consensus evaluation and annotation ([`QUAST`](http://quast.sourceforge.net/quast),[`CheckV`](https://bitbucket.org/berkeleylab/checkv/src/master/),[`blastn`](https://blast.ncbi.nlm.nih.gov/Blast.cgi), [`mmseqs-search`](https://github.com/soedinglab/MMseqs2/wiki#batch-sequence-searching-using-mmseqs-search), [`MAFFT` - alignment of contigs vs iterations & consensus](https://mafft.cbrc.jp/alignment/software/))
+19. Consensus evaluation and annotation ([`QUAST`](http://quast.sourceforge.net/quast),[`CheckV`](https://bitbucket.org/berkeleylab/checkv/src/master/),[`blastn`](https://blast.ncbi.nlm.nih.gov/Blast.cgi),[`prokka`](http://github.com/tseemann/prokka) [`mmseqs-search`](https://github.com/soedinglab/MMseqs2/wiki#batch-sequence-searching-using-mmseqs-search), [`MAFFT` - alignment of contigs vs iterations & consensus](https://mafft.cbrc.jp/alignment/software/))
 20. Result summary visualisation for raw read, alignment, assembly, variant calling and consensus calling results ([`MultiQC`](http://multiqc.info/))
 
 ## Usage

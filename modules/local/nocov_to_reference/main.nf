@@ -1,4 +1,4 @@
-process LOWCOV_TO_REFERENCE {
+process NOCOV_TO_REFERENCE {
     tag "$meta.id"
     label 'process_medium'
     errorStrategy { task.exitStatus == 4 ? 'ignore' : 'retry' } // can fail if mpileup empty
@@ -24,7 +24,7 @@ process LOWCOV_TO_REFERENCE {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    lowcov_to_reference.py \\
+    nocov_to_reference.py \\
         $args \\
         --reference ${reference} \\
         --consensus ${consensus} \\

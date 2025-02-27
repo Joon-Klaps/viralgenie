@@ -862,8 +862,10 @@ def parse_args(argv=None):
     parser.add_argument(
         "-u",
         "--keep-unclassified",
-        action="store_true",
-        default= False,
+        nargs="?",  # Makes the argument optional
+        const=True,  # Value when flag is present but no value provided
+        default=False,
+        type=lambda x: (str(x).lower() == 'true') if x is not None else True,
         help="Keep unclassified reads in the output.",
     )
 
