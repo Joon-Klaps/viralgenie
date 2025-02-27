@@ -1285,13 +1285,13 @@
 <p>The pre-clustering step can be used to simplify the taxonomy of the contigs, let <a href="https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi">NCBI's taxonomy browser</a> help you identify taxon-id's for simplification. The simplification can be done in several ways:</p>
 <ul>
 <li>Make sure your contamination database is up to date and removes the relevant taxa.</li>
-<li>Exclude unclassified contigs with <code>--keep_unclassified false</code> parameter.</li>
-<li>Simplify the taxonomy of the contigs to a higher rank using <code>--precluster_simplify_taxa</code> parameter (1).</li>
-<li>Specify the taxa to include or exclude with <code>--precluster_include_children</code>(2), <code>--precluster_include_parents</code>(3), <code>--precluster_exclude_children</code>, <code>--precluster_exclude_parents</code>, <code>--precluster_exclude_taxa</code> parameters.</li>
+<li>Exclude unclassified contigs with <code>--arguments_extract_precluster "--keep-unclassified false"</code> parameter.</li>
+<li>Simplify the taxonomy of the contigs to a higher rank using <code>--arguments_extract_precluster "--precluster-simplify-taxa &lt;value&gt;"</code> parameter (1).</li>
+<li>Specify the taxa to include or exclude with <code>--arguments_extract_precluster "--precluster-include-children &lt;taxa&gt;"</code>, <code>--arguments_extract_precluster "--precluster-include-parents &lt;taxa&gt;"</code>, <code>--arguments_extract_precluster "--precluster-exclude-children &lt;taxa&gt;"</code>, <code>--arguments_extract_precluster "--precluster-exclude-parents &lt;taxa&gt;"</code>, <code>--arguments_extract_precluster "--precluster-exclude-taxa &lt;taxa&gt;"</code> parameters.</li>
 </ul>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
-<p>Providing lists to nextflow is done by encapsulating values with <code>"</code> and separating them with a space. For example: <code>--precluster_exclude_taxa "taxon1 taxon2 taxon3"</code>.</p>
+<p>Providing lists to the extract precluster script is done by encapsulating values with <code>"</code> and separating them with a space. For example: <code>--arguments_extract_precluster "--precluster-exclude-taxa taxon1 taxon2 taxon3"</code>.</p>
 </div>
 </div>
 <ol>
@@ -1359,9 +1359,9 @@ Dotted lines represent exclusion of taxa.</p>
 <h2 id="7-scaffolding">7. Scaffolding</h2>
 <p>After classifying all contigs and their top BLAST hits into distinct clusters or bins, the contigs are then scaffolded to the centroid of each bin. Any external references that are not centroids of the cluster are subsequently removed to prevent further bias. All members of the cluster are consequently mapped towards their centroid with <a href="https://github.com/lh3/minimap2">Minimap2</a> and consensus is called using <a href="https://andersen-lab.github.io/ivar/html/manualpage.html">iVar-consensus</a>.</p>
 <h2 id="8-annotation-with-reference">8. Annotation with Reference</h2>
-<p>Regions with 0-depth coverage are annotated with the reference sequence. This is done with a <a href="https://github.com/Joon-Klaps/viralgenie/blob/dev/bin/lowcov_to_reference.py">custom script</a> that uses the coverage of the de novo contigs towards the reference sequence to identify regions with 0-depth coverage. The reference sequence is then annotated to these regions.</p>
+<p>Regions with 0-depth coverage are annotated with the reference sequence. This is done with a <a href="https://github.com/Joon-Klaps/viralgenie/blob/dev/bin/nocov_to_reference.py">custom script</a> that uses the coverage of the de novo contigs towards the reference sequence to identify regions with 0-depth coverage. The reference sequence is then annotated to these regions.</p>
 <blockquote>
-<p>This step can be skipped using <code>--skip_hybrid_consensus</code> parameter.</p>
+<p>This step can be skipped using <code>--skip_nocov_to_reference</code> parameter.</p>
 </blockquote>
 
 

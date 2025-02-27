@@ -1256,7 +1256,7 @@ Performs iterative refinement:</p>
 <p>As with any mapping tool, the reference genome(s) should be as close as possible to the sample genome(s) to avoid mapping bias, especially for fast mutating viruses. If the reference genome is too different from the sample genome, the reads will likely not map correctly and could result in incorrect variants and consensus.
 For this reason, <strong>use an extensive reference dataset</strong> like the <a href="https://rvdb.dbi.udel.edu/">RVDB</a>, if possible even the unclustered one.</p>
 </div>
-<p>This procedure is done with <a href="https://mash.readthedocs.io/en/latest/"><code>Mash</code></a> where the reads are compared to the reference genomes and the reference genome with the highest number of shared k-mers is selected. The number of shared k-mers can be specified with the <code>--mash_sketch_kmer_size</code> (default: <code>15</code>), and the number of sketches to create with <code>--mash_sketch_size</code>, the default is <code>4000</code>.</p>
+<p>This procedure is done with <a href="https://mash.readthedocs.io/en/latest/"><code>Mash</code></a> where the reads are compared to the reference genomes and the reference genome with the highest number of shared k-mers is selected. The number of shared k-mers can be specified with <code>--arguments_mash_dist "-k 15"</code> (default k-mer size: <code>15</code>), and the number of sketches to create with <code>--arguments_mash_dist "-s 4000"</code> (default sketch size: <code>4000</code>). These parameters can be combined as <code>--arguments_mash_dist "-s 4000 -k 15"</code>.</p>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
 <ul>
@@ -1275,7 +1275,7 @@ For this reason, <strong>use an extensive reference dataset</strong> like the <a
 So if you have UMI’s, no need to use Picard, instead use UMI-tools to deduplicate your reads. Where instead of mapping location and read similarity, UMI-tools uses the UMI to identify PCR duplicates.</p>
 <blockquote>
 <p>Specify <code>--deduplicate</code> to enable deduplication, the default is <code>true</code>. If UMIs are used, specify <code>--with_umi</code> and <code>--umi_deduplicate 'mapping' | 'both'</code> to enable UMI-tools deduplication. UMIs can be in the read header, if it is not in the header specify <code>--skip_umi_extract false</code>, the default is <code>true</code>.</p>
-<p>By default the UMIs are separated in the header by ':' if this is different, specify with "--umi_separator 'YOUR_SEPARATOR'".</p>
+<p>By default the UMIs are separated in the header by ':' (for <code>bcl2fastq</code> when demultiplexing) if this is different, specify with <code>arguments_umitools_extract '--umi-separator "_"'</code> and <code>arguments_umitools_dedup '--umi-separator "_"'</code> .</p>
 </blockquote>
 <h3 id="22-mapping-statistics">2.2 Mapping statistics</h3>
 <p>Viralgenie uses multiple tools to get statistics on the variants and on the read mapping. These tools are:</p>
