@@ -10,7 +10,7 @@ Within the MultiQC report, Viralgenie provides a number of custom tables based o
 - [QUAST](#quast): QUAST is a quality assessment tool for genome assemblies. It calculates various metrics such as N50, L50, number of contigs, and total length.
 - [CheckV](#checkv): CheckV is a tool for assessing the quality of metagenome-assembled viral genomes. It calculates various metrics such as completeness, contamination, and strain heterogeneity.
 - [Prokka](#prokka): Prokka is a whole genome annotation pipeline for identifying features of interest in a set of genomic DNA sequences, and labelling them with useful information.
-- [blastn](#blastn): BLAST is a tool for comparing primary biological sequence information. It calculates the similarity between the consensus genome and the reference genome.
+- [blastn](#blast): BLAST is a tool for comparing primary biological sequence information. It calculates the similarity between the consensus genome and the reference genome.
 - [mmseqs-search](#mmseqs-search) - included as 'annotation': MMseqs is an ultra-fast and sensitive search tool for protein and nucleotide databases. Viralgenie uses MMseqs to annotate the consensus genomes and assign them a species name, segment name, expected host, etc.
 - [mafft](#mafft): MAFFT is a multiple sequence alignment program.
 
