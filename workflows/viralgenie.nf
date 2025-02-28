@@ -53,6 +53,7 @@ workflow VIRALGENIE {
 
     take:
     ch_samplesheet // channel: samplesheet read in from --input
+
     main:
 
     /*
@@ -71,7 +72,7 @@ workflow VIRALGENIE {
     ch_spades_hmm     = createFileChannel(params.spades_hmm)
     ch_constraint_meta = createFileChannel(params.mapping_constraints)
 
-    // Databases, we really don't want to stage uncessary databases
+    // Databases, we really don't want to stage unnecessary databases
     ch_ref_pool      = (!params.skip_assembly && !params.skip_polishing) || (!params.skip_consensus_qc && !params.skip_blast_qc)           ? createChannel( params.reference_pool, "reference", true )                                                         : Channel.empty()
     ch_kraken2_db    = (!params.skip_assembly && !params.skip_polishing && !params.skip_precluster) || !params.skip_read_classification    ? createChannel( params.kraken2_db, "kraken2", ('kraken2' in read_classifiers || 'kraken2' in contig_classifiers) ) : Channel.empty()
     ch_kaiju_db      = (!params.skip_assembly && !params.skip_polishing && !params.skip_precluster) || !params.skip_read_classification    ? createChannel( params.kaiju_db, "kaiju", ('kaiju' in read_classifiers || 'kaiju' in contig_classifiers) )         : Channel.empty()
@@ -104,7 +105,7 @@ workflow VIRALGENIE {
     ch_db = Channel.empty()
     if ((!params.skip_assembly && !params.skip_polishing) || !params.skip_consensus_qc || !params.skip_read_classification || (!params.skip_preprocessing && !params.skip_hostremoval)){
 
-        ch_db_raw = ch_db.mix(ch_ref_pool,ch_kraken2_db, ch_kaiju_db, ch_checkv_db, ch_bracken_db, ch_k2_host, ch_annotation_db)
+        ch_db_raw = ch_db.mix(ch_ref_pool,ch_kraken2_db, ch_kaiju_db, ch_checkv_db, ch_bracken_db, ch_k2_host, ch_annotation_db, ch_prokka_db)
         UNPACK_DB (ch_db_raw)
 
         UNPACK_DB.out.db
@@ -127,7 +128,7 @@ workflow VIRALGENIE {
                     return [ unpacked ]
             }
             .set{ch_db}
-        ch_versions         = ch_versions.mix(UNPACK_DB.out.versions)
+        ch_versions = ch_versions.mix(UNPACK_DB.out.versions)
 
         // transfer to value channels so processes are not just done once
         // '.collect()' is necessary to transform to list so cartesian products are made downstream
@@ -184,7 +185,6 @@ workflow VIRALGENIE {
         ch_multiqc_files        = ch_multiqc_files.mix(PREPROCESSING_ILLUMINA.out.low_reads_mqc.ifEmpty([]))
         ch_versions             = ch_versions.mix(PREPROCESSING_ILLUMINA.out.versions)
     }
-
 
     // Determining metagenomic diversity
     if (!params.skip_read_classification) {
@@ -259,7 +259,6 @@ workflow VIRALGENIE {
                 ch_centroids_members.multiple
                 )
             ch_versions = ch_versions.mix(ALIGN_COLLAPSE_CONTIGS.out.versions)
-
 
             SINGLETON_FILTERING (
                 ch_centroids_members.singletons,
@@ -425,7 +424,7 @@ workflow VIRALGENIE {
             ch_checkv_db,
             ch_blast_refdb,
             ch_annotation_db,
-            ch_prokka_db,
+            ch_prokka_db
             )
         ch_versions           = ch_versions.mix(CONSENSUS_QC.out.versions)
         ch_multiqc_files      = ch_multiqc_files.mix(CONSENSUS_QC.out.mqc.collect{it[1]}.ifEmpty([]))
@@ -433,7 +432,6 @@ workflow VIRALGENIE {
         ch_quast_summary      = CONSENSUS_QC.out.quast.collect{it[1]}.ifEmpty([])
         ch_blast_summary      = CONSENSUS_QC.out.blast.collect{it[1]}.ifEmpty([])
         ch_annotation_summary = CONSENSUS_QC.out.annotation.collect{it[1]}.ifEmpty([])
-
     }
 
     //
@@ -456,7 +454,7 @@ workflow VIRALGENIE {
     ch_multiqc_custom_methods_description = params.multiqc_methods_description ?
         file(params.multiqc_methods_description, checkIfExists: true) :
         file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
-    ch_methods_description                = Channel.value(
+    ch_methods_description = Channel.value(
         methodsDescriptionText(ch_multiqc_custom_methods_description))
 
     //
@@ -497,11 +495,8 @@ workflow VIRALGENIE {
 
     emit:
     multiqc_report = CUSTOM_MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
-    versions       = ch_versions                               // channel: [ path(versions.yml) ]
-
+    versions       = ch_versions                        // channel: [ path(versions.yml) ]
 }
-
-
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
