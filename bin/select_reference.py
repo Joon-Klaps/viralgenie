@@ -5,15 +5,17 @@
 import argparse
 import logging
 import sys
+import os
 from pathlib import Path
 
 import pandas as pd
+from utils.constant_variables import MASH_SCREEN_COLUMNS
 from Bio import SeqIO
 
 logger = logging.getLogger()
 
 
-def parse_args(argv=None):
+def parse_args(argv=None) -> argparse.Namespace:
     """Define and immediately parse command line arguments."""
     parser = argparse.ArgumentParser(
         description="Provide a command line tool to filter blast results.",
@@ -53,45 +55,52 @@ def parse_args(argv=None):
     )
     return parser.parse_args(argv)
 
-def to_dict_remove_dups(sequences):
+
+def to_dict_remove_dups(sequences) -> dict:
     return {record.id: record for record in sequences}
 
 
-def extract_hits(df, references, prefix):
+def write_hits(df, references, prefix) -> None:
     """
-    Extracts contigs hits from a DataFrame and writes them to a FASTA file.
+    Write contigs hits from a DataFrame to a FASTA file using memory-efficient processing.
 
     Args:
         df (pandas.DataFrame): DataFrame containing the hits information.
-        contigs (str): Path to the contigs file.
         references (str): Path to the references file in FASTA format.
         prefix (str): Prefix for the output file.
 
     Returns:
         None
     """
-    try:
-        ref_records = SeqIO.to_dict(SeqIO.parse(references, "fasta"))
-    except ValueError as e:
-        logger.warning(
-            "Indexing the reference pool file causes an error: %s \n Make sure all fasta headers are unique and it is in fasta format! \n AUTOFIX: Taking last occurence of duplicates to continue analysis",
-            e,
-        )
-        ref_records = to_dict_remove_dups(SeqIO.parse(references, "fasta"))
+    needed_hits = set(hit.split(" ")[0] for hit in df["query-ID"].unique())
+    found_hits = set()
+
     with open(f"{prefix}_reference.fa", "w") as f:
         init_position = f.tell()
-        for hit in df["query-ID"].unique():
-            hit_name = hit.split(" ")[0]
-            if hit_name in ref_records:
-                # Sometimes reads can have illegal characters in the header
-                ref_records[hit_name].id = ref_records[hit_name].id.replace("\\","_")
-                ref_records[hit_name].description = ref_records[hit_name].description.replace("\\","_")
-                SeqIO.write(ref_records[hit_name], f, "fasta")
+
+        for record in SeqIO.parse(references, "fasta"):
+            hit_name = record.id
+            if hit_name in needed_hits:
+                # Clean up illegal characters in headers
+                record.id = record.id.replace("\\", "-")
+                record.description = record.description.replace("\\", "-")
+                SeqIO.write(record, f, "fasta")
+                found_hits.add(hit_name)
+
+                # Exit early if we found all needed sequences
+                if found_hits == needed_hits:
+                    break
+
         if f.tell() == init_position:
             logger.error("No reference sequences found in the hits. Exiting...")
 
+        # Warn about missing sequences
+        missing_hits = needed_hits - found_hits
+        if missing_hits:
+            logger.warning(f"Could not find the following reference sequences: {', '.join(missing_hits)}")
 
-def read_mash_screen(file):
+
+def read_mash_screen(file) -> pd.DataFrame:
     """
     Read in the file and return a pandas DataFrame
     File format:
@@ -103,13 +112,20 @@ def read_mash_screen(file):
     """
 
     logger.info("Reading in the mash screen file...")
-    df = pd.read_csv(file, sep="\t", header=None)
-    df.columns = ["identity", "shared-hashes", "median-multiplicity", "p-value", "query-ID", "query-comment"]
+
+    if not os.stat(file).st_size > 0:
+        return pd.DataFrame()
+
+    try:
+        df = pd.read_csv(file, sep="\t", header=None, names=MASH_SCREEN_COLUMNS)
+    except pd.errors.EmptyDataError as e:
+        logger.warning(f"Empty file: {file}, skipping analysis")
+        return pd.DataFrame()
 
     logger.info("Removing duplicates and sorting by identity and shared-hashes...")
-    df['shared-hashes_num'] = df['shared-hashes'].str.split('/').str[0].astype(float)
+    df["shared-hashes_num"] = df["shared-hashes"].str.split("/").str[0].astype(float)
     df = df.sort_values(by=["identity", "shared-hashes_num"], ascending=False)
-    df = df.drop(columns=['shared-hashes_num'])
+    df = df.drop(columns=["shared-hashes_num"])
 
     return df.iloc[[0]]
 
@@ -125,13 +141,24 @@ def main(argv=None):
         logger.error(f"The given input file {args.references} was not found!")
         sys.exit(2)
 
+    # reading in the mash results
     df = read_mash_screen(args.mash)
+    if df.empty:
+        # Create empty files so nextflow doesn't crash
+        open(f"{args.prefix}_reference.fa", "a").close()
+        open(f"{args.prefix}.json", "a").close()
+        return 0
 
-    extract_hits(df, args.references, args.prefix)
+    # Selecting the best hit and write the hit to a fasta file
+    write_hits(df, args.references, args.prefix)
 
-    df.to_json(f"{args.prefix}.json",orient="records", lines=True)
+    # Writing the best hit to a json file for metadata purposes
+    df_renamed = df.copy()
+    df_renamed["query-ID"] = df_renamed["query-ID"].str.replace("\\", "-")
+    df_renamed.to_json(f"{args.prefix}.json", orient="records", lines=True)
 
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())

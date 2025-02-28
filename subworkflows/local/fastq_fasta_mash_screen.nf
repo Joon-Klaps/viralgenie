@@ -52,14 +52,21 @@ workflow FASTQ_FASTA_MASH_SCREEN {
     ch_versions = ch_versions.mix(SELECT_REFERENCE.out.versions)
 
     reference_fastq = SELECT_REFERENCE.out.fasta_reads
+        .filter{
+            meta, json, fasta, reads ->
+            fasta.countFasta() > 0
+        }
         .map{
             meta, json, fasta, reads ->
             json = WorkflowCommons.getMapFromJson(json)
             return [meta + json, fasta, reads]
         }
 
+    ch_json = SELECT_REFERENCE.out.fasta_reads.map{ meta, json, fasta, reads -> [meta, json]}
+
     emit:
-    reference_fastq = reference_fastq   // channel: [meta, fasta, reads]
+    reference_fastq = reference_fastq   // channel: [meta, fasta, reads ]
+    json            = ch_json           // channel: [meta, json ]
     versions        = ch_versions       // channel: [ versions.yml ]
 }
 

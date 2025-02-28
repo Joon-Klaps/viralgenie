@@ -5,16 +5,17 @@ process BLAST_FILTER {
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/mulled-v2-949aaaddebd054dc6bded102520daff6f0f93ce6:aa2a3707bfa0550fee316844baba7752eaab7802-0':
-        'biocontainers/mulled-v2-949aaaddebd054dc6bded102520daff6f0f93ce6:aa2a3707bfa0550fee316844baba7752eaab7802-0' }"
+        'community.wave.seqera.io/library/pandas_pip_biopython:465ab8e47f7a0510' }"
 
     input:
-    tuple val(meta), path(blast), path(contigs)
-    tuple val(meta2), path(db)
+    tuple val(meta), path(blast)
+    tuple val(meta2), path(contigs)
+    tuple val(meta3), path(db)
 
     output:
-    tuple val(meta), path("*.hits.txt")  , emit: hits
+    tuple val(meta), path("*.hits.txt")  , emit: hits, optional: true
     tuple val(meta), path("*.fa")        , emit: sequence
-    tuple val(meta), path("*.filter.tsv"), emit: filter
+    tuple val(meta), path("*.filter.tsv"), emit: filter, optional: true
     path "versions.yml"                  , emit: versions
 
     when:
@@ -23,10 +24,11 @@ process BLAST_FILTER {
     script:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
+    def blast_command = blast ? "-i ${blast}" : ""
     """
     blast_filter.py \\
         $args \\
-        -i ${blast} \\
+        ${blast_command} \\
         -c ${contigs} \\
         -r ${db} \\
         -p ${prefix}

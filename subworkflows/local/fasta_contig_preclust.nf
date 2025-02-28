@@ -15,30 +15,30 @@ workflow FASTA_CONTIG_PRECLUST {
     ch_versions = Channel.empty()
 
     // modify single_end so kaiju & kraken don't crash
-    ch_contigs = ch_contigs_reads.map{ meta, fasta,reads -> [meta + [single_end:true, og_single_end:meta.single_end], fasta] }
+    ch_contigs = ch_contigs_reads.map{ meta, fasta, reads -> [meta + [single_end:true, og_single_end:meta.single_end], fasta] }
 
-    kaiju = Channel.empty()
+    ch_kaiju = Channel.empty()
     if ('kaiju' in contig_classifiers){
         KAIJU_CONTIG ( ch_contigs, ch_kaiju_db)
-        kaiju       = KAIJU_CONTIG.out.results
+        ch_kaiju    = KAIJU_CONTIG.out.results
         ch_versions = ch_versions.mix( KAIJU_CONTIG.out.versions.first() )
     }
 
-    kraken        = Channel.empty()
-    kraken_report = Channel.empty()
+    ch_kraken        = Channel.empty()
+    ch_kraken_report = Channel.empty()
     if ('kraken2' in contig_classifiers){
         KRAKEN2_CONTIG ( ch_contigs, ch_kraken2_db, false, true )
-        kraken        = KRAKEN2_CONTIG.out.classified_reads_assignment
-        kraken_report = KRAKEN2_CONTIG.out.report
-        ch_versions   = ch_versions.mix( KRAKEN2_CONTIG.out.versions.first() )
+        ch_kraken        = KRAKEN2_CONTIG.out.classified_reads_assignment
+        ch_kraken_report = KRAKEN2_CONTIG.out.report
+        ch_versions      = ch_versions.mix( KRAKEN2_CONTIG.out.versions.first() )
     }
 
     classifications = Channel.empty()
 
     if ('kaiju' in contig_classifiers && 'kraken2' in contig_classifiers){
-        classifications = kaiju
-            .join(kraken, by:[0])
-            .join(kraken_report, by:[0])
+        classifications = ch_kaiju
+            .join(ch_kraken, by:[0])
+            .join(ch_kraken_report, by:[0])
             .join(ch_contigs, by:[0])
             .multiMap{ meta, kaiju, kraken, kraken_report, contig ->
                 kaiju: [meta, kaiju]
@@ -46,7 +46,7 @@ workflow FASTA_CONTIG_PRECLUST {
                 contig: [meta, contig]
             }
     } else if ('kaiju' in contig_classifiers){
-        classifications = kaiju
+        classifications = ch_kaiju
             .join(ch_contigs, by:[0])
             .multiMap{ meta, kaiju, contig ->
                 kaiju: [meta, kaiju]
@@ -54,8 +54,8 @@ workflow FASTA_CONTIG_PRECLUST {
                 contig: [meta, contig]
             }
     } else if ('kraken2' in contig_classifiers){
-        classifications = kraken
-            .join(kraken_report, by:[0])
+        classifications = ch_kraken
+            .join(ch_kraken_report, by:[0])
             .join(ch_contigs, by:[0])
             .multiMap{ meta, kraken, kraken_report, contig ->
                 kaiju: [meta,[]]    // empty kaiju
@@ -69,9 +69,9 @@ workflow FASTA_CONTIG_PRECLUST {
     EXTRACT_PRECLUSTER ( classifications.kaiju, classifications.kraken, classifications.contig, ch_kaiju_db )
     ch_versions = ch_versions.mix( EXTRACT_PRECLUSTER.out.versions.first() )
 
-    reads = ch_contigs_reads.map{ meta, fasta,reads -> [meta.sample, meta, reads] }
-    // modify meta.id to include the taxid & join with reads
+    ch_reads = ch_contigs_reads.map{ meta, fasta, reads -> [meta.sample, meta, reads] }
 
+    // modify meta.id to include the taxid & join with reads
     EXTRACT_PRECLUSTER
         .out
         .sequences
@@ -87,15 +87,15 @@ workflow FASTA_CONTIG_PRECLUST {
         .filter { sample, meta, fasta ->
             params.keep_unclassified || meta.taxid != "U"                                               // filter out unclassified
         }
-        .combine(reads, by:[0])                                                                         // reads -> [meta.sample, meta, reads]
+        .combine(ch_reads, by:[0])                                                                      // reads -> [meta.sample, meta, reads]
         .map{ sample, meta_contig, fasta, meta_reads, reads -> [meta_contig, fasta, reads] }            // select only meta of contigs
         .map{ meta, fasta, reads -> [meta + [single_end:meta.og_single_end], fasta, reads]}             // set original single_end back
         .set{sequences_reads}
 
     emit:
-    sequences_reads  = sequences_reads  // channel: [ [ meta ], [ fasta ], [ fastq ]
-    kraken           = kraken           // channel: [ val(meta), [ kraken ] ]
-    kaiju            = kaiju            // channel: [ val(meta), [ kaiju ] ]
-    versions         = ch_versions      // channel: [ versions.yml ]
+    contigs_reads  = sequences_reads  // channel: [ [ meta ], [ fasta ], [ fastq ]
+    kraken         = ch_kraken        // channel: [ val(meta), [ kraken ] ]
+    kaiju          = ch_kaiju         // channel: [ val(meta), [ kaiju ] ]
+    versions       = ch_versions      // channel: [ versions.yml ]
 }
 

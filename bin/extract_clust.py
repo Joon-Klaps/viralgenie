@@ -10,11 +10,15 @@ import re
 import sys
 from collections import defaultdict
 from pathlib import Path
+from typing import Dict, List, Optional, Tuple
 
+import numpy as np
 from Bio import SeqIO
 
 logger = logging.getLogger()
 
+# Global variables
+PATTERN = "^(TRINITY)|(NODE)|(k\d+)|(scaffold\d+)"
 
 class Cluster:
     """
@@ -32,6 +36,7 @@ class Cluster:
             self.cluster_size = len(members)
         else:
             self.cluster_size = 0
+        self.cumulative_read_depth = {}
 
     def _set_centroid(self, centroid):
         """
@@ -39,7 +44,7 @@ class Cluster:
         """
         self.centroid = centroid
 
-    def _set_cluster_id(self, id):
+    def set_cluster_id(self, id):
         """
         Set the centroid sequence for the cluster.
         """
@@ -53,7 +58,7 @@ class Cluster:
         self.external_reference = not bool(regex.search(self.centroid))
 
     def __iter__(self):
-        yield "cluster_id", self.row
+        yield "cluster_id", self.cluster_id
         yield "centroid", self.centroid
         yield "members", self.members
         yield "cluster_size", self.cluster_size
@@ -62,7 +67,7 @@ class Cluster:
     def __str__(self):
         return f"Cluster {self.cluster_id}, taxid {self.taxid} with centroid {self.centroid}, external {self.external_reference} and {self.cluster_size} members {self.members}"
 
-    def _save_cluster_members(self, prefix):
+    def save_cluster_members(self, prefix):
         """
         Save the cluster to a file.
         """
@@ -73,47 +78,75 @@ class Cluster:
             else:
                 file.write(f"")
 
-    def _save_cluster_centroid(self, prefix):
+    def save_cluster_centroid(self, prefix):
         """
         Save the cluster to a file.
         """
         with open(f"{prefix}_{self.cluster_id}_centroid.txt", "w") as file:
             file.write(f"{self.centroid}\n")
 
-    def _save_cluster_json(self, prefix):
+    def save_cluster_json(self, prefix):
         with open(f"{prefix}_{self.cluster_id}_cluster.json", "w") as file:
-            json.dump(self, file, default=lambda o: o.__dict__, sort_keys=True, indent=4)
+            json.dump(
+                self,
+                file,
+                default=lambda o: o.tolist() if isinstance(o, np.ndarray) else o.__dict__,
+                sort_keys=True,
+                indent=4,
+            )
 
-    def _save_centroid_fasta(self, sequences, prefix):
+    def save_centroid_fasta(self, sequences, prefix):
         """
-        Extract the sequences from the input file based on the groups.
+        Extract the centroid sequence using memory-efficient processing.
         """
-        sequence_dict = SeqIO.to_dict(SeqIO.parse(sequences, "fasta"))
+        centroid_id = self.centroid.split(" ")[0]
         with open(f"{prefix}_{self.cluster_id}_centroid.fa", "w") as file:
-            centroid_id = self.centroid.split(" ")[0]
-            if centroid_id in sequence_dict:
-                SeqIO.write(sequence_dict[centroid_id], file, "fasta")
+            for record in SeqIO.parse(sequences, "fasta"):
+                if record.id == centroid_id:
+                    SeqIO.write(record, file, "fasta")
+                    break
 
-    def _save_members_fasta(self, sequences, prefix):
+    def save_members_fasta(self, sequences, prefix):
         """
-        Extract the sequences from the input file based on the groups.
+        Extract member sequences using memory-efficient processing.
         """
-        sequence_dict = SeqIO.to_dict(SeqIO.parse(sequences, "fasta"))
+        needed_members = set(member.split(" ")[0] for member in self.members) if self.members else set()
+
+        if not needed_members:
+            with open(f"{prefix}_{self.cluster_id}_members.fa", "w") as file:
+                file.write("\n")
+            return
+
         with open(f"{prefix}_{self.cluster_id}_members.fa", "w") as file:
-            if self.members:
-                for member in self.members:
-                    seq_name = member.split(" ")[0]
-                    if seq_name in sequence_dict:
-                        SeqIO.write(sequence_dict[seq_name], file, "fasta")
-            else:
-                file.write(f"\n")
+            for record in SeqIO.parse(sequences, "fasta"):
+                if record.id in needed_members:
+                    SeqIO.write(record, file, "fasta")
+                    needed_members.remove(record.id)
+                    if not needed_members:  # Exit early if we found all sequences
+                        break
 
     def _to_line(self, prefix):
+        rounded_depth = np.round(list(self.cumulative_read_depth.values()), 2).tolist()
         return "\t".join(
-            [str(prefix), str(self.taxid), str(self.cluster_id), str(self.centroid), str(self.cluster_size), ",".join(self.members)]
+            [
+                str(prefix),
+                str(self.cluster_id),
+                str(self.taxid),
+                str(self.centroid),
+                str(self.cluster_size),
+                "\t".join(map(str, rounded_depth)),
+                ",".join(self.members),
+            ]
         )
 
-def parse_clusters_chdit(file_in):
+    def determine_cumulative_read_depth(self, coverages: Dict) -> Dict:
+        """
+        Determine the cumulative read depth for each member of the cluster.
+        """
+        self.cumulative_read_depth = sum_dict_values_by_assembler(self.centroid, self.members, coverages)
+
+
+def parse_clusters_chdit(file_in: Path, **kwargs) -> List["Cluster"]:
     """
     Extract sequence names from cdhit's cluster files.
     """
@@ -156,12 +189,8 @@ def parse_clusters_chdit(file_in):
 
     return clusters.copy()
 
-
-def parse_clusters_mmseqs(file_in):
-    """
-    Extract sequence names from mmseqs createtsv output.
-    """
-
+def parse_clusters_mmseqs(file_in: Path, **kwargs) -> List["Cluster"]:
+    """Extract sequence names from mmseqs createtsv output."""
     # Dictionary to store clusters {cluster_id: Cluster}
     clusters = {}
     taxid = get_taxid(file_in)
@@ -182,11 +211,8 @@ def parse_clusters_mmseqs(file_in):
                 clusters[cluster_id] = new_cluster
     return list(clusters.values())
 
-
-def parse_clusters_vsearch(file_in):
-    """
-    Extract sequence names from vsearch gzipped cluster files.
-    """
+def parse_clusters_vsearch(file_in: Path, **kwargs) -> List["Cluster"]:
+    """Extract sequence names from vsearch gzipped cluster files."""
     # Dictionary to store clusters {cluster_id: Cluster}
     clusters = {}
     taxid = get_taxid(file_in)
@@ -218,19 +244,11 @@ def parse_clusters_vsearch(file_in):
     # Convert the dictionary values to a list of clusters and return
     return list(clusters.values())
 
-
-def parse_clusters_vrhyme(file_in, pattern, skip_header=True):
-    """
-    Extract sequence names from vrhyme gzipped cluster files using regex.
-    input file:
-        scaffold	bin
-        k39_0 flag=1 multi=111.6808 len=29849	1
-        Japan/DP0078/2020	1
-        CHN/HN04/2020	1
-    """
+def parse_clusters_vrhyme(file_in: Path, skip_header: bool = True, **kwargs) -> List["Cluster"]:
+    """Extract sequence names from vrhyme gzipped cluster files using regex."""
     clusters = {}  # Dictionary to store clusters {cluster_id: Cluster}
     grouped = defaultdict(list)
-    pattern_regex = re.compile(pattern)
+    pattern_regex = re.compile(kwargs.get("pattern", PATTERN))
     taxid = get_taxid(file_in)
 
     with open(file_in, "r") as file:
@@ -248,70 +266,123 @@ def parse_clusters_vrhyme(file_in, pattern, skip_header=True):
 
     return list(clusters.values())
 
-def get_taxid(file_in):
-    """
-    Extract taxid from file name.
 
-    Parameters:
-    file_in (str or file-like object): The file name or file object from which to extract the taxid.
-
-    Returns:
-    str or None: The extracted taxid if found, None otherwise.
-    """
-
-    pattern = r'_taxid(\d+)_'
+def get_taxid(file_in: Path) -> Optional[str]:
+    """Extract taxid from file name."""
+    pattern = r"_taxid(\d+)_"
     match = re.search(pattern, file_in.name)
     if match:
-        logger.debug(f"Reading {file_in} with taxon id {match.group(1)}...")
+        logger.debug("Reading %s with taxon id %s...", file_in, match.group(1))
         return match.group(1)
-    else :
-        logger.debug(f"No taxon id found for {file_in} ")
+    else:
+        logger.debug("No taxon id found for %s", file_in)
         return None
 
-def get_first_not_match(regex_pattern, data_list):
-    """
-    Return the first element that matches the regex_pattern else return the first element.
-    """
+def get_first_not_match(regex_pattern: str, data_list: List[str]) -> str:
+    """Return the first element that matches the regex_pattern else return the first element."""
     for item in data_list:
         match = re.search(regex_pattern, item)
         if not match:
             return item
     return data_list[0]
 
-
-def write_clusters(clusters, sequences, prefix):
+def write_clusters(clusters: List['Cluster'], sequences: Path, prefix: str, length_clusters: int) -> None:
+    """
+    Write the clusters to a fasta, json, tsv file.
+    """
     for cluster in clusters:
-        cluster._save_cluster_members(prefix)
-        cluster._save_cluster_centroid(prefix)
-        cluster._save_centroid_fasta(sequences, prefix)
-        cluster._save_members_fasta(sequences, prefix)
-        cluster._save_cluster_json(prefix)
+        cluster.save_cluster_members(prefix)
+        cluster.save_cluster_centroid(prefix)
+        cluster.save_centroid_fasta(sequences, prefix)
+        cluster.save_members_fasta(sequences, prefix)
+        cluster.save_cluster_json(prefix)
 
-    write_clusters_to_tsv(clusters, prefix)
-    write_clusters_summary(clusters, prefix)
-
+    write_clusters_summary(clusters, prefix, length_clusters)
 
 def write_clusters_to_tsv(clusters, prefix):
     """
     Write the clusters to a json file.
     """
     with open(f"{prefix}.clusters.tsv", "w") as file:
-        file.write("\t".join(["sample", "taxon-id", "cluster-id", "centroid", "size", "members"]))
+        assemblers = [f"cumulative read depth - {assembler} [%]" for assembler in clusters[0].cumulative_read_depth.keys()]
+        file.write("\t".join(["sample", "cluster", "taxon-id", "centroid", "number of members"] + assemblers + ["members"]))
         file.write("\n")
         for cluster in clusters:
             file.write(cluster._to_line(prefix))
             file.write("\n")
 
+def read_coverages(coverages):
+    """
+    Read the coverages from each idxstats file and compute the percentage of each coverage.
+    Return a list of dictionaries, one for each file.
+    """
+    all_coverages = []
 
-def update_cluster_ids(clusters):
+    for coverage_file in coverages:
+        coverages_dict = {}
+        total_coverage = 0
+
+        # First pass to compute the total coverage for this file
+        with open(coverage_file, "r") as file:
+            for line in file:
+                parts = line.strip().split("\t")
+                coverage = int(parts[2])
+                total_coverage += coverage
+                if parts[0] in coverages_dict:
+                    coverages_dict[parts[0]] += coverage
+                else:
+                    coverages_dict[parts[0]] = coverage
+
+        # Compute the percentage for each entry
+        for key in coverages_dict:
+            coverages_dict[key] = (coverages_dict[key] / total_coverage) * 100
+
+        # Add the coverage dictionary for this file to the list
+        all_coverages.append(coverages_dict)
+
+    return all_coverages
+
+def update_cluster_ids(clusters: List["Cluster"]) -> List["Cluster"]:
     updated_clusters = []
     for idx, cluster in enumerate(clusters):
-        cluster._set_cluster_id(f"cl{idx}")
+        cluster.set_cluster_id(f"cl{idx}")
         updated_clusters.append(cluster)
     return updated_clusters
 
+def sum_dict_values_by_assembler(centroid: str, members: List, coverages: List) -> Dict:
+    """
+    Sum the values of the dictionaries in the list for the given key.
 
-def write_clusters_summary(clusters, prefix):
+    Parameters:
+    centroid (str): The key to sum the values for.
+    members (list): The list of keys to sum the values for.
+    coverages (list): The list of dictionaries to sum the values from.
+
+    Returns:
+    dict: A dictionary with the summed values for each assembler
+    """
+    # Define regex patterns for each assembler
+    patterns = {"spades": r"^(spades)|(NODE)", "megahit": r"^(megahit)|(k\d+)", "trinity": r"^(trinity)|(TRINITY)"}
+
+    # Function to get the assembler type for a key
+    def get_assembler(key):
+        for assembler, pattern in patterns.items():
+            if re.match(pattern, key):
+                return assembler
+        return "unknown"  # In case no pattern matches
+
+    # Initialize result dictionary
+    result = {assembler: 0 for assembler in patterns.keys()}
+
+    # Sum coverages
+    for key in [centroid] + members:
+        assembler = get_assembler(key)
+        if assembler != "unknown":
+            result[assembler] += sum(d.get(key, 0) for d in coverages)
+
+    return result
+
+def write_clusters_summary(clusters: List["Cluster"], prefix:str, length_clusters:int =None)-> None:
     """
     Write the clusters to a json file.
     """
@@ -320,13 +391,31 @@ def write_clusters_summary(clusters, prefix):
     n_singletons = len([cluster for cluster in clusters if cluster.cluster_size == 0])
 
     with open(f"{prefix}.summary_mqc.tsv", "w") as file:
-        file.write("\t".join(["Sample name", "# Clusters", "Average cluster size", "Number of singletons"]))
-        file.write("\n")
-        file.write("\t".join([str(prefix), str(n_clusters), str(avg_size), str(n_singletons)]))
-        file.write("\n")
+        if length_clusters:
+            file.write("\t".join(["Sample name", "# Clusters", "# Removed clusters", "Average cluster size", "Number of singletons"]))
+            file.write("\n")
+            file.write("\t".join([str(prefix), str(n_clusters), str(length_clusters - n_clusters), str(avg_size), str(n_singletons)]))
+            file.write("\n")
+        else:
+            file.write("\t".join(["Sample name", "# Clusters", "Average cluster size", "Number of singletons"]))
+            file.write("\n")
+            file.write("\t".join([str(prefix), str(n_clusters), str(avg_size), str(n_singletons)]))
+            file.write("\n")
 
+def write_clusters_mqc(clusters: List["Cluster"], prefix:str)-> None:
+    """
+    Write the clusters to a json file.
+    """
+    with open(f"{prefix}.clusters_mqc.json", "w") as file:
+        json.dump(
+            clusters,
+            file,
+            default=lambda o: o.tolist() if isinstance(o, np.ndarray) else o.__dict__,
+            sort_keys=True,
+            indent=4,
+        )
 
-def filter_clusters(clusters, pattern):
+def filter_members(clusters:List["Cluster"], pattern:str = PATTERN) -> List["Cluster"]:
     """
     Filter clusters on members given regex pattern, members cannot contain the pattern.
     """
@@ -342,6 +431,27 @@ def filter_clusters(clusters, pattern):
             filtered_clusters.append(cluster)
     return filtered_clusters
 
+def filter_clusters_by_coverage(
+    clusters: List["Cluster"], coverages: Dict, threshold: float, keep_n_clusters: int
+) -> Tuple[List["Cluster"], List["Cluster"]]:
+    """
+    Filter clusters on coverage, only keep clusters with a coverage above the threshold. If no clusters are kept, return top 5.
+    """
+    filtered_clusters = []
+    for cluster in clusters:
+        cluster.determine_cumulative_read_depth(coverages)
+        logger.debug("Cluster %s has cumulative read depth %s",
+            cluster.cluster_id, cluster.cumulative_read_depth)
+        cum_coverages = np.array(list(cluster.cumulative_read_depth.values()))
+        if any(cum_coverages >= threshold):
+            filtered_clusters.append(cluster)
+
+    if filtered_clusters:
+        return clusters, filtered_clusters
+
+    # Fix: Sum only the values of the cumulative_read_depth dictionary
+    sorted_clusters = sorted(clusters, key=lambda x: sum(x.cumulative_read_depth.values()), reverse=True)
+    return sorted_clusters, sorted_clusters[:keep_n_clusters]
 
 def parse_args(argv=None):
     """Define and immediately parse command line arguments."""
@@ -366,6 +476,14 @@ def parse_args(argv=None):
         help="cluster file from cluster methods containing cluster information.",
     )
     parser.add_argument(
+        "-d",
+        "--coverages",
+        nargs="+",
+        metavar="COVERAGES",
+        type=Path,
+        help="idxstats file displaying the number of reads mapped to each contig.",
+    )
+    parser.add_argument(
         "-s",
         "--seq",
         metavar="SEQ_IN",
@@ -381,13 +499,32 @@ def parse_args(argv=None):
     )
 
     parser.add_argument(
+        "-t",
+        "--perc_reads_contig",
+        default=5,
+        metavar="PERC_READS_CONTIG",
+        type=float,
+        help="Percentage of reads mapped to contig to keep cluster.",
+    )
+
+    parser.add_argument(
         "-r",
         "--pattern",
         metavar="PATTERN",
         type=str,
         help="Regex pattern to filter clusters by centroid sequence name.",
-        default="^(TRINITY)|(NODE)|(k\d+)",  # Default pattern matches Trinity, SPADes and MEGAHIT assembly names
+        default=PATTERN,
     )
+
+    parser.add_argument(
+        "-n",
+        "--keep-clusters",
+        metavar="KEEP_CLUSTERS",
+        type=int,
+        help="Define the number of clusters to keep based if no clusters have at least the threshold value's read depth.",
+        default=5,
+    )
+
     parser.add_argument(
         "-l",
         "--log-level",
@@ -399,49 +536,70 @@ def parse_args(argv=None):
 
 
 def main(argv=None):
+    CLUSTER_PARSERS = {
+        "mash":            {"func": parse_clusters_vrhyme, "skip_header": False},
+        "vrhyme":          {"func": parse_clusters_vrhyme },
+        "vsearch":         {"func": parse_clusters_vsearch },
+        "cdhitest":        {"func": parse_clusters_chdit },
+        "mmseqs-cluster":  {"func": parse_clusters_mmseqs },
+        "mmseqs-linclust": {"func": parse_clusters_mmseqs }
+    }
+
     """Coordinate argument parsing and program execution."""
     args = parse_args(argv)
     logging.basicConfig(level=args.log_level, format="[%(levelname)s] %(message)s")
 
     if not args.seq.is_file():
-        logger.error(f"The given input file {args.seq} was not found!")
+        logger.error("The given input file %s was not found!", args.seq)
         sys.exit(2)
 
     cluster_list = []
+
+    parser = CLUSTER_PARSERS.get(args.method)
+    if not parser:
+        logger.error("Option %s is not supported!", args.method)
+        sys.exit(2)
+
     for cluster_file in args.clusters:
-        logger.debug(f"Reading {cluster_file}...")
+        logger.debug("Reading %s...", cluster_file)
         if not cluster_file.is_file():
-            logger.error(f"The given input file {cluster_file} was not found!")
+            logger.error("The given input file %s was not found!", cluster_file)
             sys.exit(2)
-        if args.method == "cdhitest":
-            cluster_list += parse_clusters_chdit(cluster_file)
-        elif args.method == "vsearch":
-            cluster_list += parse_clusters_vsearch(cluster_file)
-        elif args.method == "mmseqs-linclust" or args.method == "mmseqs-cluster":
-            cluster_list += parse_clusters_mmseqs(cluster_file)
-        elif args.method == "vrhyme":
-            # vrhyme doens't select centroids so we provide pattern to give preference to non matching sequences
-            cluster_list += parse_clusters_vrhyme(cluster_file, args.pattern)
-        elif args.method == "mash":
-            cluster_list += parse_clusters_vrhyme(cluster_file, args.pattern, False)
-        else:
-            logger.error(f"Option {args.method} is not supported!")
-            sys.exit(2)
+        # Call parser function with consistent interface
+        cluster_list += parser["func"](cluster_file, pattern=args.pattern, **parser)
+
+    logger.info("Found %s clusters.", len(cluster_list))
 
     # redefine cluster ids
     clusters_renamed = update_cluster_ids(cluster_list)
+    logger.info("Renamed cluster ids.")
 
     # Remove clusters with no members and external reference
-    filtered_clusters = filter_clusters(clusters_renamed, args.pattern)
+    filtered_clusters = filter_members(clusters_renamed, args.pattern)
+    logger.info("Filtered clusters by members, %s were removed.",
+        len(clusters_renamed) - len(filtered_clusters))
 
     # Set external reference, used to know if it needs to collapse or called consensus normally
+    logger.info("Setting external reference for clusters.")
     for cluster in filtered_clusters:
         cluster.set_external_reference(args.pattern)
 
-    write_clusters(filtered_clusters, args.seq, args.prefix)
+    clusters = filtered_clusters.copy()
+    # Filter clusters by coverage
+    if args.coverages:
+        coverages = read_coverages(args.coverages)
+        clusters, filtered_clusters = filter_clusters_by_coverage(filtered_clusters, coverages, args.perc_reads_contig, args.keep_clusters)
+        logger.info("Filtered clusters by coverage, %s were removed.",
+            len(clusters_renamed) - len(filtered_clusters))
+
+    assert len(filtered_clusters) != 0, "No clusters left after filtering."
+
+    # Write the clusters to files
+    logger.info("Writing results to files.")
+    write_clusters_to_tsv(clusters, args.prefix)
+    write_clusters(filtered_clusters, args.seq, args.prefix, len(clusters))
 
     return 0
-
 
 if __name__ == "__main__":
     sys.exit(main())

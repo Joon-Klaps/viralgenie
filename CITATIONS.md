@@ -103,6 +103,10 @@
 
 - [picard-tools](http://broadinstitute.github.io/picard)
 
+- [prokka](https://pubmed.ncbi.nlm.nih.gov/24642063/)
+
+    > Seemann, Torsten. “Prokka: rapid prokaryotic genome annotation.” Bioinformatics (Oxford, England) vol. 30,14 (2014): 2068-9. doi:10.1093/bioinformatics/btu153
+
 - [QUAST](https://www.ncbi.nlm.nih.gov/pubmed/23422339/)
 
     > Gurevich, Alexey et al. “QUAST: quality assessment tool for genome assemblies.” Bioinformatics (Oxford, England) vol. 29,8 (2013): 1072-5. doi:10.1093/bioinformatics/btt086
@@ -114,6 +118,10 @@
 - [SPAdes](https://www.ncbi.nlm.nih.gov/pubmed/24093227/)
 
     > Bankevich, Anton et al. “SPAdes: a new genome assembly algorithm and its applications to single-cell sequencing.” Journal of computational biology : a journal of computational molecular cell biology vol. 19,5 (2012): 455-77. doi:10.1089/cmb.2012.0021
+
+- [SSPACE Basic](https://pubmed.ncbi.nlm.nih.gov/21149342/)
+
+    > Boetzer, Marten et al. “Scaffolding pre-assembled contigs using SSPACE.” Bioinformatics (Oxford, England) vol. 27,4 (2011): 578-9. doi:10.1093/bioinformatics/btq683
 
 - [Trimmomatic](https://pubmed.ncbi.nlm.nih.gov/24695404/)
 

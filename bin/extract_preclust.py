@@ -3,10 +3,10 @@
 import argparse
 import logging
 import sys
-
-from Bio import SeqIO
 from collections import defaultdict
 from pathlib import Path
+
+from Bio import SeqIO
 
 logger = logging.getLogger()
 
@@ -364,7 +364,7 @@ def process_kraken_report(report_line):
     level_num = int(spaces/2)
     return[taxid, level_num, level_rank]
 
-def parse_kraken_report(kraken_report):
+def parse_kraken_report(kraken_report,nodes):
     """
     Parses a Kraken report file and returns a dictionary of nodes.
     Based on https://github.com/jenniferlu717/KrakenTools/blob/master/extract_kraken_reads.py
@@ -376,9 +376,6 @@ def parse_kraken_report(kraken_report):
         A dictionary where keys are tax_ids and values are dictionaries containing information like parent_tax_id and rank (if provided).
     """
 
-    logger.warning("Using kraken report to reconstruct taxonomy tree, consider providing a nodes.dmp file with --nodes for complete taxonomy tree.")
-
-    nodes = {}
     with open(kraken_report, encoding="utf-8") as f:
         prev_node = -1
         for line in f:
@@ -389,6 +386,7 @@ def parse_kraken_report(kraken_report):
             if len(report_vals) != 3:
                 logger.error("Corrupted kraken report line: %s", line)
             taxid, level_num, *level_rank = report_vals
+            logger.debug("taxid: %s, level_num: %s, level_rank: %s", taxid, level_num, level_rank)
 
             if taxid == 0:
                 continue
@@ -433,7 +431,7 @@ def get_group_size(group):
         size += len(taxon_list)
     return size
 
-def parse_nodes_dmp(nodes_file):
+def parse_nodes_dmp(nodes_file,nodes):
     """
     Parses a file containing variable-format node information and returns two dictionaries.
 
@@ -443,7 +441,6 @@ def parse_nodes_dmp(nodes_file):
     Returns:
         A dictionary where keys are tax_ids and values are dictionaries containing information like parent_tax_id and rank (if provided).
     """
-    nodes = {}
     p_notsaved = {}
     count_nodes = 0
 
@@ -500,17 +497,18 @@ def process_taxonomy(nodes_file, kraken_report):
     Returns:
         dict: A dictionary where the keys are tax_ids and values are dictionaries containing information like parent_tax_id and rank (if provided).
     """
-    if nodes_file:
-        if not nodes_file.is_file():
-            file_not_found(nodes_file)
-        nodes = parse_nodes_dmp(nodes_file)
-    elif kraken_report:
-        if not kraken_report.is_file():
-            file_not_found(kraken_report)
-        nodes = parse_kraken_report(kraken_report)
-    else:
-        logger.error("Please provide either an '--nodes' or '--database' or '--kraken_report' as %s or %s was not found!", nodes, kraken_report)
+    nodes = {}
+
+    if nodes_file and nodes_file.is_file():
+        nodes = parse_nodes_dmp(nodes_file,nodes)
+
+    if kraken_report and kraken_report.is_file():
+        nodes = parse_kraken_report(kraken_report,nodes)
+
+    if not nodes:
+        logger.error("Please provide either an '--nodes' or '--database' or '--kraken_report' as %s or %s was not found!", nodes_file, kraken_report)
         sys.exit(2)
+
     logger.info("Taxonomy read in with %d taxa", len(nodes))
     return nodes
 
@@ -864,8 +862,10 @@ def parse_args(argv=None):
     parser.add_argument(
         "-u",
         "--keep-unclassified",
-        action="store_true",
-        default= False,
+        nargs="?",  # Makes the argument optional
+        const=True,  # Value when flag is present but no value provided
+        default=False,
+        type=lambda x: (str(x).lower() == 'true') if x is not None else True,
         help="Keep unclassified reads in the output.",
     )
 

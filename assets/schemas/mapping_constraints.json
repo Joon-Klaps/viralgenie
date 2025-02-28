@@ -1,0 +1,59 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://raw.githubusercontent.com/Joon-Klaps/viralgenie/dev/assets/schemas/mapping_constraints.json",
+    "title": "Joon-Klaps/viralgenie pipeline - params.mapping_constraints schema",
+    "description": "Schema for the file provided with params.mapping_constraints",
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {
+            "id": {
+                "type": "string",
+                "pattern": "^(?!.*\\_)[A-Za-z0-9\\-\\.]+$",
+                "errorMessage": "Sequence ID must be provided and cannot contain spaces or special characters with the exception of '-' and '.'",
+                "meta": ["id"]
+            },
+            "sequence": {
+                "type": "string",
+                "pattern": "^\\S+\\.f(ast)?(n)?a$",
+                "format": "file-path",
+                "exists": true,
+                "errorMessage": "Fasta file for mapping must be provided, cannot contain spaces and must have extension '.fa', '.fasta' or '.fna' (unzipped)"
+            },
+            "species": {
+                "errorMessage": "Species cannot contain spaces or special characters with the exception of '-' and '.'",
+                "meta": ["species"],
+                "type": "string",
+                "pattern": "^(?!.*\\_)[A-Za-z0-9\\-\\.]+$"
+            },
+            "samples": {
+                "errorMessage": "Samples cannot contain spaces or special characters with the exception of '-' and '.', samples are separated by a ';'",
+                "meta": ["samples"],
+                "type": "string",
+                "pattern": "^(?!.*\\_)[A-Za-z0-9\\-\\.\\;]+$"
+            },
+            "segment": {
+                "errorMessage": "Segment cannot contain spaces or special characters with the exception of '-' and '.'. Segment is unique in combination with species",
+                "meta": ["segment"],
+                "type": "string",
+                "pattern": "^(?!.*\\_)[A-Za-z0-9\\-\\.]+$"
+            },
+            "selection": {
+                "errorMessage": "Selection can only be true or false",
+                "meta": ["selection"],
+                "type": "boolean",
+                "default": false
+            },
+            "definition": {
+                "errorMessage": "Give a definition of the sequence for metadata annotation purposes only",
+                "meta": ["definition"],
+                "type": "string"
+            }
+        },
+        "required": ["id", "sequence"],
+        "dependentRequired": {
+            "segment": ["species"]
+        }
+    },
+    "allOf": [{ "uniqueEntries": ["id", "species", "segment"] }, { "uniqueEntries": ["id"] }]
+}

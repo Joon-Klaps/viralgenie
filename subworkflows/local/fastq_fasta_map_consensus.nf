@@ -1,4 +1,4 @@
-include { filterContigs; failedContigsToMultiQC   } from '../../modules/local/functions'
+include { filterContigs; failedContigsToMultiQC   } from '../../subworkflows/local/utils_nfcore_viralgenie_pipeline'
 include { MAP_READS                               } from './map_reads'
 include { BAM_DEDUPLICATE                         } from './bam_deduplicate'
 include { SAMTOOLS_SORT as SAMTOOLS_SORT_DEDUPPED } from '../../modules/nf-core/samtools/sort/main'
@@ -6,7 +6,7 @@ include { SAMTOOLS_FAIDX                          } from '../../modules/nf-core/
 include { BAM_STATS_METRICS                       } from './bam_stats_metrics'
 include { BAM_CALL_VARIANTS                       } from './bam_call_variants'
 include { BAM_CALL_CONSENSUS                      } from './bam_call_consensus'
-include { BAM_FLAGSTAT_FILTER                     } from './bam_flagstat_filter'
+include { BAM_STATS_FILTER                        } from './bam_stats_filter'
 
 workflow FASTQ_FASTA_MAP_CONSENSUS {
 
@@ -17,9 +17,8 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
     deduplicate          // val: [ true | false ]
     call_variants        // val: [ true | false ]
     variant_caller       // val: [ bcftools | ivar ]
-    call_consensus       // val: [ true | false ]
     consensus_caller     // val: [ bcftools | ivar ]
-    mapping_stats            // val: [ true | false ]
+    mapping_stats        // val: [ true | false ]
     min_mapped_reads     // integer: min_mapped_reads
     min_len              // integer: min_length
     n_100                // integer: n_100
@@ -44,11 +43,12 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
     ch_versions  = ch_versions.mix(SAMTOOLS_FAIDX.out.versions)
 
     // remove references-read combinations with low mapping rates
-    BAM_FLAGSTAT_FILTER ( ch_bam, min_mapped_reads )
-    ch_multiqc   = ch_multiqc.mix(BAM_FLAGSTAT_FILTER.out.bam_fail_mqc.ifEmpty([]))
-    ch_versions  = ch_versions.mix(BAM_FLAGSTAT_FILTER.out.versions)
+    BAM_STATS_FILTER ( ch_bam, ch_reference, min_mapped_reads )
+    ch_multiqc   = ch_multiqc.mix(BAM_STATS_FILTER.out.stats.collect{it[1]}.ifEmpty([]))
+    ch_multiqc   = ch_multiqc.mix(BAM_STATS_FILTER.out.bam_fail_mqc.ifEmpty([]))
+    ch_versions  = ch_versions.mix(BAM_STATS_FILTER.out.versions)
 
-    BAM_FLAGSTAT_FILTER
+    BAM_STATS_FILTER
         .out
         .bam_pass
         .join(ch_reference, by: [0])
@@ -72,8 +72,8 @@ workflow FASTQ_FASTA_MAP_CONSENSUS {
     ch_versions = ch_versions.mix(SAMTOOLS_SORT_DEDUPPED.out.versions)
     ch_dedup_bam_sort = SAMTOOLS_SORT_DEDUPPED.out.bam
 
-    ch_dedup_bam_ref = ch_dedup_bam_sort.
-        join(ch_reference, by: [0])
+    ch_dedup_bam_ref = ch_dedup_bam_sort
+        .join(ch_reference, by: [0])
 
     // report summary statistics of alignment
     if (mapping_stats) {

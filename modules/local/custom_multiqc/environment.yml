@@ -1,0 +1,9 @@
+name: custom_multiqc
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - pip
+  - pip:
+      - multiqc==1.27
+      - pandas==2.2.3

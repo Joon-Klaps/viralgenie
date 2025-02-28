@@ -1,11 +1,11 @@
-include { noBlastHitsToMultiQC  } from '../../modules/local/functions'
+include { noBlastHitsToMultiQC  } from '../../subworkflows/local/utils_nfcore_viralgenie_pipeline'
 include { BLAST_BLASTN          } from '../../modules/nf-core/blast/blastn/main'
 include { BLAST_FILTER          } from '../../modules/local/blast_filter'
 
 workflow FASTA_BLAST_REFSEL {
 
     take:
-    fasta          // channel: [ val(meta), path(fasta)]
+    ch_fasta       // channel: [ val(meta), path(fasta)]
     blast_db       // channel: [ val(meta), path(db) ]
     blast_db_fasta // channel: [ val(meta), path(fasta) ]
 
@@ -13,7 +13,7 @@ workflow FASTA_BLAST_REFSEL {
     ch_versions = Channel.empty()
     // Blast results, to a reference database, to find a complete genome that's already assembled
     BLAST_BLASTN (
-        fasta,
+        ch_fasta,
         blast_db
     )
     ch_versions = ch_versions.mix(BLAST_BLASTN.out.versions.first())
@@ -37,7 +37,7 @@ workflow FASTA_BLAST_REFSEL {
     ch_no_blast_hits = Channel.empty()
     ch_blast_txt
         .no_hits
-        .join(fasta)
+        .join(ch_fasta)
         .set{no_blast_hits}
 
     no_blast_hits_mqc = noBlastHitsToMultiQC(no_blast_hits,params.assemblers).collectFile(name:'samples_no_blast_hits_mqc.tsv')
@@ -45,11 +45,17 @@ workflow FASTA_BLAST_REFSEL {
     // Filter out false positve hits that based on query length, alignment length, identity, e-score & bit-score
     ch_blast_txt
         .hits
-        .join(fasta, by:[0], remainder:false)
-        .set{ hits_contigs }
+        .join(ch_fasta, by:[0], remainder:true)
+        .multiMap{
+            meta, txt, fasta ->
+            hits : [meta, txt ? txt : []]
+            contigs : [meta, fasta]
+        }
+        .set{input_blast_filter}
 
     BLAST_FILTER (
-        hits_contigs,
+        input_blast_filter.hits,
+        input_blast_filter.contigs,
         blast_db_fasta
     )
     ch_versions = ch_versions.mix(BLAST_FILTER.out.versions.first())

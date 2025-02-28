@@ -1,3 +1,6 @@
+bump_version:
+nf_core_version: 3.1.0
+org_path:
 repository_type: pipeline
 lint:
   files_unchanged:
@@ -15,26 +18,33 @@ lint:
     - assets/email_template.txt
     - assets/sendmail_template.txt
     - pyproject.toml
+    - .gitignore
   nextflow_config:
     - manifest.name
     - manifest.homePage
     - config_defaults:
-        - params.annotation_db
-        - params.multiqc_comment_headers
         - params.custom_table_headers
-  multiqc_config:
-    - report_section_order
-    - report_comment
+  multiqc_config: false
   files_exist:
     - .github/CONTRIBUTING.md
     - CITATIONS.md
+    - assets/nf-core-viralgenie_logo_light.png
     - conf/test.config
     - conf/test_full.config
-    - lib/Utils.groovy
-    - lib/WorkflowMain.groovy
-    - lib/NfcoreTemplate.groovy
-    - lib/WorkflowViralgenie.groovy
+    - docs/README.md
+  actions_awsfulltest: false
+  actions_ci: false
 template:
   name: viralgenie
-  description: a bioinformatics best-practice analysis pipeline for reconstructing consensus genomes and to identify intra-host variants from metagenomic sequencing data or enriched based sequencing data like hybrid capture.
-  author: Joon-Klaps
+  description: a bioinformatics best-practice analysis pipeline for reconstructing
+    consensus genomes and to identify intra-host variants from metagenomic sequencing
+    data or enriched based sequencing data like hybrid capture.
+  author: "Joon Klaps, Philippe Lemey, Liana Kafetzopoulou"
+  is_nfcore: false
+  org: Joon-Klaps
+  skip_features:
+    - igenomes
+  force: false
+  outdir: .
+  version: 0.1.2
+update:

@@ -1,0 +1,8 @@
+name: nocov_to_reference
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - conda-forge::biopython=1.84
+  - conda-forge::matplotlib=3.9.2

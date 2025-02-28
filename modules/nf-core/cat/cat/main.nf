@@ -8,7 +8,7 @@ process CAT_CAT {
         'biocontainers/pigz:2.3.4' }"
 
     input:
-    tuple val(meta), path(files_in)
+    tuple val(meta), path(files_in, stageAs: "?/*")
 
     output:
     tuple val(meta), path("${prefix}"), emit: file_out
@@ -44,7 +44,7 @@ process CAT_CAT {
     """
     $command1 \\
         $args \\
-        ${file_list.join(' ')} \\
+        ${files_in} \\
         $command2 \\
         > ${prefix}
 

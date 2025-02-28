@@ -19,56 +19,12 @@ class WorkflowCommons {
     }
 
     //
-    // Function to get column entries from a file
-    //
-    public static ArrayList getColFromFile(input_file, col=0, uniqify=false, sep='\t') {
-        def vals = []
-        input_file.eachLine { line ->
-            def val = line.split(sep)[col]
-            if (uniqify) {
-                if (!vals.contains(val)) {
-                    vals << val
-                }
-            } else {
-                vals << val
-            }
-        }
-        return vals
-    }
-
-    //
-    // Function to get number of variants reported in BCFTools stats file
-    //
-    public static Integer getNumVariantsFromBCFToolsStats(bcftools_stats) {
-        def num_vars = 0
-        bcftools_stats.eachLine { line ->
-            def matcher = line =~ /SN\s*0\s*number\sof\srecords:\s*([\d]+)/
-            if (matcher) num_vars = matcher[0][1].toInteger()
-        }
-        return num_vars
-    }
-
-    //
     // Function to get a Map from a JSON file
     //
     public static Map getMapFromJson(json_file) {
         def Map json = (Map) new JsonSlurper().parse(json_file)
         return json
     }
-
-    // // Function to extract the contig size & N' per 100 kbp from the QUAST report
-    // public static Map getQuastStats(report_file) {
-    //     def contig_size = 0
-    //     def n_100 = 100000 // assume the worst
-    //     report_file.eachLine { line ->
-    //         def contig_size_match = line =~ /Largest contig\s([\d]+)/
-    //         def n_100_match       = line =~ /N's per 100 kbp\s([\d\.]+)/
-    //         if (contig_size_match) contig_size = contig_size_match[0][1].toFloat()
-    //         if (n_100_match) n_100 = n_100_match[0][1].toFloat()
-    //     }
-    //     return [contig_size : contig_size, n_100 : n_100]
-    // }
-
 
     public static Map getLengthAndAmbigous(fastaFile) {
         def length = 0
@@ -89,21 +45,19 @@ class WorkflowCommons {
         if (length.toInteger() > 0) {
             ambiguousPerc = (ambiguousCount / length) * 100
         }
-
         return [contig_size: length.toInteger(), n_100 :ambiguousPerc.toInteger()]
     }
 
     //
-    // Function that parses and returns the number of mapped reasds from flagstat files
+    // Function that parses and returns the number of mapped reasds from stats files
     //
-    public static Integer getFlagstatMappedReads(flagstat_file) {
-        def mapped_reads = 0
-        flagstat_file.eachLine { line ->
-            if (line.contains(' mapped (')) {
-                mapped_reads = line.tokenize().first().toInteger()
-            }
-        }
-        return mapped_reads
-}
+    public static Integer getStatsMappedReads(statsFile) {
+        def n_reads = 0
+        statsFile.eachLine { line ->
+            if (line =~ /SN\treads mapped:\s+(\d+)/) {
+                n_reads = line.split('\t')[2].toInteger()
+            }}
+        return n_reads
+    }
 
 }

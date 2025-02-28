@@ -40,17 +40,21 @@ workflow BAM_CALL_VARIANTS {
 
     if (save_stats){
         // run stats on all variants not only those that pass the filter
-        vcf_fasta = ch_vcf.join(meta_fasta, by: [0])
-        vcf       = vcf_fasta.map{ meta, vcf, fasta -> [ meta, vcf ] }
-        fasta     = vcf_fasta.map{ meta, vcf, fasta -> [ meta, fasta ] }
+        ch_vcf
+            .join(meta_fasta, by: [0])
+            .multiMap{ meta, vcf, fasta ->
+                vcf : [ meta, vcf ]
+                fasta : [ meta, fasta ]
+            }
+            .set{tabix_in}
 
         VCF_TABIX_STATS (
-            vcf,
+            tabix_in.vcf,
             [[:],[]], // targets
             [[:],[]], // regions
             [[:],[]], // samples
             [[:],[]], // exons
-            fasta
+            tabix_in.fasta
         )
         ch_tbi      = VCF_TABIX_STATS.out.tbi
         ch_csi      = VCF_TABIX_STATS.out.csi

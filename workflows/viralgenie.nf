@@ -1,74 +1,8 @@
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    PRINT PARAMS SUMMARY
+    VIRALGENIE
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-
-include { paramsSummaryLog; paramsSummaryMap; fromSamplesheet } from 'plugin/nf-validation'
-
-def logo = NfcoreTemplate.logo(workflow, params.monochrome_logs)
-def citation = '\n' + WorkflowMain.citation(workflow) + '\n'
-def summary_params = paramsSummaryMap(workflow)
-
-// Print parameter summary log to screen
-log.info logo + paramsSummaryLog(workflow) + citation
-
-def valid_params = [
-    spades_modes     : ['rnaviral', 'corona', 'metaviral', 'meta', 'metaplasmid', 'plasmid', 'isolate', 'rna', 'bio']
-]
-
-def assemblers         = params.assemblers ? params.assemblers.split(',').collect{ it.trim().toLowerCase() } : []
-def read_classifiers   = params.read_classifiers ? params.read_classifiers.split(',').collect{ it.trim().toLowerCase() } : []
-def contig_classifiers = params.precluster_classifiers ? params.precluster_classifiers.split(',').collect{ it.trim().toLowerCase() } : []
-
-def createFileChannel(param) {
-    return param ? Channel.fromPath(param, checkIfExists: true).collect() : []
-}
-
-def createChannel(dbPath, dbName, skipFlag) {
-    return dbPath && skipFlag ? Channel.fromPath(dbPath, checkIfExists: true).map { db -> [[id: dbName], db] } : Channel.empty()
-}
-
-// TODO nf-core: Add all file path parameters for the pipeline to the list below
-// Check input path parameters to see if they exist
-def checkPathParamList = [
-    params.input, params.multiqc_config, params.adapter_fasta, params.contaminants,
-    params.spades_yml,params.spades_hmm
-]
-for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
-
-// Check mandatory parameters
-if (params.input            ) { ch_input = file(params.input)                                      } else { exit 1, 'Input samplesheet not specified!'                              }
-
-// Optional parameters
-ch_adapter_fasta = createFileChannel(params.adapter_fasta)
-ch_metadata      = createFileChannel(params.metadata)
-ch_contaminants  = createFileChannel(params.contaminants)
-ch_spades_yml    = createFileChannel(params.spades_yml)
-ch_spades_hmm    = createFileChannel(params.spades_hmm)
-ch_constrain_meta = createFileChannel(params.mapping_constrains)
-
-// Databases, we really don't want to stage uncessary databases
-ch_ref_pool      = (!params.skip_assembly && !params.skip_polishing) || (!params.skip_consensus_qc && !params.skip_blast_qc)           ? createChannel( params.reference_pool, "reference", true )                                                         : Channel.empty()
-ch_kraken2_db    = (!params.skip_assembly && !params.skip_polishing && !params.skip_precluster) || !params.skip_read_classification    ? createChannel( params.kraken2_db, "kraken2", ('kraken2' in read_classifiers || 'kraken2' in contig_classifiers) ) : Channel.empty()
-ch_kaiju_db      = (!params.skip_assembly && !params.skip_polishing && !params.skip_precluster) || !params.skip_read_classification    ? createChannel( params.kaiju_db, "kaiju", ('kaiju' in read_classifiers || 'kaiju' in contig_classifiers) )         : Channel.empty()
-ch_checkv_db     = !params.skip_consensus_qc                                                                                           ? createChannel( params.checkv_db, "checkv", !params.skip_checkv )                                                  : Channel.empty()
-ch_bracken_db    = !params.skip_read_classification                                                                                    ? createChannel( params.bracken_db, "bracken", ('bracken' in read_classifiers) )                                    : Channel.empty()
-ch_k2_host       = !params.skip_preprocessing                                                                                          ? createChannel( params.host_k2_db, "k2_host", !params.skip_hostremoval )                                           : Channel.empty()
-ch_annotation_db = !params.skip_consensus_qc                                                                                           ? createChannel( params.annotation_db, "annotation", !params.skip_annotation )                                      : Channel.empty()
-
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    CONFIG FILES
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
-
-ch_multiqc_config                     = Channel.fromPath("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
-ch_multiqc_custom_config              = params.multiqc_config ? Channel.fromPath( params.multiqc_config, checkIfExists: true ) : Channel.empty()
-ch_multiqc_logo                       = params.multiqc_logo   ? Channel.fromPath( params.multiqc_logo, checkIfExists: true ) : Channel.empty()
-ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
-ch_multiqc_comment_headers            = params.multiqc_comment_headers     ? Channel.fromPath(params.multiqc_comment_headers, checkIfExists:true ) : Channel.empty()
-ch_multiqc_custom_table_headers       = params.custom_table_headers        ? Channel.fromPath(params.custom_table_headers, checkIfExists:true ) : Channel.empty()
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -76,16 +10,21 @@ ch_multiqc_custom_table_headers       = params.custom_table_headers        ? Cha
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
+// functions
+include { samplesheetToList               } from 'plugin/nf-schema'
+include { paramsSummaryMap                } from 'plugin/nf-schema'
+include { paramsSummaryMultiqc            } from '../subworkflows/nf-core/utils_nfcore_pipeline'
+include { softwareVersionsToYAML          } from '../subworkflows/nf-core/utils_nfcore_pipeline'
+include { methodsDescriptionText          } from '../subworkflows/local/utils_nfcore_viralgenie_pipeline'
+include { createFileChannel               } from '../subworkflows/local/utils_nfcore_viralgenie_pipeline'
+include { createChannel                   } from '../subworkflows/local/utils_nfcore_viralgenie_pipeline'
+include { noContigSamplesToMultiQC        } from '../subworkflows/local/utils_nfcore_viralgenie_pipeline'
 // Preprocessing
 include { PREPROCESSING_ILLUMINA          } from '../subworkflows/local/preprocessing_illumina'
-
 // metagenomic diversity
 include { FASTQ_KRAKEN_KAIJU              } from '../subworkflows/local/fastq_kraken_kaiju'
-
 // Assembly
-include { FASTQ_SPADES_TRINITY_MEGAHIT    } from '../subworkflows/local/fastq_spades_trinity_megahit'
-include { noContigSamplesToMultiQC        } from '../modules/local/functions'
-
+include { FASTQ_ASSEMBLY                  } from '../subworkflows/local/fastq_assembly'
 // Consensus polishing of genome
 include { FASTA_CONTIG_CLUST              } from '../subworkflows/local/fasta_contig_clust'
 include { BLAST_MAKEBLASTDB               } from '../modules/nf-core/blast/makeblastdb/main'
@@ -94,22 +33,15 @@ include { ALIGN_COLLAPSE_CONTIGS          } from '../subworkflows/local/align_co
 include { UNPACK_DB                       } from '../subworkflows/local/unpack_db'
 include { FASTQ_FASTA_ITERATIVE_CONSENSUS } from '../subworkflows/local/fastq_fasta_iterative_consensus'
 include { SINGLETON_FILTERING             } from '../subworkflows/local/singleton_filtering'
-
-// Mapping constrains selection
+// Mapping constraints selection
 include { FASTQ_FASTA_MASH_SCREEN         } from '../subworkflows/local/fastq_fasta_mash_screen'
-
-// Variant calling
-include { RENAME_FASTA_HEADER as RENAME_FASTA_HEADER_CONSTRAIN } from '../modules/local/rename_fasta_header'
-include { FASTQ_FASTA_MAP_CONSENSUS                            } from '../subworkflows/local/fastq_fasta_map_consensus'
-
 // QC consensus
 include { CONSENSUS_QC                    } from '../subworkflows/local/consensus_qc'
-
 // Report generation
-include { CUSTOM_MULTIQC_TABLES           } from '../modules/local/custom_multiqc_tables'
-include { MULTIQC as MULTIQC_DATAPREP     } from '../modules/nf-core/multiqc/main'
-include { MULTIQC as MULTIQC_REPORT       } from '../modules/nf-core/multiqc/main'
-include { CUSTOM_DUMPSOFTWAREVERSIONS     } from '../modules/nf-core/custom/dumpsoftwareversions/main'
+include { CUSTOM_MULTIQC                  } from '../modules/local/custom_multiqc'
+// Variant calling
+include { FASTQ_FASTA_MAP_CONSENSUS       } from '../subworkflows/local/fastq_fasta_map_consensus'
+
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -117,38 +49,66 @@ include { CUSTOM_DUMPSOFTWAREVERSIONS     } from '../modules/nf-core/custom/dump
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-// Info required for completion email and summary
-def multiqc_report = []
-
 workflow VIRALGENIE {
+
+    take:
+    ch_samplesheet // channel: samplesheet read in from --input
+
+    main:
+
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        PARAMETER INITIALIZATION
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    */
+
+    def read_classifiers   = params.read_classifiers ? params.read_classifiers.split(',').collect{ it.trim().toLowerCase() } : []
+    def contig_classifiers = params.precluster_classifiers ? params.precluster_classifiers.split(',').collect{ it.trim().toLowerCase() } : []
+    // Optional parameters
+    ch_adapter_fasta  = createFileChannel(params.adapter_fasta)
+    ch_metadata       = createFileChannel(params.metadata)
+    ch_contaminants   = createFileChannel(params.contaminants)
+    ch_spades_yml     = createFileChannel(params.spades_yml)
+    ch_spades_hmm     = createFileChannel(params.spades_hmm)
+    ch_constraint_meta = createFileChannel(params.mapping_constraints)
+
+    // Databases, we really don't want to stage unnecessary databases
+    ch_ref_pool      = (!params.skip_assembly && !params.skip_polishing) || (!params.skip_consensus_qc && !params.skip_blast_qc)           ? createChannel( params.reference_pool, "reference", true )                                                         : Channel.empty()
+    ch_kraken2_db    = (!params.skip_assembly && !params.skip_polishing && !params.skip_precluster) || !params.skip_read_classification    ? createChannel( params.kraken2_db, "kraken2", ('kraken2' in read_classifiers || 'kraken2' in contig_classifiers) ) : Channel.empty()
+    ch_kaiju_db      = (!params.skip_assembly && !params.skip_polishing && !params.skip_precluster) || !params.skip_read_classification    ? createChannel( params.kaiju_db, "kaiju", ('kaiju' in read_classifiers || 'kaiju' in contig_classifiers) )         : Channel.empty()
+    ch_checkv_db     = !params.skip_consensus_qc                                                                                           ? createChannel( params.checkv_db, "checkv", !params.skip_checkv )                                                  : Channel.empty()
+    ch_bracken_db    = !params.skip_read_classification                                                                                    ? createChannel( params.bracken_db, "bracken", ('bracken' in read_classifiers) )                                    : Channel.empty()
+    ch_k2_host       = !params.skip_preprocessing                                                                                          ? createChannel( params.host_k2_db, "k2_host", !params.skip_hostremoval )                                           : Channel.empty()
+    ch_annotation_db = !params.skip_consensus_qc                                                                                           ? createChannel( params.annotation_db, "annotation", !params.skip_annotation )                                      : Channel.empty()
+    ch_prokka_db     = !params.skip_consensus_qc                                                                                           ? createChannel( params.prokka_db, "prokka", !params.skip_prokka )                                                  : Channel.empty()
+
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        CONFIG FILES
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    */
+
+    ch_multiqc_config                     = Channel.fromPath("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
+    ch_multiqc_custom_config              = params.multiqc_config ? Channel.fromPath( params.multiqc_config, checkIfExists: true ) : Channel.empty()
+    ch_multiqc_logo                       = params.multiqc_logo   ? Channel.fromPath( params.multiqc_logo, checkIfExists: true ) : Channel.empty()
+    ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
+    ch_multiqc_custom_table_headers       = params.custom_table_headers        ? Channel.fromPath(params.custom_table_headers, checkIfExists:true ) : Channel.empty()
+
 
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
 
     // Importing samplesheet
-    ch_reads = Channel.fromSamplesheet(
-        'input'
-        ).map{
-            meta, read1, read2 ->
-            single_end = read1 && !read2
-            if (single_end) {
-                return [meta + [sample: meta.id, single_end: single_end] , [read1]]
-            }
-            else {
-                return [meta + [sample: meta.id, single_end: single_end] , [read1, read2]]
-            }
-        }
+    ch_reads = ch_samplesheet
 
     // Prepare Databases
     ch_db = Channel.empty()
     if ((!params.skip_assembly && !params.skip_polishing) || !params.skip_consensus_qc || !params.skip_read_classification || (!params.skip_preprocessing && !params.skip_hostremoval)){
 
-        ch_db_raw = ch_db.mix(ch_ref_pool,ch_kraken2_db, ch_kaiju_db, ch_checkv_db, ch_bracken_db, ch_k2_host, ch_annotation_db)
+        ch_db_raw = ch_db.mix(ch_ref_pool,ch_kraken2_db, ch_kaiju_db, ch_checkv_db, ch_bracken_db, ch_k2_host, ch_annotation_db, ch_prokka_db)
         UNPACK_DB (ch_db_raw)
 
-        UNPACK_DB
-            .out
-            .db
+        UNPACK_DB.out.db
             .branch { meta, unpacked ->
                 k2_host: meta.id == 'k2_host'
                     return [ unpacked ]
@@ -164,25 +124,27 @@ workflow VIRALGENIE {
                     return [ unpacked ]
                 annotation: meta.id == 'annotation'
                     return [ meta, unpacked ]
+                prokka: meta.id == 'prokka'
+                    return [ unpacked ]
             }
             .set{ch_db}
-        ch_versions         = ch_versions.mix(UNPACK_DB.out.versions)
+        ch_versions = ch_versions.mix(UNPACK_DB.out.versions)
 
         // transfer to value channels so processes are not just done once
         // '.collect()' is necessary to transform to list so cartesian products are made downstream
         ch_ref_pool_raw     = ch_db.reference.collect{it[1]}.ifEmpty([]).map{it -> [[id: 'reference'], it]}
+        ch_annotation_db    = ch_db.annotation.collect{it[1]}.ifEmpty([]).map{it -> [[id: 'annotation'], it]}
         ch_kraken2_db       = ch_db.kraken2.collect().ifEmpty([])
         ch_kaiju_db         = ch_db.kaiju.collect().ifEmpty([])
         ch_checkv_db        = ch_db.checkv.collect().ifEmpty([])
         ch_bracken_db       = ch_db.bracken.collect().ifEmpty([])
         ch_k2_host          = ch_db.k2_host.collect().ifEmpty([])
-        ch_annotation_db    = ch_db.annotation.collect{it[1]}.ifEmpty([]).map{it -> [[id: 'annotation'], it]}
+        ch_prokka_db        = ch_db.prokka.collect().ifEmpty([])
     }
 
     // Prepare blast DB
     ch_ref_pool     = Channel.empty()
     ch_blast_refdb  = Channel.empty()
-    ch_blast_annodb = Channel.empty()
 
     if ( (!params.skip_assembly && !params.skip_polishing) || (!params.skip_consensus_qc && !params.skip_blast_qc)){
         ch_blastdb_in = Channel.empty()
@@ -201,14 +163,15 @@ workflow VIRALGENIE {
                     return [ meta, db ]
                 // annotation: meta.id == 'annotation'
                 //     return [ meta, db ]
-            }.
-            set{ch_blastdb_out}
+            }
+            .set{ch_blastdb_out}
         ch_blast_refdb  = ch_blastdb_out.reference.collect{it[1]}.ifEmpty([]).map{it -> [[id: 'reference'], it]}
         ch_versions     = ch_versions.mix(BLAST_MAKEBLASTDB.out.versions)
     }
 
-    ch_host_trim_reads      = ch_reads
-    ch_decomplex_trim_reads = ch_reads
+    // If we don't preprocess reads, remove samples with 0 reads
+    ch_host_trim_reads      = ch_reads.filter{ meta, reads -> meta.single_end ? reads.countFastq() > 0 : reads[0].countFastq() > 0}
+    ch_decomplex_trim_reads = ch_reads.filter{ meta, reads -> meta.single_end ? reads.countFastq() > 0 : reads[0].countFastq() > 0}
     // preprocessing illumina reads
     if (!params.skip_preprocessing){
         PREPROCESSING_ILLUMINA (
@@ -222,7 +185,6 @@ workflow VIRALGENIE {
         ch_multiqc_files        = ch_multiqc_files.mix(PREPROCESSING_ILLUMINA.out.low_reads_mqc.ifEmpty([]))
         ch_versions             = ch_versions.mix(PREPROCESSING_ILLUMINA.out.versions)
     }
-
 
     // Determining metagenomic diversity
     if (!params.skip_read_classification) {
@@ -243,52 +205,33 @@ workflow VIRALGENIE {
     ch_consensus               = Channel.empty()
     // Channel for consensus sequences that have been generated at the LAST iteration
     ch_consensus_results_reads = Channel.empty()
-    // Channel for summary table of cluseters to include in mqc report
+    // Channel for summary table of clusters to include in mqc report
     ch_clusters_summary        = Channel.empty()
+    // Channel for summary coverages of each contig
+    ch_clusters_tsv            = Channel.empty()
 
     if (!params.skip_assembly) {
         // run different assemblers and combine contigs
-        FASTQ_SPADES_TRINITY_MEGAHIT(
-            ch_host_trim_reads,
-            assemblers,
-            ch_spades_yml,
-            ch_spades_hmm)
-
-        ch_versions      = ch_versions.mix(FASTQ_SPADES_TRINITY_MEGAHIT.out.versions)
-        ch_multiqc_files = ch_multiqc_files.mix(FASTQ_SPADES_TRINITY_MEGAHIT.out.mqc.collect{it[1]}.ifEmpty([]))
-
-        // Filter out empty scaffolds
-        FASTQ_SPADES_TRINITY_MEGAHIT
-            .out
-            .scaffolds
-            .branch { meta, scaffolds ->
-                pass: scaffolds.countFasta() > 0
-                fail: scaffolds.countFasta() == 0
-            }
-            .set{ch_contigs}
-
-        no_contig_samples = ch_contigs.fail
-        noContigSamplesToMultiQC(no_contig_samples, params.assemblers)
-            .collectFile(name:'samples_no_contigs_mqc.tsv')
-            .set{no_contigs}
-
-        ch_multiqc_files = ch_multiqc_files.mix(no_contigs.ifEmpty([]))
-
+        FASTQ_ASSEMBLY( ch_host_trim_reads, ch_spades_yml, ch_spades_hmm)
+        ch_contigs       = FASTQ_ASSEMBLY.out.scaffolds
+        ch_coverages     = FASTQ_ASSEMBLY.out.coverages
+        ch_versions      = ch_versions.mix(FASTQ_ASSEMBLY.out.versions)
+        ch_multiqc_files = ch_multiqc_files.mix(FASTQ_ASSEMBLY.out.mqc.ifEmpty([]))
 
         if (!params.skip_polishing){
             // blast contigs against reference & identify clusters of (contigs & references)
             ch_contigs
-                .pass
                 .join(ch_host_trim_reads, by: [0], remainder: false)
                 .set{ch_contigs_reads}
 
             FASTA_CONTIG_CLUST (
                 ch_contigs_reads,
+                ch_coverages,
                 ch_blast_refdb,
                 ch_ref_pool,
-                contig_classifiers,
                 ch_kraken2_db,
-                ch_kaiju_db
+                ch_kaiju_db,
+                contig_classifiers
                 )
             ch_versions = ch_versions.mix(FASTA_CONTIG_CLUST.out.versions)
 
@@ -308,6 +251,7 @@ workflow VIRALGENIE {
                 .set{ch_centroids_members}
 
             ch_clusters_summary    = FASTA_CONTIG_CLUST.out.clusters_summary.collect{it[1]}.ifEmpty([])
+            ch_clusters_tsv        = FASTA_CONTIG_CLUST.out.clusters_tsv.collect{it[1]}.ifEmpty([])
             ch_multiqc_files       =  ch_multiqc_files.mix(FASTA_CONTIG_CLUST.out.no_blast_hits_mqc.ifEmpty([]))
 
             // map clustered contigs & create a single consensus per cluster
@@ -315,7 +259,6 @@ workflow VIRALGENIE {
                 ch_centroids_members.multiple
                 )
             ch_versions = ch_versions.mix(ALIGN_COLLAPSE_CONTIGS.out.versions)
-
 
             SINGLETON_FILTERING (
                 ch_centroids_members.singletons,
@@ -384,41 +327,41 @@ workflow VIRALGENIE {
             }
         .set{ch_consensus_results_reads}
 
-    if (params.mapping_constrains && !params.skip_variant_calling ) {
+    ch_mash_screen = Channel.empty()
+
+    if (params.mapping_constraints && !params.skip_variant_calling ) {
         // Importing samplesheet
-        Channel.fromSamplesheet('mapping_constrains')
+        Channel
+            .fromList(samplesheetToList(params.mapping_constraints, "${projectDir}/assets/schemas/mapping_constraints.json"))
             .map{ meta, sequence ->
-                samples = meta.samples == null ? meta.samples: tuple(meta.samples.split(";"))  // Split up samples if meta.samples is not null
+                def samples = meta.samples == [] ? null : tuple(meta.samples.split(";"))  // Split up samples if meta.samples is not null
                 [meta, samples, sequence]
             }
-            .transpose(remainder:true)                                                         // Unnest
-            .set{ch_mapping_constrains}
+            .transpose(remainder: true)                                                         // Unnest
+            .set{ch_mapping_constraints}
 
-        // // Check if the input is a multi-fasta
-        // ch_mapping_constrains.map{ meta, samples, sequence -> WorkflowMain.isMultiFasta(sequence, log)}
-
-        //
+        // Joining all the reads with the mapping constraints, filter for those specified or keep everything if none specified.
         ch_decomplex_trim_reads
-            .combine( ch_mapping_constrains )
+            .combine( ch_mapping_constraints )
             .filter{ meta_reads, fastq, meta_mapping, mapping_samples, sequence -> mapping_samples == null || mapping_samples == meta_reads.sample}
             .map
                 {
                     meta, reads, meta_mapping, samples, sequence_mapping ->
-                    id = "${meta.sample}_${meta_mapping.id}-CONSTRAIN"
-                    new_meta = meta + meta_mapping + [
+                    def id = "${meta.sample}_${meta_mapping.id}-CONSTRAINT"
+                    def new_meta = meta + meta_mapping + [
                         id: id,
                         cluster_id: "${meta_mapping.id}",
-                        step: "constrain",
-                        constrain: true,
+                        step: "constraint",
+                        isConstraint: true,
                         reads: reads,
                         iteration: 'variant-calling',
-                        previous_step: 'constrain'
+                        previous_step: 'constraint'
                         ]
                     return [new_meta, sequence_mapping]
                 }
             .set{ch_map_seq_anno_combined}
 
-        // Map with both reads and mapping constrains
+        // Map with both reads and mapping constraints
         ch_map_seq_anno_combined
             .map{ it -> return [it[0], it[1], it[0].reads] }
             .branch{
@@ -426,23 +369,24 @@ workflow VIRALGENIE {
                 multiFastaSelection : meta.selection == true
                 singleFastaSelection : meta.selection == false
             }
-            .set{constrain_consensus_reads}
+            .set{constraint_consensus_reads}
 
         // Select the correct reference
         FASTQ_FASTA_MASH_SCREEN (
-            constrain_consensus_reads.multiFastaSelection
+            constraint_consensus_reads.multiFastaSelection
         )
         ch_versions = ch_versions.mix(FASTQ_FASTA_MASH_SCREEN.out.versions)
+        ch_mash_screen = FASTQ_FASTA_MASH_SCREEN.out.json.collect{it[1]}
 
         // For QC we keep original sequence to compare to
         ch_unaligned_raw_contigs = ch_unaligned_raw_contigs
-            .mix(constrain_consensus_reads.singleFastaSelection.map{meta, fasta, reads -> [meta, fasta]})
+            .mix(constraint_consensus_reads.singleFastaSelection.map{meta, fasta, reads -> [meta, fasta]})
             .mix(FASTQ_FASTA_MASH_SCREEN.out.reference_fastq.map{meta, fasta, reads -> [meta, fasta]})
 
         //Add to the consensus channel, which will be used for variant calling
         ch_consensus_results_reads = ch_consensus_results_reads
             .mix(FASTQ_FASTA_MASH_SCREEN.out.reference_fastq)
-            .mix(constrain_consensus_reads.singleFastaSelection)
+            .mix(constraint_consensus_reads.singleFastaSelection)
     }
 
     // After consensus sequences have been made, we still have to map against it and call variants
@@ -455,7 +399,6 @@ workflow VIRALGENIE {
             params.deduplicate,
             true,
             params.variant_caller,
-            true,
             params.consensus_caller,
             params.mapping_stats,
             params.min_mapped_reads,
@@ -473,104 +416,86 @@ workflow VIRALGENIE {
     ch_annotation_summary = Channel.empty()
 
     if ( !params.skip_consensus_qc  && (!params.skip_assembly || !params.skip_variant_calling) ) {
-
+        ch_consensus_filter = ch_consensus
+            .filter{meta, fasta -> WorkflowCommons.getLengthAndAmbigous(fasta).contig_size > 0}
         CONSENSUS_QC(
-            ch_consensus,
+            ch_consensus_filter,
             ch_unaligned_raw_contigs,
             ch_checkv_db,
             ch_blast_refdb,
             ch_annotation_db,
+            ch_prokka_db
             )
         ch_versions           = ch_versions.mix(CONSENSUS_QC.out.versions)
         ch_multiqc_files      = ch_multiqc_files.mix(CONSENSUS_QC.out.mqc.collect{it[1]}.ifEmpty([]))
-        ch_checkv_summary     = CONSENSUS_QC.out.checkv_summary.collect{it[1]}.ifEmpty([])
-        ch_quast_summary      = CONSENSUS_QC.out.quast_summary.collect{it[1]}.ifEmpty([])
-        ch_blast_summary      = CONSENSUS_QC.out.blast_txt.collect{it[1]}.ifEmpty([])
-        ch_annotation_summary = CONSENSUS_QC.out.annotation_txt.collect{it[1]}.ifEmpty([])
-
+        ch_checkv_summary     = CONSENSUS_QC.out.checkv.collect{it[1]}.ifEmpty([])
+        ch_quast_summary      = CONSENSUS_QC.out.quast.collect{it[1]}.ifEmpty([])
+        ch_blast_summary      = CONSENSUS_QC.out.blast.collect{it[1]}.ifEmpty([])
+        ch_annotation_summary = CONSENSUS_QC.out.annotation.collect{it[1]}.ifEmpty([])
     }
-
-    MULTIQC_DATAPREP (
-        ch_multiqc_files.collect(),
-        ch_multiqc_config.toList(),
-        ch_multiqc_custom_config.toList(),
-        ch_multiqc_logo.toList(),
-    )
-
-    multiqc_data = MULTIQC_DATAPREP.out.data.ifEmpty([])
-
-    // Prepare MULTIQC custom tables
-    CUSTOM_MULTIQC_TABLES (
-            ch_clusters_summary.ifEmpty([]),
-            ch_metadata,
-            ch_checkv_summary.ifEmpty([]),
-            ch_quast_summary.ifEmpty([]),
-            ch_blast_summary.ifEmpty([]),
-            ch_constrain_meta,
-            ch_annotation_summary.ifEmpty([]),
-            multiqc_data,
-            ch_multiqc_comment_headers.ifEmpty([]),
-            ch_multiqc_custom_table_headers.ifEmpty([])
-            )
-    ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_MULTIQC_TABLES.out.summary_clusters_mqc.ifEmpty([]))
-    ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_MULTIQC_TABLES.out.sample_metadata_mqc.ifEmpty([]))
-    ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_MULTIQC_TABLES.out.contigs_overview_mqc.ifEmpty([]))
-    ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_MULTIQC_TABLES.out.mapping_constrains_mqc.ifEmpty([]))
-    ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_MULTIQC_TABLES.out.constrains_summary_mqc.ifEmpty([]))
-    ch_versions      = ch_versions.mix(CUSTOM_MULTIQC_TABLES.out.versions)
-
-    CUSTOM_DUMPSOFTWAREVERSIONS (
-        ch_versions.unique().collectFile(name: 'collated_versions.yml')
-    )
-    ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
 
     //
     // MODULE: MultiQC
     //
-    workflow_summary    = WorkflowViralgenie.paramsSummaryMultiqc(workflow, summary_params)
-    ch_workflow_summary = Channel.value(workflow_summary)
+    ch_multiqc_config        = Channel.fromPath(
+        "$projectDir/assets/multiqc_config.yml", checkIfExists: true)
+    ch_multiqc_custom_config = params.multiqc_config ?
+        Channel.fromPath(params.multiqc_config, checkIfExists: true) :
+        Channel.empty()
+    ch_multiqc_logo          = params.multiqc_logo ?
+        Channel.fromPath(params.multiqc_logo, checkIfExists: true) :
+        Channel.empty()
 
-    methods_description    = WorkflowViralgenie.methodsDescriptionText(workflow, ch_multiqc_custom_methods_description, params)
-    ch_methods_description = Channel.value(methods_description)
+    summary_params      = paramsSummaryMap(
+        workflow, parameters_schema: "nextflow_schema.json")
+    ch_workflow_summary = Channel.value(paramsSummaryMultiqc(summary_params))
+    ch_multiqc_files = ch_multiqc_files.mix(
+        ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
+    ch_multiqc_custom_methods_description = params.multiqc_methods_description ?
+        file(params.multiqc_methods_description, checkIfExists: true) :
+        file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
+    ch_methods_description = Channel.value(
+        methodsDescriptionText(ch_multiqc_custom_methods_description))
 
+    //
+    // Collate and save software versions
+    //
+    softwareVersionsToYAML(ch_versions)
+        .collectFile(
+            storeDir: "${params.outdir}/pipeline_info",
+            name: 'viralgenie_mqc_versions.yml',
+            sort: true,
+            newLine: true
+        ).set { ch_collated_versions }
 
-    ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
-    ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml'))
+    ch_multiqc_files = ch_multiqc_files.mix(ch_collated_versions)
+    ch_multiqc_files = ch_multiqc_files.mix(
+        ch_methods_description.collectFile(
+            name: 'methods_description_mqc.yaml',
+            sort: true
+        )
+    )
 
-    MULTIQC_REPORT (
+    // Prepare MULTIQC custom tables
+    CUSTOM_MULTIQC (
         ch_multiqc_files.collect(),
         ch_multiqc_config.toList(),
-        ch_multiqc_custom_config.toList(),
-        ch_multiqc_logo.toList()
-    )
-    multiqc_report = MULTIQC_REPORT.out.report.toList()
-}
+        ch_clusters_summary.ifEmpty([]),
+        ch_metadata,
+        ch_checkv_summary.ifEmpty([]),
+        ch_quast_summary.ifEmpty([]),
+        ch_blast_summary.ifEmpty([]),
+        ch_constraint_meta,
+        ch_annotation_summary.ifEmpty([]),
+        ch_clusters_tsv.ifEmpty([]),
+        ch_mash_screen.ifEmpty([]),
+        ch_multiqc_custom_table_headers.ifEmpty([])
+        )
+    ch_versions = ch_versions.mix(CUSTOM_MULTIQC.out.versions)
 
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    COMPLETION EMAIL AND SUMMARY
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
-
-workflow.onComplete {
-    if (params.email || params.email_on_fail) {
-        NfcoreTemplate.email(workflow, params, summary_params, projectDir, log, multiqc_report)
-    }
-    NfcoreTemplate.dump_parameters(workflow, params)
-    NfcoreTemplate.summary(workflow, params, log)
-    if (params.hook_url) {
-        NfcoreTemplate.IM_notification(workflow, params, summary_params, projectDir, log)
-    }
-}
-
-workflow.onError {
-    if (workflow.errorReport.contains("Process requirement exceeds available memory")) {
-        println("🛑 Default resources exceed availability 🛑 ")
-        println("💡 See here on how to configure pipeline: https://nf-co.re/docs/usage/configuration#tuning-workflow-resources 💡")
-    }
-    if (params.clean_output_on_error) {
-        file(params.outdir).deleteDir()
-    }
+    emit:
+    multiqc_report = CUSTOM_MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
+    versions       = ch_versions                        // channel: [ path(versions.yml) ]
 }
 
 /*

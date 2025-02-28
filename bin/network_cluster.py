@@ -103,29 +103,22 @@ def read_in_mash(args):
     """
     Read in the file and return a networkx graph object
     """
-    FILE= args.file_in
-    THRESHOLD= 1 - args.score # args.score is ANI, mash calculates distances, so we need to invert the score
+    FILE = args.file_in
+    THRESHOLD = 1 - args.score  # args.score is ANI, mash calculates distances, so we need to invert the score
     SEP = "\t"
     COMMENT_CHAR = "#"
 
     logger.info("Read in file %s", FILE)
-    with open (FILE, "r") as file:
+    with open(FILE, "r") as file:
         row_names = np.loadtxt(FILE, delimiter=SEP, usecols=(0,), dtype=str, comments=COMMENT_CHAR)
 
         # if only one column, you'll get a index error
         if row_names.size == 1:
-            usecols = (1, )
+            usecols = (1,)
         else:
             usecols = tuple(range(1, row_names.size + 1))
 
-        matrix = np.loadtxt(
-            FILE,
-            delimiter=SEP,
-            usecols=usecols,
-            comments=COMMENT_CHAR,
-            dtype=float,
-            ndmin=2
-            )
+        matrix = np.loadtxt(FILE, delimiter=SEP, usecols=usecols, comments=COMMENT_CHAR, dtype=float, ndmin=2)
     graph = ig.Graph.Weighted_Adjacency(matrix, mode="lower", attr="weight", loops=False)
 
     logger.info("Created the network graph with %d nodes", row_names.size)
@@ -134,6 +127,7 @@ def read_in_mash(args):
 
     return graph
 
+
 def filter_network(network, threshold):
     """
     Filter the network based on the given score
@@ -141,14 +135,13 @@ def filter_network(network, threshold):
     filtered_network = network.copy()
 
     # Get a copy of the edges before removal for iteration
-    edges_to_remove = [
-            (edge.source, edge.target) for edge in filtered_network.es if edge["weight"] >= threshold or edge["weight"] == 0
-        ]
+    edges_to_remove = [(edge.source, edge.target) for edge in filtered_network.es if edge["weight"] >= threshold or edge["weight"] == 0]
 
     # Remove edges based on the specified conditions
     filtered_network.delete_edges(edges_to_remove)
 
     return filtered_network
+
 
 def cluster_network(network, method):
     """
@@ -157,15 +150,13 @@ def cluster_network(network, method):
 
     if method == "leiden":
         # Partition the network
-        partitions = la.find_partition(
-            network, partition_type=la.ModularityVertexPartition, n_iterations=-1, seed=42, weights="weight"
-        )
+        partitions = la.find_partition(network, partition_type=la.ModularityVertexPartition, n_iterations=-1, seed=42, weights="weight")
 
     elif method == "connected_components":
         partitions = network.components(mode="weak")
     else:
         raise ValueError(f"Method '{method}' not found.")
-    logger.info("Partitioned the network using %s", method )
+    logger.info("Partitioned the network using %s", method)
 
     # extract the names of the vertices
     vertices_names = [[network.vs[index]["name"] for index in cluster] for cluster in partitions]
@@ -190,6 +181,7 @@ def to_tsv(vertices_names, prefix):
 
     logger.info("Wrote network to file")
 
+
 def visualize_network(partitions, network, prefix):
     """
     Visualize the network
@@ -204,15 +196,14 @@ def visualize_network(partitions, network, prefix):
     logger.info("Visualised the network")
 
 
-
 def main(argv=None):
     """Coordinate argument parsing and program execution."""
     args = parse_args(argv)
     logging.basicConfig(
         level=args.log_level,
         format="[%(asctime)s - %(levelname)s] %(message)s",
-        datefmt='%Y-%m-%d %H:%M:%S',
-        )
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
     logger.info("Start clustering")
     if not args.file_in.is_file():
         logger.error(f"The given input file {args.file_in} was not found!")
@@ -226,9 +217,9 @@ def main(argv=None):
     to_tsv(vertices_names, args.prefix)
 
     # see issue 105
-    if ( args.force_visualization or len(network.vs) < 10000 ):
+    if args.force_visualization or len(network.vs) < 10000:
         visualize_network(clusters, network, args.prefix)
-    else :
+    else:
         logger.info("Network is too large to visualize, skipping visualization.")
 
     logger.info("All done!")

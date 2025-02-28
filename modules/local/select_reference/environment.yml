@@ -1,7 +1,9 @@
-name: blast_filter
+name: select_reference
 channels:
   - conda-forge
   - bioconda
-  - defaults
 dependencies:
-  - conda-forge::bioframe=0.4.1
+  - conda-forge::pandas=2.2.3
+  - pip
+  - pip:
+      - biopython==1.85

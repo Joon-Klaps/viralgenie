@@ -16,7 +16,7 @@ workflow MAP_READS  {
     ch_versions = Channel.empty()
     ch_multiqc  = Channel.empty()
 
-    reads       = reference_reads.map{meta, fasta,fastq -> [ meta, fastq ]}
+    ch_reads    = reference_reads.map{meta, fasta,fastq -> [ meta, fastq ]}
     reference   = reference_reads.map{meta, fasta,fastq -> [ meta, fasta ]}
 
     if ( mapper == 'bwamem2' ) {
@@ -28,10 +28,10 @@ workflow MAP_READS  {
             .multiMap{meta, fasta, fastq, index ->
                 reads: [ meta, fastq]
                 index: [ meta, index ]
-                reference: [ meta, fasta ]
+                fasta: [ meta, fasta ]
             }
 
-        BWAMEM2_MEM ( bwamem2_input.reads, bwamem2_input.index, bwamem2_input.reference, true )
+        BWAMEM2_MEM ( bwamem2_input.reads, bwamem2_input.index, bwamem2_input.fasta, true )
         ch_versions = ch_versions.mix(BWAMEM2_MEM.out.versions.first())
         //no mqc for bwamem2
 
@@ -46,10 +46,10 @@ workflow MAP_READS  {
             .multiMap{meta, fasta, fastq, index ->
                 reads: [ meta, fastq]
                 index: [ meta, index ]
-                reference: [ meta, fasta ]
+                fasta: [ meta, fasta ]
             }
 
-        BOWTIE2_ALIGN ( bowtie2_input.reads, bowtie2_input.index, bowtie2_input.reference, false, true)
+        BOWTIE2_ALIGN ( bowtie2_input.reads, bowtie2_input.index, bowtie2_input.fasta, false, true)
         ch_versions = ch_versions.mix(BOWTIE2_ALIGN.out.versions.first())
 
         ch_bam      = BOWTIE2_ALIGN.out.bam
@@ -57,12 +57,17 @@ workflow MAP_READS  {
     } else if ( mapper == "bwa") {
         BWA_INDEX ( reference )
         ch_versions = ch_versions.mix(BWA_INDEX.out.versions.first())
+        ch_reads
+            .join(BWA_INDEX.out.index, by: [0])
+            .join(reference, by: [0])
+            .multiMap{meta, reads, index, fasta ->
+                reads: [ meta, reads ]
+                index: [ meta, index ]
+                fasta: [ meta, fasta ]
+            }
+            .set { bwamem_in }
 
-        reads_index = reads.join(BWA_INDEX.out.index, by: [0])
-        reads_up    = reads_index.map{meta, reads, index -> [ meta, reads ]}
-        index       = reads_index.map{meta, reads, index -> [ meta, index ]}
-
-        BWA_MEM ( reads_up, index, true )
+        BWA_MEM ( bwamem_in.reads, bwamem_in.index, bwamem_in.fasta, true )
         ch_versions = ch_versions.mix(BWA_MEM.out.versions.first())
         //no mqc for bwa
 
@@ -73,10 +78,10 @@ workflow MAP_READS  {
     }
 
     emit:
-    bam      = ch_bam                          // channel: [ val(meta), [ bam ] ]
-    ref      = reference                       // channel: [ val(meta), [ fasta ] ]
-    mqc      = ch_multiqc                      // channel: [ multiqc ]
+    bam      = ch_bam      // channel: [ val(meta), [ bam ] ]
+    ref      = reference   // channel: [ val(meta), [ fasta ] ]
+    mqc      = ch_multiqc  // channel: [ multiqc ]
 
-    versions = ch_versions                     // channel: [ versions.yml ]
+    versions = ch_versions // channel: [ versions.yml ]
 }
 

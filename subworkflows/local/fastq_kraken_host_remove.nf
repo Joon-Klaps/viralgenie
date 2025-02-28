@@ -31,7 +31,7 @@ workflow FASTQ_KRAKEN_HOST_REMOVE {
             library
         )
         ch_versions     = ch_versions.mix(KRAKEN2_HOST_BUILD.out.versions.first())
-        kraken2_host_db = KRAKEN2_HOST_BUILD.out.kraken2_db
+        kraken2_host_db = KRAKEN2_HOST_BUILD.out.db
     }
 
     // remove host reads & keep unclassified reads [true, true]
