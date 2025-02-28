@@ -28,6 +28,8 @@ theme:
   name: material
   favicon: images/ViralGenie-nf-core-theme.png
   logo: images/ViralGenie-nf-core-theme.png
+  icon:
+    repo: fontawesome/brands/github
   palette:
     - media: "(prefers-color-scheme)"
       primary: custom
