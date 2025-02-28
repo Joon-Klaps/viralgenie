@@ -179,6 +179,31 @@ def get_anchor(mqc: object, module: str) -> str | None:
             return m.anchor
     return None
 
+def order_columns_by_idgroup(df_wide: pd.DataFrame, original_columns: List[str]) -> List[str]:
+    """
+    Order columns by species-segment group (idgroup) while maintaining original column order within each group.
+
+    Args:
+        df_wide (pd.DataFrame): The wide-format DataFrame with columns formatted as "idgroup - column"
+        original_columns (List[str]): The original column order to maintain within each idgroup
+
+    Returns:
+        List[str]: Ordered list of column names
+    """
+    # Get all unique species-segment combinations (idgroups)
+    idgroups = sorted(set([col.split(' - ')[0] for col in df_wide.columns]))
+
+    # Create an ordered column list that groups by species-segment while maintaining original column order for each group
+    ordered_columns = []
+    for idgroup in idgroups:
+        # For each species-segment group, add columns in the original order
+        for col in original_columns:
+            group_col = f"{idgroup} - {col}"
+            if group_col in df_wide.columns:
+                ordered_columns.append(group_col)
+
+    return ordered_columns
+
 def create_constraint_summary(df_constraint: pd.DataFrame, file_columns: List[Union[str, Dict[str, str]]]) -> pd.DataFrame:
     """
     Create a summary table for the constraint data.
@@ -273,10 +298,8 @@ def create_constraint_summary(df_constraint: pd.DataFrame, file_columns: List[Un
     # Convert to wide format
     df_wide = df_long.pivot(index=["sample"], columns="grouped variable", values="Value")
 
-    # Reorder columns based on original order
-    ordered_columns = []
-    for col in original_columns:
-        ordered_columns.extend([c for c in df_wide.columns if c.endswith(f" - {col}")])
+    # Reorder the columns by species-segment groups while maintaining original column order
+    ordered_columns = order_columns_by_idgroup(df_wide, original_columns)
     df_wide = df_wide[ordered_columns]
 
     df_wide.reset_index(inplace=True)
@@ -439,6 +462,7 @@ def get_read_suffix(namespace: str, title: str) -> str | None:
     Returns:
         str | None: The read suffix if found, None otherwise
     """
+    title = title.strip()
     if title not in READ_DECLARATION:
         return None
 
