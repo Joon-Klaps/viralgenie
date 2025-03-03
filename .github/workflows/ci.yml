@@ -11,7 +11,6 @@ on:
     types: [published]
   workflow_dispatch:
 
-
 env:
   NXF_ANSI_LOG: false
   NXF_SINGULARITY_CACHEDIR: ${{ github.workspace }}/.singularity
