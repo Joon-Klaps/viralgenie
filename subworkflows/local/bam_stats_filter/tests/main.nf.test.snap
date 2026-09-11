@@ -1,0 +1,112 @@
+{
+    "sarscov2 - fails the minimum mapped reads threshold": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test",
+                        "sample": "test",
+                        "previous_step": "it1"
+                    },
+                    "test_it1.raw.stats:md5,fd9aea62ba5bb3193eeb6df4ee23d9f7"
+                ]
+            ],
+            [
+                "failed_mapped_reads_mqc.tsv:md5,1c77c9a740b5c0924b3239a179f832b0"
+            ]
+        ],
+        "timestamp": "2026-09-03T17:18:52.430085",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "25.10.4"
+        }
+    },
+    "homo_sapiens - keep_unmapped carries the full alignment through": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test",
+                        "sample": "test",
+                        "previous_step": "it1"
+                    },
+                    "test_it1.raw.stats:md5,86165e2becc05d0ce105c51cba59a2fa"
+                ]
+            ],
+            [
+                
+            ]
+        ],
+        "timestamp": "2026-09-03T17:18:34.140549",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "25.10.4"
+        }
+    },
+    "sarscov2 - keeps mapped reads whose mate did not map": {
+        "content": [
+            {
+                "maxReadLength": 151,
+                "minReadLength": 53,
+                "meanReadLength": 138,
+                "maxQuality": 60,
+                "minQuality": 0,
+                "meanQuality": 57,
+                "readCount": 200,
+                "duplicateReadCount": 0
+            },
+            "894549ee3ced6b5ca2eed2563a985217",
+            [
+                [
+                    {
+                        "id": "test",
+                        "sample": "test",
+                        "previous_step": "it1"
+                    },
+                    "test_it1.raw.stats:md5,fd9aea62ba5bb3193eeb6df4ee23d9f7"
+                ]
+            ],
+            [
+                
+            ]
+        ],
+        "timestamp": "2026-09-03T17:18:44.041943",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "25.10.4"
+        }
+    },
+    "homo_sapiens - drops the read pair with both ends unmapped": {
+        "content": [
+            {
+                "maxReadLength": 143,
+                "minReadLength": 30,
+                "meanReadLength": 119,
+                "maxQuality": 60,
+                "minQuality": 40,
+                "meanQuality": 59,
+                "readCount": 5642,
+                "duplicateReadCount": 0
+            },
+            "463ac3b905fbf4ddf113a94dbfa8d69f",
+            [
+                [
+                    {
+                        "id": "test",
+                        "sample": "test",
+                        "previous_step": "it1"
+                    },
+                    "test_it1.raw.stats:md5,86165e2becc05d0ce105c51cba59a2fa"
+                ]
+            ],
+            [
+                
+            ]
+        ],
+        "timestamp": "2026-09-03T17:18:25.354919",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "25.10.4"
+        }
+    }
+}

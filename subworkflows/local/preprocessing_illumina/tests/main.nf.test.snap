@@ -1,0 +1,835 @@
+{
+    "sarscov2 paired-end [fastq] - trimmomatic": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test",
+                        "single_end": false,
+                        "sample": "test"
+                    },
+                    [
+                        "test.paired.trim_1.fastq.gz:md5,4161df271f9bfcd25d5845a1e220dbec",
+                        "test.paired.trim_2.fastq.gz:md5,2ebae722295ea66d84075a3b042e2b42"
+                    ]
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "single_end": false,
+                        "sample": "test"
+                    },
+                    [
+                        "test.paired.trim_1.fastq.gz:md5,4161df271f9bfcd25d5845a1e220dbec",
+                        "test.paired.trim_2.fastq.gz:md5,2ebae722295ea66d84075a3b042e2b42"
+                    ]
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "single_end": false,
+                        "sample": "test"
+                    },
+                    [
+                        "test.paired.trim_1.fastq.gz:md5,4161df271f9bfcd25d5845a1e220dbec",
+                        "test.paired.trim_2.fastq.gz:md5,2ebae722295ea66d84075a3b042e2b42"
+                    ]
+                ]
+            ],
+            [
+                
+            ]
+        ],
+        "timestamp": "2026-02-10T17:28:56.833435492",
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.10.0"
+        }
+    },
+    "sarscov2 paired-end [fastq] - host_removal": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test",
+                        "single_end": false,
+                        "sample": "test"
+                    },
+                    [
+                        "test_kraken2_host.unclassified_1.fastq.gz:md5,62a9b46a35271fd137ef4dc881228fb4",
+                        "test_kraken2_host.unclassified_2.fastq.gz:md5,019a689f841b63355f3680c78193bcc9"
+                    ]
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "single_end": false,
+                        "sample": "test"
+                    },
+                    [
+                        "test_R1.fastp.fastq.gz:md5,67b2bbae47f073e05a97a9c2edce23c7",
+                        "test_R2.fastp.fastq.gz:md5,25cbdca08e2083dbd4f0502de6b62f39"
+                    ]
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "single_end": false,
+                        "sample": "test"
+                    },
+                    [
+                        "test_R1.fastp.fastq.gz:md5,67b2bbae47f073e05a97a9c2edce23c7",
+                        "test_R2.fastp.fastq.gz:md5,25cbdca08e2083dbd4f0502de6b62f39"
+                    ]
+                ]
+            ],
+            [
+                
+            ]
+        ],
+        "timestamp": "2026-02-10T17:30:08.202158442",
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.10.0"
+        }
+    },
+    "sarscov2 paired-end [fastq] - merge_reads": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test",
+                        "single_end": false,
+                        "sample": "test"
+                    },
+                    [
+                        "test.merged_1.merged.fastq.gz:md5,08a888fc08dd247dee16f0d931e993af",
+                        "test.merged_2.merged.fastq.gz:md5,6faf1b0430dac9ab877ce15a874643dc"
+                    ]
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test_1",
+                        "single_end": false,
+                        "sample": "test"
+                    },
+                    [
+                        "test_1_R1.fastp.fastq.gz:md5,67b2bbae47f073e05a97a9c2edce23c7",
+                        "test_1_R2.fastp.fastq.gz:md5,25cbdca08e2083dbd4f0502de6b62f39"
+                    ]
+                ],
+                [
+                    {
+                        "id": "test_2",
+                        "single_end": false,
+                        "sample": "test"
+                    },
+                    [
+                        "test_2_R1.fastp.fastq.gz:md5,67b2bbae47f073e05a97a9c2edce23c7",
+                        "test_2_R2.fastp.fastq.gz:md5,25cbdca08e2083dbd4f0502de6b62f39"
+                    ]
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "single_end": false,
+                        "sample": "test"
+                    },
+                    [
+                        "test.merged_1.merged.fastq.gz:md5,08a888fc08dd247dee16f0d931e993af",
+                        "test.merged_2.merged.fastq.gz:md5,6faf1b0430dac9ab877ce15a874643dc"
+                    ]
+                ]
+            ],
+            [
+                
+            ]
+        ],
+        "timestamp": "2026-02-10T17:29:27.661216543",
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.10.0"
+        }
+    },
+    "sarscov2 paired-end [fastq] - full_pipeline - stub": {
+        "content": [
+            {
+                "0": [
+                    
+                ],
+                "1": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false,
+                            "sample": "test"
+                        },
+                        [
+                            "test_1.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940",
+                            "test_2.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                        ]
+                    ]
+                ],
+                "2": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false,
+                            "sample": "test"
+                        },
+                        [
+                            "test_1_dedup.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940",
+                            "test_2_dedup.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                        ]
+                    ]
+                ],
+                "3": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false,
+                            "sample": "test"
+                        },
+                        [
+                            "clusters.dat:md5,d41d8cd98f00b204e9800998ecf8427e",
+                            "counts.dat:md5,d41d8cd98f00b204e9800998ecf8427e",
+                            "neigh.dat:md5,d41d8cd98f00b204e9800998ecf8427e",
+                            "stats.dat:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        ]
+                    ],
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false,
+                            "sample": "test"
+                        },
+                        "test.bbduk.log:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ],
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false,
+                            "sample": "test"
+                        },
+                        "test.fastp.json:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ],
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false,
+                            "sample": "test"
+                        },
+                        "test.umi_extract.log:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ],
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false,
+                            "sample": "test"
+                        },
+                        "test_kraken2_host.kraken2.report.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ],
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false,
+                            "sample": "test"
+                        },
+                        "test_raw.zip:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ],
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false,
+                            "sample": "test"
+                        },
+                        "test_trim.zip:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "4": [
+                    "samples_low_reads_mqc.tsv:md5,669fa5f40cbbb7c2d4348119be2b3882"
+                ],
+                "low_reads_mqc": [
+                    "samples_low_reads_mqc.tsv:md5,669fa5f40cbbb7c2d4348119be2b3882"
+                ],
+                "mqc": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false,
+                            "sample": "test"
+                        },
+                        [
+                            "clusters.dat:md5,d41d8cd98f00b204e9800998ecf8427e",
+                            "counts.dat:md5,d41d8cd98f00b204e9800998ecf8427e",
+                            "neigh.dat:md5,d41d8cd98f00b204e9800998ecf8427e",
+                            "stats.dat:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        ]
+                    ],
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false,
+                            "sample": "test"
+                        },
+                        "test.bbduk.log:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ],
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false,
+                            "sample": "test"
+                        },
+                        "test.fastp.json:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ],
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false,
+                            "sample": "test"
+                        },
+                        "test.umi_extract.log:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ],
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false,
+                            "sample": "test"
+                        },
+                        "test_kraken2_host.kraken2.report.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ],
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false,
+                            "sample": "test"
+                        },
+                        "test_raw.zip:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ],
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false,
+                            "sample": "test"
+                        },
+                        "test_trim.zip:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "reads": [
+                    
+                ],
+                "reads_decomplexified": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false,
+                            "sample": "test"
+                        },
+                        [
+                            "test_1.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940",
+                            "test_2.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                        ]
+                    ]
+                ],
+                "reads_trimmed": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false,
+                            "sample": "test"
+                        },
+                        [
+                            "test_1_dedup.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940",
+                            "test_2_dedup.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                        ]
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-09-03T12:57:09.377807",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "25.10.4"
+        }
+    },
+    "sarscov2 paired-end [fastq] - with_umi - humid": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test",
+                        "single_end": false,
+                        "sample": "test"
+                    },
+                    [
+                        "test_R1_dedup.fastp.fastq.gz:md5,c58123ee484dc84e31061898751a61d2",
+                        "test_R2_dedup.fastp.fastq.gz:md5,732222bd0b768c994829edc810d53bf3"
+                    ]
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "single_end": false,
+                        "sample": "test"
+                    },
+                    [
+                        "test_R1_dedup.fastp.fastq.gz:md5,c58123ee484dc84e31061898751a61d2",
+                        "test_R2_dedup.fastp.fastq.gz:md5,732222bd0b768c994829edc810d53bf3"
+                    ]
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "single_end": false,
+                        "sample": "test"
+                    },
+                    [
+                        "test_R1_dedup.fastp.fastq.gz:md5,c58123ee484dc84e31061898751a61d2",
+                        "test_R2_dedup.fastp.fastq.gz:md5,732222bd0b768c994829edc810d53bf3"
+                    ]
+                ]
+            ],
+            [
+                
+            ]
+        ],
+        "timestamp": "2026-02-10T17:29:16.421400632",
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.10.0"
+        }
+    },
+    "sarscov2 paired-end [fastq] - full_pipeline": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test",
+                        "single_end": false,
+                        "sample": "test"
+                    },
+                    [
+                        "test_kraken2_host.unclassified_1.fastq.gz:md5,62a9b46a35271fd137ef4dc881228fb4",
+                        "test_kraken2_host.unclassified_2.fastq.gz:md5,019a689f841b63355f3680c78193bcc9"
+                    ]
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "single_end": false,
+                        "sample": "test"
+                    },
+                    [
+                        "test_R1.fastp.fastq.gz:md5,67b2bbae47f073e05a97a9c2edce23c7",
+                        "test_R2.fastp.fastq.gz:md5,25cbdca08e2083dbd4f0502de6b62f39"
+                    ]
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "single_end": false,
+                        "sample": "test"
+                    },
+                    [
+                        "test_1.fastq.gz:md5,67b2bbae47f073e05a97a9c2edce23c7",
+                        "test_2.fastq.gz:md5,25cbdca08e2083dbd4f0502de6b62f39"
+                    ]
+                ]
+            ],
+            [
+                
+            ]
+        ],
+        "timestamp": "2026-02-10T17:30:21.398791275",
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.10.0"
+        }
+    },
+    "sarscov2 paired-end [fastq] - trimmomatic - stub": {
+        "content": [
+            {
+                "0": [
+                    
+                ],
+                "1": [
+                    
+                ],
+                "2": [
+                    
+                ],
+                "3": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false,
+                            "sample": "test"
+                        },
+                        "test_raw.zip:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ],
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false,
+                            "sample": "test"
+                        },
+                        "test_trim.log:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "4": [
+                    "samples_low_reads_mqc.tsv:md5,669fa5f40cbbb7c2d4348119be2b3882"
+                ],
+                "low_reads_mqc": [
+                    "samples_low_reads_mqc.tsv:md5,669fa5f40cbbb7c2d4348119be2b3882"
+                ],
+                "mqc": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false,
+                            "sample": "test"
+                        },
+                        "test_raw.zip:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ],
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false,
+                            "sample": "test"
+                        },
+                        "test_trim.log:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "reads": [
+                    
+                ],
+                "reads_decomplexified": [
+                    
+                ],
+                "reads_trimmed": [
+                    
+                ]
+            }
+        ],
+        "timestamp": "2026-09-03T12:56:43.04996",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "25.10.4"
+        }
+    },
+    "sarscov2 paired-end [fastq] - fastp - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false,
+                            "sample": "test"
+                        },
+                        [
+                            "test_R1.fastp.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940",
+                            "test_R2.fastp.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                        ]
+                    ]
+                ],
+                "1": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false,
+                            "sample": "test"
+                        },
+                        [
+                            "test_R1.fastp.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940",
+                            "test_R2.fastp.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                        ]
+                    ]
+                ],
+                "2": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false,
+                            "sample": "test"
+                        },
+                        [
+                            "test_R1.fastp.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940",
+                            "test_R2.fastp.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                        ]
+                    ]
+                ],
+                "3": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false,
+                            "sample": "test"
+                        },
+                        "test.fastp.json:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ],
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false,
+                            "sample": "test"
+                        },
+                        "test_raw.zip:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ],
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false,
+                            "sample": "test"
+                        },
+                        "test_trim.zip:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "4": [
+                    
+                ],
+                "low_reads_mqc": [
+                    
+                ],
+                "mqc": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false,
+                            "sample": "test"
+                        },
+                        "test.fastp.json:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ],
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false,
+                            "sample": "test"
+                        },
+                        "test_raw.zip:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ],
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false,
+                            "sample": "test"
+                        },
+                        "test_trim.zip:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "reads": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false,
+                            "sample": "test"
+                        },
+                        [
+                            "test_R1.fastp.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940",
+                            "test_R2.fastp.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                        ]
+                    ]
+                ],
+                "reads_decomplexified": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false,
+                            "sample": "test"
+                        },
+                        [
+                            "test_R1.fastp.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940",
+                            "test_R2.fastp.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                        ]
+                    ]
+                ],
+                "reads_trimmed": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false,
+                            "sample": "test"
+                        },
+                        [
+                            "test_R1.fastp.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940",
+                            "test_R2.fastp.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                        ]
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-09-03T12:56:53.71718",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "25.10.4"
+        }
+    },
+    "sarscov2 paired-end [fastq] - fastp": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test",
+                        "single_end": false,
+                        "sample": "test"
+                    },
+                    [
+                        "test_R1.fastp.fastq.gz:md5,67b2bbae47f073e05a97a9c2edce23c7",
+                        "test_R2.fastp.fastq.gz:md5,25cbdca08e2083dbd4f0502de6b62f39"
+                    ]
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "single_end": false,
+                        "sample": "test"
+                    },
+                    [
+                        "test_R1.fastp.fastq.gz:md5,67b2bbae47f073e05a97a9c2edce23c7",
+                        "test_R2.fastp.fastq.gz:md5,25cbdca08e2083dbd4f0502de6b62f39"
+                    ]
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "single_end": false,
+                        "sample": "test"
+                    },
+                    [
+                        "test_R1.fastp.fastq.gz:md5,67b2bbae47f073e05a97a9c2edce23c7",
+                        "test_R2.fastp.fastq.gz:md5,25cbdca08e2083dbd4f0502de6b62f39"
+                    ]
+                ]
+            ],
+            [
+                
+            ]
+        ],
+        "timestamp": "2026-02-10T17:28:42.520244057",
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.10.0"
+        }
+    },
+    "sarscov2 paired-end [fastq] - min_trimmed_reads_fail": {
+        "content": [
+            [
+                
+            ],
+            [
+                
+            ],
+            [
+                
+            ],
+            [
+                "samples_low_reads_mqc.tsv:md5,4945db90c361e186baf5e0b0e9d8f2e0"
+            ]
+        ],
+        "timestamp": "2026-02-10T17:30:32.737798589",
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.10.0"
+        }
+    },
+    "sarscov2 paired-end [fastq] - bbduk": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test",
+                        "single_end": false,
+                        "sample": "test"
+                    },
+                    [
+                        "test_1.fastq.gz:md5,67b2bbae47f073e05a97a9c2edce23c7",
+                        "test_2.fastq.gz:md5,25cbdca08e2083dbd4f0502de6b62f39"
+                    ]
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "single_end": false,
+                        "sample": "test"
+                    },
+                    [
+                        "test_R1.fastp.fastq.gz:md5,67b2bbae47f073e05a97a9c2edce23c7",
+                        "test_R2.fastp.fastq.gz:md5,25cbdca08e2083dbd4f0502de6b62f39"
+                    ]
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "single_end": false,
+                        "sample": "test"
+                    },
+                    [
+                        "test_1.fastq.gz:md5,67b2bbae47f073e05a97a9c2edce23c7",
+                        "test_2.fastq.gz:md5,25cbdca08e2083dbd4f0502de6b62f39"
+                    ]
+                ]
+            ],
+            [
+                
+            ]
+        ],
+        "timestamp": "2026-02-10T17:29:44.527916948",
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.10.0"
+        }
+    },
+    "sarscov2 paired-end [fastq] - prinseq": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test",
+                        "single_end": false,
+                        "sample": "test"
+                    },
+                    [
+                        "test_R1.fastp.fastq.gz:md5,67b2bbae47f073e05a97a9c2edce23c7",
+                        "test_R2.fastp.fastq.gz:md5,25cbdca08e2083dbd4f0502de6b62f39"
+                    ]
+                ]
+            ],
+            [
+                
+            ]
+        ],
+        "timestamp": "2026-02-10T17:29:56.797673338",
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.10.0"
+        }
+    }
+}

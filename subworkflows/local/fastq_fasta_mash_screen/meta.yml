@@ -1,0 +1,37 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: fastq_fasta_mash_screen
+description: Identify best reference genome matches for sequences using MASH sketching and screening
+keywords:
+  - mash
+  - sketching
+  - screening
+  - reference selection
+  - similarity
+  - genomics
+components:
+  - cat/cat
+  - mash/sketch
+  - mash/screen
+  - select/reference
+input:
+  - ch_fasta_reads:
+      description: |
+        Input channel containing FASTA sequences and corresponding reads
+        Structure: [ val(meta), path(fasta), path(reads) ]
+output:
+  - reference_fastq:
+      description: |
+        Selected reference sequences with their corresponding reads (filtered for non-empty FASTA)
+        Structure: [ val(meta), path(fasta), path(reads) ]
+  - json:
+      description: |
+        JSON files containing reference selection metadata
+        Structure: [ val(meta), path(json) ]
+  - versions:
+      description: |
+        Files containing software versions
+        Structure: [ path(versions.yml) ]
+authors:
+  - "@Joon-Klaps"
+maintainers:
+  - "@Joon-Klaps"

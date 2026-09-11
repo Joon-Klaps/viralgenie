@@ -1,0 +1,13 @@
+nextflow_pipeline {
+
+    name "Test pipeline with test_minimal profile"
+    script "../main.nf"
+    profile "test_minimal"
+    tag "test_minimal"
+
+    def scenarios = [
+        [name: "-profile test_minimal", tag: "test_minimal", scope: "multiqc"],
+    ]
+
+    scenarios.each { scenario -> test(scenario.name, UTILS.getTest(scenario)) }
+}

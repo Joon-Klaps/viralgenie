@@ -1,0 +1,77 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: consensus_qc
+description: Comprehensive quality control analysis of consensus sequences including completeness assessment, annotation, alignment, and comparative genomics
+keywords:
+  - quality control
+  - consensus
+  - completeness
+  - annotation
+  - alignment
+  - checkv
+  - quast
+  - blast
+  - prokka
+  - mafft
+  - comparative genomics
+components:
+  - checkv/downloaddatabase
+  - checkv/endtoend
+  - quast
+  - blast/blastn
+  - mafft/align
+  - prokka
+  - mmseqs_annotate
+input:
+  - ch_genome:
+      description: |
+        Consensus genome sequences for quality assessment
+        Structure: [ val(meta), path(genome) ]
+  - ch_aligned_raw_contigs:
+      description: |
+        Original raw contigs for comparison with consensus sequences
+        Structure: [ val(meta), path(genome) ]
+  - ch_checkv_db:
+      description: |
+        CheckV database for completeness and contamination assessment
+        Structure: [ path(checkv_db) ]
+  - ch_refpool_db:
+      description: |
+        Reference pool database for BLAST similarity searches
+        Structure: [ val(meta), path(refpool_db) ]
+  - ch_annotation_db:
+      description: |
+        Annotation database for MMseqs2 functional annotation
+        Structure: [ val(meta), path(annotation_db) ]
+  - ch_prokka_db:
+      description: |
+        Prokka database for protein annotation
+        Structure: [ val(meta), path(prokka_db) ]
+output:
+  - blast:
+      description: |
+        BLAST results against reference pool database
+        Structure: [ val(meta), path(txt) ]
+  - checkv:
+      description: |
+        CheckV quality summary with completeness and contamination estimates
+        Structure: [ val(meta), path(tsv) ]
+  - quast:
+      description: |
+        QUAST assembly statistics and metrics
+        Structure: [ val(meta), path(tsv) ]
+  - annotation:
+      description: |
+        MMseqs2 annotation results
+        Structure: [ val(meta), path(txt) ]
+  - mqc:
+      description: |
+        MultiQC files for quality control reporting
+        Structure: [ path(tsv) ]
+  - versions:
+      description: |
+        Files containing software versions
+        Structure: [ path(versions.yml) ]
+authors:
+  - "@Joon-Klaps"
+maintainers:
+  - "@Joon-Klaps"

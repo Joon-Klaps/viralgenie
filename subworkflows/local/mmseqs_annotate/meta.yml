@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: mmseqs_annotate
+description: Annotate genome sequences using MMseqs2 database search
+keywords:
+  - annotation
+  - mmseqs2
+  - search
+  - database
+  - similarity
+  - protein
+components:
+  - mmseqs/createdb
+  - mmseqs/easysearch
+input:
+  - ch_genomes:
+      description: |
+        Genome sequences to be annotated
+        Structure: [ val(meta), path(fasta) ]
+  - ch_db:
+      description: |
+        Reference database sequences for annotation
+        Structure: [ val(meta), path(fasta) ]
+output:
+  - tsv:
+      description: |
+        TSV files containing annotation results from MMseqs2 search
+        Structure: [ val(meta), path(tsv) ]
+  - versions:
+      description: |
+        Files containing software versions
+        Structure: [ path(versions.yml) ]
+authors:
+  - "@Joon-Klaps"
+maintainers:
+  - "@Joon-Klaps"

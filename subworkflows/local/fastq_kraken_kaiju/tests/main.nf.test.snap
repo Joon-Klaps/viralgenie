@@ -1,0 +1,214 @@
+{
+    "sarscov2 - fastq - PE - bracken": {
+        "content": [
+            {
+                "krona_html": [
+                    [
+                        {
+                            "id": "bracken"
+                        },
+                        "bracken.html"
+                    ]
+                ],
+                "mqc": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false,
+                            "tool": "bracken"
+                        },
+                        "test_bracken.kraken2.report_bracken.txt:md5,ca0fbeedc4353b5fdd081688823a33df"
+                    ]
+                ],
+                "read_classifications": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_kraken2.kraken2.classifiedreads.txt:md5,7987fbc9a001916926ade4a4380a318f"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-07-06T13:14:30.221886",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.1"
+        }
+    },
+    "sarscov2 - fastq - PE - KRAKEN2": {
+        "content": [
+            {
+                "krona_html": [
+                    [
+                        {
+                            "id": "kraken2"
+                        },
+                        "kraken2.html"
+                    ]
+                ],
+                "mqc": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false,
+                            "tool": "kraken2"
+                        },
+                        "test_kraken2.kraken2.report.txt:md5,bc257cc70c62100dd7ec34f5cb114ef8"
+                    ]
+                ],
+                "read_classifications": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_kraken2.kraken2.classifiedreads.txt:md5,7987fbc9a001916926ade4a4380a318f"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-07-06T13:14:53.05312",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.1"
+        }
+    },
+    "sarscov2 - fastq - PE - KAIJU": {
+        "content": [
+            {
+                "krona_html": [
+                    [
+                        {
+                            "id": "kaiju"
+                        },
+                        "kaiju.html"
+                    ]
+                ],
+                "mqc": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false,
+                            "tool": "kaiju"
+                        },
+                        "test.txt:md5,3191a44bf6e48d05087175897832255e"
+                    ]
+                ],
+                "read_classifications": [
+                    
+                ]
+            }
+        ],
+        "timestamp": "2026-07-06T13:14:41.382444",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.1"
+        }
+    },
+    "sarscov2 - fastq - SE - kraken2,kaiju,bracken": {
+        "content": [
+            {
+                "krona_html": [
+                    [
+                        {
+                            "id": "bracken"
+                        },
+                        "bracken.html"
+                    ],
+                    [
+                        {
+                            "id": "kaiju"
+                        },
+                        "kaiju.html"
+                    ]
+                ],
+                "mqc": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false,
+                            "tool": "bracken"
+                        },
+                        "test_bracken.kraken2.report_bracken.txt:md5,ca0fbeedc4353b5fdd081688823a33df"
+                    ],
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false,
+                            "tool": "kaiju"
+                        },
+                        "test.txt:md5,3191a44bf6e48d05087175897832255e"
+                    ]
+                ],
+                "read_classifications": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_kraken2.kraken2.classifiedreads.txt:md5,7987fbc9a001916926ade4a4380a318f"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-07-06T13:14:17.011936",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.1"
+        }
+    },
+    "sarscov2 - fastq - PE - kraken2,kaiju,bracken": {
+        "content": [
+            {
+                "krona_html": [
+                    [
+                        {
+                            "id": "bracken"
+                        },
+                        "bracken.html"
+                    ],
+                    [
+                        {
+                            "id": "kaiju"
+                        },
+                        "kaiju.html"
+                    ]
+                ],
+                "mqc": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false,
+                            "tool": "bracken"
+                        },
+                        "test_bracken.kraken2.report_bracken.txt:md5,ca0fbeedc4353b5fdd081688823a33df"
+                    ],
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false,
+                            "tool": "kaiju"
+                        },
+                        "test.txt:md5,3191a44bf6e48d05087175897832255e"
+                    ]
+                ],
+                "read_classifications": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_kraken2.kraken2.classifiedreads.txt:md5,7987fbc9a001916926ade4a4380a318f"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-07-06T13:14:03.350389",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.1"
+        }
+    }
+}

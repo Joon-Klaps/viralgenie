@@ -1,0 +1,96 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: fastq_fastqc_umitools_trimmomatic
+description: Quality control, UMI extraction, and adapter trimming of FASTQ files with read count filtering
+keywords:
+  - fastq
+  - quality control
+  - fastqc
+  - umi
+  - umitools
+  - trimming
+  - trimmomatic
+  - adapters
+  - filtering
+components:
+  - fastqc
+  - umitools/extract
+  - trimmomatic
+input:
+  - ch_reads:
+      description: |
+        Input FASTQ files for processing
+        Structure: [ val(meta), path(reads) ]
+  - skip_fastqc:
+      type: boolean
+      description: |
+        Whether to skip FastQC quality control analysis
+  - with_umi:
+      type: boolean
+      description: |
+        Whether the reads contain UMIs that need extraction
+  - skip_umi_extract:
+      type: boolean
+      description: |
+        Whether to skip UMI extraction even if with_umi is true
+  - umi_discard_read:
+      type: string
+      description: |
+        Which read to discard after UMI extraction (0=keep both, 1=discard R1, 2=discard R2)
+      enum: ["0", "1", "2"]
+  - skip_trimming:
+      type: boolean
+      description: |
+        Whether to skip adapter trimming with Trimmomatic
+  - min_trimmed_reads:
+      type: integer
+      description: |
+        Minimum number of trimmed reads required to pass filtering
+output:
+  - reads:
+      description: |
+        Processed FASTQ files after QC, UMI extraction, and trimming
+        Structure: [ val(meta), path(reads) ]
+  - fastqc_raw_html:
+      description: |
+        FastQC HTML reports for raw reads
+        Structure: [ val(meta), path(html) ]
+  - fastqc_raw_zip:
+      description: |
+        FastQC ZIP files for raw reads
+        Structure: [ val(meta), path(zip) ]
+  - umi_log:
+      description: |
+        UMI-tools extraction log files
+        Structure: [ val(meta), path(log) ]
+  - trim_summ:
+      description: |
+        Trimmomatic summary files
+        Structure: [ val(meta), path(summ) ]
+  - trim_log:
+      description: |
+        Trimmomatic log files
+        Structure: [ val(meta), path(log) ]
+  - trim_unpaired_reads:
+      description: |
+        Unpaired reads after trimming
+        Structure: [ val(meta), path(fastq.gz) ]
+  - trim_read_count:
+      description: |
+        Number of reads remaining after trimming
+        Structure: [ val(meta), val(count) ]
+  - fastqc_trim_html:
+      description: |
+        FastQC HTML reports for trimmed reads
+        Structure: [ val(meta), path(html) ]
+  - fastqc_trim_zip:
+      description: |
+        FastQC ZIP files for trimmed reads
+        Structure: [ val(meta), path(zip) ]
+  - versions:
+      description: |
+        Files containing software versions
+        Structure: [ path(versions.yml) ]
+authors:
+  - "@Joon-Klaps"
+maintainers:
+  - "@Joon-Klaps"

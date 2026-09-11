@@ -1,0 +1,191 @@
+
+nextflow_workflow {
+
+    name "Test Workflow FASTQ_KRAKEN_KAIJU"
+    script "../main.nf"
+    workflow "FASTQ_KRAKEN_KAIJU"
+
+    tag "subworkflows"
+    tag "subworkflows_nfcore"
+    tag "subworkflows/fastq_kraken_kaiju"
+    tag "fastq_kraken_kaiju"
+    tag "kraken2"
+    tag "kaiju"
+    tag "bracken"
+
+
+    setup {
+        run("UNTAR", alias: "KAIJU_DB_UNTAR") {
+            script "../../../../modules/nf-core/untar/main.nf"
+            process {
+                """
+                input[0] = Channel.of([[id:"kaiju"],file(params.pipelines_testdata_base_path + '/db/kaiju.tar.gz', checkIfExists: true)])
+                """
+            }
+        }
+
+        run("UNTAR", alias: "KRAKEN2_DB_UNTAR") {
+            script "../../../../modules/nf-core/untar/main.nf"
+            process {
+                """
+                input[0] = Channel.of([[id:"kraken2"],file(params.pipelines_testdata_base_path + '/db/kraken2_bracken.tar.gz', checkIfExists: true)])
+                """
+            }
+        }
+    }
+
+     test("sarscov2 - fastq - PE - kraken2,kaiju,bracken") {
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [ id:'test', single_end:false ], // meta map
+                    [
+                        file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fastq/test_1.fastq.gz', checkIfExists: true),
+                        file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fastq/test_2.fastq.gz', checkIfExists: true)
+                    ]
+                ])
+                input[1] = ["kraken2", "kaiju", "bracken"]
+                input[2] = KRAKEN2_DB_UNTAR.out.untar.map { meta, db -> [db] } //kraken2 db
+                input[3] = KRAKEN2_DB_UNTAR.out.untar.map { meta, db -> [db] } //bracken db
+                input[4] = KAIJU_DB_UNTAR.out.untar.map { meta, db -> [db] } //kaiju db
+                input[5] = true // kraken2_save_reads
+                input[6] = true // kraken2_save_readclassification
+                input[7] = "species" // kaiju_taxon_rank
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(sanitizeOutput(workflow.out, unstableKeys:["krona_html"])).match() }
+            )
+        }
+    }
+
+    test("sarscov2 - fastq - SE - kraken2,kaiju,bracken") {
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [ id:'test', single_end:false ], // meta map
+                    [
+                        file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fastq/test_1.fastq.gz', checkIfExists: true),
+                        file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fastq/test_2.fastq.gz', checkIfExists: true)
+                    ]
+                ])
+                input[1] = ["kraken2", "kaiju", "bracken"]
+                input[2] = KRAKEN2_DB_UNTAR.out.untar.map { meta, db -> [db] } //kraken2 db
+                input[3] = KRAKEN2_DB_UNTAR.out.untar.map { meta, db -> [db] } //bracken db
+                input[4] = KAIJU_DB_UNTAR.out.untar.map { meta, db -> [db] } //kaiju db
+                input[5] = true
+                input[6] = true
+                input[7] = "species"
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(sanitizeOutput(workflow.out, unstableKeys: ["krona_html"])).match() }
+            )
+        }
+    }
+
+    test("sarscov2 - fastq - PE - bracken") {
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [ id:'test', single_end:false ], // meta map
+                    [
+                        file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fastq/test_1.fastq.gz', checkIfExists: true),
+                        file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fastq/test_2.fastq.gz', checkIfExists: true)
+                    ]
+                ])
+                input[1] = "bracken"
+                input[2] = KRAKEN2_DB_UNTAR.out.untar.map { meta, db -> [db] } //kraken2 db
+                input[3] = KRAKEN2_DB_UNTAR.out.untar.map { meta, db -> [db] } //bracken db
+                input[4] = []
+                input[5] = true
+                input[6] = true
+                input[7] = "species"
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(sanitizeOutput(workflow.out, unstableKeys: ["krona_html"])).match() }
+            )
+        }
+    }
+
+    test("sarscov2 - fastq - PE - KAIJU") {
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [ id:'test', single_end:false ], // meta map
+                    [
+                        file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fastq/test_1.fastq.gz', checkIfExists: true),
+                        file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fastq/test_2.fastq.gz', checkIfExists: true)
+                    ]
+                ])
+                input[1] = "kaiju"
+                input[2] = []
+                input[3] = []
+                input[4] = KAIJU_DB_UNTAR.out.untar.map { meta, db -> [db] } //kaiju db
+                input[5] = true
+                input[6] = true
+                input[7] = "species"
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(sanitizeOutput(workflow.out, unstableKeys: ["krona_html"])).match() }
+            )
+        }
+    }
+
+    test("sarscov2 - fastq - PE - KRAKEN2") {
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [ id:'test', single_end:false ], // meta map
+                    [
+                        file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fastq/test_1.fastq.gz', checkIfExists: true),
+                        file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fastq/test_2.fastq.gz', checkIfExists: true)
+                    ]
+                ])
+                input[1] = "kraken2"
+                input[2] = KRAKEN2_DB_UNTAR.out.untar.map { meta, db -> [db] } //kraken2 db
+                input[3] = []
+                input[4] = []
+                input[5] = true
+                input[6] = true
+                input[7] = "species"
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(sanitizeOutput(workflow.out, unstableKeys: ["krona_html"])).match() }
+            )
+        }
+    }
+}

@@ -1,0 +1,61 @@
+include { FIND_CONCATENATE as CAT_CLUSTER                             } from '../../../modules/nf-core/find/concatenate/main'
+include { MINIMAP2_INDEX as MINIMAP2_CONTIG_INDEX                     } from '../../../modules/nf-core/minimap2/index/main'
+include { MINIMAP2_ALIGN as MINIMAP2_CONTIG_ALIGN                     } from '../../../modules/nf-core/minimap2/align/main'
+include { IVAR_CONSENSUS as IVAR_CONTIG_CONSENSUS                     } from '../../../modules/nf-core/ivar/consensus/main'
+include { RENAME_FASTA_HEADER as RENAME_FASTA_HEADER_CONTIG_CONSENSUS } from '../../../modules/local/rename_fasta_header/main'
+
+workflow ALIGN_COLLAPSE_CONTIGS {
+    take:
+    ch_references_members
+
+    main:
+
+    ch_sequences = ch_references_members.map { meta, references, members -> [meta, [references, members]] }
+
+    CAT_CLUSTER(ch_sequences)
+
+    // if external_reference is false, we need to include the reference when mapping towards the reference (i.e. the reference is also a member)
+    // if external_reference is true, we need to exclude the reference when mapping towards the reference
+    // We align contigs to the reference using minimap2
+    // Call consensus using IVAR_consensus with low treshholds (eg. 1) (needs only 1 coverage)
+    // If there are ambigous bases in the consensus due to low coverage we populate it with the reference sequence.
+
+    ch_references = ch_references_members.map { meta, references, _members -> [meta, references] }
+
+    MINIMAP2_CONTIG_INDEX(ch_references)
+
+    ch_splitup = MINIMAP2_CONTIG_INDEX.out.index
+        .join(ch_references_members, by: [0])
+        .join(CAT_CLUSTER.out.file_out, by: [0])
+        .branch { meta, index, _references, members, comb ->
+            external: meta.external_reference
+                return [meta, index, members]
+            internal: true
+                return [meta, index, comb]
+        }
+
+    ch_index_contigs = ch_splitup.external.mix(ch_splitup.internal)
+
+    ch_index = ch_index_contigs.map { meta, index, _contigs -> [meta, index] }
+    ch_contigs = ch_index_contigs.map { meta, _index, contigs -> [meta, contigs] }
+
+    MINIMAP2_CONTIG_ALIGN(ch_contigs, ch_index, true, "bai", false, false)
+
+    ch_references_bam = ch_references_members
+        .join(MINIMAP2_CONTIG_ALIGN.out.bam, by: [0])
+        .map { meta, references, _members, bam -> [meta, references, bam] }
+
+    ch_ivar_bam = ch_references_bam.map { meta, _references, bam -> [meta, bam] }
+    ch_ivar_fasta = ch_references_bam.map { _meta, references, _bam -> [references] }
+    IVAR_CONTIG_CONSENSUS(
+        ch_ivar_bam,
+        ch_ivar_fasta,
+        true,
+    )
+
+    RENAME_FASTA_HEADER_CONTIG_CONSENSUS(IVAR_CONTIG_CONSENSUS.out.fasta, [])
+
+    emit:
+    consensus       = RENAME_FASTA_HEADER_CONTIG_CONSENSUS.out.fasta // channel: [ val(meta), [ fasta ] ]
+    unaligned_fasta = CAT_CLUSTER.out.file_out // channel: [ val(meta), [ fasta ] ]
+}

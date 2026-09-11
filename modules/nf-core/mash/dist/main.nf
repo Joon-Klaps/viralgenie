@@ -1,0 +1,39 @@
+process MASH_DIST {
+    tag "$meta.id"
+    label 'process_low'
+
+    conda "${moduleDir}/environment.yml"
+    container "${ workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container ?
+        'https://depot.galaxyproject.org/singularity/mash:2.3--he348c14_1':
+        'quay.io/biocontainers/mash:2.3--he348c14_1' }"
+
+    input:
+    tuple val(meta), path(query)
+
+    output:
+    tuple val(meta), path("*.txt"), emit: dist
+    tuple val("${task.process}"), val("mash"), eval("mash --version 2>&1"), emit: versions_mash, topic: versions
+
+    when:
+    task.ext.when == null || task.ext.when
+
+    script:
+    def args = task.ext.args ?: ''
+    def prefix = task.ext.prefix ?: "${meta.id}"
+    def reference = query
+    """
+    echo "name1\tname2\tdistance\tp-value\tmatching-hashes" > ${prefix}.txt
+    mash \\
+        dist \\
+        -p ${task.cpus} \\
+        ${args} \\
+        ${reference} \\
+        ${query} >> ${prefix}.txt
+    """
+
+    stub:
+    def prefix = task.ext.prefix ?: "${meta.id}"
+    """
+    touch ${prefix}.txt
+    """
+}

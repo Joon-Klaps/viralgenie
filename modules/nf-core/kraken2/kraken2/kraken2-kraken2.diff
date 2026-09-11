@@ -1,0 +1,26 @@
+Changes in component 'nf-core/kraken2/kraken2'
+'modules/nf-core/kraken2/kraken2/environment.yml' is unchanged
+'modules/nf-core/kraken2/kraken2/meta.yml' is unchanged
+Changes in 'kraken2/kraken2/main.nf':
+--- modules/nf-core/kraken2/kraken2/main.nf
++++ modules/nf-core/kraken2/kraken2/main.nf
+@@ -34,13 +34,14 @@
+     def unclassified_option = save_output_fastqs ? "--unclassified-out ${unclassified}" : ""
+     def readclassification_option = save_reads_assignment ? "--output ${prefix}.kraken2.classifiedreads.txt" : "--output /dev/null"
+     def compress_reads_command = save_output_fastqs ? "pigz -p $task.cpus *.fastq" : ""
++    def gzipped = reads[0].endsWith('.gz') ? '--gzip-compressed' : ''
+ 
+     """
+     kraken2 \\
+         --db $db \\
+         --threads $task.cpus \\
+         --report ${prefix}.kraken2.report.txt \\
+-        --gzip-compressed \\
++        $gzipped \\
+         $unclassified_option \\
+         $classified_option \\
+         $readclassification_option \\
+
+'modules/nf-core/kraken2/kraken2/tests/main.nf.test.snap' is unchanged
+'modules/nf-core/kraken2/kraken2/tests/main.nf.test' is unchanged
+************************************************************

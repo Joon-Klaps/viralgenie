@@ -1,0 +1,21 @@
+Changes in component 'nf-core/mafft/align'
+'modules/nf-core/mafft/align/environment.yml' is unchanged
+'modules/nf-core/mafft/align/meta.yml' is unchanged
+Changes in 'mafft/align/main.nf':
+--- modules/nf-core/mafft/align/main.nf
++++ modules/nf-core/mafft/align/main.nf
+@@ -9,8 +9,8 @@
+ 
+     input:
+     tuple val(meta) , path(fasta)
+-    tuple val(meta2), path(add)
+-    tuple val(meta3), path(addfragments)
++    tuple val(meta2), path(add, stageAs: 'add/*')
++    tuple val(meta3), path(addfragments, stageAs: 'addfragments/*')
+     tuple val(meta4), path(addfull)
+     tuple val(meta5), path(addprofile)
+     tuple val(meta6), path(addlong)
+
+'modules/nf-core/mafft/align/tests/main.nf.test.snap' is unchanged
+'modules/nf-core/mafft/align/tests/main.nf.test' is unchanged
+************************************************************

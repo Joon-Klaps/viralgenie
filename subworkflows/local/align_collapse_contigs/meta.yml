@@ -1,0 +1,42 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: align_collapse_contigs
+description: Create consensus sequence of a set of contigs mapped towards a reference (centroid of cluster)
+keywords:
+  - scaffolding
+  - assembly
+  - consensus
+  - mapping
+  - contigs
+components:
+  - cat/cat
+  - minimap2/align
+  - minimap2/index
+  - ivar/consensus
+  - rename_fasta_header
+  - rename/fasta/header
+input:
+  - ch_references_members:
+      description: |
+        The input channel containing the contig cluster centroid and its members
+        Structure: [ val(meta), path(centroid), path(members) ]
+output:
+  - consensus:
+      description: |
+        Consensus scaffold of the cluster
+        Structure: [ val(meta), path(consensus) ]
+  - aligned_txt:
+      description: |
+        File containing scaffolded consensus genome aligned to the original reference
+        Structure: [ val(meta), path(aligned_txt) ]
+  - unaligned_fasta:
+      description: |
+        File containing unaligned fasta sequences, all input contigs aligned to the consensus
+        Structure: [ val(meta), path(unaligned_fasta) ]
+  - versions:
+      description: |
+        Files containing software versions
+        Structure: [ path(versions.yml) ]
+authors:
+  - "@Joon-Klaps"
+maintainers:
+  - "@Joon-Klaps"

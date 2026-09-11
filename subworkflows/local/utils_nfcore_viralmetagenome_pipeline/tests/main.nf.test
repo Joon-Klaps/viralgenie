@@ -1,0 +1,80 @@
+// Tests for getMapFromJson — behavioural assertions on the parsed map plus
+// a runtime-class / Serializable snapshot so we catch a regression to the
+// lazy parser (see https://github.com/nf-core/viralmetagenome/issues/290).
+// The PARSE workflow in lazymap_test.nf wraps getMapFromJson so we can read
+// the real return type before nf-test's JSON conversion overwrites it.
+
+nextflow_workflow {
+
+    name "getMapFromJson"
+    script "./lazymap_test.nf"
+    workflow "PARSE"
+    tag "subworkflows"
+    tag "subworkflows_local"
+    tag "utils_nfcore_viralmetagenome_pipeline"
+    tag "subworkflows/utils_nfcore_viralmetagenome_pipeline"
+
+    test("parses extract_clust.py using jsonSlurperClassic") {
+        when {
+            workflow {
+                """
+                def fixture = file("\${workDir}/cluster_meta.json")
+                fixture.text = '''{
+                    "cluster_id": "cl17",
+                    "centroid": "NODE_42_length_5123_cov_18.4",
+                    "cluster_size": 12,
+                    "cumulative_read_depth": {"spades": 184.2, "megahit": 0.0, "trinity": 0.0},
+                    "external_reference": false,
+                    "members": ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l"],
+                    "taxid": "11320"
+                }'''
+                input[0] = fixture
+                input[1] = false // not lazy
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(
+                    workflow.out.parsed,
+                    workflow.out.class_name,
+                    workflow.out.is_serializable
+                ).match() }
+            )
+        }
+    }
+
+    test("parses extract_clust.py using jsonSlurper") {
+        when {
+            workflow {
+                """
+                def fixture = file("\${workDir}/cluster_meta.json")
+                fixture.text = '''{
+                    "cluster_id": "cl17",
+                    "centroid": "NODE_42_length_5123_cov_18.4",
+                    "cluster_size": 12,
+                    "cumulative_read_depth": {"spades": 184.2, "megahit": 0.0, "trinity": 0.0},
+                    "external_reference": false,
+                    "members": ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l"],
+                    "taxid": "11320"
+                }'''
+                input[0] = fixture
+                input[1] = true // lazy
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(
+                    workflow.out.parsed,
+                    workflow.out.class_name,
+                    workflow.out.is_serializable
+                ).match() }
+            )
+        }
+    }
+}

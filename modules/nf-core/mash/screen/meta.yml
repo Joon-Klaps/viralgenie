@@ -1,0 +1,75 @@
+name: "mash_screen"
+description: Screens query sequences against large sequence databases
+keywords:
+  - screen
+  - containment
+  - contamination
+  - taxonomic assignment
+tools:
+  - "mash":
+      description: Fast sequence distance estimator that uses MinHash
+      homepage: https://github.com/marbl/Mash
+      documentation: https://mash.readthedocs.io/en/latest/sketches.html
+      tool_dev_url: https://github.com/marbl/Mash
+      doi: "10.1186/s13059-016-0997-x"
+      licence:
+        - "https://github.com/marbl/Mash/blob/master/LICENSE.txt"
+      identifier: biotools:mash
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. [ id:'test', single_end:false ]
+    - query:
+        type: file
+        description: Query sequences
+        pattern: "*.fastq.gz"
+        ontologies:
+          - edam: http://edamontology.org/format_3989 # GZIP format
+  - - meta2:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. [ id:'test', single_end:false ]
+    - sequences_sketch:
+        type: file
+        description: sketch file of sequences
+        ontologies: []
+output:
+  screen:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. [ id:'test', single_end:false ]
+      - "*.screen":
+          type: file
+          description: List of sequences from fastx_db similar to query sequences
+          pattern: "*.screen"
+          ontologies: []
+  versions_mash:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - mash:
+          type: string
+          description: The name of the tool
+      - mash --version 2>&1:
+          type: eval
+          description: The expression to obtain the version of the tool
+topics:
+  versions:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - mash:
+          type: string
+          description: The name of the tool
+      - mash --version 2>&1:
+          type: eval
+          description: The expression to obtain the version of the tool
+authors:
+  - "@mahesh-panchal"
+maintainers:
+  - "@mahesh-panchal"

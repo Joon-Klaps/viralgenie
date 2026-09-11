@@ -1,0 +1,48 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: bam_vcf_consensus_bcftools
+description: Generate consensus sequences from BAM and VCF files using BCFtools with masking of low-coverage regions
+keywords:
+  - consensus
+  - bcftools
+  - vcf
+  - bam
+  - masking
+  - bedtools
+  - tabix
+components:
+  - tabix/tabix
+  - bedtools/merge
+  - bedtools/maskfasta
+  - bcftools/consensus
+  - make_bed_mask
+  - make/bed/mask
+input:
+  - ch_bam:
+      description: |
+        BAM files for coverage analysis and masking
+        Structure: [ val(meta), path(bam) ]
+  - ch_vcf:
+      description: |
+        VCF files containing variants for consensus calling
+        Structure: [ val(meta), path(vcf) ]
+  - ch_fasta:
+      description: |
+        Reference FASTA sequences
+        Structure: [ val(meta), path(fasta) ]
+  - mapping_stats:
+      type: boolean
+      description: |
+        Whether to save mapping statistics during mask creation
+output:
+  - consensus:
+      description: |
+        Consensus sequences in FASTA format with masked low-coverage regions
+        Structure: [ val(meta), path(fasta) ]
+  - versions:
+      description: |
+        Files containing software versions
+        Structure: [ path(versions.yml) ]
+authors:
+  - "@Joon-Klaps"
+maintainers:
+  - "@Joon-Klaps"

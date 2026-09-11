@@ -1,0 +1,62 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: bam_call_variants
+description: Call variants from BAM files using either bcftools or ivar with optional statistics generation
+keywords:
+  - variant calling
+  - bam
+  - vcf
+  - bcftools
+  - ivar
+  - statistics
+  - tabix
+components:
+  - bam_variants_bcftools
+  - bam_variants_ivar
+  - vcf_tabix_stats
+input:
+  - ch_bam_ref:
+      description: |
+        The input channel containing BAM files with their corresponding reference sequences
+        Structure: [ val(meta), path(bam), path(fasta) ]
+  - variant_caller:
+      type: string
+      description: |
+        The variant calling method to use
+      enum: ["bcftools", "ivar"]
+  - save_stats:
+      type: boolean
+      description: |
+        Whether to save variant statistics and generate tabix indices
+output:
+  - vcf:
+      description: |
+        Raw variant calls in VCF format
+        Structure: [ val(meta), path(vcf) ]
+  - vcf_filter:
+      description: |
+        Filtered variant calls in VCF format
+        Structure: [ val(meta), path(vcf) ]
+  - tbi:
+      description: |
+        Tabix index files for VCF files (only when save_stats is true)
+        Structure: [ val(meta), path(tbi) ]
+  - csi:
+      description: |
+        CSI index files for VCF files (only when save_stats is true)
+        Structure: [ val(meta), path(csi) ]
+  - stats:
+      description: |
+        VCF statistics files (only when save_stats is true)
+        Structure: [ val(meta), path(stats) ]
+  - mqc:
+      description: |
+        MultiQC files for quality control reporting
+        Structure: [ val(meta), path(mqc) ]
+  - versions:
+      description: |
+        Files containing software versions
+        Structure: [ path(versions.yml) ]
+authors:
+  - "@Joon-Klaps"
+maintainers:
+  - "@Joon-Klaps"

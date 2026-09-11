@@ -1,0 +1,539 @@
+{
+    "-profile test_fail_db no clustering with reference": {
+        "content": [
+            50,
+            {
+                "BLASTN_QC": {
+                    "blastn": "2.17.0+"
+                },
+                "BLAST_MAKEBLASTDB": {
+                    "makeblastdb": "2.17.0+"
+                },
+                "BWAMEM2_INDEX": {
+                    "bwamem2": "2.2.1"
+                },
+                "BWAMEM2_MEM": {
+                    "bwamem2": "2.2.1",
+                    "samtools": "1.22.1"
+                },
+                "CAT_ASSEMBLERS": {
+                    "coreutils": 9.4,
+                    "find": "4.6.0",
+                    "pigz": 2.8
+                },
+                "CDHIT_CDHITEST": {
+                    "cdhit": "4.8.1"
+                },
+                "CONTIG_IDXSTATS": {
+                    "samtools": 1.24
+                },
+                "CONTIG_INDEX": {
+                    "samtools": 1.24
+                },
+                "EXTRACT_CLUSTER": {
+                    "biopython": 1.85,
+                    "pandas": "2.2.3",
+                    "python": "3.9.21"
+                },
+                "EXTRACT_PRECLUSTER": {
+                    "biopython": 1.78,
+                    "python": "3.9.1"
+                },
+                "FASTP": {
+                    "fastp": "1.3.6"
+                },
+                "FASTQC_RAW": {
+                    "fastqc": "0.12.1"
+                },
+                "FASTQC_TRIM": {
+                    "fastqc": "0.12.1"
+                },
+                "GUNZIP_DB": {
+                    "gunzip": 1.13
+                },
+                "KAIJU_CONTIG": {
+                    "kaiju": "1.10.0"
+                },
+                "KRAKEN2_CONTIG": {
+                    "kraken2": "2.1.6",
+                    "pigz": 2.8
+                },
+                "MMSEQS_CREATEANNOTATIONDB": {
+                    "mmseqs": "18.8cc5c"
+                },
+                "MMSEQS_EASYSEARCH": {
+                    "mmseqs": "18.8cc5c"
+                },
+                "PRINSEQ_CONTIG": {
+                    "prinseqplusplus": 1.2
+                },
+                "PRINSEQ_READS": {
+                    "prinseqplusplus": 1.2
+                },
+                "QUAST": {
+                    "quast": "5.3.0"
+                },
+                "QUAST_QC": {
+                    "quast": "5.3.0"
+                },
+                "RENAME_FASTA_HEADER_SINGLETON": {
+                    "sed": 4.7
+                },
+                "SPADES": {
+                    "spades": "4.1.0"
+                },
+                "SSPACE_BASIC": {
+                    "sspace_base": "2.1.1"
+                },
+                "UNTAR_DB": {
+                    "untar": 1.34
+                },
+                "Workflow": {
+                    "nf-core/viralmetagenome": "v1.2.1dev"
+                }
+            },
+            [
+                "assembly",
+                "assembly/assemblers",
+                "assembly/assemblers/spades",
+                "assembly/assemblers/spades/idxstats",
+                "assembly/assemblers/spades/idxstats/SRR11140744_spades.idxstats",
+                "assembly/assemblers/spades/idxstats/SRR11140748_spades.idxstats",
+                "assembly/assemblers/spades/quast",
+                "assembly/assemblers/spades/quast/SRR11140744_spades.tsv",
+                "assembly/assemblers/spades/quast/SRR11140748_spades.tsv",
+                "assembly/assemblers/spades/rnaviral",
+                "assembly/assemblers/spades/rnaviral/SRR11140744_spades.assembly.gfa.gz",
+                "assembly/assemblers/spades/rnaviral/SRR11140744_spades.contigs.fa.gz",
+                "assembly/assemblers/spades/rnaviral/SRR11140744_spades.scaffolds.fa.gz",
+                "assembly/assemblers/spades/rnaviral/SRR11140748_spades.assembly.gfa.gz",
+                "assembly/assemblers/spades/rnaviral/SRR11140748_spades.contigs.fa.gz",
+                "assembly/assemblers/spades/rnaviral/SRR11140748_spades.scaffolds.fa.gz",
+                "assembly/assemblers/spades/rnaviral/log",
+                "assembly/assemblers/spades/rnaviral/log/SRR11140744_spades.spades.log",
+                "assembly/assemblers/spades/rnaviral/log/SRR11140748_spades.spades.log",
+                "assembly/assemblers/spades/sspace_basic",
+                "assembly/assemblers/spades/sspace_basic/SRR11140744.final.renamed.scaffolds.fa",
+                "assembly/assemblers/spades/sspace_basic/SRR11140748.final.renamed.scaffolds.fa",
+                "assembly/assemblers/spades/sspace_basic/log",
+                "assembly/assemblers/spades/sspace_basic/log/SRR11140744.library.txt",
+                "assembly/assemblers/spades/sspace_basic/log/SRR11140744.logfile.txt",
+                "assembly/assemblers/spades/sspace_basic/log/SRR11140744.summaryfile.txt",
+                "assembly/assemblers/spades/sspace_basic/log/SRR11140748.library.txt",
+                "assembly/assemblers/spades/sspace_basic/log/SRR11140748.logfile.txt",
+                "assembly/assemblers/spades/sspace_basic/log/SRR11140748.summaryfile.txt",
+                "assembly/assemblers/tools_combined",
+                "assembly/assemblers/tools_combined/prinseq",
+                "assembly/assemblers/tools_combined/prinseq/SRR11140744_bad_out.fasta",
+                "assembly/assemblers/tools_combined/prinseq/SRR11140744_good_out.fasta",
+                "assembly/assemblers/tools_combined/prinseq/SRR11140748_bad_out.fasta",
+                "assembly/assemblers/tools_combined/prinseq/SRR11140748_good_out.fasta",
+                "assembly/assemblers/tools_combined/raw",
+                "assembly/assemblers/tools_combined/raw/SRR11140744.combined.fa",
+                "assembly/assemblers/tools_combined/raw/SRR11140748.combined.fa",
+                "assembly/polishing",
+                "assembly/polishing/cdhitest",
+                "assembly/polishing/cdhitest/SRR11140744",
+                "assembly/polishing/cdhitest/SRR11140744/SRR11140744.clusters.tsv",
+                "assembly/polishing/cdhitest/SRR11140744/clusters",
+                "assembly/polishing/cdhitest/SRR11140744/clusters/SRR11140744_taxid2697049_cdhit.fa.clstr",
+                "assembly/polishing/cdhitest/SRR11140744/references",
+                "assembly/polishing/cdhitest/SRR11140744/references/SRR11140744_taxid2697049_cdhit.fa",
+                "assembly/polishing/cdhitest/SRR11140748",
+                "assembly/polishing/cdhitest/SRR11140748/SRR11140748.clusters.tsv",
+                "assembly/polishing/cdhitest/SRR11140748/clusters",
+                "assembly/polishing/cdhitest/SRR11140748/clusters/SRR11140748_taxid2697049_cdhit.fa.clstr",
+                "assembly/polishing/cdhitest/SRR11140748/references",
+                "assembly/polishing/cdhitest/SRR11140748/references/SRR11140748_taxid2697049_cdhit.fa",
+                "consensus",
+                "consensus/quality_control",
+                "consensus/quality_control/blast",
+                "consensus/quality_control/blast/all_genomes.txt",
+                "consensus/quality_control/mmseqs-search",
+                "consensus/quality_control/mmseqs-search/all_genomes.tsv",
+                "consensus/quality_control/quast",
+                "consensus/quality_control/quast/SRR11140744",
+                "consensus/quality_control/quast/SRR11140744/singleton",
+                "consensus/quality_control/quast/SRR11140744/singleton/SRR11140744_cl0.tsv",
+                "consensus/quality_control/quast/SRR11140748",
+                "consensus/quality_control/quast/SRR11140748/singleton",
+                "consensus/quality_control/quast/SRR11140748/singleton/SRR11140748_cl0.tsv",
+                "consensus/seq",
+                "consensus/seq/scaffold_consensus",
+                "consensus/seq/scaffold_consensus/SRR11140744",
+                "consensus/seq/scaffold_consensus/SRR11140744/SRR11140744_cl0_singleton.fasta",
+                "consensus/seq/scaffold_consensus/SRR11140748",
+                "consensus/seq/scaffold_consensus/SRR11140748/SRR11140748_cl0_singleton.fasta",
+                "pipeline_info",
+                "pipeline_info/nf_core_viralmetagenome_software_mqc_versions.yml",
+                "preprocessing",
+                "preprocessing/fastp",
+                "preprocessing/fastp/log",
+                "preprocessing/fastp/log/SRR11140744.fastp.log",
+                "preprocessing/fastp/log/SRR11140748.fastp.log",
+                "preprocessing/fastp/log/empty-SRR.fastp.log",
+                "preprocessing/fastp/report",
+                "preprocessing/fastp/report/SRR11140744.fastp.html",
+                "preprocessing/fastp/report/SRR11140744.fastp.json",
+                "preprocessing/fastp/report/SRR11140748.fastp.html",
+                "preprocessing/fastp/report/SRR11140748.fastp.json",
+                "preprocessing/fastp/report/empty-SRR.fastp.html",
+                "preprocessing/fastp/report/empty-SRR.fastp.json",
+                "preprocessing/fastqc",
+                "preprocessing/fastqc/raw",
+                "preprocessing/fastqc/raw/SRR11140744_raw_1_fastqc.html",
+                "preprocessing/fastqc/raw/SRR11140744_raw_1_fastqc.zip",
+                "preprocessing/fastqc/raw/SRR11140744_raw_2_fastqc.html",
+                "preprocessing/fastqc/raw/SRR11140744_raw_2_fastqc.zip",
+                "preprocessing/fastqc/raw/SRR11140748_raw_1_fastqc.html",
+                "preprocessing/fastqc/raw/SRR11140748_raw_1_fastqc.zip",
+                "preprocessing/fastqc/raw/SRR11140748_raw_2_fastqc.html",
+                "preprocessing/fastqc/raw/SRR11140748_raw_2_fastqc.zip",
+                "preprocessing/fastqc/raw/empty-SRR_raw_1_fastqc.html",
+                "preprocessing/fastqc/raw/empty-SRR_raw_1_fastqc.zip",
+                "preprocessing/fastqc/raw/empty-SRR_raw_2_fastqc.html",
+                "preprocessing/fastqc/raw/empty-SRR_raw_2_fastqc.zip",
+                "preprocessing/fastqc/trim",
+                "preprocessing/fastqc/trim/SRR11140744_trim_1_fastqc.html",
+                "preprocessing/fastqc/trim/SRR11140744_trim_1_fastqc.zip",
+                "preprocessing/fastqc/trim/SRR11140744_trim_2_fastqc.html",
+                "preprocessing/fastqc/trim/SRR11140744_trim_2_fastqc.zip",
+                "preprocessing/fastqc/trim/SRR11140748_trim_1_fastqc.html",
+                "preprocessing/fastqc/trim/SRR11140748_trim_1_fastqc.zip",
+                "preprocessing/fastqc/trim/SRR11140748_trim_2_fastqc.html",
+                "preprocessing/fastqc/trim/SRR11140748_trim_2_fastqc.zip",
+                "preprocessing/prinseq",
+                "preprocessing/prinseq/SRR11140744_bad_out_R1.fastq.gz",
+                "preprocessing/prinseq/SRR11140744_bad_out_R2.fastq.gz",
+                "preprocessing/prinseq/SRR11140744_good_out_R1.fastq.gz",
+                "preprocessing/prinseq/SRR11140744_good_out_R2.fastq.gz",
+                "preprocessing/prinseq/SRR11140744_single_out_R1.fastq.gz",
+                "preprocessing/prinseq/SRR11140744_single_out_R2.fastq.gz",
+                "preprocessing/prinseq/SRR11140748_bad_out_R1.fastq.gz",
+                "preprocessing/prinseq/SRR11140748_bad_out_R2.fastq.gz",
+                "preprocessing/prinseq/SRR11140748_good_out_R1.fastq.gz",
+                "preprocessing/prinseq/SRR11140748_good_out_R2.fastq.gz",
+                "preprocessing/prinseq/SRR11140748_single_out_R1.fastq.gz",
+                "preprocessing/prinseq/SRR11140748_single_out_R2.fastq.gz",
+                "preprocessing/prinseq/log",
+                "preprocessing/prinseq/log/SRR11140744.log",
+                "preprocessing/prinseq/log/SRR11140748.log"
+            ],
+            [
+                "SRR11140744_spades.tsv:md5,3ac34dcd6c41a4374fced0dd0d3f0290",
+                "SRR11140748_spades.tsv:md5,8c012ae46d27f31709494e3d2d15b99d",
+                "SRR11140744_spades.assembly.gfa.gz:md5,264df056df0e55928aefd8158a1f7779",
+                "SRR11140744_spades.contigs.fa.gz:md5,9d7ee5e7f4cbae1cad451b334fff97f6",
+                "SRR11140744_spades.scaffolds.fa.gz:md5,9d7ee5e7f4cbae1cad451b334fff97f6",
+                "SRR11140748_spades.assembly.gfa.gz:md5,56f42b1befbcd3b9724c1d709f466f7d",
+                "SRR11140748_spades.contigs.fa.gz:md5,af01a2e5fc0772976b8a5687ffc23692",
+                "SRR11140748_spades.scaffolds.fa.gz:md5,af01a2e5fc0772976b8a5687ffc23692",
+                "SRR11140744.final.renamed.scaffolds.fa:md5,93b179a2758004c756ef5b1a8714aea3",
+                "SRR11140748.final.renamed.scaffolds.fa:md5,5cc675bbc449de5cf78078ac9fb30ad4",
+                "SRR11140744.library.txt:md5,ae286fa8c5a883968a050f2d657620a0",
+                "SRR11140744.summaryfile.txt:md5,cbaee7f36e6e9190059479c7bebcd899",
+                "SRR11140748.library.txt:md5,1118b848c68c8cdfd5fbe071db143369",
+                "SRR11140748.summaryfile.txt:md5,c8b8719bf14faa02239635f4a00af197",
+                "SRR11140744_bad_out.fasta:md5,d41d8cd98f00b204e9800998ecf8427e",
+                "SRR11140748_bad_out.fasta:md5,d41d8cd98f00b204e9800998ecf8427e",
+                "SRR11140744_taxid2697049_cdhit.fa.clstr:md5,2ae3df2eb8df31d11ae6cbd927e0a6c0",
+                "SRR11140744_taxid2697049_cdhit.fa:md5,bcad7f18ae77d54eb546ba80661d2b27",
+                "SRR11140748_taxid2697049_cdhit.fa.clstr:md5,e7395d331da477714cb17d810476cabe",
+                "SRR11140748_taxid2697049_cdhit.fa:md5,32aa6164bd2f6e8520e3e62b5de1ebd8",
+                "SRR11140744_cl0.tsv:md5,e17b31b1a53b51b9a45eca554839a91d",
+                "SRR11140748_cl0.tsv:md5,44ad8f080dbcc374fdcdb21989f56146",
+                "SRR11140744_cl0_singleton.fasta:md5,d516230799da49400c85acefdb59646f",
+                "SRR11140748_cl0_singleton.fasta:md5,6761378582ed349787568f6d50b66e59",
+                "SRR11140744.fastp.json:md5,79f95b57073a55dc3b9ee56b92456e55",
+                "SRR11140748.fastp.json:md5,0f6f0ba2731cc30ecfca96c7beca6bb4",
+                "empty-SRR.fastp.json:md5,282648c6a1bcc0de4136e143f7631660",
+                "SRR11140744_bad_out_R1.fastq.gz:md5,d41d8cd98f00b204e9800998ecf8427e",
+                "SRR11140744_bad_out_R2.fastq.gz:md5,d41d8cd98f00b204e9800998ecf8427e",
+                "SRR11140744_single_out_R1.fastq.gz:md5,d41d8cd98f00b204e9800998ecf8427e",
+                "SRR11140744_single_out_R2.fastq.gz:md5,d41d8cd98f00b204e9800998ecf8427e",
+                "SRR11140748_bad_out_R1.fastq.gz:md5,d41d8cd98f00b204e9800998ecf8427e",
+                "SRR11140748_bad_out_R2.fastq.gz:md5,d41d8cd98f00b204e9800998ecf8427e",
+                "SRR11140748_single_out_R1.fastq.gz:md5,d41d8cd98f00b204e9800998ecf8427e",
+                "SRR11140748_single_out_R2.fastq.gz:md5,d41d8cd98f00b204e9800998ecf8427e"
+            ]
+        ],
+        "timestamp": "2026-09-03T14:16:25.259857",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "25.10.4"
+        }
+    },
+    "-profile test_fail_db": {
+        "content": [
+            54,
+            {
+                "BLASTN_QC": {
+                    "blastn": "2.17.0+"
+                },
+                "BLAST_BLASTN": {
+                    "blastn": "2.17.0+"
+                },
+                "BLAST_FILTER": {
+                    "biopython": 1.85,
+                    "pandas": "2.2.3",
+                    "python": "3.9.21"
+                },
+                "BLAST_MAKEBLASTDB": {
+                    "makeblastdb": "2.17.0+"
+                },
+                "BWAMEM2_INDEX": {
+                    "bwamem2": "2.2.1"
+                },
+                "BWAMEM2_MEM": {
+                    "bwamem2": "2.2.1",
+                    "samtools": "1.22.1"
+                },
+                "CAT_ASSEMBLERS": {
+                    "coreutils": 9.4,
+                    "find": "4.6.0",
+                    "pigz": 2.8
+                },
+                "CDHIT_CDHITEST": {
+                    "cdhit": "4.8.1"
+                },
+                "CONTIG_IDXSTATS": {
+                    "samtools": 1.24
+                },
+                "CONTIG_INDEX": {
+                    "samtools": 1.24
+                },
+                "EXTRACT_CLUSTER": {
+                    "biopython": 1.85,
+                    "pandas": "2.2.3",
+                    "python": "3.9.21"
+                },
+                "EXTRACT_PRECLUSTER": {
+                    "biopython": 1.78,
+                    "python": "3.9.1"
+                },
+                "FASTP": {
+                    "fastp": "1.3.6"
+                },
+                "FASTQC_RAW": {
+                    "fastqc": "0.12.1"
+                },
+                "FASTQC_TRIM": {
+                    "fastqc": "0.12.1"
+                },
+                "GUNZIP_DB": {
+                    "gunzip": 1.13
+                },
+                "KAIJU_CONTIG": {
+                    "kaiju": "1.10.0"
+                },
+                "KRAKEN2_CONTIG": {
+                    "kraken2": "2.1.6",
+                    "pigz": 2.8
+                },
+                "MMSEQS_CREATEANNOTATIONDB": {
+                    "mmseqs": "18.8cc5c"
+                },
+                "MMSEQS_EASYSEARCH": {
+                    "mmseqs": "18.8cc5c"
+                },
+                "PRINSEQ_CONTIG": {
+                    "prinseqplusplus": 1.2
+                },
+                "PRINSEQ_READS": {
+                    "prinseqplusplus": 1.2
+                },
+                "QUAST": {
+                    "quast": "5.3.0"
+                },
+                "QUAST_QC": {
+                    "quast": "5.3.0"
+                },
+                "RENAME_FASTA_HEADER_SINGLETON": {
+                    "sed": 4.7
+                },
+                "SPADES": {
+                    "spades": "4.1.0"
+                },
+                "SSPACE_BASIC": {
+                    "sspace_base": "2.1.1"
+                },
+                "UNTAR_DB": {
+                    "untar": 1.34
+                },
+                "Workflow": {
+                    "nf-core/viralmetagenome": "v1.2.1dev"
+                }
+            },
+            [
+                "assembly",
+                "assembly/assemblers",
+                "assembly/assemblers/spades",
+                "assembly/assemblers/spades/idxstats",
+                "assembly/assemblers/spades/idxstats/SRR11140744_spades.idxstats",
+                "assembly/assemblers/spades/idxstats/SRR11140748_spades.idxstats",
+                "assembly/assemblers/spades/quast",
+                "assembly/assemblers/spades/quast/SRR11140744_spades.tsv",
+                "assembly/assemblers/spades/quast/SRR11140748_spades.tsv",
+                "assembly/assemblers/spades/rnaviral",
+                "assembly/assemblers/spades/rnaviral/SRR11140744_spades.assembly.gfa.gz",
+                "assembly/assemblers/spades/rnaviral/SRR11140744_spades.contigs.fa.gz",
+                "assembly/assemblers/spades/rnaviral/SRR11140744_spades.scaffolds.fa.gz",
+                "assembly/assemblers/spades/rnaviral/SRR11140748_spades.assembly.gfa.gz",
+                "assembly/assemblers/spades/rnaviral/SRR11140748_spades.contigs.fa.gz",
+                "assembly/assemblers/spades/rnaviral/SRR11140748_spades.scaffolds.fa.gz",
+                "assembly/assemblers/spades/rnaviral/log",
+                "assembly/assemblers/spades/rnaviral/log/SRR11140744_spades.spades.log",
+                "assembly/assemblers/spades/rnaviral/log/SRR11140748_spades.spades.log",
+                "assembly/assemblers/spades/sspace_basic",
+                "assembly/assemblers/spades/sspace_basic/SRR11140744.final.renamed.scaffolds.fa",
+                "assembly/assemblers/spades/sspace_basic/SRR11140748.final.renamed.scaffolds.fa",
+                "assembly/assemblers/spades/sspace_basic/log",
+                "assembly/assemblers/spades/sspace_basic/log/SRR11140744.library.txt",
+                "assembly/assemblers/spades/sspace_basic/log/SRR11140744.logfile.txt",
+                "assembly/assemblers/spades/sspace_basic/log/SRR11140744.summaryfile.txt",
+                "assembly/assemblers/spades/sspace_basic/log/SRR11140748.library.txt",
+                "assembly/assemblers/spades/sspace_basic/log/SRR11140748.logfile.txt",
+                "assembly/assemblers/spades/sspace_basic/log/SRR11140748.summaryfile.txt",
+                "assembly/assemblers/tools_combined",
+                "assembly/assemblers/tools_combined/prinseq",
+                "assembly/assemblers/tools_combined/prinseq/SRR11140744_bad_out.fasta",
+                "assembly/assemblers/tools_combined/prinseq/SRR11140744_good_out.fasta",
+                "assembly/assemblers/tools_combined/prinseq/SRR11140748_bad_out.fasta",
+                "assembly/assemblers/tools_combined/prinseq/SRR11140748_good_out.fasta",
+                "assembly/assemblers/tools_combined/raw",
+                "assembly/assemblers/tools_combined/raw/SRR11140744.combined.fa",
+                "assembly/assemblers/tools_combined/raw/SRR11140748.combined.fa",
+                "assembly/polishing",
+                "assembly/polishing/blast",
+                "assembly/polishing/cdhitest",
+                "assembly/polishing/cdhitest/SRR11140744",
+                "assembly/polishing/cdhitest/SRR11140744/SRR11140744.clusters.tsv",
+                "assembly/polishing/cdhitest/SRR11140744/clusters",
+                "assembly/polishing/cdhitest/SRR11140744/clusters/SRR11140744_taxid2697049_cdhit.fa.clstr",
+                "assembly/polishing/cdhitest/SRR11140744/references",
+                "assembly/polishing/cdhitest/SRR11140744/references/SRR11140744_taxid2697049_cdhit.fa",
+                "assembly/polishing/cdhitest/SRR11140748",
+                "assembly/polishing/cdhitest/SRR11140748/SRR11140748.clusters.tsv",
+                "assembly/polishing/cdhitest/SRR11140748/clusters",
+                "assembly/polishing/cdhitest/SRR11140748/clusters/SRR11140748_taxid2697049_cdhit.fa.clstr",
+                "assembly/polishing/cdhitest/SRR11140748/references",
+                "assembly/polishing/cdhitest/SRR11140748/references/SRR11140748_taxid2697049_cdhit.fa",
+                "consensus",
+                "consensus/quality_control",
+                "consensus/quality_control/blast",
+                "consensus/quality_control/blast/all_genomes.txt",
+                "consensus/quality_control/mmseqs-search",
+                "consensus/quality_control/mmseqs-search/all_genomes.tsv",
+                "consensus/quality_control/quast",
+                "consensus/quality_control/quast/SRR11140744",
+                "consensus/quality_control/quast/SRR11140744/singleton",
+                "consensus/quality_control/quast/SRR11140744/singleton/SRR11140744_cl0.tsv",
+                "consensus/quality_control/quast/SRR11140748",
+                "consensus/quality_control/quast/SRR11140748/singleton",
+                "consensus/quality_control/quast/SRR11140748/singleton/SRR11140748_cl0.tsv",
+                "consensus/seq",
+                "consensus/seq/scaffold_consensus",
+                "consensus/seq/scaffold_consensus/SRR11140744",
+                "consensus/seq/scaffold_consensus/SRR11140744/SRR11140744_cl0_singleton.fasta",
+                "consensus/seq/scaffold_consensus/SRR11140748",
+                "consensus/seq/scaffold_consensus/SRR11140748/SRR11140748_cl0_singleton.fasta",
+                "pipeline_info",
+                "pipeline_info/nf_core_viralmetagenome_software_mqc_versions.yml",
+                "preprocessing",
+                "preprocessing/fastp",
+                "preprocessing/fastp/log",
+                "preprocessing/fastp/log/SRR11140744.fastp.log",
+                "preprocessing/fastp/log/SRR11140748.fastp.log",
+                "preprocessing/fastp/log/empty-SRR.fastp.log",
+                "preprocessing/fastp/report",
+                "preprocessing/fastp/report/SRR11140744.fastp.html",
+                "preprocessing/fastp/report/SRR11140744.fastp.json",
+                "preprocessing/fastp/report/SRR11140748.fastp.html",
+                "preprocessing/fastp/report/SRR11140748.fastp.json",
+                "preprocessing/fastp/report/empty-SRR.fastp.html",
+                "preprocessing/fastp/report/empty-SRR.fastp.json",
+                "preprocessing/fastqc",
+                "preprocessing/fastqc/raw",
+                "preprocessing/fastqc/raw/SRR11140744_raw_1_fastqc.html",
+                "preprocessing/fastqc/raw/SRR11140744_raw_1_fastqc.zip",
+                "preprocessing/fastqc/raw/SRR11140744_raw_2_fastqc.html",
+                "preprocessing/fastqc/raw/SRR11140744_raw_2_fastqc.zip",
+                "preprocessing/fastqc/raw/SRR11140748_raw_1_fastqc.html",
+                "preprocessing/fastqc/raw/SRR11140748_raw_1_fastqc.zip",
+                "preprocessing/fastqc/raw/SRR11140748_raw_2_fastqc.html",
+                "preprocessing/fastqc/raw/SRR11140748_raw_2_fastqc.zip",
+                "preprocessing/fastqc/raw/empty-SRR_raw_1_fastqc.html",
+                "preprocessing/fastqc/raw/empty-SRR_raw_1_fastqc.zip",
+                "preprocessing/fastqc/raw/empty-SRR_raw_2_fastqc.html",
+                "preprocessing/fastqc/raw/empty-SRR_raw_2_fastqc.zip",
+                "preprocessing/fastqc/trim",
+                "preprocessing/fastqc/trim/SRR11140744_trim_1_fastqc.html",
+                "preprocessing/fastqc/trim/SRR11140744_trim_1_fastqc.zip",
+                "preprocessing/fastqc/trim/SRR11140744_trim_2_fastqc.html",
+                "preprocessing/fastqc/trim/SRR11140744_trim_2_fastqc.zip",
+                "preprocessing/fastqc/trim/SRR11140748_trim_1_fastqc.html",
+                "preprocessing/fastqc/trim/SRR11140748_trim_1_fastqc.zip",
+                "preprocessing/fastqc/trim/SRR11140748_trim_2_fastqc.html",
+                "preprocessing/fastqc/trim/SRR11140748_trim_2_fastqc.zip",
+                "preprocessing/prinseq",
+                "preprocessing/prinseq/SRR11140744_bad_out_R1.fastq.gz",
+                "preprocessing/prinseq/SRR11140744_bad_out_R2.fastq.gz",
+                "preprocessing/prinseq/SRR11140744_good_out_R1.fastq.gz",
+                "preprocessing/prinseq/SRR11140744_good_out_R2.fastq.gz",
+                "preprocessing/prinseq/SRR11140744_single_out_R1.fastq.gz",
+                "preprocessing/prinseq/SRR11140744_single_out_R2.fastq.gz",
+                "preprocessing/prinseq/SRR11140748_bad_out_R1.fastq.gz",
+                "preprocessing/prinseq/SRR11140748_bad_out_R2.fastq.gz",
+                "preprocessing/prinseq/SRR11140748_good_out_R1.fastq.gz",
+                "preprocessing/prinseq/SRR11140748_good_out_R2.fastq.gz",
+                "preprocessing/prinseq/SRR11140748_single_out_R1.fastq.gz",
+                "preprocessing/prinseq/SRR11140748_single_out_R2.fastq.gz",
+                "preprocessing/prinseq/log",
+                "preprocessing/prinseq/log/SRR11140744.log",
+                "preprocessing/prinseq/log/SRR11140748.log"
+            ],
+            [
+                "SRR11140744_spades.tsv:md5,3ac34dcd6c41a4374fced0dd0d3f0290",
+                "SRR11140748_spades.tsv:md5,8c012ae46d27f31709494e3d2d15b99d",
+                "SRR11140744_spades.assembly.gfa.gz:md5,264df056df0e55928aefd8158a1f7779",
+                "SRR11140744_spades.contigs.fa.gz:md5,9d7ee5e7f4cbae1cad451b334fff97f6",
+                "SRR11140744_spades.scaffolds.fa.gz:md5,9d7ee5e7f4cbae1cad451b334fff97f6",
+                "SRR11140748_spades.assembly.gfa.gz:md5,56f42b1befbcd3b9724c1d709f466f7d",
+                "SRR11140748_spades.contigs.fa.gz:md5,af01a2e5fc0772976b8a5687ffc23692",
+                "SRR11140748_spades.scaffolds.fa.gz:md5,af01a2e5fc0772976b8a5687ffc23692",
+                "SRR11140744.final.renamed.scaffolds.fa:md5,93b179a2758004c756ef5b1a8714aea3",
+                "SRR11140748.final.renamed.scaffolds.fa:md5,5cc675bbc449de5cf78078ac9fb30ad4",
+                "SRR11140744.library.txt:md5,ae286fa8c5a883968a050f2d657620a0",
+                "SRR11140744.summaryfile.txt:md5,cbaee7f36e6e9190059479c7bebcd899",
+                "SRR11140748.library.txt:md5,1118b848c68c8cdfd5fbe071db143369",
+                "SRR11140748.summaryfile.txt:md5,c8b8719bf14faa02239635f4a00af197",
+                "SRR11140744_bad_out.fasta:md5,d41d8cd98f00b204e9800998ecf8427e",
+                "SRR11140748_bad_out.fasta:md5,d41d8cd98f00b204e9800998ecf8427e",
+                "SRR11140744_taxid2697049_cdhit.fa.clstr:md5,2ae3df2eb8df31d11ae6cbd927e0a6c0",
+                "SRR11140744_taxid2697049_cdhit.fa:md5,bcad7f18ae77d54eb546ba80661d2b27",
+                "SRR11140748_taxid2697049_cdhit.fa.clstr:md5,e7395d331da477714cb17d810476cabe",
+                "SRR11140748_taxid2697049_cdhit.fa:md5,32aa6164bd2f6e8520e3e62b5de1ebd8",
+                "SRR11140744_cl0.tsv:md5,e17b31b1a53b51b9a45eca554839a91d",
+                "SRR11140748_cl0.tsv:md5,44ad8f080dbcc374fdcdb21989f56146",
+                "SRR11140744_cl0_singleton.fasta:md5,d516230799da49400c85acefdb59646f",
+                "SRR11140748_cl0_singleton.fasta:md5,6761378582ed349787568f6d50b66e59",
+                "SRR11140744.fastp.json:md5,79f95b57073a55dc3b9ee56b92456e55",
+                "SRR11140748.fastp.json:md5,0f6f0ba2731cc30ecfca96c7beca6bb4",
+                "empty-SRR.fastp.json:md5,282648c6a1bcc0de4136e143f7631660",
+                "SRR11140744_bad_out_R1.fastq.gz:md5,d41d8cd98f00b204e9800998ecf8427e",
+                "SRR11140744_bad_out_R2.fastq.gz:md5,d41d8cd98f00b204e9800998ecf8427e",
+                "SRR11140744_single_out_R1.fastq.gz:md5,d41d8cd98f00b204e9800998ecf8427e",
+                "SRR11140744_single_out_R2.fastq.gz:md5,d41d8cd98f00b204e9800998ecf8427e",
+                "SRR11140748_bad_out_R1.fastq.gz:md5,d41d8cd98f00b204e9800998ecf8427e",
+                "SRR11140748_bad_out_R2.fastq.gz:md5,d41d8cd98f00b204e9800998ecf8427e",
+                "SRR11140748_single_out_R1.fastq.gz:md5,d41d8cd98f00b204e9800998ecf8427e",
+                "SRR11140748_single_out_R2.fastq.gz:md5,d41d8cd98f00b204e9800998ecf8427e"
+            ]
+        ],
+        "timestamp": "2026-09-03T14:14:51.93894",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "25.10.4"
+        }
+    }
+}

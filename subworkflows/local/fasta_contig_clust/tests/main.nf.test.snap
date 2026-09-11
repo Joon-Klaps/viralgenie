@@ -1,0 +1,771 @@
+{
+    "sarscov2 - contigs - mmseqs-cluster": {
+        "content": [
+            [
+                14
+            ],
+            [
+                [
+                    {
+                        "id": "test_cl0",
+                        "sample": "test",
+                        "centroid": "NODE_1_length_20973_cov_191.628754",
+                        "cluster_id": "cl0",
+                        "cluster_size": 0,
+                        "external_reference": false,
+                        "taxid": null
+                    },
+                    "test_cl0_centroid.fa:md5,a783382b363cd34381652d926f67475c",
+                    "test_cl0_members.fa:md5,68b329da9893e34099c7d8ad5cb9c940"
+                ],
+                [
+                    {
+                        "id": "test_cl1",
+                        "sample": "test",
+                        "centroid": "NODE_2_length_8774_cov_178.827802",
+                        "cluster_id": "cl1",
+                        "cluster_size": 1,
+                        "external_reference": false,
+                        "taxid": null
+                    },
+                    "test_cl1_centroid.fa:md5,890a77b2139d0413506a1ca4edbf9a82",
+                    "test_cl1_members.fa:md5,24c57abcaff9df76356edb5fbbd99feb"
+                ],
+                [
+                    {
+                        "id": "test_cl2",
+                        "sample": "test",
+                        "centroid": "NODE_3_length_5473_cov_3.280771",
+                        "cluster_id": "cl2",
+                        "cluster_size": 0,
+                        "external_reference": false,
+                        "taxid": null
+                    },
+                    "test_cl2_centroid.fa:md5,fc2f1b3bf2cdb86e27dab8012e00c3cf",
+                    "test_cl2_members.fa:md5,68b329da9893e34099c7d8ad5cb9c940"
+                ],
+                [
+                    {
+                        "id": "test_cl3",
+                        "sample": "test",
+                        "centroid": "NODE_4_length_458_cov_1.051360",
+                        "cluster_id": "cl3",
+                        "cluster_size": 0,
+                        "external_reference": false,
+                        "taxid": null
+                    },
+                    "test_cl3_centroid.fa:md5,a74664ba4f042979b5023706212d54f1",
+                    "test_cl3_members.fa:md5,68b329da9893e34099c7d8ad5cb9c940"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "sample": "test"
+                    },
+                    "test.clusters.tsv:md5,b89e21a488020d3a63fb81dfb39f754a"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "sample": "test"
+                    },
+                    "test.summary_mqc.tsv:md5,8b045d7633af57b1fa34cdd3efb675ea"
+                ]
+            ],
+            []
+        ],
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.10.0"
+        },
+        "timestamp": "2026-02-10T17:17:34.14455583"
+    },
+    "sarscov2 - contigs - vsearch - no blast db": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test",
+                        "sample": "test",
+                        "ntaxa": 1
+                    },
+                    "test_vsearch.uc.tsv.gz:md5,f706febe79ad57980e1f2502dbffa556"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test_cl0",
+                        "sample": "test",
+                        "centroid": "NODE_1_length_20973_cov_191.628754",
+                        "cluster_id": "cl0",
+                        "cluster_size": 0,
+                        "external_reference": false,
+                        "taxid": null
+                    },
+                    "test_cl0_centroid.fa:md5,a783382b363cd34381652d926f67475c",
+                    "test_cl0_members.fa:md5,68b329da9893e34099c7d8ad5cb9c940"
+                ],
+                [
+                    {
+                        "id": "test_cl1",
+                        "sample": "test",
+                        "centroid": "NODE_2_length_8774_cov_178.827802",
+                        "cluster_id": "cl1",
+                        "cluster_size": 0,
+                        "external_reference": false,
+                        "taxid": null
+                    },
+                    "test_cl1_centroid.fa:md5,890a77b2139d0413506a1ca4edbf9a82",
+                    "test_cl1_members.fa:md5,68b329da9893e34099c7d8ad5cb9c940"
+                ],
+                [
+                    {
+                        "id": "test_cl2",
+                        "sample": "test",
+                        "centroid": "NODE_3_length_5473_cov_3.280771",
+                        "cluster_id": "cl2",
+                        "cluster_size": 0,
+                        "external_reference": false,
+                        "taxid": null
+                    },
+                    "test_cl2_centroid.fa:md5,fc2f1b3bf2cdb86e27dab8012e00c3cf",
+                    "test_cl2_members.fa:md5,68b329da9893e34099c7d8ad5cb9c940"
+                ],
+                [
+                    {
+                        "id": "test_cl3",
+                        "sample": "test",
+                        "centroid": "NODE_4_length_458_cov_1.051360",
+                        "cluster_id": "cl3",
+                        "cluster_size": 0,
+                        "external_reference": false,
+                        "taxid": null
+                    },
+                    "test_cl3_centroid.fa:md5,a74664ba4f042979b5023706212d54f1",
+                    "test_cl3_members.fa:md5,68b329da9893e34099c7d8ad5cb9c940"
+                ],
+                [
+                    {
+                        "id": "test_cl4",
+                        "sample": "test",
+                        "centroid": "NODE_5_length_446_cov_1.078370",
+                        "cluster_id": "cl4",
+                        "cluster_size": 0,
+                        "external_reference": false,
+                        "taxid": null
+                    },
+                    "test_cl4_centroid.fa:md5,24c57abcaff9df76356edb5fbbd99feb",
+                    "test_cl4_members.fa:md5,68b329da9893e34099c7d8ad5cb9c940"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "sample": "test"
+                    },
+                    "test.clusters.tsv:md5,ae8b805fe0440c798db12df618d23d0f"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "sample": "test"
+                    },
+                    "test.summary_mqc.tsv:md5,4cede816e5027b407faa939a23f2e0c9"
+                ]
+            ],
+            []
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.3"
+        },
+        "timestamp": "2026-04-10T10:14:40.914271"
+    },
+    "sarscov2 - contigs - cdhitest": {
+        "content": [
+            [
+                [
+                    "",
+                    "test_cdhit.fa.clstr"
+                ]
+            ],
+            [
+                [
+                    "",
+                    "test_cl0_centroid.fa",
+                    "test_cl0_members.fa"
+                ],
+                [
+                    "",
+                    "test_cl1_centroid.fa",
+                    "test_cl1_members.fa"
+                ],
+                [
+                    "",
+                    "test_cl2_centroid.fa",
+                    "test_cl2_members.fa"
+                ],
+                [
+                    "",
+                    "test_cl3_centroid.fa",
+                    "test_cl3_members.fa"
+                ]
+            ],
+            [
+                [
+                    "",
+                    "test.clusters.tsv"
+                ]
+            ],
+            [
+                [
+                    "",
+                    "test.summary_mqc.tsv"
+                ]
+            ],
+            []
+        ],
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.10.0"
+        },
+        "timestamp": "2026-02-10T17:09:05.145778026"
+    },
+    "sarscov2 - contigs - vsearch - default": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test",
+                        "sample": "test",
+                        "ntaxa": 1
+                    },
+                    "test_vsearch.uc.tsv.gz:md5,458677b4ecb71c03d4bfa472f5319852"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test_cl0",
+                        "sample": "test",
+                        "centroid": "England-QEUH-AD0825-2020",
+                        "cluster_id": "cl0",
+                        "cluster_size": 3,
+                        "external_reference": true,
+                        "taxid": null
+                    },
+                    "test_cl0_centroid.fa:md5,228acb9ae78f86eab106e40b6e5f4812",
+                    "test_cl0_members.fa:md5,3f4e8eed213cbe42cdda173dc64c5c54"
+                ],
+                [
+                    {
+                        "id": "test_cl1",
+                        "sample": "test",
+                        "centroid": "NODE_3_length_5473_cov_3.280771",
+                        "cluster_id": "cl1",
+                        "cluster_size": 0,
+                        "external_reference": false,
+                        "taxid": null
+                    },
+                    "test_cl1_centroid.fa:md5,fc2f1b3bf2cdb86e27dab8012e00c3cf",
+                    "test_cl1_members.fa:md5,68b329da9893e34099c7d8ad5cb9c940"
+                ],
+                [
+                    {
+                        "id": "test_cl2",
+                        "sample": "test",
+                        "centroid": "NODE_4_length_458_cov_1.051360",
+                        "cluster_id": "cl2",
+                        "cluster_size": 0,
+                        "external_reference": false,
+                        "taxid": null
+                    },
+                    "test_cl2_centroid.fa:md5,a74664ba4f042979b5023706212d54f1",
+                    "test_cl2_members.fa:md5,68b329da9893e34099c7d8ad5cb9c940"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "sample": "test"
+                    },
+                    "test.clusters.tsv:md5,eed4f8a21eefe91e67778fcd50ade5dd"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "sample": "test"
+                    },
+                    "test.summary_mqc.tsv:md5,99baa0c2af938403d3f8c852dafdf634"
+                ]
+            ],
+            []
+        ],
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.10.0"
+        },
+        "timestamp": "2026-02-10T16:53:51.880877577"
+    },
+    "sarscov2 - contigs - vsearch - with precluster - stub": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test_taxid0000",
+                        "sample": "test",
+                        "ntaxa": 1,
+                        "single_end": null,
+                        "og_single_end": null,
+                        "taxid": "0000"
+                    },
+                    "test_taxid0000_vsearch.uc.tsv.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test_cl0",
+                        "sample": "test",
+                        "centroid": "stub_centroid",
+                        "cluster_id": "cl0",
+                        "cluster_size": 1,
+                        "external_reference": null,
+                        "taxid": null
+                    },
+                    "test_cl0_centroid.fa:md5,d41d8cd98f00b204e9800998ecf8427e",
+                    "test_cl0_members.fa:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "sample": "test"
+                    },
+                    "test.clusters.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "sample": "test"
+                    },
+                    "test.summary_mqc.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ]
+            ],
+            [
+                "samples_no_blast_hits_mqc.tsv:md5,cadcf4b8948d4495276e6c4efd3e429d"
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.3"
+        },
+        "timestamp": "2026-03-03T11:46:16.041697"
+    },
+    "sarscov2 - contigs - vsearch - with coverage filtering": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test",
+                        "sample": "test",
+                        "ntaxa": 1
+                    },
+                    "test_vsearch.uc.tsv.gz:md5,458677b4ecb71c03d4bfa472f5319852"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test_cl0",
+                        "sample": "test",
+                        "centroid": "England-QEUH-AD0825-2020",
+                        "cluster_id": "cl0",
+                        "cluster_size": 3,
+                        "external_reference": true,
+                        "taxid": null
+                    },
+                    "test_cl0_centroid.fa:md5,228acb9ae78f86eab106e40b6e5f4812",
+                    "test_cl0_members.fa:md5,3f4e8eed213cbe42cdda173dc64c5c54"
+                ],
+                [
+                    {
+                        "id": "test_cl1",
+                        "sample": "test",
+                        "centroid": "NODE_3_length_5473_cov_3.280771",
+                        "cluster_id": "cl1",
+                        "cluster_size": 0,
+                        "external_reference": false,
+                        "taxid": null
+                    },
+                    "test_cl1_centroid.fa:md5,fc2f1b3bf2cdb86e27dab8012e00c3cf",
+                    "test_cl1_members.fa:md5,68b329da9893e34099c7d8ad5cb9c940"
+                ],
+                [
+                    {
+                        "id": "test_cl2",
+                        "sample": "test",
+                        "centroid": "NODE_4_length_458_cov_1.051360",
+                        "cluster_id": "cl2",
+                        "cluster_size": 0,
+                        "external_reference": false,
+                        "taxid": null
+                    },
+                    "test_cl2_centroid.fa:md5,a74664ba4f042979b5023706212d54f1",
+                    "test_cl2_members.fa:md5,68b329da9893e34099c7d8ad5cb9c940"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "sample": "test"
+                    },
+                    "test.clusters.tsv:md5,caa4aec1385c159598628e3c3e8917bd"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "sample": "test"
+                    },
+                    "test.summary_mqc.tsv:md5,99baa0c2af938403d3f8c852dafdf634"
+                ]
+            ],
+            []
+        ],
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.10.0"
+        },
+        "timestamp": "2026-02-10T17:06:02.497505418"
+    },
+    "sarscov2 - contigs - vsearch - no precluster - stub": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test",
+                        "sample": "test",
+                        "ntaxa": 1
+                    },
+                    "test_vsearch.uc.tsv.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test_cl0",
+                        "sample": "test",
+                        "centroid": "stub_centroid",
+                        "cluster_id": "cl0",
+                        "cluster_size": 1,
+                        "external_reference": null,
+                        "taxid": null
+                    },
+                    "test_cl0_centroid.fa:md5,d41d8cd98f00b204e9800998ecf8427e",
+                    "test_cl0_members.fa:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "sample": "test"
+                    },
+                    "test.clusters.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "sample": "test"
+                    },
+                    "test.summary_mqc.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ]
+            ],
+            [
+                "samples_no_blast_hits_mqc.tsv:md5,cadcf4b8948d4495276e6c4efd3e429d"
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.3"
+        },
+        "timestamp": "2026-03-03T11:42:27.342784"
+    },
+    "sarscov2 - contigs - vsearch - with precluster": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test_taxid0",
+                        "sample": "test",
+                        "ntaxa": 2,
+                        "single_end": null,
+                        "og_single_end": null,
+                        "taxid": "0"
+                    },
+                    "test_taxid0_vsearch.uc.tsv.gz:md5,81da349ebe6f7992e7c8d4cc73235420"
+                ],
+                [
+                    {
+                        "id": "test_taxid2697049",
+                        "sample": "test",
+                        "ntaxa": 2,
+                        "single_end": null,
+                        "og_single_end": null,
+                        "taxid": "2697049"
+                    },
+                    "test_taxid2697049_vsearch.uc.tsv.gz:md5,fbe882c875c8e07f5e1e83e1e003d74e"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test_cl0",
+                        "sample": "test",
+                        "centroid": "England-QEUH-AD0825-2020",
+                        "cluster_id": "cl0",
+                        "cluster_size": 3,
+                        "external_reference": true,
+                        "taxid": "2697049"
+                    },
+                    "test_cl0_centroid.fa:md5,228acb9ae78f86eab106e40b6e5f4812",
+                    "test_cl0_members.fa:md5,3f4e8eed213cbe42cdda173dc64c5c54"
+                ],
+                [
+                    {
+                        "id": "test_cl1",
+                        "sample": "test",
+                        "centroid": "NODE_3_length_5473_cov_3.280771",
+                        "cluster_id": "cl1",
+                        "cluster_size": 0,
+                        "external_reference": false,
+                        "taxid": "0"
+                    },
+                    "test_cl1_centroid.fa:md5,fc2f1b3bf2cdb86e27dab8012e00c3cf",
+                    "test_cl1_members.fa:md5,68b329da9893e34099c7d8ad5cb9c940"
+                ],
+                [
+                    {
+                        "id": "test_cl2",
+                        "sample": "test",
+                        "centroid": "NODE_4_length_458_cov_1.051360",
+                        "cluster_id": "cl2",
+                        "cluster_size": 0,
+                        "external_reference": false,
+                        "taxid": "0"
+                    },
+                    "test_cl2_centroid.fa:md5,a74664ba4f042979b5023706212d54f1",
+                    "test_cl2_members.fa:md5,68b329da9893e34099c7d8ad5cb9c940"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "sample": "test"
+                    },
+                    "test.clusters.tsv:md5,e5069c8f0e97a13d01a68f7db595e160"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "sample": "test"
+                    },
+                    "test.summary_mqc.tsv:md5,99baa0c2af938403d3f8c852dafdf634"
+                ]
+            ],
+            []
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.3"
+        },
+        "timestamp": "2026-04-11T09:19:42.555467"
+    },
+    "sarscov2 - contigs - mmseqs-linclust": {
+        "content": [
+            [
+                14
+            ],
+            [
+                [
+                    {
+                        "id": "test_cl0",
+                        "sample": "test",
+                        "centroid": "NODE_2_length_8774_cov_178.827802",
+                        "cluster_id": "cl0",
+                        "cluster_size": 0,
+                        "external_reference": false,
+                        "taxid": null
+                    },
+                    "test_cl0_centroid.fa:md5,890a77b2139d0413506a1ca4edbf9a82",
+                    "test_cl0_members.fa:md5,68b329da9893e34099c7d8ad5cb9c940"
+                ],
+                [
+                    {
+                        "id": "test_cl1",
+                        "sample": "test",
+                        "centroid": "NODE_3_length_5473_cov_3.280771",
+                        "cluster_id": "cl1",
+                        "cluster_size": 0,
+                        "external_reference": false,
+                        "taxid": null
+                    },
+                    "test_cl1_centroid.fa:md5,fc2f1b3bf2cdb86e27dab8012e00c3cf",
+                    "test_cl1_members.fa:md5,68b329da9893e34099c7d8ad5cb9c940"
+                ],
+                [
+                    {
+                        "id": "test_cl2",
+                        "sample": "test",
+                        "centroid": "NODE_4_length_458_cov_1.051360",
+                        "cluster_id": "cl2",
+                        "cluster_size": 0,
+                        "external_reference": false,
+                        "taxid": null
+                    },
+                    "test_cl2_centroid.fa:md5,a74664ba4f042979b5023706212d54f1",
+                    "test_cl2_members.fa:md5,68b329da9893e34099c7d8ad5cb9c940"
+                ],
+                [
+                    {
+                        "id": "test_cl3",
+                        "sample": "test",
+                        "centroid": "NODE_5_length_446_cov_1.078370",
+                        "cluster_id": "cl3",
+                        "cluster_size": 0,
+                        "external_reference": false,
+                        "taxid": null
+                    },
+                    "test_cl3_centroid.fa:md5,24c57abcaff9df76356edb5fbbd99feb",
+                    "test_cl3_members.fa:md5,68b329da9893e34099c7d8ad5cb9c940"
+                ],
+                [
+                    {
+                        "id": "test_cl4",
+                        "sample": "test",
+                        "centroid": "USA-FL-CDC-ASC210334485-2021",
+                        "cluster_id": "cl4",
+                        "cluster_size": 1,
+                        "external_reference": true,
+                        "taxid": null
+                    },
+                    "test_cl4_centroid.fa:md5,d7375062517cdd3e302ce7fe9e50d49b",
+                    "test_cl4_members.fa:md5,a783382b363cd34381652d926f67475c"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "sample": "test"
+                    },
+                    "test.clusters.tsv:md5,5d5491e8737f4280caf01f17bbb76c48"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "sample": "test"
+                    },
+                    "test.summary_mqc.tsv:md5,da680e9fd724b9264d5478fd06598cd8"
+                ]
+            ],
+            []
+        ],
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.10.0"
+        },
+        "timestamp": "2026-02-10T17:16:43.018386467"
+    },
+    "sarscov2 - contigs + fastq - vrhyme": {
+        "content": [
+            [],
+            [],
+            [],
+            [],
+            []
+        ],
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.10.0"
+        },
+        "timestamp": "2026-02-10T17:18:57.405178542"
+    },
+    "sarscov2 - contigs - mash": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test",
+                        "sample": "test",
+                        "ntaxa": 1
+                    },
+                    "test_mash.tsv:md5,a7c1924165cf78506afe4dbeebb674bb"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test_cl0",
+                        "sample": "test",
+                        "centroid": "AUS-VIC7772-2020",
+                        "cluster_id": "cl0",
+                        "cluster_size": 3,
+                        "external_reference": true,
+                        "taxid": null
+                    },
+                    "test_cl0_centroid.fa:md5,94444237ba23f6f2fadc8b411bc11622",
+                    "test_cl0_members.fa:md5,3f4e8eed213cbe42cdda173dc64c5c54"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "sample": "test"
+                    },
+                    "test.clusters.tsv:md5,2ccb7d7754ed5a2a7482addc1e2cc337"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "sample": "test"
+                    },
+                    "test.summary_mqc.tsv:md5,e2b7aa1eaada73c8d2d229eb127841fa"
+                ]
+            ],
+            []
+        ],
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.10.0"
+        },
+        "timestamp": "2026-02-10T17:20:14.020277308"
+    }
+}

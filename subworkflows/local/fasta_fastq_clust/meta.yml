@@ -1,0 +1,46 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: fasta_fastq_clust
+description: Cluster FASTA sequences using multiple clustering algorithms (VSsearch, CD-HIT, MMseqs2, VRhyme, or MASH-based network clustering)
+keywords:
+  - clustering
+  - sequences
+  - vsearch
+  - cdhit
+  - mmseqs2
+  - vrhyme
+  - mash
+  - network clustering
+  - similarity
+components:
+  - cdhit/cdhitest
+  - vsearch/cluster
+  - mmseqs/createdb
+  - mmseqs/linclust
+  - mmseqs/cluster
+  - mmseqs/createtsv
+  - vrhyme/vrhyme
+  - mash/dist
+  - clusty
+input:
+  - ch_fasta_fastq:
+      description: |
+        Input sequences and reads for clustering
+        Structure: [ val(meta), path(fasta), path(fastq) ]
+  - cluster_method:
+      type: string
+      description: |
+        Clustering algorithm to use
+      enum: ["vsearch", "cdhitest", "mmseqs-linclust", "mmseqs-cluster", "vrhyme", "mash"]
+output:
+  - clusters:
+      description: |
+        Clustering results in format specific to the chosen algorithm
+        Structure: [ val(meta), path(clusters) ]
+  - versions:
+      description: |
+        Files containing software versions
+        Structure: [ path(versions.yml) ]
+authors:
+  - "@Joon-Klaps"
+maintainers:
+  - "@Joon-Klaps"

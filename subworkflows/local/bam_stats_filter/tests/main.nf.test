@@ -1,0 +1,157 @@
+nextflow_workflow {
+
+    name "Test Workflow BAM_STATS_FILTER"
+    script "../main.nf"
+    workflow "BAM_STATS_FILTER"
+
+    tag "subworkflows"
+    tag "subworkflows_local"
+    tag "subworkflows/bam_stats_filter"
+    tag "bam_stats_filter"
+    tag "samtools/index"
+    tag "samtools/stats"
+    tag "samtools/view"
+
+    // The read counts below are asserted rather than snapshotted on purpose: they are what
+    // shows the filter did anything, and a snapshot of them could be refreshed away with
+    // --update-snapshot without anyone noticing.
+    //
+    // The two datasets are picked for what they hold. The homo_sapiens BAM has 5644 reads
+    // including one pair with both ends unmapped; the sarscov2 BAM has 200 reads of which 3
+    // are unmapped but have a mapped mate. Together they pin `-G 12`: the first pair is
+    // dropped, the second set is kept, which is what separates `-G 12` from `-F 4`.
+
+    test("homo_sapiens - drops the read pair with both ends unmapped") {
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [id:'test', sample:'test', previous_step:'it1'],
+                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/illumina/bam/test.paired_end.sorted.bam', checkIfExists: true)
+                ])
+                input[1] = Channel.of([
+                    [id:'test', sample:'test', previous_step:'it1'],
+                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/genome/genome.fasta', checkIfExists: true)
+                ])
+                input[2] = 1
+                input[3] = false
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(
+                    bam(workflow.out.bam_pass[0][1]).getStatistics(),
+                    bam(workflow.out.bam_pass[0][1]).getReadsMD5(),
+                    workflow.out.stats,
+                    workflow.out.bam_fail_mqc,
+                ).match() }
+            )
+        }
+    }
+
+    test("homo_sapiens - keep_unmapped carries the full alignment through") {
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [id:'test', sample:'test', previous_step:'it1'],
+                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/illumina/bam/test.paired_end.sorted.bam', checkIfExists: true)
+                ])
+                input[1] = Channel.of([
+                    [id:'test', sample:'test', previous_step:'it1'],
+                    file(params.modules_testdata_base_path + 'genomics/homo_sapiens/genome/genome.fasta', checkIfExists: true)
+                ])
+                input[2] = 1
+                input[3] = true
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                // No BAM is produced here: with keep_unmapped set, bam_pass is not a process
+                // output but the input channel item passed straight through, so it still points
+                // at the remote test file. Only SAMTOOLS_INDEX and SAMTOOLS_STATS is ran
+                { assert workflow.trace.succeeded().size() == 2 },
+                { assert workflow.out.bam_pass[0][1].endsWith('test.paired_end.sorted.bam') },
+                { assert snapshot(
+                    workflow.out.stats,
+                    workflow.out.bam_fail_mqc,
+                ).match() }
+            )
+        }
+    }
+
+    test("sarscov2 - keeps mapped reads whose mate did not map") {
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [id:'test', sample:'test', previous_step:'it1'],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/bam/test.paired_end.sorted.bam', checkIfExists: true)
+                ])
+                input[1] = Channel.of([
+                    [id:'test', sample:'test', previous_step:'it1'],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.fasta', checkIfExists: true)
+                ])
+                input[2] = 1
+                input[3] = false
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                // all 200 reads survive: the 3 unmapped ones have a mapped mate, so the pair
+                // stays whole. `-F 4` would leave 197 here and orphan those mates.
+                { assert snapshot(
+                    bam(workflow.out.bam_pass[0][1]).getStatistics(),
+                    bam(workflow.out.bam_pass[0][1]).getReadsMD5(),
+                    workflow.out.stats,
+                    workflow.out.bam_fail_mqc,
+                ).match() }
+            )
+        }
+    }
+
+    test("sarscov2 - fails the minimum mapped reads threshold") {
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [id:'test', sample:'test', previous_step:'it1'],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/bam/test.paired_end.sorted.bam', checkIfExists: true)
+                ])
+                input[1] = Channel.of([
+                    [id:'test', sample:'test', previous_step:'it1'],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.fasta', checkIfExists: true)
+                ])
+                input[2] = 100000
+                input[3] = false
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                // nothing clears the threshold, so bam_pass is empty and there is no BAM to read.
+                // bam_fail_mqc carries the MultiQC table instead, which is empty in the tests above.
+                { assert workflow.out.bam_pass.isEmpty() },
+                { assert snapshot(
+                    workflow.out.stats,
+                    workflow.out.bam_fail_mqc,
+                ).match() }
+            )
+        }
+    }
+}

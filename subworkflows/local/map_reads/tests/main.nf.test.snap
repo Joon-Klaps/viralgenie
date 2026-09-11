@@ -1,0 +1,148 @@
+{
+    "sarscov2 - bwamem2 - keep_unmapped keeps them": {
+        "content": [
+            {
+                "maxReadLength": 151,
+                "minReadLength": 30,
+                "meanReadLength": 134,
+                "maxQuality": 60,
+                "minQuality": 0,
+                "meanQuality": 59,
+                "readCount": 207,
+                "duplicateReadCount": 0
+            },
+            "fbaf147cbbae7f39adee65188c851",
+            [
+                [
+                    {
+                        "id": "test",
+                        "sample": "test",
+                        "single_end": false
+                    },
+                    "/nf-core/test-datasets/modules/data/genomics/sarscov2/genome/transcriptome.fasta"
+                ]
+            ],
+            [
+                
+            ]
+        ],
+        "timestamp": "2026-08-31T15:43:42.544029",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "25.10.4"
+        }
+    },
+    "sarscov2 - bowtie2 - keep_unmapped keeps them": {
+        "content": [
+            {
+                "maxReadLength": 151,
+                "minReadLength": 53,
+                "meanReadLength": 138,
+                "maxQuality": 42,
+                "minQuality": 0,
+                "meanQuality": 39,
+                "readCount": 200,
+                "duplicateReadCount": 0
+            },
+            "4a5809cf1dc80711062fea062764f4b9",
+            [
+                [
+                    {
+                        "id": "test",
+                        "sample": "test",
+                        "single_end": false
+                    },
+                    "/nf-core/test-datasets/modules/data/genomics/sarscov2/genome/transcriptome.fasta"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "sample": "test",
+                        "single_end": false
+                    },
+                    "test_null.bowtie2.log:md5,7569bc0aa37bca966eb59b71bd273299"
+                ]
+            ]
+        ],
+        "timestamp": "2026-09-01T16:35:06.787154",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "25.10.4"
+        }
+    },
+    "sarscov2 - bwamem2 - drops the unmapped reads": {
+        "content": [
+            {
+                "maxReadLength": 151,
+                "minReadLength": 30,
+                "meanReadLength": 134,
+                "maxQuality": 60,
+                "minQuality": 60,
+                "meanQuality": 60,
+                "readCount": 206,
+                "duplicateReadCount": 0
+            },
+            "d5e6b982034bf25df3aa791647411c7f",
+            [
+                [
+                    {
+                        "id": "test",
+                        "sample": "test",
+                        "single_end": false
+                    },
+                    "/nf-core/test-datasets/modules/data/genomics/sarscov2/genome/transcriptome.fasta"
+                ]
+            ],
+            [
+                
+            ]
+        ],
+        "timestamp": "2026-08-31T15:43:24.888811",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "25.10.4"
+        }
+    },
+    "sarscov2 - bowtie2 - drops the unmapped reads": {
+        "content": [
+            {
+                "maxReadLength": 151,
+                "minReadLength": 53,
+                "meanReadLength": 138,
+                "maxQuality": 42,
+                "minQuality": 23,
+                "meanQuality": 41,
+                "readCount": 190,
+                "duplicateReadCount": 0
+            },
+            "2526a2a5d7a8983c4494fd6912db7676",
+            [
+                [
+                    {
+                        "id": "test",
+                        "sample": "test",
+                        "single_end": false
+                    },
+                    "/nf-core/test-datasets/modules/data/genomics/sarscov2/genome/transcriptome.fasta"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "sample": "test",
+                        "single_end": false
+                    },
+                    "test_null.bowtie2.log:md5,7569bc0aa37bca966eb59b71bd273299"
+                ]
+            ]
+        ],
+        "timestamp": "2026-09-01T16:34:56.779746",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "25.10.4"
+        }
+    }
+}

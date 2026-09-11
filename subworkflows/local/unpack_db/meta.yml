@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: unpack_db
+description: Decompress and extract database files from various archive formats (tar.gz, .gz, .xz)
+keywords:
+  - decompression
+  - extraction
+  - database
+  - tar
+  - gzip
+  - xz
+  - archive
+components:
+  - untar
+  - gunzip
+  - xz/decompress
+input:
+  - db_in:
+      description: |
+        Compressed database files to be unpacked
+        Structure: [ val(meta), path(db) ]
+output:
+  - db:
+      description: |
+        Decompressed and extracted database files
+        Structure: [ val(meta), path(db) ]
+  - versions:
+      description: |
+        Files containing software versions
+        Structure: [ path(versions.yml) ]
+authors:
+  - "@Joon-Klaps"
+maintainers:
+  - "@Joon-Klaps"

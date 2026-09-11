@@ -1,0 +1,41 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: bam_variants_bcftools
+description: Call variants from BAM files using BCFtools with normalization and filtering
+keywords:
+  - variant calling
+  - bcftools
+  - mpileup
+  - normalization
+  - filtering
+  - vcf
+  - bam
+components:
+  - bcftools/mpileup
+  - bcftools/norm
+  - bcftools/filter
+input:
+  - ch_bam_fasta:
+      description: |
+        The input channel containing BAM files with their corresponding reference sequences
+        Structure: [ val(meta), path(bam), path(fasta) ]
+  - save_stats:
+      type: boolean
+      description: |
+        Whether to save variant statistics (mpileup statistics)
+output:
+  - vcf:
+      description: |
+        Normalized VCF files with variant calls (multi-allelic sites split)
+        Structure: [ val(meta), path(vcf) ]
+  - vcf_filter:
+      description: |
+        Filtered VCF files with high-quality variant calls
+        Structure: [ val(meta), path(vcf) ]
+  - versions:
+      description: |
+        Files containing software versions
+        Structure: [ path(versions.yml) ]
+authors:
+  - "@Joon-Klaps"
+maintainers:
+  - "@Joon-Klaps"

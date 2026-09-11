@@ -2,32 +2,62 @@ nextflow_pipeline {
 
     name "Test pipeline"
     script "../main.nf"
-    tag "pipeline"
+    tag "default"
 
-    test("-profile test") {
+    def scenarios = [
+        [
+            name: "-profile test",
+            tag: "default",
+            scope: "files",
+            bam: true,
+            vcf: true,
+            overview: true,
+        ],
+        // Variant caller matrix: same `test` profile, different params.
+        // Mirrors the combinations used in .github/workflows/ci.yml.
+        [
+            name: "-profile test - variant_caller bcftools - consensus_caller bcftools",
+            tag: "default",
+            scope: "versions",
+            params: [
+                variant_caller: "bcftools",
+                consensus_caller: "bcftools",
+                skip_assembly: true, // running out of memory on CI
+            ],
+        ],
+        [
+            name: "-profile test - variant_caller ivar - consensus_caller bcftools",
+            tag: "default",
+            scope: "versions",
+            params: [
+                variant_caller: "ivar",
+                consensus_caller: "bcftools",
+                skip_assembly: true,
+            ],
+        ],
+        [
+            name: "-profile test - variant_caller ivar - consensus_caller ivar",
+            tag: "default",
+            scope: "versions",
+            params: [
+                variant_caller: "ivar",
+                consensus_caller: "ivar",
+                skip_assembly: true,
+            ],
+        ],
+        [
+            name: "-profile test - use_host_filtered_reads",
+            tag: "host_filtered",
+            scope: "files",
+            bam: true,
+            vcf: true,
+            overview: true,
+            params: [
+                use_host_filtered_reads: true,
+                skip_assembly: true, // running out of memory on CI
+            ],
+        ],
+    ]
 
-        when {
-            params {
-                outdir = "$outputDir"
-            }
-        }
-
-        then {
-            // stable_path: All files + folders in ${params.outdir}/ with a stable path (including file name)
-            def stable_path = getAllFilesFromDir(params.outdir, relative: true, includeDir: true, ignore: ['pipeline_info/*.{html,json,txt}'])
-            // stable_content: All files in ${params.outdir}/ with stable content
-            def stable_content = getAllFilesFromDir(params.outdir, ignoreFile: 'tests/.nftignore')
-            assert workflow.success
-            assertAll(
-                { assert snapshot(
-                    // pipeline versions.yml file for multiqc from which Nextflow version is removed because we test pipelines on multiple Nextflow versions
-                    removeNextflowVersion("$outputDir/pipeline_info/nf_core_viralmetagenome_software_mqc_versions.yml"),
-                    // All stable path name, with a relative path
-                    stable_path,
-                    // All files with stable contents
-                    stable_content
-                ).match() }
-            )
-        }
-    }
+    scenarios.each { scenario -> test(scenario.name, UTILS.getTest(scenario)) }
 }

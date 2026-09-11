@@ -1,0 +1,75 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: preprocessing_illumina
+description: Comprehensive Illumina read preprocessing including quality control, trimming, UMI handling, deduplication, decomplexification, and host removal
+keywords:
+  - preprocessing
+  - illumina
+  - quality control
+  - trimming
+  - umi
+  - deduplication
+  - decomplexification
+  - host removal
+  - fastqc
+  - trimmomatic
+  - fastp
+  - bbduk
+  - prinseq
+  - humid
+  - kraken2
+components:
+  - prinseqplusplus
+  - humid
+  - bbmap/bbduk
+  - cat/fastq
+  - fastq_fastqc_umitools_trimmomatic
+  - fastq_fastqc_umitools_fastp
+  - fastq_kraken_host_remove
+  - utils_nfcore_viralmetagenome_pipeline
+  - lowreadsamplestomultiqc
+input:
+  - ch_reads:
+      description: |
+        Input FASTQ files for preprocessing
+        Structure: [ val(meta), path(reads) ]
+  - ch_kraken2_host_db:
+      description: |
+        Kraken2 database for host sequence removal
+        Structure: [ path(kraken2_host_db) ]
+  - ch_adapter_fasta:
+      description: |
+        Adapter sequences for trimming (used with fastp)
+        Structure: [ path(adapter_fasta) ]
+  - ch_contaminants:
+      description: |
+        Contaminant sequences for decomplexification
+        Structure: [ path(contaminants_fasta) ]
+output:
+  - reads:
+      description: |
+        Fully preprocessed reads after all filtering steps
+        Structure: [ val(meta), path(reads) ]
+  - reads_decomplexified:
+      description: |
+        Reads after decomplexification but before host removal
+        Structure: [ val(meta), path(reads) ]
+  - reads_trimmed:
+      description: |
+        Reads after trimming and deduplication but before decomplexification
+        Structure: [ val(meta), path(reads) ]
+  - mqc:
+      description: |
+        MultiQC files from all preprocessing steps
+        Structure: [ val(meta), path(mqc) ]
+  - low_reads_mqc:
+      description: |
+        MultiQC-compatible file reporting samples with insufficient read counts
+        Structure: [ path(mqc) ]
+  - versions:
+      description: |
+        Files containing software versions
+        Structure: [ path(versions.yml) ]
+authors:
+  - "@Joon-Klaps"
+maintainers:
+  - "@Joon-Klaps"

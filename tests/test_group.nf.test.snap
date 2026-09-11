@@ -1,0 +1,747 @@
+{
+    "-profile test_group": {
+        "content": [
+            258,
+            {
+                "BBMAP_BBNORM": {
+                    "bbmap": 39.18
+                },
+                "BCFTOOLS_CONSENSUS": {
+                    "bcftools": "1.23.1"
+                },
+                "BCFTOOLS_FILTER": {
+                    "bcftools": "1.23.1"
+                },
+                "BCFTOOLS_SORT": {
+                    "bcftools": "1.23.1"
+                },
+                "BCFTOOLS_STATS": {
+                    "bcftools": "1.23.1"
+                },
+                "BEDTOOLS_MASKFASTA": {
+                    "bedtools": "2.31.1"
+                },
+                "BEDTOOLS_MERGE": {
+                    "bedtools": "2.31.1"
+                },
+                "BLASTN_QC": {
+                    "blastn": "2.17.0+"
+                },
+                "BLAST_BLASTN": {
+                    "blastn": "2.17.0+"
+                },
+                "BLAST_FILTER": {
+                    "biopython": 1.85,
+                    "pandas": "2.2.3",
+                    "python": "3.9.21"
+                },
+                "BLAST_MAKEBLASTDB": {
+                    "makeblastdb": "2.17.0+"
+                },
+                "BWAMEM2_INDEX": {
+                    "bwamem2": "2.2.1"
+                },
+                "BWAMEM2_MEM": {
+                    "bwamem2": "2.2.1",
+                    "samtools": "1.22.1"
+                },
+                "CAT_ASSEMBLERS": {
+                    "coreutils": 9.4,
+                    "find": "4.6.0",
+                    "pigz": 2.8
+                },
+                "CAT_CAT_READS": {
+                    "coreutils": 9.4,
+                    "find": "4.6.0",
+                    "pigz": 2.8
+                },
+                "CAT_CLUSTER": {
+                    "coreutils": 9.4,
+                    "find": "4.6.0",
+                    "pigz": 2.8
+                },
+                "CAT_FASTQ": {
+                    "cat": 9.5
+                },
+                "CDHIT_CDHITEST": {
+                    "cdhit": "4.8.1"
+                },
+                "CONTIG_IDXSTATS": {
+                    "samtools": 1.24
+                },
+                "CONTIG_INDEX": {
+                    "samtools": 1.24
+                },
+                "CUSTOM_MPILEUP": {
+                    "numpy": "1.26.4",
+                    "pysam": "0.22.1",
+                    "pysamstats": "1.1.2"
+                },
+                "EXTRACT_CLUSTER": {
+                    "biopython": 1.85,
+                    "pandas": "2.2.3",
+                    "python": "3.9.21"
+                },
+                "EXTRACT_PRECLUSTER": {
+                    "biopython": 1.78,
+                    "python": "3.9.1"
+                },
+                "FASTP": {
+                    "fastp": "1.3.6"
+                },
+                "FASTQC_HOST": {
+                    "fastqc": "0.12.1"
+                },
+                "FASTQC_RAW": {
+                    "fastqc": "0.12.1"
+                },
+                "FASTQC_TRIM": {
+                    "fastqc": "0.12.1"
+                },
+                "GUNZIP_DB": {
+                    "gunzip": 1.13
+                },
+                "HTSLIB_BGZIPTABIX": {
+                    "htslib": 1.24,
+                    "xz": "5.8.3"
+                },
+                "IVAR_CONSENSUS": {
+                    "ivar": "1.4.4"
+                },
+                "IVAR_CONTIG_CONSENSUS": {
+                    "ivar": "1.4.4"
+                },
+                "IVAR_VARIANTS": {
+                    "ivar": "1.4.4",
+                    "samtools": 1.21
+                },
+                "IVAR_VARIANTS_TO_VCF": {
+                    "python": "3.9.12"
+                },
+                "KAIJU_CONTIG": {
+                    "kaiju": "1.10.0"
+                },
+                "KRAKEN2_CONTIG": {
+                    "kraken2": "2.1.6",
+                    "pigz": 2.8
+                },
+                "KRAKEN2_HOST_REMOVE": {
+                    "kraken2": "2.1.6",
+                    "pigz": 2.8
+                },
+                "MAKE_BED_MASK": {
+                    "python": "3.9.5",
+                    "samtools": 1.14
+                },
+                "MASH_SCREEN": {
+                    "mash": 2.3
+                },
+                "MASH_SKETCH": {
+                    "mash": 2.3
+                },
+                "MEGAHIT": {
+                    "megahit": "1.2.9"
+                },
+                "MINIMAP2_CONTIG_ALIGN": {
+                    "minimap2": "2.30-r1287"
+                },
+                "MINIMAP2_CONTIG_INDEX": {
+                    "minimap2": "2.30-r1287"
+                },
+                "MMSEQS_CREATEANNOTATIONDB": {
+                    "mmseqs": "18.8cc5c"
+                },
+                "MMSEQS_EASYSEARCH": {
+                    "mmseqs": "18.8cc5c"
+                },
+                "MOSDEPTH": {
+                    "gzip": 1.14,
+                    "mosdepth": "0.3.14"
+                },
+                "PICARD_COLLECTMULTIPLEMETRICS": {
+                    "picard": "3.5.0"
+                },
+                "PRINSEQ_CONTIG": {
+                    "prinseqplusplus": 1.2
+                },
+                "PRINSEQ_READS": {
+                    "prinseqplusplus": 1.2
+                },
+                "PROKKA": {
+                    "prokka": "1.15.6"
+                },
+                "QUAST": {
+                    "quast": "5.3.0"
+                },
+                "QUAST_QC": {
+                    "quast": "5.3.0"
+                },
+                "RENAME_FASTA_HEADER_CALLED_CONSENSUS": {
+                    "sed": 4.7
+                },
+                "RENAME_FASTA_HEADER_CONTIG_CONSENSUS": {
+                    "sed": 4.7
+                },
+                "RENAME_FASTA_HEADER_SINGLETON": {
+                    "sed": 4.7
+                },
+                "SAMTOOLS_FAIDX": {
+                    "samtools": 1.24
+                },
+                "SAMTOOLS_FLAGSTAT": {
+                    "samtools": 1.24
+                },
+                "SAMTOOLS_IDXSTATS": {
+                    "samtools": 1.24
+                },
+                "SAMTOOLS_INDEX": {
+                    "samtools": 1.24
+                },
+                "SAMTOOLS_STATS": {
+                    "samtools": 1.24
+                },
+                "SELECT_REFERENCE": {
+                    "biopython": 1.85,
+                    "pandas": "2.2.3",
+                    "python": "3.9.21"
+                },
+                "UNTAR_DB": {
+                    "untar": 1.34
+                },
+                "Workflow": {
+                    "nf-core/viralmetagenome": "v1.2.1dev"
+                }
+            },
+            [
+                "multiqc/multiqc_data/bcftools-stats-subtypes.txt",
+                "multiqc/multiqc_data/bcftools_stats_indel-lengths.txt",
+                "multiqc/multiqc_data/bcftools_stats_vqc_Count_Indels.txt",
+                "multiqc/multiqc_data/bcftools_stats_vqc_Count_SNP.txt",
+                "multiqc/multiqc_data/bcftools_stats_vqc_Count_Transitions.txt",
+                "multiqc/multiqc_data/bcftools_stats_vqc_Count_Transversions.txt",
+                "multiqc/multiqc_data/fastp-insert-size-plot.txt",
+                "multiqc/multiqc_data/fastp-seq-content-gc-plot_Read_1_After_filtering.txt",
+                "multiqc/multiqc_data/fastp-seq-content-gc-plot_Read_1_Before_filtering.txt",
+                "multiqc/multiqc_data/fastp-seq-content-gc-plot_Read_2_After_filtering.txt",
+                "multiqc/multiqc_data/fastp-seq-content-gc-plot_Read_2_Before_filtering.txt",
+                "multiqc/multiqc_data/fastp-seq-content-n-plot_Read_1_After_filtering.txt",
+                "multiqc/multiqc_data/fastp-seq-content-n-plot_Read_1_Before_filtering.txt",
+                "multiqc/multiqc_data/fastp-seq-content-n-plot_Read_2_After_filtering.txt",
+                "multiqc/multiqc_data/fastp-seq-content-n-plot_Read_2_Before_filtering.txt",
+                "multiqc/multiqc_data/fastp-seq-quality-plot_Read_1_After_filtering.txt",
+                "multiqc/multiqc_data/fastp-seq-quality-plot_Read_1_Before_filtering.txt",
+                "multiqc/multiqc_data/fastp-seq-quality-plot_Read_2_After_filtering.txt",
+                "multiqc/multiqc_data/fastp-seq-quality-plot_Read_2_Before_filtering.txt",
+                "multiqc/multiqc_data/fastp_filtered_reads_plot.txt",
+                "multiqc/multiqc_data/fastqc-1-status-check-heatmap.txt",
+                "multiqc/multiqc_data/fastqc-1_overrepresented_sequences_plot.txt",
+                "multiqc/multiqc_data/fastqc-1_per_base_n_content_plot.txt",
+                "multiqc/multiqc_data/fastqc-1_per_base_sequence_quality_plot.txt",
+                "multiqc/multiqc_data/fastqc-1_per_sequence_gc_content_plot_Counts.txt",
+                "multiqc/multiqc_data/fastqc-1_per_sequence_gc_content_plot_Percentages.txt",
+                "multiqc/multiqc_data/fastqc-1_per_sequence_quality_scores_plot.txt",
+                "multiqc/multiqc_data/fastqc-1_sequence_counts_plot.txt",
+                "multiqc/multiqc_data/fastqc-1_sequence_duplication_levels_plot.txt",
+                "multiqc/multiqc_data/fastqc-1_top_overrepresented_sequences_table.txt",
+                "multiqc/multiqc_data/fastqc-2-status-check-heatmap.txt",
+                "multiqc/multiqc_data/fastqc-2_overrepresented_sequences_plot.txt",
+                "multiqc/multiqc_data/fastqc-2_per_base_n_content_plot.txt",
+                "multiqc/multiqc_data/fastqc-2_per_base_sequence_quality_plot.txt",
+                "multiqc/multiqc_data/fastqc-2_per_sequence_gc_content_plot_Counts.txt",
+                "multiqc/multiqc_data/fastqc-2_per_sequence_gc_content_plot_Percentages.txt",
+                "multiqc/multiqc_data/fastqc-2_per_sequence_quality_scores_plot.txt",
+                "multiqc/multiqc_data/fastqc-2_sequence_counts_plot.txt",
+                "multiqc/multiqc_data/fastqc-2_sequence_duplication_levels_plot.txt",
+                "multiqc/multiqc_data/fastqc-2_top_overrepresented_sequences_table.txt",
+                "multiqc/multiqc_data/fastqc-status-check-heatmap.txt",
+                "multiqc/multiqc_data/fastqc_overrepresented_sequences_plot.txt",
+                "multiqc/multiqc_data/fastqc_per_base_n_content_plot.txt",
+                "multiqc/multiqc_data/fastqc_per_base_sequence_quality_plot.txt",
+                "multiqc/multiqc_data/fastqc_per_sequence_gc_content_plot_Counts.txt",
+                "multiqc/multiqc_data/fastqc_per_sequence_gc_content_plot_Percentages.txt",
+                "multiqc/multiqc_data/fastqc_per_sequence_quality_scores_plot.txt",
+                "multiqc/multiqc_data/fastqc_sequence_counts_plot.txt",
+                "multiqc/multiqc_data/fastqc_sequence_duplication_levels_plot.txt",
+                "multiqc/multiqc_data/fastqc_sequence_length_distribution_plot.txt",
+                "multiqc/multiqc_data/fastqc_top_overrepresented_sequences_table.txt",
+                "multiqc/multiqc_data/kraken-top-n-plot_Class.txt",
+                "multiqc/multiqc_data/kraken-top-n-plot_Domain.txt",
+                "multiqc/multiqc_data/kraken-top-n-plot_Family.txt",
+                "multiqc/multiqc_data/kraken-top-n-plot_Genus.txt",
+                "multiqc/multiqc_data/kraken-top-n-plot_Order.txt",
+                "multiqc/multiqc_data/kraken-top-n-plot_Phylum.txt",
+                "multiqc/multiqc_data/kraken-top-n-plot_Unclassified.txt",
+                "multiqc/multiqc_data/mosdepth-coverage-per-contig-single.txt",
+                "multiqc/multiqc_data/mosdepth-cumcoverage-dist-id.txt",
+                "multiqc/multiqc_data/mosdepth_cov_dist.yaml",
+                "multiqc/multiqc_data/mosdepth_cumcov_dist.yaml",
+                "multiqc/multiqc_data/mosdepth_perchrom.yaml",
+                "multiqc/multiqc_data/multiqc_bcftools_stats.yaml",
+                "multiqc/multiqc_data/multiqc_citations.txt",
+                "multiqc/multiqc_data/multiqc_data.json",
+                "multiqc/multiqc_data/multiqc_fastp.yaml",
+                "multiqc/multiqc_data/multiqc_fastqc.yaml",
+                "multiqc/multiqc_data/multiqc_fastqc_1.yaml",
+                "multiqc/multiqc_data/multiqc_fastqc_2.yaml",
+                "multiqc/multiqc_data/multiqc_general_stats.txt",
+                "multiqc/multiqc_data/multiqc_ivar_variants.yaml",
+                "multiqc/multiqc_data/multiqc_kraken.yaml",
+                "multiqc/multiqc_data/multiqc_quast_quast_megahit.yaml",
+                "multiqc/multiqc_data/multiqc_samtools_flagstat.yaml",
+                "multiqc/multiqc_data/multiqc_samtools_stats.yaml",
+                "multiqc/multiqc_data/multiqc_samtools_stats_1.yaml",
+                "multiqc/multiqc_data/multiqc_software_versions.txt",
+                "multiqc/multiqc_data/multiqc_sources.txt",
+                "multiqc/multiqc_data/quast_num_contigs.txt",
+                "multiqc/multiqc_data/quast_table.txt",
+                "multiqc/multiqc_data/samtools-flagstat-dp_Percentage_of_total.txt",
+                "multiqc/multiqc_data/samtools-flagstat-dp_Read_counts.txt",
+                "multiqc/multiqc_data/samtools-stats-dp.txt",
+                "multiqc/multiqc_data/samtools_alignment_plot.txt",
+                "multiqc/multiqc_data/summary_clusters_info.txt",
+                "multiqc/multiqc_report.html"
+            ],
+            [
+                "bcftools-stats-subtypes.txt:md5,eac329eafb1711ffb52f0a21774be33f",
+                "bcftools_stats_indel-lengths.txt:md5,90ab6c4b9216d9ae3fe9304a915a66a8",
+                "bcftools_stats_vqc_Count_Indels.txt:md5,618fca31600ff9c57b5c2e544bbdc75a",
+                "bcftools_stats_vqc_Count_SNP.txt:md5,eb50640a5294afa8236e318cb4bc50fd",
+                "bcftools_stats_vqc_Count_Transitions.txt:md5,a658a6d5597f6bc079ca73168c9a1a9a",
+                "bcftools_stats_vqc_Count_Transversions.txt:md5,858bc39e6959eba78b6465225194f520",
+                "fastp-insert-size-plot.txt:md5,a00563d66671f1184abd39a7733c00fb",
+                "fastp-seq-content-gc-plot_Read_1_After_filtering.txt:md5,c66a40670c5e53105dbdc04e13f8f87c",
+                "fastp-seq-content-gc-plot_Read_1_Before_filtering.txt:md5,b1d2900033deb3dcc8d4008c796f7e0b",
+                "fastp-seq-content-gc-plot_Read_2_After_filtering.txt:md5,632c7b6ec71d9af9204be40776d1cf17",
+                "fastp-seq-content-gc-plot_Read_2_Before_filtering.txt:md5,b36befbc2b06e2dc855d07a8a3d9a6a4",
+                "fastp-seq-content-n-plot_Read_1_After_filtering.txt:md5,438ca8ee67622969d7f6272e5785f223",
+                "fastp-seq-content-n-plot_Read_1_Before_filtering.txt:md5,438ca8ee67622969d7f6272e5785f223",
+                "fastp-seq-content-n-plot_Read_2_After_filtering.txt:md5,438ca8ee67622969d7f6272e5785f223",
+                "fastp-seq-content-n-plot_Read_2_Before_filtering.txt:md5,438ca8ee67622969d7f6272e5785f223",
+                "fastp-seq-quality-plot_Read_1_After_filtering.txt:md5,0e2e9ff57d7274be766924c6f39799f1",
+                "fastp-seq-quality-plot_Read_1_Before_filtering.txt:md5,4ea9e00c0b23134b1cba1f9529a4a182",
+                "fastp-seq-quality-plot_Read_2_After_filtering.txt:md5,812cfd127f6cdf0eefc9a65187a04a31",
+                "fastp-seq-quality-plot_Read_2_Before_filtering.txt:md5,ac11af4eb2d5cbd62863c025d099c646",
+                "fastp_filtered_reads_plot.txt:md5,ab834e82a790cc9a9ea285acd230b2da",
+                "kraken-top-n-plot_Class.txt:md5,84acaaeb9e36c0c5d18eeae2fde79337",
+                "kraken-top-n-plot_Domain.txt:md5,d5db4f90cbb2ec87cab4ef26a468a372",
+                "kraken-top-n-plot_Family.txt:md5,017076fabbaae74951faf81aa544e90d",
+                "kraken-top-n-plot_Genus.txt:md5,3ca3eba39f4c51d6b59ce8290ee47bbc",
+                "kraken-top-n-plot_Order.txt:md5,50e2250a76ad5cc7ce570368a1ef511a",
+                "kraken-top-n-plot_Phylum.txt:md5,84eba334501203cab76c9455bffb2b13",
+                "kraken-top-n-plot_Unclassified.txt:md5,199235d6b19832c5c4fb6d628cbfd093",
+                "multiqc_bcftools_stats.yaml:md5,e67f536967530a0588e58e8d67ad8577",
+                "multiqc_citations.txt:md5,ca5ee81b05f0cec3ad44e1557f2cddce",
+                "multiqc_fastp.yaml:md5,95eca658fd82fd7a063ff8411c2eafa2",
+                "multiqc_ivar_variants.yaml:md5,8a60ace754429eaaee62a57447c3c319",
+                "multiqc_kraken.yaml:md5,e99428ff4e79a9363d39040f3913329f",
+                "multiqc_quast_quast_megahit.yaml:md5,a2c42eb8ca1a589c1113da11866b54d0",
+                "quast_num_contigs.txt:md5,a228e1623058352a5dbcc2edfd68d528",
+                "quast_table.txt:md5,97f66575bbca4bb4470ccaa39b09b144",
+                "summary_clusters_info.txt:md5,3b5c4181865afae0d84afa6cd601f0aa"
+            ],
+            [
+                "group1",
+                "group2",
+                "sample"
+            ],
+            [
+                "BA2 - (bcftools) number of SNPs",
+                "BA2 - (bcftools) number of indels",
+                "BA2 - (general_stats) mosdepth 100X coverage",
+                "BA2 - (general_stats) mosdepth 10X coverage",
+                "BA2 - (general_stats) mosdepth 1X coverage",
+                "BA2 - (general_stats) mosdepth 200X coverage",
+                "BA2 - (general_stats) mosdepth 50X coverage",
+                "BA2 - (general_stats) mosdepth Max read depth",
+                "BA2 - (general_stats) mosdepth Mean read depth",
+                "BA2 - (general_stats) mosdepth Median read depth",
+                "BA2 - (general_stats) mosdepth Min read depth",
+                "BA2 - (quast) % N's",
+                "BA2 - (samtools Post-dedup) reads mapped %",
+                "BA2 - (samtools Post-dedup) reads mapped (R1+R2)",
+                "BA2 - (samtools Post-dedup) reads unmapped %",
+                "BA2 - (samtools Post-dedup) reads unmapped (R1+R2)",
+                "BA2 - (samtools Raw) reads mapped %",
+                "BA2 - (samtools Raw) reads mapped (R1+R2)",
+                "BA2 - (samtools Raw) reads unmapped %",
+                "BA2 - (samtools Raw) reads unmapped (R1+R2)",
+                "BA2 - Constraint id",
+                "BA2 - consensus length",
+                "Cluster Summary. # Clusters",
+                "Cluster Summary. # Removed clusters",
+                "Cluster Summary. Average cluster size",
+                "Cluster Summary. Number of singletons",
+                "Consensus Count. # Final denovo clusters",
+                "FastQC (post-Host-removal). Avg len",
+                "FastQC (post-Host-removal). Dups",
+                "FastQC (post-Host-removal). Failed",
+                "FastQC (post-Host-removal). GC",
+                "FastQC (post-Host-removal). Median len",
+                "FastQC (post-Host-removal). Seqs (R1,R2)",
+                "Kraken2 (Host-removal). Shewanella",
+                "Kraken2 (Host-removal). Top 5 genus",
+                "Kraken2 (Host-removal). Unclassified",
+                "Quast (Megahit). Assembly Length (Mbp)",
+                "Quast (Megahit). N50 (Kbp)",
+                "SARS-COV-2 (Wuhan-hu-1) - (bcftools) number of SNPs",
+                "SARS-COV-2 (Wuhan-hu-1) - (bcftools) number of indels",
+                "SARS-COV-2 (Wuhan-hu-1) - (general_stats) mosdepth 100X coverage",
+                "SARS-COV-2 (Wuhan-hu-1) - (general_stats) mosdepth 10X coverage",
+                "SARS-COV-2 (Wuhan-hu-1) - (general_stats) mosdepth 1X coverage",
+                "SARS-COV-2 (Wuhan-hu-1) - (general_stats) mosdepth 200X coverage",
+                "SARS-COV-2 (Wuhan-hu-1) - (general_stats) mosdepth 50X coverage",
+                "SARS-COV-2 (Wuhan-hu-1) - (general_stats) mosdepth Max read depth",
+                "SARS-COV-2 (Wuhan-hu-1) - (general_stats) mosdepth Mean read depth",
+                "SARS-COV-2 (Wuhan-hu-1) - (general_stats) mosdepth Median read depth",
+                "SARS-COV-2 (Wuhan-hu-1) - (general_stats) mosdepth Min read depth",
+                "SARS-COV-2 (Wuhan-hu-1) - (quast) % N's",
+                "SARS-COV-2 (Wuhan-hu-1) - (samtools Post-dedup) reads mapped %",
+                "SARS-COV-2 (Wuhan-hu-1) - (samtools Post-dedup) reads mapped (R1+R2)",
+                "SARS-COV-2 (Wuhan-hu-1) - (samtools Post-dedup) reads unmapped %",
+                "SARS-COV-2 (Wuhan-hu-1) - (samtools Post-dedup) reads unmapped (R1+R2)",
+                "SARS-COV-2 (Wuhan-hu-1) - (samtools Raw) reads mapped %",
+                "SARS-COV-2 (Wuhan-hu-1) - (samtools Raw) reads mapped (R1+R2)",
+                "SARS-COV-2 (Wuhan-hu-1) - (samtools Raw) reads unmapped %",
+                "SARS-COV-2 (Wuhan-hu-1) - (samtools Raw) reads unmapped (R1+R2)",
+                "SARS-COV-2 (Wuhan-hu-1) - Constraint id",
+                "SARS-COV-2 (Wuhan-hu-1) - consensus length",
+                "SARS-COV-2 (Wuhan-hu-1) - definition",
+                "covid19 - (bcftools) number of SNPs",
+                "covid19 - (bcftools) number of indels",
+                "covid19 - (general_stats) mosdepth 100X coverage",
+                "covid19 - (general_stats) mosdepth 10X coverage",
+                "covid19 - (general_stats) mosdepth 1X coverage",
+                "covid19 - (general_stats) mosdepth 200X coverage",
+                "covid19 - (general_stats) mosdepth 50X coverage",
+                "covid19 - (general_stats) mosdepth Max read depth",
+                "covid19 - (general_stats) mosdepth Mean read depth",
+                "covid19 - (general_stats) mosdepth Median read depth",
+                "covid19 - (general_stats) mosdepth Min read depth",
+                "covid19 - (mash-screen) query-ID",
+                "covid19 - (mash-screen) shared-hashes",
+                "covid19 - (quast) % N's",
+                "covid19 - (samtools Post-dedup) reads mapped %",
+                "covid19 - (samtools Post-dedup) reads mapped (R1+R2)",
+                "covid19 - (samtools Post-dedup) reads unmapped %",
+                "covid19 - (samtools Post-dedup) reads unmapped (R1+R2)",
+                "covid19 - (samtools Raw) reads mapped %",
+                "covid19 - (samtools Raw) reads mapped (R1+R2)",
+                "covid19 - (samtools Raw) reads unmapped %",
+                "covid19 - (samtools Raw) reads unmapped (R1+R2)",
+                "covid19 - Constraint id",
+                "covid19 - consensus length"
+            ],
+            [
+                "(annotation) % contig aligned",
+                "(annotation) BioSample",
+                "(annotation) Collection_Date",
+                "(annotation) Country",
+                "(annotation) Genotype",
+                "(annotation) Geo_Location",
+                "(annotation) Host",
+                "(annotation) Isolate",
+                "(annotation) Molecule_type",
+                "(annotation) Nuc_Completeness",
+                "(annotation) Organism_Name",
+                "(annotation) PangoVersions",
+                "(annotation) Pangolin",
+                "(annotation) Release_Date",
+                "(annotation) Segment",
+                "(annotation) Species",
+                "(annotation) Submitters",
+                "(annotation) Tissue_Specimen_Source",
+                "(annotation) bitscore",
+                "(annotation) evalue",
+                "(annotation) gapopen",
+                "(annotation) length",
+                "(annotation) mismatch",
+                "(annotation) pident",
+                "(annotation) qend",
+                "(annotation) qlen",
+                "(annotation) qstart",
+                "(annotation) send",
+                "(annotation) slen",
+                "(annotation) sstart",
+                "(annotation) subject",
+                "(bcftools) number of MNPs",
+                "(bcftools) number of SNPs",
+                "(bcftools) number of indels",
+                "(bcftools) number of multiallelic SNP sites",
+                "(bcftools) number of multiallelic sites",
+                "(bcftools) number of no-ALTs",
+                "(bcftools) number of others",
+                "(bcftools) number of records",
+                "(bcftools) number of samples",
+                "(bcftools) number of transitions",
+                "(bcftools) number of transversions",
+                "(bcftools) substitution A->C",
+                "(bcftools) substitution A->G",
+                "(bcftools) substitution A->T",
+                "(bcftools) substitution C->A",
+                "(bcftools) substitution C->G",
+                "(bcftools) substitution C->T",
+                "(bcftools) substitution G->A",
+                "(bcftools) substitution G->C",
+                "(bcftools) substitution G->T",
+                "(bcftools) substitution T->A",
+                "(bcftools) substitution T->C",
+                "(bcftools) substitution T->G",
+                "(bcftools) transistion in 1st alternative",
+                "(bcftools) transistions/transversions ratio",
+                "(bcftools) transition/transversion in 1st alternative",
+                "(bcftools) transversion in 1st alternative",
+                "(blast) bitscore",
+                "(blast) evalue",
+                "(blast) gapopen",
+                "(blast) length",
+                "(blast) mismatch",
+                "(blast) pident",
+                "(blast) qend",
+                "(blast) qlen",
+                "(blast) qstart",
+                "(blast) send",
+                "(blast) slen",
+                "(blast) sstart",
+                "(blast) subject",
+                "(blast) subject title",
+                "(cluster) centroid",
+                "(cluster) cumulative read depth - megahit [%]",
+                "(cluster) cumulative read depth - spades [%]",
+                "(cluster) cumulative read depth - trinity [%]",
+                "(cluster) members",
+                "(cluster) number of members",
+                "(cluster) taxon-id",
+                "(general_stats) mosdepth 1000X coverage",
+                "(general_stats) mosdepth 100X coverage",
+                "(general_stats) mosdepth 10X coverage",
+                "(general_stats) mosdepth 1X coverage",
+                "(general_stats) mosdepth 200X coverage",
+                "(general_stats) mosdepth 500X coverage",
+                "(general_stats) mosdepth 50X coverage",
+                "(general_stats) mosdepth 5X coverage",
+                "(general_stats) mosdepth 750X coverage",
+                "(general_stats) mosdepth Max read depth",
+                "(general_stats) mosdepth Mean read depth",
+                "(general_stats) mosdepth Median read depth",
+                "(general_stats) mosdepth Min read depth",
+                "(ivar_variants) raw SNPs",
+                "(ivar_variants) raw deletions",
+                "(ivar_variants) raw inserts",
+                "(quast) # N's",
+                "(quast) # N's per 100 kbp",
+                "(quast) % N's",
+                "(samtools Post-dedup) average length",
+                "(samtools Post-dedup) average quality",
+                "(samtools Post-dedup) bases duplicated",
+                "(samtools Post-dedup) bases mapped",
+                "(samtools Post-dedup) bases mapped cigar",
+                "(samtools Post-dedup) bases trimmed",
+                "(samtools Post-dedup) error rate",
+                "(samtools Post-dedup) insert size average",
+                "(samtools Post-dedup) insert size standard deviation",
+                "(samtools Post-dedup) inward oriented pairs",
+                "(samtools Post-dedup) mismatches",
+                "(samtools Post-dedup) non primary alignments",
+                "(samtools Post-dedup) outward oriented pairs",
+                "(samtools Post-dedup) reads MQ0",
+                "(samtools Post-dedup) reads QC failed",
+                "(samtools Post-dedup) reads QC failed %",
+                "(samtools Post-dedup) reads duplicated",
+                "(samtools Post-dedup) reads duplicated %",
+                "(samtools Post-dedup) reads mapped %",
+                "(samtools Post-dedup) reads mapped (R1+R2)",
+                "(samtools Post-dedup) reads paired",
+                "(samtools Post-dedup) reads paired %",
+                "(samtools Post-dedup) reads properly paired",
+                "(samtools Post-dedup) reads properly paired %",
+                "(samtools Post-dedup) reads unmapped %",
+                "(samtools Post-dedup) reads unmapped (R1+R2)",
+                "(samtools Post-dedup) supplementary alignments",
+                "(samtools Post-dedup) total length",
+                "(samtools Raw) average length",
+                "(samtools Raw) average quality",
+                "(samtools Raw) bases duplicated",
+                "(samtools Raw) bases mapped",
+                "(samtools Raw) bases mapped cigar",
+                "(samtools Raw) bases trimmed",
+                "(samtools Raw) error rate",
+                "(samtools Raw) insert size average",
+                "(samtools Raw) insert size standard deviation",
+                "(samtools Raw) inward oriented pairs",
+                "(samtools Raw) mismatches",
+                "(samtools Raw) non primary alignments",
+                "(samtools Raw) outward oriented pairs",
+                "(samtools Raw) reads MQ0",
+                "(samtools Raw) reads QC failed",
+                "(samtools Raw) reads QC failed %",
+                "(samtools Raw) reads duplicated",
+                "(samtools Raw) reads duplicated %",
+                "(samtools Raw) reads mapped %",
+                "(samtools Raw) reads mapped (R1+R2)",
+                "(samtools Raw) reads paired",
+                "(samtools Raw) reads paired %",
+                "(samtools Raw) reads properly paired",
+                "(samtools Raw) reads properly paired %",
+                "(samtools Raw) reads unmapped %",
+                "(samtools Raw) reads unmapped (R1+R2)",
+                "(samtools Raw) supplementary alignments",
+                "(samtools Raw) total length",
+                "cluster",
+                "index",
+                "sample",
+                "step"
+            ],
+            [
+                "group1_cl1_it1",
+                "group1_cl1_itvariant-calling",
+                "group1_cl1_singleton",
+                "group2_cl0_consensus",
+                "group2_cl0_it1",
+                "group2_cl0_itvariant-calling"
+            ]
+        ],
+        "timestamp": "2026-09-03T14:32:50.209657",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "25.10.4"
+        }
+    },
+    "multiqc": {
+        "content": [
+            [
+                "multiqc/multiqc_data/bcftools-stats-subtypes.txt",
+                "multiqc/multiqc_data/bcftools_stats_indel-lengths.txt",
+                "multiqc/multiqc_data/bcftools_stats_vqc_Count_Indels.txt",
+                "multiqc/multiqc_data/bcftools_stats_vqc_Count_SNP.txt",
+                "multiqc/multiqc_data/bcftools_stats_vqc_Count_Transitions.txt",
+                "multiqc/multiqc_data/bcftools_stats_vqc_Count_Transversions.txt",
+                "multiqc/multiqc_data/fastp-insert-size-plot.txt",
+                "multiqc/multiqc_data/fastp-seq-content-gc-plot_Read_1_After_filtering.txt",
+                "multiqc/multiqc_data/fastp-seq-content-gc-plot_Read_1_Before_filtering.txt",
+                "multiqc/multiqc_data/fastp-seq-content-gc-plot_Read_2_After_filtering.txt",
+                "multiqc/multiqc_data/fastp-seq-content-gc-plot_Read_2_Before_filtering.txt",
+                "multiqc/multiqc_data/fastp-seq-content-n-plot_Read_1_After_filtering.txt",
+                "multiqc/multiqc_data/fastp-seq-content-n-plot_Read_1_Before_filtering.txt",
+                "multiqc/multiqc_data/fastp-seq-content-n-plot_Read_2_After_filtering.txt",
+                "multiqc/multiqc_data/fastp-seq-content-n-plot_Read_2_Before_filtering.txt",
+                "multiqc/multiqc_data/fastp-seq-quality-plot_Read_1_After_filtering.txt",
+                "multiqc/multiqc_data/fastp-seq-quality-plot_Read_1_Before_filtering.txt",
+                "multiqc/multiqc_data/fastp-seq-quality-plot_Read_2_After_filtering.txt",
+                "multiqc/multiqc_data/fastp-seq-quality-plot_Read_2_Before_filtering.txt",
+                "multiqc/multiqc_data/fastp_filtered_reads_plot.txt",
+                "multiqc/multiqc_data/fastqc-1-status-check-heatmap.txt",
+                "multiqc/multiqc_data/fastqc-1_overrepresented_sequences_plot.txt",
+                "multiqc/multiqc_data/fastqc-1_per_base_n_content_plot.txt",
+                "multiqc/multiqc_data/fastqc-1_per_base_sequence_quality_plot.txt",
+                "multiqc/multiqc_data/fastqc-1_per_sequence_gc_content_plot_Counts.txt",
+                "multiqc/multiqc_data/fastqc-1_per_sequence_gc_content_plot_Percentages.txt",
+                "multiqc/multiqc_data/fastqc-1_per_sequence_quality_scores_plot.txt",
+                "multiqc/multiqc_data/fastqc-1_sequence_counts_plot.txt",
+                "multiqc/multiqc_data/fastqc-1_sequence_duplication_levels_plot.txt",
+                "multiqc/multiqc_data/fastqc-1_top_overrepresented_sequences_table.txt",
+                "multiqc/multiqc_data/fastqc-2-status-check-heatmap.txt",
+                "multiqc/multiqc_data/fastqc-2_overrepresented_sequences_plot.txt",
+                "multiqc/multiqc_data/fastqc-2_per_base_n_content_plot.txt",
+                "multiqc/multiqc_data/fastqc-2_per_base_sequence_quality_plot.txt",
+                "multiqc/multiqc_data/fastqc-2_per_sequence_gc_content_plot_Counts.txt",
+                "multiqc/multiqc_data/fastqc-2_per_sequence_gc_content_plot_Percentages.txt",
+                "multiqc/multiqc_data/fastqc-2_per_sequence_quality_scores_plot.txt",
+                "multiqc/multiqc_data/fastqc-2_sequence_counts_plot.txt",
+                "multiqc/multiqc_data/fastqc-2_sequence_duplication_levels_plot.txt",
+                "multiqc/multiqc_data/fastqc-2_top_overrepresented_sequences_table.txt",
+                "multiqc/multiqc_data/fastqc-status-check-heatmap.txt",
+                "multiqc/multiqc_data/fastqc_overrepresented_sequences_plot.txt",
+                "multiqc/multiqc_data/fastqc_per_base_n_content_plot.txt",
+                "multiqc/multiqc_data/fastqc_per_base_sequence_quality_plot.txt",
+                "multiqc/multiqc_data/fastqc_per_sequence_gc_content_plot_Counts.txt",
+                "multiqc/multiqc_data/fastqc_per_sequence_gc_content_plot_Percentages.txt",
+                "multiqc/multiqc_data/fastqc_per_sequence_quality_scores_plot.txt",
+                "multiqc/multiqc_data/fastqc_sequence_counts_plot.txt",
+                "multiqc/multiqc_data/fastqc_sequence_duplication_levels_plot.txt",
+                "multiqc/multiqc_data/fastqc_sequence_length_distribution_plot.txt",
+                "multiqc/multiqc_data/fastqc_top_overrepresented_sequences_table.txt",
+                "multiqc/multiqc_data/kraken-top-n-plot_Class.txt",
+                "multiqc/multiqc_data/kraken-top-n-plot_Domain.txt",
+                "multiqc/multiqc_data/kraken-top-n-plot_Family.txt",
+                "multiqc/multiqc_data/kraken-top-n-plot_Genus.txt",
+                "multiqc/multiqc_data/kraken-top-n-plot_Order.txt",
+                "multiqc/multiqc_data/kraken-top-n-plot_Phylum.txt",
+                "multiqc/multiqc_data/kraken-top-n-plot_Unclassified.txt",
+                "multiqc/multiqc_data/mosdepth-coverage-per-contig-single.txt",
+                "multiqc/multiqc_data/mosdepth-cumcoverage-dist-id.txt",
+                "multiqc/multiqc_data/mosdepth_cov_dist.yaml",
+                "multiqc/multiqc_data/mosdepth_cumcov_dist.yaml",
+                "multiqc/multiqc_data/mosdepth_perchrom.yaml",
+                "multiqc/multiqc_data/multiqc_bcftools_stats.yaml",
+                "multiqc/multiqc_data/multiqc_citations.txt",
+                "multiqc/multiqc_data/multiqc_data.json",
+                "multiqc/multiqc_data/multiqc_fastp.yaml",
+                "multiqc/multiqc_data/multiqc_fastqc.yaml",
+                "multiqc/multiqc_data/multiqc_fastqc_1.yaml",
+                "multiqc/multiqc_data/multiqc_fastqc_2.yaml",
+                "multiqc/multiqc_data/multiqc_general_stats.txt",
+                "multiqc/multiqc_data/multiqc_ivar_variants.yaml",
+                "multiqc/multiqc_data/multiqc_kraken.yaml",
+                "multiqc/multiqc_data/multiqc_quast_quast_megahit.yaml",
+                "multiqc/multiqc_data/multiqc_quast_quast_spades.yaml",
+                "multiqc/multiqc_data/multiqc_samtools_flagstat.yaml",
+                "multiqc/multiqc_data/multiqc_samtools_stats.yaml",
+                "multiqc/multiqc_data/multiqc_samtools_stats_1.yaml",
+                "multiqc/multiqc_data/multiqc_software_versions.txt",
+                "multiqc/multiqc_data/multiqc_sources.txt",
+                "multiqc/multiqc_data/quast_num_contigs.txt",
+                "multiqc/multiqc_data/quast_table.txt",
+                "multiqc/multiqc_data/samtools-flagstat-dp_Percentage_of_total.txt",
+                "multiqc/multiqc_data/samtools-flagstat-dp_Read_counts.txt",
+                "multiqc/multiqc_data/samtools-stats-dp.txt",
+                "multiqc/multiqc_data/samtools_alignment_plot.txt",
+                "multiqc/multiqc_data/summary_clusters_info.txt",
+                "multiqc/multiqc_report.html"
+            ],
+            [
+                "bcftools-stats-subtypes.txt:md5,52128ecfcc0ecff031860c3c13008205",
+                "bcftools_stats_indel-lengths.txt:md5,fdd9977d33fe30837f181d7c50685c2f",
+                "bcftools_stats_vqc_Count_Indels.txt:md5,23aeb5ed2637c22b6d234d5c0720ee0c",
+                "bcftools_stats_vqc_Count_SNP.txt:md5,eb50640a5294afa8236e318cb4bc50fd",
+                "bcftools_stats_vqc_Count_Transitions.txt:md5,a658a6d5597f6bc079ca73168c9a1a9a",
+                "bcftools_stats_vqc_Count_Transversions.txt:md5,858bc39e6959eba78b6465225194f520",
+                "fastp-insert-size-plot.txt:md5,88cbc0b63ec5db59422cd18165982244",
+                "fastp-seq-content-gc-plot_Read_1_After_filtering.txt:md5,c66a40670c5e53105dbdc04e13f8f87c",
+                "fastp-seq-content-gc-plot_Read_1_Before_filtering.txt:md5,b1d2900033deb3dcc8d4008c796f7e0b",
+                "fastp-seq-content-gc-plot_Read_2_After_filtering.txt:md5,632c7b6ec71d9af9204be40776d1cf17",
+                "fastp-seq-content-gc-plot_Read_2_Before_filtering.txt:md5,b36befbc2b06e2dc855d07a8a3d9a6a4",
+                "fastp-seq-content-n-plot_Read_1_After_filtering.txt:md5,438ca8ee67622969d7f6272e5785f223",
+                "fastp-seq-content-n-plot_Read_1_Before_filtering.txt:md5,438ca8ee67622969d7f6272e5785f223",
+                "fastp-seq-content-n-plot_Read_2_After_filtering.txt:md5,438ca8ee67622969d7f6272e5785f223",
+                "fastp-seq-content-n-plot_Read_2_Before_filtering.txt:md5,438ca8ee67622969d7f6272e5785f223",
+                "fastp-seq-quality-plot_Read_1_After_filtering.txt:md5,0e2e9ff57d7274be766924c6f39799f1",
+                "fastp-seq-quality-plot_Read_1_Before_filtering.txt:md5,4ea9e00c0b23134b1cba1f9529a4a182",
+                "fastp-seq-quality-plot_Read_2_After_filtering.txt:md5,812cfd127f6cdf0eefc9a65187a04a31",
+                "fastp-seq-quality-plot_Read_2_Before_filtering.txt:md5,ac11af4eb2d5cbd62863c025d099c646",
+                "fastp_filtered_reads_plot.txt:md5,ab834e82a790cc9a9ea285acd230b2da",
+                "kraken-top-n-plot_Class.txt:md5,84acaaeb9e36c0c5d18eeae2fde79337",
+                "kraken-top-n-plot_Domain.txt:md5,d5db4f90cbb2ec87cab4ef26a468a372",
+                "kraken-top-n-plot_Family.txt:md5,017076fabbaae74951faf81aa544e90d",
+                "kraken-top-n-plot_Genus.txt:md5,3ca3eba39f4c51d6b59ce8290ee47bbc",
+                "kraken-top-n-plot_Order.txt:md5,50e2250a76ad5cc7ce570368a1ef511a",
+                "kraken-top-n-plot_Phylum.txt:md5,84eba334501203cab76c9455bffb2b13",
+                "kraken-top-n-plot_Unclassified.txt:md5,199235d6b19832c5c4fb6d628cbfd093",
+                "multiqc_bcftools_stats.yaml:md5,5beaf107b35b606c3767f04a2357f308",
+                "multiqc_citations.txt:md5,ca5ee81b05f0cec3ad44e1557f2cddce",
+                "multiqc_fastp.yaml:md5,361e30dca166ad433c7db56bf88d223c",
+                "multiqc_ivar_variants.yaml:md5,1c83e28c5b4fee29d04c5204b5968e58",
+                "multiqc_kraken.yaml:md5,e99428ff4e79a9363d39040f3913329f",
+                "multiqc_quast_quast_megahit.yaml:md5,a2c42eb8ca1a589c1113da11866b54d0",
+                "multiqc_quast_quast_spades.yaml:md5,43c2e896899692b9b9702d089ae4cb1b",
+                "quast_num_contigs.txt:md5,a228e1623058352a5dbcc2edfd68d528",
+                "quast_table.txt:md5,97f66575bbca4bb4470ccaa39b09b144",
+                "summary_clusters_info.txt:md5,3b5c4181865afae0d84afa6cd601f0aa"
+            ]
+        ],
+        "timestamp": "2026-02-12T22:49:07.986775019",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "25.10.4"
+        }
+    }
+}

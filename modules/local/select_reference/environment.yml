@@ -1,0 +1,8 @@
+name: select_reference
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - conda-forge::python=3.9.21
+  - conda-forge::pandas=2.2.3
+  - conda-forge::biopython=1.85

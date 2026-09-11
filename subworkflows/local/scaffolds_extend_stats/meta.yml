@@ -1,0 +1,54 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: scaffolds_extend_stats
+description: Assess scaffold/contig quality with QUAST, optionally extend with SSPACE_BASIC, and calculate coverage statistics
+keywords:
+  - scaffolds
+  - contigs
+  - quality assessment
+  - quast
+  - sspace
+  - extension
+  - coverage
+  - statistics
+components:
+  - quast
+  - sspace/basic
+  - sspace_basic
+  - samtools/index
+  - samtools/idxstats
+  - map_reads
+input:
+  - ch_reads:
+      description: |
+        Sequencing reads for scaffolding and coverage analysis
+        Structure: [ val(meta), path(reads) ]
+  - ch_scaffolds_raw:
+      description: |
+        Raw scaffold/contig sequences to be processed
+        Structure: [ val(meta), path(scaffolds) ]
+  - name:
+      type: string
+      description: |
+        Name identifier for the assembly method used
+      enum: ["spades", "trinity", "megahit"]
+output:
+  - scaffolds:
+      description: |
+        Processed scaffolds (extended with SSPACE_BASIC if enabled)
+        Structure: [ val(meta), path(scaffolds) ]
+  - coverages:
+      description: |
+        Coverage statistics from samtools idxstats (when perc_reads_contig > 0)
+        Structure: [ val(meta), path(idxstats) ]
+  - mqc:
+      description: |
+        MultiQC files containing QUAST assembly statistics
+        Structure: [ val(meta), path(mqc) ]
+  - versions:
+      description: |
+        Files containing software versions
+        Structure: [ path(versions.yml) ]
+authors:
+  - "@Joon-Klaps"
+maintainers:
+  - "@Joon-Klaps"

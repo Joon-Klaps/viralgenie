@@ -9,13 +9,22 @@
 ----------------------------------------------------------------------------------------
 */
 
+params.global_prefix = getGlobalPrefix(workflow, params)
+def getGlobalPrefix(workflow,params) {
+    def date_stamp = new java.util.Date().format( 'yyyyMMdd')
+    if (params.prefix) {
+        return "${params.prefix}_${date_stamp}_${workflow.manifest.version}_${workflow.runName}".replaceAll("\\s+", "_")
+    }
+    return null
+}
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     IMPORT FUNCTIONS / MODULES / SUBWORKFLOWS / WORKFLOWS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { VIRALMETAGENOME  } from './workflows/viralmetagenome'
+include { VIRALMETAGENOME         } from './workflows/viralmetagenome'
 include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_viralmetagenome_pipeline'
 include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_viralmetagenome_pipeline'
 /*
@@ -39,10 +48,10 @@ workflow NFCORE_VIRALMETAGENOME {
     //
     VIRALMETAGENOME (
         samplesheet,
-        params.multiqc_config,
-        params.multiqc_logo,
-        params.multiqc_methods_description,
         params.outdir,
+        params.keep_unmapped,
+        params.normalise_reads,
+        params.use_host_filtered_reads,
     )
     emit:
     multiqc_report = VIRALMETAGENOME.out.multiqc_report // channel: /path/to/multiqc_report.html

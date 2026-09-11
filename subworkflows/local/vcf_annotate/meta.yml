@@ -1,0 +1,39 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: vcf_annotate
+description: Annotate VCF files with functional effects using SnpEff and extract fields with SnpSift
+keywords:
+  - annotation
+  - vcf
+  - snpeff
+  - snpsift
+  - variants
+  - functional effects
+  - genomics
+components:
+  - snpeff_build
+  - snpeff/build
+  - snpeff/snpeff
+  - snpsift_extractfields
+  - snpsift/extractfields
+input:
+  - ch_vcf_ref:
+      description: |
+        VCF files with their corresponding reference sequences (must have GFF annotation and no selection applied)
+        Structure: [ val(meta), path(vcf), path(ref) ]
+output:
+  - vcf:
+      description: |
+        Annotated VCF files with functional effect predictions
+        Structure: [ val(meta), path(vcf) ]
+  - txt:
+      description: |
+        Extracted fields from annotated VCF files in text format
+        Structure: [ val(meta), path(txt) ]
+  - versions:
+      description: |
+        Files containing software versions
+        Structure: [ path(versions.yml) ]
+authors:
+  - "@Joon-Klaps"
+maintainers:
+  - "@Joon-Klaps"

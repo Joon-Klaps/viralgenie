@@ -1,0 +1,118 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: fastq_fasta_map_consensus
+description: Complete read mapping and consensus calling pipeline with optional deduplication, variant calling, and quality filtering
+keywords:
+  - mapping
+  - consensus
+  - variants
+  - deduplication
+  - quality control
+  - bam
+  - vcf
+  - fasta
+components:
+  - map_reads
+  - bam_deduplicate
+  - samtools/sort
+  - samtools/faidx
+  - bam_stats_metrics
+  - bam_call_variants
+  - bam_call_consensus
+  - bam_stats_filter
+  - utils_nfcore_viralmetagenome_pipeline
+input:
+  - ch_reference_reads:
+      description: |
+        Input channel containing reference sequences and corresponding reads
+        Structure: [ val(meta), path(fasta), path(fastq) ]
+  - mapper:
+      type: string
+      description: |
+        Mapping algorithm to use
+      enum: ["bwamem2", "bowtie2"]
+  - umi:
+      type: boolean
+      description: |
+        Whether UMI-based deduplication should be used
+  - deduplicate:
+      type: boolean
+      description: |
+        Whether to perform deduplication of mapped reads
+  - call_variants:
+      type: boolean
+      description: |
+        Whether to call variants from mapped reads
+  - variant_caller:
+      type: string
+      description: |
+        Variant calling method to use
+      enum: ["bcftools", "ivar"]
+  - consensus_caller:
+      type: string
+      description: |
+        Consensus calling method to use
+      enum: ["bcftools", "ivar"]
+  - mapping_stats:
+      type: boolean
+      description: |
+        Whether to generate mapping statistics and reports
+  - min_mapped_reads:
+      type: integer
+      description: |
+        Minimum number of mapped reads required to proceed
+  - keep_unmapped:
+      type: boolean
+      description: |
+        Keep unmapped reads in the alignments carried into deduplication, variant
+        calling and consensus generation. When false (the default) the read pairs with
+        both ends unmapped are dropped. Statistics are computed beforehand, so mapping
+        rates are unaffected.
+  - min_len:
+      type: integer
+      description: |
+        Minimum consensus sequence length for quality filtering
+  - n_100:
+      type: integer
+      description: |
+        Maximum number of consecutive Ns allowed in consensus sequences
+output:
+  - consensus_reads:
+      description: |
+        Quality-filtered consensus sequences with their corresponding reads
+        Structure: [ val(meta), path(fasta), path(fastq) ]
+  - consensus:
+      description: |
+        Quality-filtered consensus sequences
+        Structure: [ val(meta), path(fasta) ]
+  - consensus_all:
+      description: |
+        All consensus sequences before quality filtering
+        Structure: [ val(meta), path(fasta) ]
+  - bam:
+      description: |
+        Processed BAM files (deduplicated if requested)
+        Structure: [ val(meta), path(bam) ]
+  - vcf:
+      description: |
+        Raw variant calls in VCF format
+        Structure: [ val(meta), path(vcf) ]
+  - vcf_ref:
+      description: |
+        VCF files with their corresponding reference sequences
+        Structure: [ val(meta), path(vcf), path(fasta) ]
+  - vcf_filter:
+      description: |
+        Filtered variant calls in VCF format
+        Structure: [ val(meta), path(vcf) ]
+  - mqc:
+      description: |
+        MultiQC files for quality control reporting
+        Structure: [ val(meta), path(mqc) ]
+  - versions:
+      description: |
+        Files containing software versions
+        Structure: [ path(versions.yml) ]
+authors:
+  - "@Joon-Klaps"
+maintainers:
+  - "@Joon-Klaps"

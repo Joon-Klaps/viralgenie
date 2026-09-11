@@ -1,0 +1,8 @@
+name: extract_precluster
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - conda-forge::python=3.9.1
+  - conda-forge::biopython=1.78

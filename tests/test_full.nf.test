@@ -1,0 +1,13 @@
+nextflow_pipeline {
+
+    name "Test pipeline with test_full profile"
+    script "../main.nf"
+    profile "test_full"
+    tag "test_full"
+
+    def scenarios = [
+        [name: "-profile test_full", tag: "test_full", scope: "versions"],
+    ]
+
+    scenarios.each { scenario -> test(scenario.name, UTILS.getTest(scenario)) }
+}

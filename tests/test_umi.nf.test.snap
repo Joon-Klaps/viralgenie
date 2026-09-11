@@ -1,0 +1,368 @@
+{
+    "-profile test_umi": {
+        "content": [
+            155,
+            {
+                "BCFTOOLS_FILTER": {
+                    "bcftools": "1.23.1"
+                },
+                "BCFTOOLS_SORT": {
+                    "bcftools": "1.23.1"
+                },
+                "BCFTOOLS_STATS": {
+                    "bcftools": "1.23.1"
+                },
+                "BWAMEM2_INDEX": {
+                    "bwamem2": "2.2.1"
+                },
+                "BWAMEM2_MEM": {
+                    "bwamem2": "2.2.1",
+                    "samtools": "1.22.1"
+                },
+                "CAT_ASSEMBLERS": {
+                    "coreutils": 9.4,
+                    "find": "4.6.0",
+                    "pigz": 2.8
+                },
+                "CAT_CAT_READS": {
+                    "coreutils": 9.4,
+                    "find": "4.6.0",
+                    "pigz": 2.8
+                },
+                "CONTIG_IDXSTATS": {
+                    "samtools": 1.24
+                },
+                "CONTIG_INDEX": {
+                    "samtools": 1.24
+                },
+                "CUSTOM_MPILEUP": {
+                    "numpy": "1.26.4",
+                    "pysam": "0.22.1",
+                    "pysamstats": "1.1.2"
+                },
+                "FASTP": {
+                    "fastp": "1.3.6"
+                },
+                "FASTQC_RAW": {
+                    "fastqc": "0.12.1"
+                },
+                "FASTQC_TRIM": {
+                    "fastqc": "0.12.1"
+                },
+                "HTSLIB_BGZIPTABIX": {
+                    "htslib": 1.24,
+                    "xz": "5.8.3"
+                },
+                "HUMID": {
+                    "humid": "1.0.4"
+                },
+                "IVAR_CONSENSUS": {
+                    "ivar": "1.4.4"
+                },
+                "IVAR_VARIANTS": {
+                    "ivar": "1.4.4",
+                    "samtools": 1.21
+                },
+                "IVAR_VARIANTS_TO_VCF": {
+                    "python": "3.9.12"
+                },
+                "MASH_SCREEN": {
+                    "mash": 2.3
+                },
+                "MASH_SKETCH": {
+                    "mash": 2.3
+                },
+                "MOSDEPTH": {
+                    "gzip": 1.14,
+                    "mosdepth": "0.3.14"
+                },
+                "PICARD_COLLECTMULTIPLEMETRICS": {
+                    "picard": "3.5.0"
+                },
+                "PRINSEQ_CONTIG": {
+                    "prinseqplusplus": 1.2
+                },
+                "PRINSEQ_READS": {
+                    "prinseqplusplus": 1.2
+                },
+                "QUAST": {
+                    "quast": "5.3.0"
+                },
+                "RENAME_FASTA_HEADER_CALLED_CONSENSUS": {
+                    "sed": 4.7
+                },
+                "SAMTOOLS_FAIDX": {
+                    "samtools": 1.24
+                },
+                "SAMTOOLS_FLAGSTAT": {
+                    "samtools": 1.24
+                },
+                "SAMTOOLS_IDXSTATS": {
+                    "samtools": 1.24
+                },
+                "SAMTOOLS_INDEX": {
+                    "samtools": 1.24
+                },
+                "SAMTOOLS_STATS": {
+                    "samtools": 1.24
+                },
+                "SAMTOOLS_VIEW": {
+                    "samtools": 1.24
+                },
+                "SELECT_REFERENCE": {
+                    "biopython": 1.85,
+                    "pandas": "2.2.3",
+                    "python": "3.9.21"
+                },
+                "SPADES": {
+                    "spades": "4.1.0"
+                },
+                "UMITOOLS_DEDUP": {
+                    "umitools": "1.1.5"
+                },
+                "UMITOOLS_EXTRACT": {
+                    "umitools": "1.1.6"
+                },
+                "Workflow": {
+                    "nf-core/viralmetagenome": "v1.2.1dev"
+                }
+            },
+            [
+                "multiqc/multiqc_data/bcftools-stats-subtypes.txt",
+                "multiqc/multiqc_data/bcftools_stats_indel-lengths.txt",
+                "multiqc/multiqc_data/bcftools_stats_vqc_Count_Indels.txt",
+                "multiqc/multiqc_data/bcftools_stats_vqc_Count_SNP.txt",
+                "multiqc/multiqc_data/bcftools_stats_vqc_Count_Transitions.txt",
+                "multiqc/multiqc_data/bcftools_stats_vqc_Count_Transversions.txt",
+                "multiqc/multiqc_data/fastp-insert-size-plot.txt",
+                "multiqc/multiqc_data/fastp-seq-content-gc-plot_Read_1_After_filtering.txt",
+                "multiqc/multiqc_data/fastp-seq-content-gc-plot_Read_1_Before_filtering.txt",
+                "multiqc/multiqc_data/fastp-seq-content-gc-plot_Read_2_After_filtering.txt",
+                "multiqc/multiqc_data/fastp-seq-content-gc-plot_Read_2_Before_filtering.txt",
+                "multiqc/multiqc_data/fastp-seq-content-n-plot_Read_1_After_filtering.txt",
+                "multiqc/multiqc_data/fastp-seq-content-n-plot_Read_1_Before_filtering.txt",
+                "multiqc/multiqc_data/fastp-seq-content-n-plot_Read_2_After_filtering.txt",
+                "multiqc/multiqc_data/fastp-seq-content-n-plot_Read_2_Before_filtering.txt",
+                "multiqc/multiqc_data/fastp-seq-quality-plot_Read_1_After_filtering.txt",
+                "multiqc/multiqc_data/fastp-seq-quality-plot_Read_1_Before_filtering.txt",
+                "multiqc/multiqc_data/fastp-seq-quality-plot_Read_2_After_filtering.txt",
+                "multiqc/multiqc_data/fastp-seq-quality-plot_Read_2_Before_filtering.txt",
+                "multiqc/multiqc_data/fastp_filtered_reads_plot.txt",
+                "multiqc/multiqc_data/fastqc-1-status-check-heatmap.txt",
+                "multiqc/multiqc_data/fastqc-1_overrepresented_sequences_plot.txt",
+                "multiqc/multiqc_data/fastqc-1_per_base_n_content_plot.txt",
+                "multiqc/multiqc_data/fastqc-1_per_base_sequence_quality_plot.txt",
+                "multiqc/multiqc_data/fastqc-1_per_sequence_gc_content_plot_Counts.txt",
+                "multiqc/multiqc_data/fastqc-1_per_sequence_gc_content_plot_Percentages.txt",
+                "multiqc/multiqc_data/fastqc-1_per_sequence_quality_scores_plot.txt",
+                "multiqc/multiqc_data/fastqc-1_sequence_counts_plot.txt",
+                "multiqc/multiqc_data/fastqc-1_sequence_duplication_levels_plot.txt",
+                "multiqc/multiqc_data/fastqc-1_top_overrepresented_sequences_table.txt",
+                "multiqc/multiqc_data/fastqc-status-check-heatmap.txt",
+                "multiqc/multiqc_data/fastqc_overrepresented_sequences_plot.txt",
+                "multiqc/multiqc_data/fastqc_per_base_n_content_plot.txt",
+                "multiqc/multiqc_data/fastqc_per_base_sequence_quality_plot.txt",
+                "multiqc/multiqc_data/fastqc_per_sequence_gc_content_plot_Counts.txt",
+                "multiqc/multiqc_data/fastqc_per_sequence_gc_content_plot_Percentages.txt",
+                "multiqc/multiqc_data/fastqc_per_sequence_quality_scores_plot.txt",
+                "multiqc/multiqc_data/fastqc_sequence_counts_plot.txt",
+                "multiqc/multiqc_data/fastqc_sequence_duplication_levels_plot.txt",
+                "multiqc/multiqc_data/fastqc_sequence_length_distribution_plot.txt",
+                "multiqc/multiqc_data/fastqc_top_overrepresented_sequences_table.txt",
+                "multiqc/multiqc_data/humid-bargraph.txt",
+                "multiqc/multiqc_data/humid-clusters.txt",
+                "multiqc/multiqc_data/humid-counts.txt",
+                "multiqc/multiqc_data/humid-neighbours.txt",
+                "multiqc/multiqc_data/mosdepth-coverage-per-contig-single.txt",
+                "multiqc/multiqc_data/mosdepth-cumcoverage-dist-id.txt",
+                "multiqc/multiqc_data/mosdepth_cov_dist.yaml",
+                "multiqc/multiqc_data/mosdepth_cumcov_dist.yaml",
+                "multiqc/multiqc_data/mosdepth_perchrom.yaml",
+                "multiqc/multiqc_data/multiqc_bcftools_stats.yaml",
+                "multiqc/multiqc_data/multiqc_citations.txt",
+                "multiqc/multiqc_data/multiqc_data.json",
+                "multiqc/multiqc_data/multiqc_fastp.yaml",
+                "multiqc/multiqc_data/multiqc_fastqc.yaml",
+                "multiqc/multiqc_data/multiqc_fastqc_1.yaml",
+                "multiqc/multiqc_data/multiqc_general_stats.txt",
+                "multiqc/multiqc_data/multiqc_humid_clusters.yaml",
+                "multiqc/multiqc_data/multiqc_humid_counts.yaml",
+                "multiqc/multiqc_data/multiqc_humid_neighbours.yaml",
+                "multiqc/multiqc_data/multiqc_humid_stats.yaml",
+                "multiqc/multiqc_data/multiqc_ivar_variants.yaml",
+                "multiqc/multiqc_data/multiqc_quast_quast_spades.yaml",
+                "multiqc/multiqc_data/multiqc_samples_low_reads.yaml",
+                "multiqc/multiqc_data/multiqc_samtools_flagstat.yaml",
+                "multiqc/multiqc_data/multiqc_samtools_stats.yaml",
+                "multiqc/multiqc_data/multiqc_samtools_stats_1.yaml",
+                "multiqc/multiqc_data/multiqc_software_versions.txt",
+                "multiqc/multiqc_data/multiqc_sources.txt",
+                "multiqc/multiqc_data/multiqc_umitools_dedup.yaml",
+                "multiqc/multiqc_data/multiqc_umitools_extract.yaml",
+                "multiqc/multiqc_data/quast_num_contigs.txt",
+                "multiqc/multiqc_data/quast_table.txt",
+                "multiqc/multiqc_data/samtools-flagstat-dp_Percentage_of_total.txt",
+                "multiqc/multiqc_data/samtools-flagstat-dp_Read_counts.txt",
+                "multiqc/multiqc_data/samtools-stats-dp.txt",
+                "multiqc/multiqc_data/samtools_alignment_plot.txt",
+                "multiqc/multiqc_data/umitools_deduplication_barplot.txt",
+                "multiqc/multiqc_data/umitools_extract_barplot_success.txt",
+                "multiqc/multiqc_data/umitools_stats_violin.txt",
+                "multiqc/multiqc_report.html"
+            ],
+            [
+                "bcftools-stats-subtypes.txt:md5,a4cfdc869c6a267edf8146187c75273c",
+                "bcftools_stats_indel-lengths.txt:md5,4f7c5186a7ace87e5da6388cd7471763",
+                "bcftools_stats_vqc_Count_Indels.txt:md5,c5afb366c1516f008355237b1a1ef3f6",
+                "bcftools_stats_vqc_Count_SNP.txt:md5,54fec68f511444f47cd2efb6dd4054f8",
+                "bcftools_stats_vqc_Count_Transitions.txt:md5,98dcfb1b7bc8baee65c4411191a9b396",
+                "bcftools_stats_vqc_Count_Transversions.txt:md5,b061f887a7bc70589c77d07f62296a7e",
+                "humid-bargraph.txt:md5,6004c0f8bc12b172ada72f88e50f0b90",
+                "humid-clusters.txt:md5,62cfc0411dcdf12d593f66676757bada",
+                "humid-counts.txt:md5,62cfc0411dcdf12d593f66676757bada",
+                "humid-neighbours.txt:md5,94599b0b9a5de87abce58d9516abb747",
+                "multiqc_bcftools_stats.yaml:md5,453adcfa8c7ba34d651a09b9d60665c6",
+                "multiqc_citations.txt:md5,368223ca0f14ca0d5eebe0b8cc7e5b00",
+                "multiqc_humid_clusters.yaml:md5,224e6df05368f3905be3b1f2ca439b67",
+                "multiqc_humid_counts.yaml:md5,224e6df05368f3905be3b1f2ca439b67",
+                "multiqc_humid_neighbours.yaml:md5,fcb412190e9956040392e54b6119222e",
+                "multiqc_humid_stats.yaml:md5,9c2d7e452f2ce25b62d548253c03b6ca",
+                "multiqc_ivar_variants.yaml:md5,5cc6be9daba785c1e19ce65f5f73b0a2",
+                "multiqc_quast_quast_spades.yaml:md5,1fa6fbbc1203cca25505e1fc13d09ac9",
+                "multiqc_samples_low_reads.yaml:md5,a6448224a69eb18345f91150747c7621",
+                "multiqc_umitools_dedup.yaml:md5,1cee171688dd228c1ebdeeb097eddd63",
+                "multiqc_umitools_extract.yaml:md5,3da065186d918512775237897e998ef7",
+                "quast_num_contigs.txt:md5,14aec4d82c9d821d7c626390a8d1580e",
+                "quast_table.txt:md5,cfa59f678c99e118a3f97457e7b5ce0d",
+                "umitools_deduplication_barplot.txt:md5,a1588610a452eb8f76a8eea0b28ff123",
+                "umitools_extract_barplot_success.txt:md5,0708c42db8e8483436c387c4efefdb65",
+                "umitools_stats_violin.txt:md5,d947cc2259c457ce5d6d4045c8dcdf41"
+            ]
+        ],
+        "timestamp": "2026-09-03T14:36:02.013394",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "25.10.4"
+        }
+    },
+    "multiqc": {
+        "content": [
+            [
+                "multiqc/multiqc_data/bcftools-stats-subtypes.txt",
+                "multiqc/multiqc_data/bcftools_stats_indel-lengths.txt",
+                "multiqc/multiqc_data/bcftools_stats_vqc_Count_Indels.txt",
+                "multiqc/multiqc_data/bcftools_stats_vqc_Count_SNP.txt",
+                "multiqc/multiqc_data/bcftools_stats_vqc_Count_Transitions.txt",
+                "multiqc/multiqc_data/bcftools_stats_vqc_Count_Transversions.txt",
+                "multiqc/multiqc_data/fastp-insert-size-plot.txt",
+                "multiqc/multiqc_data/fastp-seq-content-gc-plot_Read_1_After_filtering.txt",
+                "multiqc/multiqc_data/fastp-seq-content-gc-plot_Read_1_Before_filtering.txt",
+                "multiqc/multiqc_data/fastp-seq-content-gc-plot_Read_2_After_filtering.txt",
+                "multiqc/multiqc_data/fastp-seq-content-gc-plot_Read_2_Before_filtering.txt",
+                "multiqc/multiqc_data/fastp-seq-content-n-plot_Read_1_After_filtering.txt",
+                "multiqc/multiqc_data/fastp-seq-content-n-plot_Read_1_Before_filtering.txt",
+                "multiqc/multiqc_data/fastp-seq-content-n-plot_Read_2_After_filtering.txt",
+                "multiqc/multiqc_data/fastp-seq-content-n-plot_Read_2_Before_filtering.txt",
+                "multiqc/multiqc_data/fastp-seq-quality-plot_Read_1_After_filtering.txt",
+                "multiqc/multiqc_data/fastp-seq-quality-plot_Read_1_Before_filtering.txt",
+                "multiqc/multiqc_data/fastp-seq-quality-plot_Read_2_After_filtering.txt",
+                "multiqc/multiqc_data/fastp-seq-quality-plot_Read_2_Before_filtering.txt",
+                "multiqc/multiqc_data/fastp_filtered_reads_plot.txt",
+                "multiqc/multiqc_data/fastqc-1-status-check-heatmap.txt",
+                "multiqc/multiqc_data/fastqc-1_overrepresented_sequences_plot.txt",
+                "multiqc/multiqc_data/fastqc-1_per_base_n_content_plot.txt",
+                "multiqc/multiqc_data/fastqc-1_per_base_sequence_quality_plot.txt",
+                "multiqc/multiqc_data/fastqc-1_per_sequence_gc_content_plot_Counts.txt",
+                "multiqc/multiqc_data/fastqc-1_per_sequence_gc_content_plot_Percentages.txt",
+                "multiqc/multiqc_data/fastqc-1_per_sequence_quality_scores_plot.txt",
+                "multiqc/multiqc_data/fastqc-1_sequence_counts_plot.txt",
+                "multiqc/multiqc_data/fastqc-1_sequence_duplication_levels_plot.txt",
+                "multiqc/multiqc_data/fastqc-1_top_overrepresented_sequences_table.txt",
+                "multiqc/multiqc_data/fastqc-status-check-heatmap.txt",
+                "multiqc/multiqc_data/fastqc_overrepresented_sequences_plot.txt",
+                "multiqc/multiqc_data/fastqc_per_base_n_content_plot.txt",
+                "multiqc/multiqc_data/fastqc_per_base_sequence_quality_plot.txt",
+                "multiqc/multiqc_data/fastqc_per_sequence_gc_content_plot_Counts.txt",
+                "multiqc/multiqc_data/fastqc_per_sequence_gc_content_plot_Percentages.txt",
+                "multiqc/multiqc_data/fastqc_per_sequence_quality_scores_plot.txt",
+                "multiqc/multiqc_data/fastqc_sequence_counts_plot.txt",
+                "multiqc/multiqc_data/fastqc_sequence_duplication_levels_plot.txt",
+                "multiqc/multiqc_data/fastqc_sequence_length_distribution_plot.txt",
+                "multiqc/multiqc_data/fastqc_top_overrepresented_sequences_table.txt",
+                "multiqc/multiqc_data/humid-bargraph.txt",
+                "multiqc/multiqc_data/humid-clusters.txt",
+                "multiqc/multiqc_data/humid-counts.txt",
+                "multiqc/multiqc_data/humid-neighbours.txt",
+                "multiqc/multiqc_data/mosdepth-coverage-per-contig-single.txt",
+                "multiqc/multiqc_data/mosdepth-cumcoverage-dist-id.txt",
+                "multiqc/multiqc_data/mosdepth_cov_dist.yaml",
+                "multiqc/multiqc_data/mosdepth_cumcov_dist.yaml",
+                "multiqc/multiqc_data/mosdepth_perchrom.yaml",
+                "multiqc/multiqc_data/multiqc_bcftools_stats.yaml",
+                "multiqc/multiqc_data/multiqc_citations.txt",
+                "multiqc/multiqc_data/multiqc_data.json",
+                "multiqc/multiqc_data/multiqc_fastp.yaml",
+                "multiqc/multiqc_data/multiqc_fastqc.yaml",
+                "multiqc/multiqc_data/multiqc_fastqc_1.yaml",
+                "multiqc/multiqc_data/multiqc_general_stats.txt",
+                "multiqc/multiqc_data/multiqc_humid_clusters.yaml",
+                "multiqc/multiqc_data/multiqc_humid_counts.yaml",
+                "multiqc/multiqc_data/multiqc_humid_neighbours.yaml",
+                "multiqc/multiqc_data/multiqc_humid_stats.yaml",
+                "multiqc/multiqc_data/multiqc_ivar_variants.yaml",
+                "multiqc/multiqc_data/multiqc_quast_quast_spades.yaml",
+                "multiqc/multiqc_data/multiqc_samples_low_reads.yaml",
+                "multiqc/multiqc_data/multiqc_samtools_flagstat.yaml",
+                "multiqc/multiqc_data/multiqc_samtools_stats.yaml",
+                "multiqc/multiqc_data/multiqc_samtools_stats_1.yaml",
+                "multiqc/multiqc_data/multiqc_software_versions.txt",
+                "multiqc/multiqc_data/multiqc_sources.txt",
+                "multiqc/multiqc_data/multiqc_umitools_dedup.yaml",
+                "multiqc/multiqc_data/multiqc_umitools_extract.yaml",
+                "multiqc/multiqc_data/quast_num_contigs.txt",
+                "multiqc/multiqc_data/quast_table.txt",
+                "multiqc/multiqc_data/samtools-flagstat-dp_Percentage_of_total.txt",
+                "multiqc/multiqc_data/samtools-flagstat-dp_Read_counts.txt",
+                "multiqc/multiqc_data/samtools-stats-dp.txt",
+                "multiqc/multiqc_data/samtools_alignment_plot.txt",
+                "multiqc/multiqc_data/umitools_deduplication_barplot.txt",
+                "multiqc/multiqc_data/umitools_extract_barplot_success.txt",
+                "multiqc/multiqc_data/umitools_stats_violin.txt",
+                "multiqc/multiqc_report.html"
+            ],
+            [
+                "bcftools-stats-subtypes.txt:md5,a4cfdc869c6a267edf8146187c75273c",
+                "bcftools_stats_indel-lengths.txt:md5,4f7c5186a7ace87e5da6388cd7471763",
+                "bcftools_stats_vqc_Count_Indels.txt:md5,c5afb366c1516f008355237b1a1ef3f6",
+                "bcftools_stats_vqc_Count_SNP.txt:md5,54fec68f511444f47cd2efb6dd4054f8",
+                "bcftools_stats_vqc_Count_Transitions.txt:md5,98dcfb1b7bc8baee65c4411191a9b396",
+                "bcftools_stats_vqc_Count_Transversions.txt:md5,b061f887a7bc70589c77d07f62296a7e",
+                "humid-bargraph.txt:md5,6004c0f8bc12b172ada72f88e50f0b90",
+                "humid-clusters.txt:md5,62cfc0411dcdf12d593f66676757bada",
+                "humid-counts.txt:md5,62cfc0411dcdf12d593f66676757bada",
+                "humid-neighbours.txt:md5,94599b0b9a5de87abce58d9516abb747",
+                "multiqc_bcftools_stats.yaml:md5,453adcfa8c7ba34d651a09b9d60665c6",
+                "multiqc_citations.txt:md5,368223ca0f14ca0d5eebe0b8cc7e5b00",
+                "multiqc_humid_clusters.yaml:md5,224e6df05368f3905be3b1f2ca439b67",
+                "multiqc_humid_counts.yaml:md5,224e6df05368f3905be3b1f2ca439b67",
+                "multiqc_humid_neighbours.yaml:md5,fcb412190e9956040392e54b6119222e",
+                "multiqc_humid_stats.yaml:md5,9c2d7e452f2ce25b62d548253c03b6ca",
+                "multiqc_ivar_variants.yaml:md5,5cc6be9daba785c1e19ce65f5f73b0a2",
+                "multiqc_quast_quast_spades.yaml:md5,1fa6fbbc1203cca25505e1fc13d09ac9",
+                "multiqc_samples_low_reads.yaml:md5,a6448224a69eb18345f91150747c7621",
+                "multiqc_umitools_dedup.yaml:md5,1cee171688dd228c1ebdeeb097eddd63",
+                "multiqc_umitools_extract.yaml:md5,3da065186d918512775237897e998ef7",
+                "quast_num_contigs.txt:md5,14aec4d82c9d821d7c626390a8d1580e",
+                "quast_table.txt:md5,cfa59f678c99e118a3f97457e7b5ce0d",
+                "umitools_deduplication_barplot.txt:md5,a1588610a452eb8f76a8eea0b28ff123",
+                "umitools_extract_barplot_success.txt:md5,0708c42db8e8483436c387c4efefdb65",
+                "umitools_stats_violin.txt:md5,d947cc2259c457ce5d6d4045c8dcdf41"
+            ]
+        ],
+        "timestamp": "2025-11-24T19:20:53.138084133",
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.04.7"
+        }
+    }
+}

@@ -1,0 +1,19 @@
+nextflow_pipeline {
+
+    name "Test pipeline with test_umi profile"
+    script "../main.nf"
+    profile "test_umi"
+    tag "test_umi"
+
+    def scenarios = [
+        [
+            name: "-profile test_umi",
+            tag: "test_umi",
+            scope: "multiqc",
+            // fastp's MultiQC output is not byte-stable across environments
+            ignoreFiles: ['multiqc/multiqc_data/fastp*', 'multiqc/multiqc_data/multiqc_fastp.yaml'],
+        ],
+    ]
+
+    scenarios.each { scenario -> test(scenario.name, UTILS.getTest(scenario)) }
+}

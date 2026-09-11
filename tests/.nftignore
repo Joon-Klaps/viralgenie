@@ -1,4 +1,15 @@
+# =============================================================================
+# nf-test ignore patterns for viralmetagenome pipeline
+# =============================================================================
+
+# ------------------------------------------------------------------------------
+# System files
+# ------------------------------------------------------------------------------
 .DS_Store
+
+# ------------------------------------------------------------------------------
+# MultiQC reports and data
+# ------------------------------------------------------------------------------
 multiqc/multiqc_data/fastqc_top_overrepresented_sequences_table.txt
 multiqc/multiqc_data/multiqc.parquet
 multiqc/multiqc_data/multiqc.log
@@ -8,5 +19,86 @@ multiqc/multiqc_data/multiqc_software_versions.txt
 multiqc/multiqc_data/llms-full.txt
 multiqc/multiqc_plots/{svg,pdf,png}/*.{svg,pdf,png}
 multiqc/multiqc_report.html
-fastqc/*_fastqc.{html,zip}
+multiqc/multiqc_data/fastqc*
+multiqc/multiqc_data/multiqc_fastqc.yaml
+multiqc/multiqc_data/multiqc_fastqc_1.yaml
+multiqc/multiqc_data/multiqc_fastqc_2.yaml
+multiqc/multiqc_data/multiqc_general_stats.txt
+multiqc/multiqc_data/mosdepth-coverage-per-contig-single.txt
+multiqc/multiqc_data/multiqc_samtools_flagstat.yaml
+multiqc/multiqc_data/multiqc_samtools_stats.yaml
+multiqc/multiqc_data/multiqc_samtools_stats_1.yaml
+multiqc/multiqc_data/samtools_alignment_plot.txt
+multiqc/multiqc_data/samtools-flagstat-dp_Percentage_of_total.txt
+multiqc/multiqc_data/samtools-flagstat-dp_Read_counts.txt
+multiqc/multiqc_data/samtools-stats-dp.txt
+multiqc/multiqc_data/mosdepth*
+
+# ------------------------------------------------------------------------------
+# Pipeline info and overview tables
+# ------------------------------------------------------------------------------
 pipeline_info/*.{html,json,txt,yml}
+overview-tables/samples_overview.tsv
+overview-tables/contigs_overview-with-iterations.tsv
+overview-tables/contigs_overview.tsv
+overview-tables/mapping_overview.tsv
+
+# ------------------------------------------------------------------------------
+# Preprocessing outputs
+# ------------------------------------------------------------------------------
+**/fastqc/**_fastqc.{html,zip}
+**/fastp/**fastp.html
+**/*_good_out_R*.fastq.gz
+
+# ------------------------------------------------------------------------------
+# Alignment and mapping outputs
+# ------------------------------------------------------------------------------
+**/*.bam
+**/bam/**
+
+# ------------------------------------------------------------------------------
+# Mapping statistics and metrics
+# ------------------------------------------------------------------------------
+**/mosdepth/**
+**/picard/**
+**/flagstat/**
+**/metrics/stats/**
+
+# ------------------------------------------------------------------------------
+# Variant calling outputs
+# ------------------------------------------------------------------------------
+**/*.mpileup
+**/*.qual.txt
+**/*filtered.vcf.gz
+
+# ------------------------------------------------------------------------------
+# Log files
+# ------------------------------------------------------------------------------
+**/*.log
+
+# ------------------------------------------------------------------------------
+# Assembly outputs - might not have consitent order of sequences
+# ------------------------------------------------------------------------------
+**/*_good_out.fasta
+**/assemblers/*/idxstats/*.idxstats
+**/*.combined.fa
+**/*logfile.txt
+
+# ------------------------------------------------------------------------------
+# Classification and search results
+# ------------------------------------------------------------------------------
+**/*kaiju.tsv
+**/*.classifiedreads.txt
+**/*kraken2_host.unclassified*.fastq.gz
+**/all_genomes.txt
+**/all_genomes.tsv
+**/intermediate/blast/**
+**/polishing/blast/**
+**/intermediate/cluster/*/*.json
+**/polishing/**/*clusters.tsv
+
+# ------------------------------------------------------------------------------
+# Consensus quality control
+# ------------------------------------------------------------------------------
+**/prokka/**/*.gbk
+**/prokka/**/*.sqn

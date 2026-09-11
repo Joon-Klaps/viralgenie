@@ -1,0 +1,79 @@
+nextflow_process {
+
+    name "Test Process BLAST_FILTER"
+    script "../main.nf"
+    process "BLAST_FILTER"
+    tag "modules"
+    tag "modules_local"
+    tag "blast"
+    tag "blast/filter"
+
+    test("HIV contigs - fasta  ") {
+
+        when {
+            process {
+                """
+                input[0] = [ [id:'test'], file(params.pipelines_testdata_base_path + '/local_modules/blast_filter/HIV.blast.out.txt', checkIfExists: true) ]
+                input[1] = [ [id:'test'], file(params.pipelines_testdata_base_path + '/illumina/HIV.contigs.fasta', checkIfExists: true) ]
+                input[2] = []
+                input[3] = [ [id:'test'], file(params.pipelines_testdata_base_path + '/db/HIV.fasta', checkIfExists: true) ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out).match() }
+            )
+        }
+
+    }
+
+    test("HIV contigs - fasta - blacklist") {
+
+        when {
+            process {
+                """
+                input[0] = [ [id:'test'], file(params.pipelines_testdata_base_path + '/local_modules/blast_filter/HIV.blast.out.txt', checkIfExists: true) ]
+                input[1] = [ [id:'test'], file(params.pipelines_testdata_base_path + '/illumina/HIV.contigs.fasta', checkIfExists: true) ]
+                input[2] = [ file(params.pipelines_testdata_base_path + '/local_modules/blast_filter/HIV.blacklist.txt', checkIfExists: true) ]
+                input[3] = [ [id:'test'], file(params.pipelines_testdata_base_path + '/db/HIV.fasta', checkIfExists: true) ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out).match() }
+            )
+        }
+
+    }
+
+    test("HIV contigs - fasta - stub") {
+
+        options "-stub"
+
+        when {
+            process {
+                """
+                input[0] = [ [id:'test'], file(params.pipelines_testdata_base_path + '/local_modules/blast_filter/HIV.blast.out.txt', checkIfExists: true) ]
+                input[1] = [ [id:'test'], file(params.pipelines_testdata_base_path + '/illumina/HIV.contigs.fasta', checkIfExists: true) ]
+                input[2] = [ file(params.pipelines_testdata_base_path + '/local_modules/blast_filter/HIV.blacklist.txt', checkIfExists: true) ]
+                input[3] = [ [id:'test'], file(params.pipelines_testdata_base_path + '/db/HIV.fasta', checkIfExists: true) ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out).match() }
+            )
+        }
+
+    }
+
+}

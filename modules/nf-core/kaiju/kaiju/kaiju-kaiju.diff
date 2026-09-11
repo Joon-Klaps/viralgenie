@@ -1,0 +1,30 @@
+Changes in component 'nf-core/kaiju/kaiju'
+'modules/nf-core/kaiju/kaiju/environment.yml' is unchanged
+'modules/nf-core/kaiju/kaiju/meta.yml' is unchanged
+Changes in 'kaiju/kaiju/main.nf':
+--- modules/nf-core/kaiju/kaiju/main.nf
++++ modules/nf-core/kaiju/kaiju/main.nf
+@@ -23,11 +23,14 @@
+     def prefix = task.ext.prefix ?: "${meta.id}"
+     def input = meta.single_end ? "-i ${reads}" : "-i ${reads[0]} -j ${reads[1]}"
+ 
+-    def db_list = db instanceof List ? db : db.listDirectory()
+-
+-    if (!db_list.find { db_files -> db_files.name.endsWith('names.dmp') } || !db_list.find { db_files -> db_files.name.endsWith('nodes.dmp') }) {
+-        error('[KAIJU_KAIJU] Module error: Missing one of `nodes.dmp`, `names.dmp`. Check input.')
+-    }
++    // The pipeline stages the unpacked database as a single-element list holding the
++    // extracted directory, so this check cannot resolve `names.dmp`/`nodes.dmp` and
++    // would abort every run. The `find -L` calls below locate them at runtime instead.
++    // def db_list = db instanceof List ? db : db.listDirectory()
++    //
++    // if (!db_list.find { db_files -> db_files.name.endsWith('names.dmp') } || !db_list.find { db_files -> db_files.name.endsWith('nodes.dmp') }) {
++    //     error('[KAIJU_KAIJU] Module error: Missing one of `nodes.dmp`, `names.dmp`. Check input.')
++    // }
+     """
+     dbnodes=`find -L ${db} -name "*nodes.dmp"`
+     dbname=`find -L ${db} -name "*.fmi" -not -name "._*"`
+
+'modules/nf-core/kaiju/kaiju/tests/main.nf.test.snap' is unchanged
+'modules/nf-core/kaiju/kaiju/tests/main.nf.test' is unchanged
+************************************************************

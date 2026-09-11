@@ -7,15 +7,22 @@ lint:
     - .gitattributes
     - .prettierignore
     - .github/PULL_REQUEST_TEMPLATE.md
+    - .github/workflows/linting.yml
   multiqc_config: false
+  nextflow_config:
+    # `nextflow config -flat` mangles quotes inside these values, so the linter
+    # cannot compare them with the schema defaults. See nf-core/tools#3696.
+    - config_defaults:
+        - params.arguments_umitools_extract
+        - params.arguments_umitools_dedup
+        - params.arguments_bcftools_mpileup3
+        - params.arguments_snpsift_extractfields
   nf_test_content: false
 nf_core_version: 4.1.0
 repository_type: pipeline
 template:
   author: Joon Klaps, Philippe Lemey, Liana Kafetzopoulou
-  description: A bioinformatics best-practice analysis pipeline for untargeted viral
-    genome reconstruction and to identify intra-host variants from metagenomic sequencing
-    data.
+  description: A bioinformatics best-practice analysis pipeline for untargeted viral genome reconstruction and to identify intra-host variants from metagenomic sequencing data.
   force: false
   is_nfcore: true
   name: viralmetagenome

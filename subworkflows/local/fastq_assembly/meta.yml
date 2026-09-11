@@ -1,0 +1,62 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: fastq_assembly
+description: De novo assembly of FASTQ reads using multiple assemblers (SPAdes, Trinity, MEGAHIT) with quality filtering
+keywords:
+  - assembly
+  - de novo
+  - spades
+  - trinity
+  - megahit
+  - contigs
+  - scaffolds
+  - prinseq
+  - quality filtering
+components:
+  - spades
+  - trinity
+  - megahit
+  - scaffolds_extend_stats
+  - cat/cat
+  - prinseqplusplus
+  - utils_nfcore_viralmetagenome_pipeline
+  - nocontigsamplestomultiqc
+input:
+  - ch_reads:
+      description: |
+        Input FASTQ files for assembly
+        Structure: [ val(meta), path(reads) ]
+  - ch_spades_yml:
+      description: |
+        SPAdes configuration YAML file
+        Structure: [ path(yml) ]
+  - normalise_reads:
+      type: boolean
+      description: |
+        Run BBNorm digital normalisation on the reads before assembly. Applied only to
+        the reads passed to SPAdes/Trinity/MEGAHIT; scaffold extension and per-contig
+        coverage still use the full read set.
+  - ch_spades_hmm:
+      description: |
+        SPAdes HMM model files
+        Structure: [ path(hmm) ]
+output:
+  - scaffolds:
+      description: |
+        Combined scaffolds/contigs from all assemblers after quality filtering
+        Structure: [ val(meta), path(scaffolds) ]
+  - coverages:
+      description: |
+        Coverage statistics files from all assemblers
+        Structure: [ val(meta), path(idxstats) ]
+  - mqc:
+      description: |
+        MultiQC files including assembly statistics and failed samples report
+        Structure: [ val(meta), path(mqc) ]
+  - versions:
+      description: |
+        Files containing software versions
+        Structure: [ path(versions.yml) ]
+authors:
+  - "@Joon-Klaps"
+maintainers:
+  - "@Joon-Klaps"

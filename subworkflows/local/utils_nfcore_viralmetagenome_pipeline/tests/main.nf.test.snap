@@ -1,0 +1,88 @@
+{
+    "parses extract_clust.py using jsonSlurper": {
+        "content": [
+            [
+                {
+                    "centroid": "NODE_42_length_5123_cov_18.4",
+                    "cluster_id": "cl17",
+                    "cluster_size": 12,
+                    "cumulative_read_depth": {
+                        "megahit": 0.0,
+                        "spades": 184.2,
+                        "trinity": 0.0
+                    },
+                    "external_reference": false,
+                    "members": [
+                        "a",
+                        "b",
+                        "c",
+                        "d",
+                        "e",
+                        "f",
+                        "g",
+                        "h",
+                        "i",
+                        "j",
+                        "k",
+                        "l"
+                    ],
+                    "taxid": "11320"
+                }
+            ],
+            [
+                "org.apache.groovy.json.internal.LazyMap"
+            ],
+            [
+                false
+            ]
+        ],
+        "timestamp": "2026-05-19T17:10:50.528393",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.1"
+        }
+    },
+    "parses extract_clust.py using jsonSlurperClassic": {
+        "content": [
+            [
+                {
+                    "centroid": "NODE_42_length_5123_cov_18.4",
+                    "cluster_id": "cl17",
+                    "cluster_size": 12,
+                    "cumulative_read_depth": {
+                        "megahit": 0.0,
+                        "spades": 184.2,
+                        "trinity": 0.0
+                    },
+                    "external_reference": false,
+                    "members": [
+                        "a",
+                        "b",
+                        "c",
+                        "d",
+                        "e",
+                        "f",
+                        "g",
+                        "h",
+                        "i",
+                        "j",
+                        "k",
+                        "l"
+                    ],
+                    "taxid": "11320"
+                }
+            ],
+            [
+                "java.util.HashMap"
+            ],
+            [
+                true
+            ]
+        ],
+        "timestamp": "2026-05-19T17:10:45.529747",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.1"
+        }
+    }
+}

@@ -1,0 +1,57 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: fasta_contig_preclust
+description: Taxonomically classify contigs using Kaiju and/or Kraken2 and extract sequences grouped by taxonomic classification
+keywords:
+  - taxonomy
+  - classification
+  - contigs
+  - kaiju
+  - kraken2
+  - preclustering
+  - species grouping
+components:
+  - kaiju/kaiju
+  - kraken2/kraken2
+  - extract/precluster
+  - extract_precluster
+  - utils_nfcore_viralmetagenome_pipeline
+  - getmapfromjson
+input:
+  - ch_contigs_reads:
+      description: |
+        Input contigs with their corresponding reads
+        Structure: [ val(meta), path(fasta), path(fastq) ]
+  - contig_classifiers:
+      type: string
+      description: |
+        List of taxonomic classifiers to use
+      enum: ["kaiju", "kraken2"]
+  - ch_kaiju_db:
+      description: |
+        Kaiju database for taxonomic classification
+        Structure: [ path(db) ]
+  - ch_kraken2_db:
+      description: |
+        Kraken2 database for taxonomic classification
+        Structure: [ path(db) ]
+output:
+  - contigs_reads:
+      description: |
+        Contigs grouped by taxonomic classification with their corresponding reads
+        Structure: [ val(meta), path(fasta), path(fastq) ]
+  - kraken:
+      description: |
+        Raw Kraken2 classification results
+        Structure: [ val(meta), path(kraken) ]
+  - kaiju:
+      description: |
+        Raw Kaiju classification results
+        Structure: [ val(meta), path(kaiju) ]
+  - versions:
+      description: |
+        Files containing software versions
+        Structure: [ path(versions.yml) ]
+authors:
+  - "@Joon-Klaps"
+maintainers:
+  - "@Joon-Klaps"

@@ -1,0 +1,242 @@
+{
+    "HIV contigs - fasta - blacklist": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.filter.hits.txt:md5,0fffc61b93632aabcc7d22a9aca29ed5"
+                    ]
+                ],
+                "1": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_withref.fa:md5,c0f5ca92e8799fbd57358eab0806456a"
+                    ]
+                ],
+                "2": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.filter.tsv:md5,8bce923cf985ca9c43a44fefcfa9299d"
+                    ]
+                ],
+                "3": [
+                    [
+                        "BLAST_FILTER",
+                        "python",
+                        "3.9.21"
+                    ]
+                ],
+                "4": [
+                    [
+                        "BLAST_FILTER",
+                        "pandas",
+                        "2.2.3"
+                    ]
+                ],
+                "5": [
+                    [
+                        "BLAST_FILTER",
+                        "biopython",
+                        "1.85"
+                    ]
+                ],
+                "filter": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.filter.tsv:md5,8bce923cf985ca9c43a44fefcfa9299d"
+                    ]
+                ],
+                "hits": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.filter.hits.txt:md5,0fffc61b93632aabcc7d22a9aca29ed5"
+                    ]
+                ],
+                "sequence": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_withref.fa:md5,c0f5ca92e8799fbd57358eab0806456a"
+                    ]
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.3"
+        },
+        "timestamp": "2026-02-11T11:55:53.787039"
+    },
+    "HIV contigs - fasta - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.filter.hits.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "1": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_withref.fa:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "2": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.filter.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "3": [
+                    [
+                        "BLAST_FILTER",
+                        "python",
+                        "3.9.21"
+                    ]
+                ],
+                "4": [
+                    [
+                        "BLAST_FILTER",
+                        "pandas",
+                        "2.2.3"
+                    ]
+                ],
+                "5": [
+                    [
+                        "BLAST_FILTER",
+                        "biopython",
+                        "1.85"
+                    ]
+                ],
+                "filter": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.filter.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "hits": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.filter.hits.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "sequence": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_withref.fa:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.3"
+        },
+        "timestamp": "2026-02-11T11:56:00.74514"
+    },
+    "HIV contigs - fasta  ": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.filter.hits.txt:md5,57e11fdf2ff5d771572ae6385970bac8"
+                    ]
+                ],
+                "1": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_withref.fa:md5,c0f5ca92e8799fbd57358eab0806456a"
+                    ]
+                ],
+                "2": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.filter.tsv:md5,c8c3200d852976bd21413d01115bfab4"
+                    ]
+                ],
+                "3": [
+                    [
+                        "BLAST_FILTER",
+                        "python",
+                        "3.9.21"
+                    ]
+                ],
+                "4": [
+                    [
+                        "BLAST_FILTER",
+                        "pandas",
+                        "2.2.3"
+                    ]
+                ],
+                "5": [
+                    [
+                        "BLAST_FILTER",
+                        "biopython",
+                        "1.85"
+                    ]
+                ],
+                "filter": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.filter.tsv:md5,c8c3200d852976bd21413d01115bfab4"
+                    ]
+                ],
+                "hits": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.filter.hits.txt:md5,57e11fdf2ff5d771572ae6385970bac8"
+                    ]
+                ],
+                "sequence": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_withref.fa:md5,c0f5ca92e8799fbd57358eab0806456a"
+                    ]
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.3"
+        },
+        "timestamp": "2026-02-11T11:55:46.062281"
+    }
+}

@@ -1,0 +1,540 @@
+nextflow_workflow {
+
+    name "Test Workflow FASTA_CONTIG_CLUST"
+    script "../main.nf"
+    workflow "FASTA_CONTIG_CLUST"
+    config './nextflow.config'
+
+    tag "subworkflows"
+    tag "subworkflows_local"
+    tag "subworkflows/fasta_contig_clust"
+    tag "fasta_contig_clust"
+    tag "fasta_blast_refsel"
+    tag "fasta_contig_precluster"
+    tag "blast/makeblastdb"
+    tag "blast/blastn"
+    tag "blast_filter"
+    tag "kaiju/kaiju"
+    tag "kraken2/kraken2"
+    tag "extract_precluster"
+    tag "vsearch/cluster"
+    tag "cdhit/cdhitest"
+    tag "mmseqs/createdb"
+    tag "mmseqs/linclust"
+    tag "mmseqs/cluster"
+    tag "mmseqs/createtsv"
+    tag "vrhyme/vrhyme"
+    tag "mash/dist"
+    tag "clusty"
+
+    setup {
+        run("BLAST_MAKEBLASTDB") {
+            script "../../../../modules/nf-core/blast/makeblastdb/main.nf"
+            process {
+                """
+                input[0] = [
+                    [id:'sarscov2_db'],
+                    file(params.pipelines_testdata_base_path + '/db/sarscov2.fasta', checkIfExists: true)
+                ]
+                input[1] = []
+                """
+            }
+        }
+
+        run("UNTAR", alias: "KAIJU_DB_UNTAR") {
+            script "../../../../modules/nf-core/untar/main.nf"
+            process {
+                """
+                input[0] = Channel.of([[id:"kaiju"],file(params.pipelines_testdata_base_path + '/db/kaiju.tar.gz', checkIfExists: true)])
+                """
+            }
+        }
+
+        run("UNTAR", alias: "KRAKEN2_DB_UNTAR") {
+            script "../../../../modules/nf-core/untar/main.nf"
+            process {
+                """
+                input[0] = Channel.of([[id:"kraken2"],file(params.pipelines_testdata_base_path + '/db/kraken2_bracken.tar.gz', checkIfExists: true)])
+                """
+            }
+        }
+
+    }
+
+    test("sarscov2 - contigs - vsearch - default") {
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [id:'test', sample:'test'],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fasta/contigs.fasta', checkIfExists: true),
+                    []
+                ])
+                input[1] = Channel.of([[id:'test', sample:'test'], [file(params.pipelines_testdata_base_path + '/genomes/coverages_spades.idxstats', checkIfExists: true)]])
+                input[2] = Channel.of([])
+                input[3] = BLAST_MAKEBLASTDB.out.db
+                input[4] = Channel.of([
+                    [id:'sarscov2_db'],
+                    file(params.pipelines_testdata_base_path + '/db/sarscov2.fasta', checkIfExists: true)
+                ])
+                input[5] = Channel.of([])
+                input[6] = Channel.of([])
+                input[7] = []
+                input[8] = "vsearch"
+                input[9] = 0.85
+                input[10] = true
+                input[11] = 0
+                input[12] = true
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(
+                    workflow.out.clusters,
+                    workflow.out.centroids_members,
+                    workflow.out.clusters_tsv,
+                    workflow.out.clusters_summary,
+                    workflow.out.no_blast_hits_mqc,
+                ).match() }
+            )
+        }
+    }
+
+    test("sarscov2 - contigs - vsearch - with precluster") {
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [id:'test', sample:'test'],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fasta/contigs.fasta', checkIfExists: true),
+                    []
+                ])
+                input[1] = Channel.of([[id:'test', sample:'test'], [file(params.pipelines_testdata_base_path + '/genomes/coverages_spades.idxstats', checkIfExists: true)]])
+                input[2] = Channel.of([])
+                input[3] = BLAST_MAKEBLASTDB.out.db
+                input[4] = Channel.of([
+                    [id:'sarscov2_db'],
+                    file(params.pipelines_testdata_base_path + '/db/sarscov2.fasta', checkIfExists: true)
+                ])
+                input[5] = KRAKEN2_DB_UNTAR.out.untar.map{ meta, db -> db }
+                input[6] = KAIJU_DB_UNTAR.out.untar.map{ meta, db -> db }
+                input[7] = ['kraken2','kaiju']
+                input[8] = "vsearch"
+                input[9] = 0.85
+                input[10] = false
+                input[11] = 0
+                input[12] = true
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(
+                    workflow.out.clusters,
+                    workflow.out.centroids_members,
+                    workflow.out.clusters_tsv,
+                    workflow.out.clusters_summary,
+                    workflow.out.no_blast_hits_mqc,
+                ).match() }
+            )
+        }
+    }
+
+    test("sarscov2 - contigs - vsearch - with coverage filtering") {
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [id:'test', sample:'test'],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fasta/contigs.fasta', checkIfExists: true),
+                    []
+                ])
+                input[1] = Channel.of([[id:'test', sample:'test'], [file(params.pipelines_testdata_base_path + '/genomes/coverages_spades.idxstats', checkIfExists: true)]])
+                input[2] = Channel.of([])
+                input[3] = BLAST_MAKEBLASTDB.out.db
+                input[4] = Channel.of([
+                    [id:'sarscov2_db'],
+                    file(params.pipelines_testdata_base_path + '/db/sarscov2.fasta', checkIfExists: true)
+                ])
+                input[5] = Channel.of([])
+                input[6] = Channel.of([])
+                input[7] = []
+                input[8] = "vsearch"
+                input[9] = 0.85
+                input[10] = true
+                input[11] = 30
+                input[12] = true
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(
+                    workflow.out.clusters,
+                    workflow.out.centroids_members,
+                    workflow.out.clusters_tsv,
+                    workflow.out.clusters_summary,
+                    workflow.out.no_blast_hits_mqc,
+                ).match() }
+            )
+        }
+    }
+
+    test("sarscov2 - contigs - cdhitest") {
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [id:'test', sample:'test'],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fasta/contigs.fasta', checkIfExists: true),
+                    []
+                ])
+                input[1] = Channel.of([[id:'test', sample:'test'], [file(params.pipelines_testdata_base_path + '/genomes/coverages_spades.idxstats', checkIfExists: true)]])
+                input[2] = Channel.of([])
+                input[3] = BLAST_MAKEBLASTDB.out.db
+                input[4] = Channel.of([
+                    [id:'sarscov2_db'],
+                    file(params.pipelines_testdata_base_path + '/db/sarscov2.fasta', checkIfExists: true)
+                ])
+                input[5] = Channel.of([])
+                input[6] = Channel.of([])
+                input[7] = []
+                input[8] = "cdhitest"
+                input[9] = 0.85
+                input[10] = true
+                input[11] = 0
+                input[12] = true
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(
+                    // Cdhit didn't seem to produce consistent output file names, so we snapshot the name only here
+                    // So also the meta Map will be inconsistent
+                    workflow.out.clusters.collect {it.collect { it instanceof Map ? '' : file(it).name } },
+                    workflow.out.centroids_members.collect { it.collect { it instanceof Map ? '' : file(it).name } },
+                    workflow.out.clusters_tsv.collect { it.collect { it instanceof Map ? '' : file(it).name } },
+                    workflow.out.clusters_summary.collect { it.collect { it instanceof Map ? '' : file(it).name } },
+                    workflow.out.no_blast_hits_mqc,
+                ).match() }
+            )
+        }
+    }
+
+    test("sarscov2 - contigs - mmseqs-linclust") {
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [id:'test', sample:'test'],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fasta/contigs.fasta', checkIfExists: true),
+                    []
+                ])
+                input[1] = Channel.of([[id:'test', sample:'test'], [file(params.pipelines_testdata_base_path + '/genomes/coverages_spades.idxstats', checkIfExists: true)]])
+                input[2] = Channel.of([])
+                input[3] = BLAST_MAKEBLASTDB.out.db
+                input[4] = Channel.of([
+                    [id:'sarscov2_db'],
+                    file(params.pipelines_testdata_base_path + '/db/sarscov2.fasta', checkIfExists: true)
+                ])
+                input[5] = Channel.of([])
+                input[6] = Channel.of([])
+                input[7] = []
+                input[8] = "mmseqs-linclust"
+                input[9] = 0.85
+                input[10] = true
+                input[11] = 0
+                input[12] = true
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(
+                    workflow.out.clusters.collect{ meta, file ->  path(file).csv(sep:"\t", header:false).rowCount },
+                    workflow.out.centroids_members,
+                    workflow.out.clusters_tsv,
+                    workflow.out.clusters_summary,
+                    workflow.out.no_blast_hits_mqc,
+                ).match() }
+            )
+        }
+    }
+
+    test("sarscov2 - contigs - mmseqs-cluster") {
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [id:'test', sample:'test'],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fasta/contigs.fasta', checkIfExists: true),
+                    []
+                ])
+                input[1] = Channel.of([[id:'test', sample:'test'], [file(params.pipelines_testdata_base_path + '/genomes/coverages_spades.idxstats', checkIfExists: true)]])
+                input[2] = Channel.of([])
+                input[3] = BLAST_MAKEBLASTDB.out.db
+                input[4] = Channel.of([
+                    [id:'sarscov2_db'],
+                    file(params.pipelines_testdata_base_path + '/db/sarscov2.fasta', checkIfExists: true)
+                ])
+                input[5] = Channel.of([])
+                input[6] = Channel.of([])
+                input[7] = []
+                input[8] = "mmseqs-cluster"
+                input[9] = 0.85
+                input[10] = true
+                input[11] = 0
+                input[12] = true
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(
+                    workflow.out.clusters.collect{ meta, file ->  path(file).csv(sep:"\t", header:false).rowCount },
+                    workflow.out.centroids_members,
+                    workflow.out.clusters_tsv,
+                    workflow.out.clusters_summary,
+                    workflow.out.no_blast_hits_mqc,
+                ).match() }
+            )
+        }
+    }
+
+    test("sarscov2 - contigs + fastq - vrhyme") {
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [id:'test', sample:'test', single_end:false],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fasta/contigs.fasta', checkIfExists: true),
+                    [
+                        file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fastq/test_1.fastq.gz', checkIfExists: true),
+                        file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fastq/test_2.fastq.gz', checkIfExists: true)
+                    ]
+                ])
+                input[1] = Channel.of([[id:'test', sample:'test'], [file(params.pipelines_testdata_base_path + '/genomes/coverages_spades.idxstats', checkIfExists: true)]])
+                input[2] = Channel.of([])
+                input[3] = BLAST_MAKEBLASTDB.out.db
+                input[4] = Channel.of([
+                    [id:'sarscov2_db'],
+                    file(params.pipelines_testdata_base_path + '/db/sarscov2.fasta', checkIfExists: true)
+                ])
+                input[5] = Channel.of([])
+                input[6] = Channel.of([])
+                input[7] = []
+                input[8] = "vrhyme"
+                input[9] = 0.85
+                input[10] = true
+                input[11] = 0
+                input[12] = true
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(
+                    workflow.out.clusters,
+                    workflow.out.centroids_members,
+                    workflow.out.clusters_tsv,
+                    workflow.out.clusters_summary,
+                    workflow.out.no_blast_hits_mqc,
+                ).match() }
+            )
+        }
+    }
+
+    test("sarscov2 - contigs - mash") {
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [id:'test', sample:'test'],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fasta/contigs.fasta', checkIfExists: true),
+                    []
+                ])
+                input[1] = Channel.of([[id:'test', sample:'test'], [file(params.pipelines_testdata_base_path + '/genomes/coverages_spades.idxstats', checkIfExists: true)]])
+                input[2] = Channel.of([])
+                input[3] = BLAST_MAKEBLASTDB.out.db
+                input[4] = Channel.of([
+                    [id:'sarscov2_db'],
+                    file(params.pipelines_testdata_base_path + '/db/sarscov2.fasta', checkIfExists: true)
+                ])
+                input[5] = Channel.of([])
+                input[6] = Channel.of([])
+                input[7] = []
+                input[8] = "mash"
+                input[9] = 0.85
+                input[10] = true
+                input[11] = 0
+                input[12] = true
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(
+                    workflow.out.clusters,
+                    workflow.out.centroids_members,
+                    workflow.out.clusters_tsv,
+                    workflow.out.clusters_summary,
+                    workflow.out.no_blast_hits_mqc,
+                ).match() }
+            )
+        }
+    }
+
+    test("sarscov2 - contigs - vsearch - no blast db") {
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [id:'test', sample:'test'],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fasta/contigs.fasta', checkIfExists: true),
+                    []
+                ])
+                input[1] = Channel.of([[id:'test', sample:'test'], [file(params.pipelines_testdata_base_path + '/genomes/coverages_spades.idxstats', checkIfExists: true)]])
+                input[2] = Channel.of([])
+                input[3] = [] // no blast db
+                input[4] = [] // no sequencing db
+                input[5] = Channel.of([])
+                input[6] = Channel.of([])
+                input[7] = []
+                input[8] = "vsearch"
+                input[9] = 0.85
+                input[10] = true
+                input[11] = 0
+                input[12] = false
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(
+                    workflow.out.clusters,
+                    workflow.out.centroids_members,
+                    workflow.out.clusters_tsv,
+                    workflow.out.clusters_summary,
+                    workflow.out.no_blast_hits_mqc,
+                ).match() }
+            )
+        }
+    }
+
+    test("sarscov2 - contigs - vsearch - no precluster - stub") {
+        options '-stub-run'
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [id:'test', sample:'test'],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fasta/contigs.fasta', checkIfExists: true),
+                    []
+                ])
+                input[1] = Channel.of([[id:'test', sample:'test'], [file(params.pipelines_testdata_base_path + '/genomes/coverages_spades.idxstats', checkIfExists: true)]])
+                input[2] = Channel.of([])
+                input[3] = BLAST_MAKEBLASTDB.out.db
+                input[4] = Channel.of([
+                    [id:'sarscov2_db'],
+                    file(params.pipelines_testdata_base_path + '/db/sarscov2.fasta', checkIfExists: true)
+                ])
+                input[5] = Channel.of([])
+                input[6] = Channel.of([])
+                input[7] = []
+                input[8] = "vsearch"
+                input[9] = 0.85
+                input[10] = true
+                input[11] = 0
+                input[12] = true
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(
+                    workflow.out.clusters,
+                    workflow.out.centroids_members,
+                    workflow.out.clusters_tsv,
+                    workflow.out.clusters_summary,
+                    workflow.out.no_blast_hits_mqc,
+                ).match() }
+            )
+        }
+    }
+
+    test("sarscov2 - contigs - vsearch - with precluster - stub") {
+        options '-stub-run'
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [id:'test', sample:'test'],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fasta/contigs.fasta', checkIfExists: true),
+                    []
+                ])
+                input[1] = Channel.of([[id:'test', sample:'test'], [file(params.pipelines_testdata_base_path + '/genomes/coverages_spades.idxstats', checkIfExists: true)]])
+                input[2] = Channel.of([])
+                input[3] = BLAST_MAKEBLASTDB.out.db
+                input[4] = Channel.of([
+                    [id:'sarscov2_db'],
+                    file(params.pipelines_testdata_base_path + '/db/sarscov2.fasta', checkIfExists: true)
+                ])
+                input[5] = KRAKEN2_DB_UNTAR.out.untar.map{ meta, db -> db }
+                input[6] = KAIJU_DB_UNTAR.out.untar.map{ meta, db -> db }
+                input[7] = ['kraken2','kaiju']
+                input[8] = "vsearch"
+                input[9] = 0.85
+                input[10] = false
+                input[11] = 0
+                input[12] = true
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(
+                    workflow.out.clusters,
+                    workflow.out.centroids_members,
+                    workflow.out.clusters_tsv,
+                    workflow.out.clusters_summary,
+                    workflow.out.no_blast_hits_mqc,
+                ).match() }
+            )
+        }
+    }
+}

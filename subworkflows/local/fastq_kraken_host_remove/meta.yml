@@ -1,0 +1,51 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: fastq_kraken_host_remove
+description: Remove host contamination from FASTQ files using Kraken2 with optional FastQC quality control
+keywords:
+  - host removal
+  - contamination
+  - kraken2
+  - fastqc
+  - quality control
+  - filtering
+components:
+  - kraken2/kraken2
+  - fastqc
+input:
+  - ch_reads:
+      description: |
+        Input FASTQ files potentially containing host contamination
+        Structure: [ val(meta), path(reads) ]
+  - ch_kraken2_host_db:
+      description: |
+        Kraken2 database containing host reference sequences
+        Structure: [ path(kraken2_host_db) ]
+  - skip_fastqc:
+      type: boolean
+      description: |
+        Whether to skip FastQC quality control analysis
+  - min_reads:
+      type: integer
+      description: |
+        Minimum number of reads required after host removal to pass filtering
+output:
+  - reads_hostremoved:
+      description: |
+        FASTQ files with host contamination removed that passed read count threshold
+        Structure: [ val(meta), path(fastq) ]
+  - reads_hostremoved_fail:
+      description: |
+        Samples that failed the minimum read count threshold after host removal
+        Structure: [ val(meta), val(n_reads) ]
+  - mqc:
+      description: |
+        MultiQC files including Kraken2 reports and FastQC results
+        Structure: [ path(multiqc_files) ]
+  - versions:
+      description: |
+        Files containing software versions
+        Structure: [ path(versions.yml) ]
+authors:
+  - "@Joon-Klaps"
+maintainers:
+  - "@Joon-Klaps"

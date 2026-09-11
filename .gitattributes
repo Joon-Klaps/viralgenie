@@ -2,3 +2,6 @@
 *.nf.test linguist-language=nextflow
 modules/nf-core/** linguist-generated
 subworkflows/nf-core/** linguist-generated
+
+# The big MultiQC HTML report shouldn't count towards repo language breakdown
+assets/test_full-multiqc_report.html linguist-generated

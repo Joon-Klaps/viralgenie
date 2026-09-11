@@ -1,0 +1,74 @@
+Changes in component 'nf-core/prinseqplusplus'
+'modules/nf-core/prinseqplusplus/environment.yml' is unchanged
+'modules/nf-core/prinseqplusplus/meta.yml' is unchanged
+Changes in 'prinseqplusplus/main.nf':
+--- modules/nf-core/prinseqplusplus/main.nf
++++ modules/nf-core/prinseqplusplus/main.nf
+@@ -8,13 +8,13 @@
+         'quay.io/biocontainers/prinseq-plus-plus:1.2.3--hc90279e_1' }"
+ 
+     input:
+-    tuple val(meta), path(reads)
++    tuple val(meta), path(reads), path(fasta)
+ 
+     output:
+-    tuple val(meta), path("*_good_out*.fastq.gz")                  , emit: good_reads
+-    tuple val(meta), path("*_single_out*.fastq.gz"), optional: true, emit: single_reads
+-    tuple val(meta), path("*_bad_out*.fastq.gz")   , optional: true, emit: bad_reads
+-    tuple val(meta), path("*.log")                                 , emit: log
++    tuple val(meta), path("*_good_out*")                  , emit: good_reads
++    tuple val(meta), path("*_single_out*"), optional: true, emit: single_reads
++    tuple val(meta), path("*_bad_out*")   , optional: true, emit: bad_reads
++    tuple val(meta), path("*.log")                        , emit: log
+     tuple val("${task.process}"), val('prinseqplusplus'), eval("prinseq++ --version | cut -f 2 -d ' '"), topic: versions, emit: versions_prinseqplusplus
+ 
+     when:
+@@ -23,31 +23,19 @@
+     script:
+     def args = task.ext.args ?: ''
+     def prefix = task.ext.prefix ?: "${meta.id}"
++    def fastqs = reads ? meta.single_end ? "-fastq ${reads}" : "-fastq ${reads[0]} -fastq2 ${reads[1]}" : ''
++    def fasta_arg = fasta ? "-fastq ${fasta} -FASTA" : ''
+ 
+-    if (meta.single_end) {
+-        """
+-        prinseq++ \\
+-            -threads $task.cpus \\
+-            -fastq ${reads} \\
+-            -out_name ${prefix} \\
+-            -out_gz \\
+-            -VERBOSE 1 \\
+-            $args \\
+-            | tee ${prefix}.log
+-        """
+-    } else {
+-        """
+-        prinseq++ \\
+-            -threads $task.cpus \\
+-            -fastq ${reads[0]} \\
+-            -fastq2 ${reads[1]} \\
+-            -out_name ${prefix} \\
+-            -out_gz \\
+-            -VERBOSE 1 \\
+-            $args \\
+-            | tee ${prefix}.log
+-        """
+-    }
++    """
++    prinseq++ \\
++        -threads $task.cpus \\
++        ${fastqs} \\
++        ${fasta_arg} \\
++        -out_name ${prefix} \\
++        -VERBOSE 1 \\
++        $args \\
++        | tee ${prefix}.log
++    """
+ 
+     stub:
+     def prefix = task.ext.prefix ?: "${meta.id}"
+
+'modules/nf-core/prinseqplusplus/tests/main.nf.test.snap' is unchanged
+'modules/nf-core/prinseqplusplus/tests/nextflow.config' is unchanged
+'modules/nf-core/prinseqplusplus/tests/main.nf.test' is unchanged
+************************************************************

@@ -1,0 +1,47 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: map_reads
+description: Map sequencing reads to reference sequences using BWA-MEM2, Bowtie2, or BWA with automatic index generation
+keywords:
+  - mapping
+  - alignment
+  - reads
+  - bwamem2
+  - bowtie2
+  - index
+  - bam
+components:
+  - bwamem2/index
+  - bwamem2/mem
+  - bowtie2/build
+  - bowtie2/align
+input:
+  - ch_reference_reads:
+      description: |
+        The input channel containing reference sequences and sequencing reads
+        Structure: [ val(meta), path(fasta), path(reads) ]
+  - mapper:
+      type: string
+      description: |
+        The mapping algorithm to use
+      enum: ["bwamem2", "bowtie2"]
+output:
+  - bam:
+      description: |
+        Mapped reads in BAM format
+        Structure: [ val(meta), path(bam) ]
+  - ref:
+      description: |
+        Reference sequences used for mapping
+        Structure: [ val(meta), path(fasta) ]
+  - mqc:
+      description: |
+        MultiQC files for quality control reporting (only available for Bowtie2)
+        Structure: [ val(meta), path(mqc) ]
+  - versions:
+      description: |
+        Files containing software versions
+        Structure: [ path(versions.yml) ]
+authors:
+  - "@Joon-Klaps"
+maintainers:
+  - "@Joon-Klaps"

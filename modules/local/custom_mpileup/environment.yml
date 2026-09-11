@@ -1,0 +1,11 @@
+name: custom_mpileup
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - bioconda::pysam==0.22.1
+  - bioconda::pysamstats==1.1.2
+  - conda-forge::python=3.9
+  - pip
+  - pip:
+      - numpy==1.26.4

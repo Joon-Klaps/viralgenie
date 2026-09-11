@@ -1,0 +1,80 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: fasta_contig_clust
+description: Cluster contigs by reference alignment, taxonomic classification, and similarity clustering with coverage analysis
+keywords:
+  - clustering
+  - contigs
+  - blast
+  - reference selection
+  - taxonomy
+  - kraken2
+  - kaiju
+  - preclustering
+  - coverage
+components:
+  - fasta_blast_refsel
+  - fasta_fastq_clust
+  - fasta_contig_preclust
+  - extract/cluster
+  - extract_cluster
+  - utils_nfcore_viralmetagenome_pipeline
+  - getmapfromjson
+input:
+  - fasta_fastq:
+      description: |
+        Input contigs with corresponding FASTQ reads
+        Structure: [ val(meta), path(fasta), path(fastq) ]
+  - ch_coverages:
+      description: |
+        Coverage statistics files from assembly
+        Structure: [ val(meta), path(idxstats) ]
+  - ch_blast_db:
+      description: |
+        BLAST database for reference selection
+        Structure: [ val(meta), path(db) ]
+  - ch_blast_db_fasta:
+      description: |
+        Reference FASTA sequences corresponding to BLAST database
+        Structure: [ val(meta), path(fasta) ]
+  - ch_kraken2_db:
+      description: |
+        Kraken2 database for taxonomic classification
+        Structure: [ val(meta), path(db) ]
+  - ch_kaiju_db:
+      description: |
+        Kaiju database for taxonomic classification
+        Structure: [ val(meta), path(db) ]
+  - ch_contig_classifiers:
+      type: string
+      description: |
+        List of taxonomic classifiers to use for preclustering
+      enum: ["kraken2", "kaiju"]
+output:
+  - clusters:
+      description: |
+        Cluster files from similarity-based clustering
+        Structure: [ val(meta), path(clusters) ]
+  - centroids_members:
+      description: |
+        Cluster centroids and members with enriched metadata including cluster information
+        Structure: [ val(meta), path(seq_centroids.fa), path(seq_members.fa) ]
+  - clusters_tsv:
+      description: |
+        Cluster information in TSV format
+        Structure: [ val(meta), path(tsv) ]
+  - clusters_summary:
+      description: |
+        Summary statistics of clustering results
+        Structure: [ val(meta), path(tsv) ]
+  - no_blast_hits_mqc:
+      description: |
+        MultiQC report for samples with no BLAST hits
+        Structure: [ path(tsv) ]
+  - versions:
+      description: |
+        Files containing software versions
+        Structure: [ path(versions.yml) ]
+authors:
+  - "@Joon-Klaps"
+maintainers:
+  - "@Joon-Klaps"

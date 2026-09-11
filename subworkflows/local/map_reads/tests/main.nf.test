@@ -1,0 +1,155 @@
+nextflow_workflow {
+
+    name "Test Workflow MAP_READS - contig coverage filter"
+    script "../main.nf"
+    workflow "MAP_READS"
+    config "./nextflow.config"
+
+    tag "subworkflows"
+    tag "subworkflows_local"
+    tag "subworkflows/map_reads"
+    tag "map_reads"
+    tag "bwamem2/mem"
+    tag "bwamem2/index"
+    tag "bowtie2/align"
+    tag "bowtie2/build"
+
+    // Unless --keep_unmapped is set, the contig alignments drop their unmapped reads through a
+    // `samtools view -F 4` piped into ext.args2 of the mapping modules.
+
+    test("sarscov2 - bwamem2 - drops the unmapped reads") {
+
+        when {
+            params {
+                keep_unmapped = false
+            }
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [id:'test', sample:'test', single_end:false],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/transcriptome.fasta', checkIfExists: true),
+                    [
+                        file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fastq/test_1.fastq.gz', checkIfExists: true),
+                        file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fastq/test_2.fastq.gz', checkIfExists: true)
+                    ]
+                ])
+                input[1] = 'bwamem2'
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(
+                    bam(workflow.out.bam[0][1]).getStatistics(),
+                    bam(workflow.out.bam[0][1]).getReadsMD5(),
+                    workflow.out.ref,
+                    workflow.out.mqc,
+                ).match() }
+            )
+        }
+    }
+
+    test("sarscov2 - bwamem2 - keep_unmapped keeps them") {
+
+        when {
+            params {
+                keep_unmapped = true
+            }
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [id:'test', sample:'test', single_end:false],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/transcriptome.fasta', checkIfExists: true),
+                    [
+                        file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fastq/test_1.fastq.gz', checkIfExists: true),
+                        file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fastq/test_2.fastq.gz', checkIfExists: true)
+                    ]
+                ])
+                input[1] = 'bwamem2'
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(
+                    bam(workflow.out.bam[0][1]).getStatistics(),
+                    bam(workflow.out.bam[0][1]).getReadsMD5(),
+                    workflow.out.ref,
+                    workflow.out.mqc,
+                ).match() }
+            )
+        }
+    }
+
+    test("sarscov2 - bowtie2 - drops the unmapped reads") {
+
+        when {
+            params {
+                keep_unmapped = false
+            }
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [id:'test', sample:'test', single_end:false],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/transcriptome.fasta', checkIfExists: true),
+                    [
+                        file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fastq/test_1.fastq.gz', checkIfExists: true),
+                        file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fastq/test_2.fastq.gz', checkIfExists: true)
+                    ]
+                ])
+                input[1] = 'bowtie2'
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(
+                    bam(workflow.out.bam[0][1]).getStatistics(),
+                    bam(workflow.out.bam[0][1]).getReadsMD5(),
+                    workflow.out.ref,
+                    workflow.out.mqc,
+                ).match() }
+            )
+        }
+    }
+
+    test("sarscov2 - bowtie2 - keep_unmapped keeps them") {
+
+        when {
+            params {
+                keep_unmapped = true
+            }
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [id:'test', sample:'test', single_end:false],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/transcriptome.fasta', checkIfExists: true),
+                    [
+                        file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fastq/test_1.fastq.gz', checkIfExists: true),
+                        file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fastq/test_2.fastq.gz', checkIfExists: true)
+                    ]
+                ])
+                input[1] = 'bowtie2'
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(
+                    bam(workflow.out.bam[0][1]).getStatistics(),
+                    bam(workflow.out.bam[0][1]).getReadsMD5(),
+                    workflow.out.ref,
+                    workflow.out.mqc,
+                ).match() }
+            )
+        }
+    }
+}

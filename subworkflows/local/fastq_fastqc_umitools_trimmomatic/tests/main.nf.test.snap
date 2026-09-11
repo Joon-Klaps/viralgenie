@@ -1,0 +1,1625 @@
+{
+    "sarscov2 paired-end [fastq] | skip_umi_extract": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test",
+                        "single_end": false
+                    },
+                    [
+                        "test.paired.trim_1.fastq.gz:md5,4161df271f9bfcd25d5845a1e220dbec",
+                        "test.paired.trim_2.fastq.gz:md5,2ebae722295ea66d84075a3b042e2b42"
+                    ]
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "single_end": false
+                    },
+                    100.0
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "single_end": false
+                    },
+                    [
+                        "test.unpaired.trim_1.fastq.gz:md5,d41d8cd98f00b204e9800998ecf8427e",
+                        "test.unpaired.trim_2.fastq.gz:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ]
+            ],
+            [
+                
+            ]
+        ],
+        "timestamp": "2026-02-10T17:25:59.523537625",
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.10.0"
+        }
+    },
+    "sarscov2 paired-end [fastq] | with_umi": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test",
+                        "single_end": false
+                    },
+                    [
+                        "test.paired.trim_1.fastq.gz:md5,4161df271f9bfcd25d5845a1e220dbec",
+                        "test.paired.trim_2.fastq.gz:md5,2ebae722295ea66d84075a3b042e2b42"
+                    ]
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "single_end": false
+                    },
+                    100.0
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "single_end": false
+                    },
+                    [
+                        "test.unpaired.trim_1.fastq.gz:md5,d41d8cd98f00b204e9800998ecf8427e",
+                        "test.unpaired.trim_2.fastq.gz:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ]
+            ]
+        ],
+        "timestamp": "2026-02-10T17:25:45.150323507",
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.10.0"
+        }
+    },
+    "sarscov2 paired-end [fastq] | umi_discard_read = 2 - stub": {
+        "content": [
+            {
+                "0": [
+                    
+                ],
+                "1": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_raw.html:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "2": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_raw.zip:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "3": [
+                    
+                ],
+                "4": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.summary:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "5": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_trim.log:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "6": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        [
+                            "test.unpaired.trim_1.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940",
+                            "test.unpaired.trim_2.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                        ]
+                    ]
+                ],
+                "7": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        0
+                    ]
+                ],
+                "8": [
+                    
+                ],
+                "9": [
+                    
+                ],
+                "fastqc_raw_html": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_raw.html:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "fastqc_raw_zip": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_raw.zip:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "fastqc_trim_html": [
+                    
+                ],
+                "fastqc_trim_zip": [
+                    
+                ],
+                "reads": [
+                    
+                ],
+                "trim_log": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_trim.log:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "trim_read_count": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        0
+                    ]
+                ],
+                "trim_summ": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.summary:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "trim_unpaired_reads": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        [
+                            "test.unpaired.trim_1.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940",
+                            "test.unpaired.trim_2.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                        ]
+                    ]
+                ],
+                "umi_log": [
+                    
+                ]
+            }
+        ],
+        "timestamp": "2026-09-03T12:47:39.87501",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "25.10.4"
+        }
+    },
+    "sarscov2 single-end [fastq]": {
+        "content": [
+            [
+                
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "single_end": true
+                    },
+                    0.0
+                ]
+            ],
+            null,
+            null,
+            [
+                
+            ]
+        ],
+        "timestamp": "2026-02-10T17:25:21.725149469",
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.10.0"
+        }
+    },
+    "sarscov2 paired-end [fastq] | skip_trimming": {
+        "content": [
+            {
+                "id": "test",
+                "single_end": false
+            },
+            [
+                
+            ],
+            [
+                
+            ],
+            [
+                
+            ]
+        ],
+        "timestamp": "2026-02-10T17:26:22.166777919",
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.10.0"
+        }
+    },
+    "sarscov2 paired-end [fastq] | skip_trimming - stub": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test",
+                        "single_end": false
+                    },
+                    "test_raw.html:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "single_end": false
+                    },
+                    "test_raw.zip:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ]
+            ],
+            [
+                
+            ],
+            [
+                
+            ],
+            [
+                
+            ],
+            [
+                
+            ],
+            [
+                
+            ],
+            [
+                
+            ],
+            [
+                
+            ]
+        ],
+        "timestamp": "2026-09-03T12:47:47.990381",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "25.10.4"
+        }
+    },
+    "sarscov2 paired-end [fastq] | umi_discard_read = 2": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test",
+                        "single_end": false
+                    },
+                    [
+                        "test.paired.trim_1.fastq.gz:md5,4161df271f9bfcd25d5845a1e220dbec",
+                        "test.paired.trim_2.fastq.gz:md5,2ebae722295ea66d84075a3b042e2b42"
+                    ]
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "single_end": false
+                    },
+                    100.0
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "single_end": false
+                    },
+                    [
+                        "test.unpaired.trim_1.fastq.gz:md5,d41d8cd98f00b204e9800998ecf8427e",
+                        "test.unpaired.trim_2.fastq.gz:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ]
+            ],
+            [
+                
+            ]
+        ],
+        "timestamp": "2026-02-10T17:26:11.347313808",
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.10.0"
+        }
+    },
+    "sarscov2 paired-end [fastq] | min_trimmed_reads = 26 - stub": {
+        "content": [
+            {
+                "0": [
+                    
+                ],
+                "1": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_raw.html:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "2": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_raw.zip:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "3": [
+                    
+                ],
+                "4": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.summary:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "5": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_trim.log:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "6": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        [
+                            "test.unpaired.trim_1.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940",
+                            "test.unpaired.trim_2.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                        ]
+                    ]
+                ],
+                "7": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        0
+                    ]
+                ],
+                "8": [
+                    
+                ],
+                "9": [
+                    
+                ],
+                "fastqc_raw_html": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_raw.html:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "fastqc_raw_zip": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_raw.zip:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "fastqc_trim_html": [
+                    
+                ],
+                "fastqc_trim_zip": [
+                    
+                ],
+                "reads": [
+                    
+                ],
+                "trim_log": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_trim.log:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "trim_read_count": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        0
+                    ]
+                ],
+                "trim_summ": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.summary:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "trim_unpaired_reads": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        [
+                            "test.unpaired.trim_1.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940",
+                            "test.unpaired.trim_2.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                        ]
+                    ]
+                ],
+                "umi_log": [
+                    
+                ]
+            }
+        ],
+        "timestamp": "2026-09-03T12:48:12.01143",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "25.10.4"
+        }
+    },
+    "sarscov2 paired-end [fastq] | save_trimmed_fail": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test",
+                        "single_end": false
+                    },
+                    [
+                        "test.paired.trim_1.fastq.gz:md5,4161df271f9bfcd25d5845a1e220dbec",
+                        "test.paired.trim_2.fastq.gz:md5,2ebae722295ea66d84075a3b042e2b42"
+                    ]
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "single_end": false
+                    },
+                    100.0
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "single_end": false
+                    },
+                    [
+                        "test.unpaired.trim_1.fastq.gz:md5,d41d8cd98f00b204e9800998ecf8427e",
+                        "test.unpaired.trim_2.fastq.gz:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ]
+            ],
+            [
+                
+            ]
+        ],
+        "timestamp": "2026-02-10T17:26:33.82873196",
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.10.0"
+        }
+    },
+    "sarscov2 paired-end [fastq] | skip_fastqc": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test",
+                        "single_end": false
+                    },
+                    [
+                        "test.paired.trim_1.fastq.gz:md5,4161df271f9bfcd25d5845a1e220dbec",
+                        "test.paired.trim_2.fastq.gz:md5,2ebae722295ea66d84075a3b042e2b42"
+                    ]
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "single_end": false
+                    },
+                    100.0
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "single_end": false
+                    },
+                    [
+                        "test.unpaired.trim_1.fastq.gz:md5,d41d8cd98f00b204e9800998ecf8427e",
+                        "test.unpaired.trim_2.fastq.gz:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ]
+            ],
+            [
+                
+            ]
+        ],
+        "timestamp": "2026-02-10T17:25:30.909627856",
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.10.0"
+        }
+    },
+    "sarscov2 paired-end [fastq] | save_trimmed_fail - stub": {
+        "content": [
+            {
+                "0": [
+                    
+                ],
+                "1": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_raw.html:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "2": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_raw.zip:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "3": [
+                    
+                ],
+                "4": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.summary:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "5": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_trim.log:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "6": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        [
+                            "test.unpaired.trim_1.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940",
+                            "test.unpaired.trim_2.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                        ]
+                    ]
+                ],
+                "7": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        0
+                    ]
+                ],
+                "8": [
+                    
+                ],
+                "9": [
+                    
+                ],
+                "fastqc_raw_html": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_raw.html:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "fastqc_raw_zip": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_raw.zip:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "fastqc_trim_html": [
+                    
+                ],
+                "fastqc_trim_zip": [
+                    
+                ],
+                "reads": [
+                    
+                ],
+                "trim_log": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_trim.log:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "trim_read_count": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        0
+                    ]
+                ],
+                "trim_summ": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.summary:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "trim_unpaired_reads": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        [
+                            "test.unpaired.trim_1.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940",
+                            "test.unpaired.trim_2.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                        ]
+                    ]
+                ],
+                "umi_log": [
+                    
+                ]
+            }
+        ],
+        "timestamp": "2026-09-03T12:47:56.006586",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "25.10.4"
+        }
+    },
+    "sarscov2 paired-end [fastq] | skip_fastqc - stub": {
+        "content": [
+            {
+                "0": [
+                    
+                ],
+                "1": [
+                    
+                ],
+                "2": [
+                    
+                ],
+                "3": [
+                    
+                ],
+                "4": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.summary:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "5": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_trim.log:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "6": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        [
+                            "test.unpaired.trim_1.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940",
+                            "test.unpaired.trim_2.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                        ]
+                    ]
+                ],
+                "7": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        0
+                    ]
+                ],
+                "8": [
+                    
+                ],
+                "9": [
+                    
+                ],
+                "fastqc_raw_html": [
+                    
+                ],
+                "fastqc_raw_zip": [
+                    
+                ],
+                "fastqc_trim_html": [
+                    
+                ],
+                "fastqc_trim_zip": [
+                    
+                ],
+                "reads": [
+                    
+                ],
+                "trim_log": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_trim.log:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "trim_read_count": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        0
+                    ]
+                ],
+                "trim_summ": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.summary:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "trim_unpaired_reads": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        [
+                            "test.unpaired.trim_1.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940",
+                            "test.unpaired.trim_2.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                        ]
+                    ]
+                ],
+                "umi_log": [
+                    
+                ]
+            }
+        ],
+        "timestamp": "2026-09-03T12:47:10.65233",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "25.10.4"
+        }
+    },
+    "sarscov2 paired-end [fastq] | save_merged - stub": {
+        "content": [
+            {
+                "0": [
+                    
+                ],
+                "1": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_raw.html:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "2": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_raw.zip:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "3": [
+                    
+                ],
+                "4": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.summary:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "5": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_trim.log:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "6": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        [
+                            "test.unpaired.trim_1.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940",
+                            "test.unpaired.trim_2.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                        ]
+                    ]
+                ],
+                "7": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        0
+                    ]
+                ],
+                "8": [
+                    
+                ],
+                "9": [
+                    
+                ],
+                "fastqc_raw_html": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_raw.html:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "fastqc_raw_zip": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_raw.zip:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "fastqc_trim_html": [
+                    
+                ],
+                "fastqc_trim_zip": [
+                    
+                ],
+                "reads": [
+                    
+                ],
+                "trim_log": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_trim.log:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "trim_read_count": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        0
+                    ]
+                ],
+                "trim_summ": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.summary:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "trim_unpaired_reads": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        [
+                            "test.unpaired.trim_1.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940",
+                            "test.unpaired.trim_2.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                        ]
+                    ]
+                ],
+                "umi_log": [
+                    
+                ]
+            }
+        ],
+        "timestamp": "2026-09-03T12:48:04.003537",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "25.10.4"
+        }
+    },
+    "sarscov2 paired-end [fastq] | min_trimmed_reads = 26": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test",
+                        "single_end": false
+                    },
+                    [
+                        "test.paired.trim_1.fastq.gz:md5,4161df271f9bfcd25d5845a1e220dbec",
+                        "test.paired.trim_2.fastq.gz:md5,2ebae722295ea66d84075a3b042e2b42"
+                    ]
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "single_end": false
+                    },
+                    100.0
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "single_end": false
+                    },
+                    [
+                        "test.unpaired.trim_1.fastq.gz:md5,d41d8cd98f00b204e9800998ecf8427e",
+                        "test.unpaired.trim_2.fastq.gz:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ]
+            ],
+            [
+                
+            ]
+        ],
+        "timestamp": "2026-02-10T17:27:01.77560647",
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.10.0"
+        }
+    },
+    "sarscov2 paired-end [fastq]": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test",
+                        "single_end": false
+                    },
+                    [
+                        "test.paired.trim_1.fastq.gz:md5,4161df271f9bfcd25d5845a1e220dbec",
+                        "test.paired.trim_2.fastq.gz:md5,2ebae722295ea66d84075a3b042e2b42"
+                    ]
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "single_end": false
+                    },
+                    100.0
+                ]
+            ],
+            null,
+            null,
+            [
+                
+            ]
+        ],
+        "timestamp": "2026-02-10T17:25:10.595987929",
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.10.0"
+        }
+    },
+    "sarscov2 paired-end [fastq] | save_merged": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test",
+                        "single_end": false
+                    },
+                    [
+                        "test.paired.trim_1.fastq.gz:md5,4161df271f9bfcd25d5845a1e220dbec",
+                        "test.paired.trim_2.fastq.gz:md5,2ebae722295ea66d84075a3b042e2b42"
+                    ]
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "single_end": false
+                    },
+                    100.0
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test",
+                        "single_end": false
+                    },
+                    [
+                        "test.unpaired.trim_1.fastq.gz:md5,d41d8cd98f00b204e9800998ecf8427e",
+                        "test.unpaired.trim_2.fastq.gz:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ]
+            ],
+            [
+                
+            ]
+        ],
+        "timestamp": "2026-02-10T17:26:48.661112466",
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.10.0"
+        }
+    },
+    "sarscov2 paired-end [fastq] - stub": {
+        "content": [
+            {
+                "0": [
+                    
+                ],
+                "1": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_raw.html:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "2": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_raw.zip:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "3": [
+                    
+                ],
+                "4": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.summary:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "5": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_trim.log:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "6": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        [
+                            "test.unpaired.trim_1.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940",
+                            "test.unpaired.trim_2.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                        ]
+                    ]
+                ],
+                "7": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        0
+                    ]
+                ],
+                "8": [
+                    
+                ],
+                "9": [
+                    
+                ],
+                "fastqc_raw_html": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_raw.html:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "fastqc_raw_zip": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_raw.zip:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "fastqc_trim_html": [
+                    
+                ],
+                "fastqc_trim_zip": [
+                    
+                ],
+                "reads": [
+                    
+                ],
+                "trim_log": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_trim.log:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "trim_read_count": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        0
+                    ]
+                ],
+                "trim_summ": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.summary:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "trim_unpaired_reads": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        [
+                            "test.unpaired.trim_1.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940",
+                            "test.unpaired.trim_2.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                        ]
+                    ]
+                ],
+                "umi_log": [
+                    
+                ]
+            }
+        ],
+        "timestamp": "2026-09-03T12:47:03.24528",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "25.10.4"
+        }
+    },
+    "sarscov2 paired-end [fastq] | with_umi - stub": {
+        "content": [
+            {
+                "0": [
+                    
+                ],
+                "1": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_raw.html:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "2": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_raw.zip:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "3": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.umi_extract.log:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "4": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.summary:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "5": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_trim.log:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "6": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        [
+                            "test.unpaired.trim_1.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940",
+                            "test.unpaired.trim_2.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                        ]
+                    ]
+                ],
+                "7": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        0
+                    ]
+                ],
+                "8": [
+                    
+                ],
+                "9": [
+                    
+                ],
+                "fastqc_raw_html": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_raw.html:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "fastqc_raw_zip": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_raw.zip:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "fastqc_trim_html": [
+                    
+                ],
+                "fastqc_trim_zip": [
+                    
+                ],
+                "reads": [
+                    
+                ],
+                "trim_log": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_trim.log:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "trim_read_count": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        0
+                    ]
+                ],
+                "trim_summ": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.summary:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "trim_unpaired_reads": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        [
+                            "test.unpaired.trim_1.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940",
+                            "test.unpaired.trim_2.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                        ]
+                    ]
+                ],
+                "umi_log": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.umi_extract.log:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-09-03T12:47:23.168984",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "25.10.4"
+        }
+    },
+    "sarscov2 paired-end [fastq] | skip_umi_extract - stub": {
+        "content": [
+            {
+                "0": [
+                    
+                ],
+                "1": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_raw.html:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "2": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_raw.zip:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "3": [
+                    
+                ],
+                "4": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.summary:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "5": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_trim.log:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "6": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        [
+                            "test.unpaired.trim_1.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940",
+                            "test.unpaired.trim_2.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                        ]
+                    ]
+                ],
+                "7": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        0
+                    ]
+                ],
+                "8": [
+                    
+                ],
+                "9": [
+                    
+                ],
+                "fastqc_raw_html": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_raw.html:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "fastqc_raw_zip": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_raw.zip:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "fastqc_trim_html": [
+                    
+                ],
+                "fastqc_trim_zip": [
+                    
+                ],
+                "reads": [
+                    
+                ],
+                "trim_log": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test_trim.log:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "trim_read_count": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        0
+                    ]
+                ],
+                "trim_summ": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.summary:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "trim_unpaired_reads": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        [
+                            "test.unpaired.trim_1.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940",
+                            "test.unpaired.trim_2.fastq.gz:md5,68b329da9893e34099c7d8ad5cb9c940"
+                        ]
+                    ]
+                ],
+                "umi_log": [
+                    
+                ]
+            }
+        ],
+        "timestamp": "2026-09-03T12:47:31.640584",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "25.10.4"
+        }
+    }
+}

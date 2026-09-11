@@ -1,0 +1,40 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://raw.githubusercontent.com/nf-core/viralmetagenome/master/assets/schemas/input.json",
+    "title": "nf-core/viralmetagenome pipeline - params.input schema",
+    "description": "Schema for the file provided with params.input",
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {
+            "sample": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9\\-\\.]+$",
+                "errorMessage": "Sample name must be provided and cannot contain spaces or special characters or '_'",
+                "meta": ["id", "sample"]
+            },
+            "group": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9\\-\\.]+$",
+                "errorMessage": "Group name must be provided and cannot contain spaces or special characters or '_'",
+                "meta": ["group"]
+            },
+            "fastq_1": {
+                "type": "string",
+                "format": "file-path",
+                "exists": true,
+                "pattern": "^\\S+\\.f(ast)?q\\.gz$",
+                "errorMessage": "FastQ file for reads 1 must be provided, cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'"
+            },
+            "fastq_2": {
+                "type": "string",
+                "format": "file-path",
+                "exists": true,
+                "pattern": "^\\S+\\.f(ast)?q\\.gz$",
+                "errorMessage": "FastQ file for reads 2 cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'"
+            }
+        },
+        "required": ["sample", "fastq_1"]
+    },
+    "uniqueItems": true
+}

@@ -1,0 +1,35 @@
+Changes in component 'nf-core/mash/dist'
+'modules/nf-core/mash/dist/environment.yml' is unchanged
+'modules/nf-core/mash/dist/meta.yml' is unchanged
+Changes in 'mash/dist/main.nf':
+--- modules/nf-core/mash/dist/main.nf
++++ modules/nf-core/mash/dist/main.nf
+@@ -9,7 +9,6 @@
+ 
+     input:
+     tuple val(meta), path(query)
+-    path reference
+ 
+     output:
+     tuple val(meta), path("*.txt"), emit: dist
+@@ -21,13 +20,15 @@
+     script:
+     def args = task.ext.args ?: ''
+     def prefix = task.ext.prefix ?: "${meta.id}"
++    def reference = query
+     """
++    echo "name1\tname2\tdistance\tp-value\tmatching-hashes" > ${prefix}.txt
+     mash \\
+         dist \\
+         -p ${task.cpus} \\
+         ${args} \\
+         ${reference} \\
+-        ${query} > ${prefix}.txt
++        ${query} >> ${prefix}.txt
+     """
+ 
+     stub:
+
+'modules/nf-core/mash/dist/tests/main.nf.test.snap' is unchanged
+'modules/nf-core/mash/dist/tests/main.nf.test' is unchanged
+************************************************************

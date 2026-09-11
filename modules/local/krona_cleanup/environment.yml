@@ -1,0 +1,7 @@
+name: krona_cleanup
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - conda-forge::sed=4.7

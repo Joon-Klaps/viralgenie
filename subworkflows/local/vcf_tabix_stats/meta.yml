@@ -1,0 +1,59 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: vcf_tabix_stats
+description: Index VCF files with Tabix and generate statistics with BCFtools stats
+keywords:
+  - vcf
+  - tabix
+  - index
+  - bcftools
+  - statistics
+  - variants
+components:
+  - tabix/tabix
+  - bcftools/stats
+input:
+  - ch_vcf:
+      description: |
+        VCF files to be indexed and analyzed
+        Structure: [ val(meta), path(vcf) ]
+  - ch_regions:
+      description: |
+        Regions file for BCFtools stats (optional)
+        Structure: [ val(meta), path(regions) ]
+  - ch_targets:
+      description: |
+        Targets file for BCFtools stats (optional)
+        Structure: [ val(meta), path(targets) ]
+  - ch_samples:
+      description: |
+        Samples file for BCFtools stats (optional)
+        Structure: [ val(meta), path(samples) ]
+  - ch_exons:
+      description: |
+        Exons file for BCFtools stats (optional)
+        Structure: [ val(meta), path(exons) ]
+  - ch_fasta:
+      description: |
+        Reference FASTA files for statistics calculation
+        Structure: [ val(meta), path(fasta) ]
+output:
+  - tbi:
+      description: |
+        Tabix index files (.tbi)
+        Structure: [ val(meta), path(tbi) ]
+  - csi:
+      description: |
+        CSI index files (.csi)
+        Structure: [ val(meta), path(csi) ]
+  - stats:
+      description: |
+        BCFtools statistics files
+        Structure: [ val(meta), path(txt) ]
+  - versions:
+      description: |
+        Files containing software versions
+        Structure: [ path(versions.yml) ]
+authors:
+  - "@Joon-Klaps"
+maintainers:
+  - "@Joon-Klaps"

@@ -1,0 +1,508 @@
+nextflow_workflow {
+
+    name "Test Workflow FASTA_FASTQ_CLUST"
+    script "../main.nf"
+    workflow "FASTA_FASTQ_CLUST"
+    config './nextflow.config'
+
+    tag "subworkflows"
+    tag "subworkflows_local"
+    tag "subworkflows/fasta_fastq_clust"
+    tag "fasta_fastq_clust"
+    tag "vsearch/cluster"
+    tag "cdhit/cdhitest"
+    tag "mmseqs/createdb"
+    tag "mmseqs/linclust"
+    tag "mmseqs/cluster"
+    tag "mmseqs/createtsv"
+    tag "vrhyme/vrhyme"
+    tag "mash/dist"
+    tag "clusty"
+
+
+
+    test("sarscov2 - fasta - vsearch") {
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [ id:'test' ],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.fasta', checkIfExists: true),
+                    []
+                ])
+                input[1] = "vsearch"
+                input[2] = 0.81
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(
+                    workflow.out.clusters,
+                ).match() }
+            )
+        }
+    }
+
+    test("sarscov2 - fasta - vsearch | multiple genomes") {
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [ id:'test' ],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fasta/contigs.fasta', checkIfExists: true),
+                    []
+                ])
+                input[1] = "vsearch"
+                input[2] = 0.81
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(
+                    workflow.out.clusters,
+                ).match() }
+            )
+        }
+    }
+
+    test("sarscov2 - fasta - cdhitest") {
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [ id:'test' ],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.fasta', checkIfExists: true),
+                    []
+                ])
+                input[1] = "cdhitest"
+                input[2] = 0.81
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(
+                    workflow.out.clusters,
+                ).match() }
+            )
+        }
+    }
+
+    test("sarscov2 - fasta - cdhitest | multiple genomes") {
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [ id:'test' ],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fasta/contigs.fasta', checkIfExists: true),
+                    []
+                ])
+                input[1] = "cdhitest"
+                input[2] = 0.81
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(
+                    workflow.out.clusters,
+                ).match() }
+            )
+        }
+    }
+
+
+    test("sarscov2 - fasta - mmseqs-linclust") {
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [ id:'test' ],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.fasta', checkIfExists: true),
+                    []
+                ])
+                input[1] = "mmseqs-linclust"
+                input[2] = 0.81
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(
+                    workflow.out.clusters,
+                ).match() }
+            )
+        }
+    }
+
+    test("sarscov2 - fasta - mmseqs-linclust | multiple genomes") {
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [ id:'test' ],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fasta/contigs.fasta', checkIfExists: true),
+                    []
+                ])
+                input[1] = "mmseqs-linclust"
+                input[2] = 0.81
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(
+                    workflow.out.clusters,
+                ).match() }
+            )
+        }
+    }
+
+    test("sarscov2 - fasta - mmseqs-cluster") {
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [ id:'test' ],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.fasta', checkIfExists: true),
+                    []
+                ])
+                input[1] = "mmseqs-cluster"
+                input[2] = 0.81
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(
+                    workflow.out.clusters,
+                ).match() }
+            )
+        }
+    }
+
+    test("sarscov2 - fasta - mmseqs-cluster | multiple genomes") {
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [ id:'test' ],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fasta/contigs.fasta', checkIfExists: true),
+                    []
+                ])
+                input[1] = "mmseqs-cluster"
+                input[2] = 0.81
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(
+                    workflow.out.clusters,
+                ).match() }
+            )
+        }
+    }
+
+    test("sarscov2 - fasta + fastq - vrhyme") {
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [ id:'test', single_end:false ],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.fasta', checkIfExists: true),
+                    [
+                        file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fastq/test_1.fastq.gz', checkIfExists: true),
+                        file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fastq/test_2.fastq.gz', checkIfExists: true)
+                    ]
+                ])
+                input[1] = "vrhyme"
+                input[2] = 0.81
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(
+                    workflow.out.clusters,
+                ).match() }
+            )
+        }
+    }
+
+    test("sarscov2 - fasta + fastq - vrhyme | multiple genomes") {
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [ id:'test', single_end:false ],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fasta/contigs.fasta', checkIfExists: true),
+                    [
+                        file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fastq/test_1.fastq.gz', checkIfExists: true),
+                        file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fastq/test_2.fastq.gz', checkIfExists: true)
+                    ]
+                ])
+                input[1] = "vrhyme"
+                input[2] = 0.81
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(
+                    workflow.out.clusters,
+                ).match() }
+            )
+        }
+    }
+
+    test("sarscov2 - fasta - mash") {
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [ id:'test' ],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.fasta', checkIfExists: true),
+                    []
+                ])
+                input[1] = "mash"
+                input[2] = 0.81
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(
+                    workflow.out.clusters,
+                ).match() }
+            )
+        }
+    }
+
+    test("sarscov2 - fasta - mash | multiple genomes") {
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [ id:'test' ],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fasta/contigs.fasta', checkIfExists: true),
+                    []
+                ])
+                input[1] = "mash"
+                input[2] = 0.81
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(
+                    workflow.out.clusters,
+                ).match() }
+            )
+        }
+    }
+
+    test("sarscov2 - fasta - vsearch - stub") {
+        options '-stub-run'
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [ id:'test' ],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.fasta', checkIfExists: true),
+                    []
+                ])
+                input[1] = "vsearch"
+                input[2] = 0.81
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(
+                    workflow.out.clusters,
+                ).match() }
+            )
+        }
+    }
+
+    test("sarscov2 - fasta - cdhitest - stub") {
+        options '-stub-run'
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [ id:'test' ],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.fasta', checkIfExists: true),
+                    []
+                ])
+                input[1] = "cdhitest"
+                input[2] = 0.81
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(
+                    workflow.out.clusters,
+                ).match() }
+            )
+        }
+    }
+
+    test("sarscov2 - fasta - mmseqs-linclust - stub") {
+        options '-stub-run'
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [ id:'test' ],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.fasta', checkIfExists: true),
+                    []
+                ])
+                input[1] = "mmseqs-linclust"
+                input[2] = 0.81
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(
+                    workflow.out.clusters,
+                ).match() }
+            )
+        }
+    }
+
+    test("sarscov2 - fasta - mmseqs-cluster - stub") {
+        options '-stub-run'
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [ id:'test' ],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.fasta', checkIfExists: true),
+                    []
+                ])
+                input[1] = "mmseqs-cluster"
+                input[2] = 0.81
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(
+                    workflow.out.clusters,
+                ).match() }
+            )
+        }
+    }
+
+    test("sarscov2 - fasta + fastq - vrhyme - stub") {
+        options '-stub-run'
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [ id:'test', single_end:false ],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.fasta', checkIfExists: true),
+                    [
+                        file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fastq/test_1.fastq.gz', checkIfExists: true),
+                        file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fastq/test_2.fastq.gz', checkIfExists: true)
+                    ]
+                ])
+                input[1] = "vrhyme"
+                input[2] = 0.81
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(
+                    workflow.out.clusters,
+                ).match() }
+            )
+        }
+    }
+
+    test("sarscov2 - fasta - mash - stub") {
+        options '-stub-run'
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of([
+                    [ id:'test' ],
+                    file(params.modules_testdata_base_path + 'genomics/sarscov2/genome/genome.fasta', checkIfExists: true),
+                    []
+                ])
+                input[1] = "mash"
+                input[2] = 0.81
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(
+                    workflow.out.clusters,
+                ).match() }
+            )
+        }
+    }
+
+}

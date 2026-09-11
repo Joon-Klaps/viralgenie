@@ -1,0 +1,20 @@
+nextflow_pipeline {
+
+    name "Test pipeline with test_group profile"
+    script "../main.nf"
+    profile "test_group"
+    tag "test_group"
+
+    def scenarios = [
+        [
+            name: "-profile test_group",
+            tag: "test_group",
+            scope: "multiqc",
+            overview: true,
+            sort_overview: true,
+            params: [transpose_overview_tables: true],
+        ],
+    ]
+
+    scenarios.each { scenario -> test(scenario.name, UTILS.getTest(scenario)) }
+}

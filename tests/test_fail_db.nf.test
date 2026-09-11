@@ -1,0 +1,19 @@
+nextflow_pipeline {
+
+    name "Test pipeline with test_fail_db profile"
+    script "../main.nf"
+    profile "test_fail_db"
+    tag "test_fail_db"
+
+    def scenarios = [
+        [name: "-profile test_fail_db", tag: "test_fail_db", scope: "files"],
+        [
+            name: "-profile test_fail_db no clustering with reference",
+            tag: "test_fail_db",
+            scope: "files",
+            params: [cluster_with_reference_pool: false],
+        ],
+    ]
+
+    scenarios.each { scenario -> test(scenario.name, UTILS.getTest(scenario)) }
+}

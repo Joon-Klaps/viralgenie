@@ -1,0 +1,78 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: fastq_kraken_kaiju
+description: Metagenomic taxonomic classification using Kraken2, Bracken, and Kaiju with Krona visualization
+keywords:
+  - taxonomy
+  - classification
+  - metagenomics
+  - kraken2
+  - bracken
+  - kaiju
+  - krona
+  - visualization
+components:
+  - kraken2/kraken2
+  - krakentools/kreport2krona
+  - bracken/bracken
+  - kaiju/kaiju
+  - kaiju/kaiju2table
+  - kaiju/kaiju2krona
+  - krona/cleanup
+  - krona_cleanup
+  - krona/ktimporttext
+input:
+  - ch_reads:
+      description: |
+        Input FASTQ files for taxonomic classification
+        Structure: [ val(meta), path(fastq) ]
+  - read_classifiers:
+      type: string
+      description: |
+        List of classifiers to use for taxonomic classification
+      enum: ["kraken2", "kaiju", "bracken"]
+  - ch_kraken2_db:
+      description: |
+        Kraken2 database for taxonomic classification
+        Structure: [ path(kraken2_db) ]
+  - ch_bracken_db:
+      description: |
+        Bracken database for abundance estimation
+        Structure: [ path(bracken_db) ]
+  - ch_kaiju_db:
+      description: |
+        Kaiju database for taxonomic classification
+        Structure: [ path(kaiju_db) ]
+  - kraken2_save_reads:
+      type: boolean
+      description: |
+        Whether to save classified reads from Kraken2
+  - kraken2_save_readclassification:
+      type: boolean
+      description: |
+        Whether to save read classification assignments from Kraken2
+  - kaiju_taxon_rank:
+      type: string
+      description: |
+        Taxonomic rank to display in Kaiju report and Krona visualization
+      enum: ["phylum", "class", "order", "family", "genus", "species"]
+output:
+  - read_classifications:
+      description: |
+        Raw read classification assignments
+        Structure: [ val(meta), path(classified_reads) ]
+  - krona_html:
+      description: |
+        Krona HTML visualizations of taxonomic classifications
+        Structure: [ val(meta), path(html) ]
+  - mqc:
+      description: |
+        MultiQC files containing classification reports and summaries
+        Structure: [ val(meta), path(multiqc_file) ]
+  - versions:
+      description: |
+        Files containing software versions
+        Structure: [ path(versions.yml) ]
+authors:
+  - "@Joon-Klaps"
+maintainers:
+  - "@Joon-Klaps"

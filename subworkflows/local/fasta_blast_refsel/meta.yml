@@ -1,0 +1,45 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: fasta_blast_refsel
+description: BLAST sequences against reference database and filter hits for reference genome selection
+keywords:
+  - blast
+  - reference selection
+  - filtering
+  - alignment
+  - sequence similarity
+components:
+  - blast/blastn
+  - blast/filter
+  - blast_filter
+  - utils_nfcore_viralmetagenome_pipeline
+  - noblasthitstomultiqc
+input:
+  - ch_fasta:
+      description: |
+        FASTA sequences to be BLASTed against reference database
+        Structure: [ val(meta), path(fasta) ]
+  - ch_blast_db:
+      description: |
+        BLAST database for sequence comparison
+        Structure: [ val(meta), path(db) ]
+  - ch_blast_db_fasta:
+      description: |
+        FASTA sequences corresponding to the BLAST database
+        Structure: [ val(meta), path(fasta) ]
+output:
+  - fasta_ref_contigs:
+      description: |
+        Filtered sequences with their matching reference genomes for scaffolding
+        Structure: [ val(meta), path(fasta) ]
+  - no_blast_hits:
+      description: |
+        MultiQC-compatible file reporting samples with no BLAST hits
+        Structure: [ path(tsv) ]
+  - versions:
+      description: |
+        Files containing software versions
+        Structure: [ path(versions.yml) ]
+authors:
+  - "@Joon-Klaps"
+maintainers:
+  - "@Joon-Klaps"
