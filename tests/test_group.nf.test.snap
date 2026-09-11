@@ -219,6 +219,9 @@
                 "multiqc/multiqc_data/bcftools_stats_vqc_Count_SNP.txt",
                 "multiqc/multiqc_data/bcftools_stats_vqc_Count_Transitions.txt",
                 "multiqc/multiqc_data/bcftools_stats_vqc_Count_Transversions.txt",
+                "multiqc/multiqc_data/contig_completeness.txt",
+                "multiqc/multiqc_data/contig_taxonomy_All_clusters.txt",
+                "multiqc/multiqc_data/contig_taxonomy_Reconstructed_clusters.txt",
                 "multiqc/multiqc_data/fastp-insert-size-plot.txt",
                 "multiqc/multiqc_data/fastp-seq-content-gc-plot_Read_1_After_filtering.txt",
                 "multiqc/multiqc_data/fastp-seq-content-gc-plot_Read_1_Before_filtering.txt",
@@ -298,7 +301,6 @@
                 "multiqc/multiqc_data/samtools-flagstat-dp_Read_counts.txt",
                 "multiqc/multiqc_data/samtools-stats-dp.txt",
                 "multiqc/multiqc_data/samtools_alignment_plot.txt",
-                "multiqc/multiqc_data/summary_clusters_info.txt",
                 "multiqc/multiqc_report.html"
             ],
             [
@@ -308,6 +310,9 @@
                 "bcftools_stats_vqc_Count_SNP.txt:md5,eb50640a5294afa8236e318cb4bc50fd",
                 "bcftools_stats_vqc_Count_Transitions.txt:md5,a658a6d5597f6bc079ca73168c9a1a9a",
                 "bcftools_stats_vqc_Count_Transversions.txt:md5,858bc39e6959eba78b6465225194f520",
+                "contig_completeness.txt:md5,fe31e6a835dcccdd3a0cabd854fc988e",
+                "contig_taxonomy_All_clusters.txt:md5,3accc142f5a94b18e82cadcbac0454a2",
+                "contig_taxonomy_Reconstructed_clusters.txt:md5,ec50db210eef67b758858827305d4bae",
                 "fastp-insert-size-plot.txt:md5,a00563d66671f1184abd39a7733c00fb",
                 "fastp-seq-content-gc-plot_Read_1_After_filtering.txt:md5,c66a40670c5e53105dbdc04e13f8f87c",
                 "fastp-seq-content-gc-plot_Read_1_Before_filtering.txt:md5,b1d2900033deb3dcc8d4008c796f7e0b",
@@ -336,8 +341,7 @@
                 "multiqc_kraken.yaml:md5,e99428ff4e79a9363d39040f3913329f",
                 "multiqc_quast_quast_megahit.yaml:md5,a2c42eb8ca1a589c1113da11866b54d0",
                 "quast_num_contigs.txt:md5,a228e1623058352a5dbcc2edfd68d528",
-                "quast_table.txt:md5,97f66575bbca4bb4470ccaa39b09b144",
-                "summary_clusters_info.txt:md5,3b5c4181865afae0d84afa6cd601f0aa"
+                "quast_table.txt:md5,97f66575bbca4bb4470ccaa39b09b144"
             ],
             [
                 "group1",
@@ -600,10 +604,10 @@
                 "group2_cl0_itvariant-calling"
             ]
         ],
-        "timestamp": "2026-09-03T14:32:50.209657",
+        "timestamp": "2026-09-02T14:00:55.705821",
         "meta": {
-            "nf-test": "0.9.4",
-            "nextflow": "25.10.4"
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
         }
     },
     "multiqc": {
@@ -695,7 +699,6 @@
                 "multiqc/multiqc_data/samtools-flagstat-dp_Read_counts.txt",
                 "multiqc/multiqc_data/samtools-stats-dp.txt",
                 "multiqc/multiqc_data/samtools_alignment_plot.txt",
-                "multiqc/multiqc_data/summary_clusters_info.txt",
                 "multiqc/multiqc_report.html"
             ],
             [
@@ -705,7 +708,7 @@
                 "bcftools_stats_vqc_Count_SNP.txt:md5,eb50640a5294afa8236e318cb4bc50fd",
                 "bcftools_stats_vqc_Count_Transitions.txt:md5,a658a6d5597f6bc079ca73168c9a1a9a",
                 "bcftools_stats_vqc_Count_Transversions.txt:md5,858bc39e6959eba78b6465225194f520",
-                "fastp-insert-size-plot.txt:md5,88cbc0b63ec5db59422cd18165982244",
+                "fastp-insert-size-plot.txt:md5,a00563d66671f1184abd39a7733c00fb",
                 "fastp-seq-content-gc-plot_Read_1_After_filtering.txt:md5,c66a40670c5e53105dbdc04e13f8f87c",
                 "fastp-seq-content-gc-plot_Read_1_Before_filtering.txt:md5,b1d2900033deb3dcc8d4008c796f7e0b",
                 "fastp-seq-content-gc-plot_Read_2_After_filtering.txt:md5,632c7b6ec71d9af9204be40776d1cf17",

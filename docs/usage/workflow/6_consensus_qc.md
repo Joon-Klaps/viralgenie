@@ -67,6 +67,8 @@ Prokka can be given a custom protein database to annotate your genomes with, hav
 MMseqs was used for the annotation step instead of BLAST because of the ability to query using a tblastx search for highly diverging viruses while supplying a nucleotide annotation database. To specify another type of search (e.g. blastp, blastx, etc.), please refer to the [parameters consensus-qc section](../parameters.md#consensus-qc).
 :::
 
+The species assigned to each final consensus cluster is also summarised across the whole run in the "Contig clusters" section of the MultiQC report, see [output section](../output.md#multiqc).
+
 > [!NOTE]
 > MMseqs-search can be skipped with `--skip_consensus_annotation`.
 

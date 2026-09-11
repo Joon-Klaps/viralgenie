@@ -178,7 +178,20 @@ Without `--annotation_metadata`, the annotation data has to be in the header its
 
 ### Creating a custom annotation dataset with [BV-BRC](https://www.bv-brc.org/)
 
-[BV-BRC](https://www.bv-brc.org/) carries a lot of metadata and is queried with their [CLI-tool](https://www.bv-brc.org/docs/cli_tutorial/index.html). Here we take every viral reference genome that is not a lab reassortment, metadata and sequences separately:
+In case [Virosaurus](https://viralzone.expasy.org/8676) does not suffice your needs, a custom annotation dataset can be made. Either supply the annotation as a metadata table, or put `key=value` pairs in the fasta header as described above. For example, the following fasta headers are both valid:
+
+```text
+>754189.6 species="Ungulate tetraparvovirus 3"|segment="nan"|host_common_name="Pig"|genbank_accessions="NC_038883"|taxon_id="754189"
+>NC_001731; usual name=Molluscum contagiosum virus; clinical level=SPECIES; clinical typing=unknown; species=Molluscum contagiosum virus; taxid=10279; acronym=MOCV; nucleic acid=DNA; circular=N; segment=N/A; host=Human,Vertebrate;
+```
+
+An easy-to-use public database with a lot of metadata is [BV-BRC](https://www.bv-brc.org/). Sequences can be extracted using their [CLI-tool](https://www.bv-brc.org/docs/cli_tutorial/index.html) and linked to their [metadata](https://www.bv-brc.org/docs/cli_tutorial/cli_getting_started.html#the-bv-brc-database)
+
+Here we select all viral genomes that are not lab reassortments and are reference genomes and add metadata attributes to the output.
+
+> [!NOTE]
+> This is an example, in case you need to have a more elaborate dataset than Virosaurus, be more inclusive towards your taxa of interest and include more metadata attributes.
+> [BV-BRC](https://www.bv-brc.org/) carries a lot of metadata and is queried with their [CLI-tool](https://www.bv-brc.org/docs/cli_tutorial/index.html). Here we take every viral reference genome that is not a lab reassortment, metadata and sequences separately:
 
 ```bash
 # metadata, +/- 5s

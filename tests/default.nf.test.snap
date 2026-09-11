@@ -679,6 +679,9 @@
                 "multiqc/multiqc_data/bcftools_stats_vqc_Count_SNP.txt",
                 "multiqc/multiqc_data/bcftools_stats_vqc_Count_Transitions.txt",
                 "multiqc/multiqc_data/bcftools_stats_vqc_Count_Transversions.txt",
+                "multiqc/multiqc_data/contig_completeness.txt",
+                "multiqc/multiqc_data/contig_taxonomy_All_clusters.txt",
+                "multiqc/multiqc_data/contig_taxonomy_Reconstructed_clusters.txt",
                 "multiqc/multiqc_data/fastp-insert-size-plot.txt",
                 "multiqc/multiqc_data/fastp-seq-content-gc-plot_Read_1_After_filtering.txt",
                 "multiqc/multiqc_data/fastp-seq-content-gc-plot_Read_1_Before_filtering.txt",
@@ -760,7 +763,6 @@
                 "multiqc/multiqc_data/samtools-flagstat-dp_Read_counts.txt",
                 "multiqc/multiqc_data/samtools-stats-dp.txt",
                 "multiqc/multiqc_data/samtools_alignment_plot.txt",
-                "multiqc/multiqc_data/summary_clusters_info.txt",
                 "multiqc/multiqc_report.html",
                 "overview-tables",
                 "overview-tables/contigs_overview-with-iterations.tsv",
@@ -1250,6 +1252,9 @@
                 "bcftools_stats_vqc_Count_SNP.txt:md5,6966b0d24238aaf8b5008206ad16a117",
                 "bcftools_stats_vqc_Count_Transitions.txt:md5,80264147fac6ac3c97775b9a5c61749e",
                 "bcftools_stats_vqc_Count_Transversions.txt:md5,a9a09ced0666b1c073d1affcb77e1ffc",
+                "contig_completeness.txt:md5,f32110b4be7aac0158119fda120410fc",
+                "contig_taxonomy_All_clusters.txt:md5,5ff56a25d06788b5f4211b58ad73e74a",
+                "contig_taxonomy_Reconstructed_clusters.txt:md5,0cd73e8030119486de21c4b0759dcc3d",
                 "fastp-insert-size-plot.txt:md5,580b7d083a3354de1eb65679b1a286ea",
                 "fastp-seq-content-gc-plot_Read_1_After_filtering.txt:md5,77fb928de301ef52db00166b15dfdd93",
                 "fastp-seq-content-gc-plot_Read_1_Before_filtering.txt:md5,fc8340a43942ce0029c43815b51e7206",
@@ -1281,7 +1286,6 @@
                 "multiqc_samples_low_reads.yaml:md5,a6448224a69eb18345f91150747c7621",
                 "quast_num_contigs.txt:md5,38140ae00dcde51a1a80b5eed7b71c89",
                 "quast_table.txt:md5,0fa42e965c5c8591bebfbd952f2fcf4c",
-                "summary_clusters_info.txt:md5,aed14f7c38c8e1f504f40bfab7597f9e",
                 "SRR11140744.fastp.json:md5,79f95b57073a55dc3b9ee56b92456e55",
                 "SRR11140748.fastp.json:md5,0f6f0ba2731cc30ecfca96c7beca6bb4",
                 "empty-SRR.fastp.json:md5,282648c6a1bcc0de4136e143f7631660",
@@ -1869,7 +1873,7 @@
                 "SRR11140748_cl0_itvariant-calling"
             ]
         ],
-        "timestamp": "2026-09-03T14:03:07.884423",
+        "timestamp": "2026-09-03T10:16:08.908852",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "25.10.4"
