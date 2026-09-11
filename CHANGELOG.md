@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ([#318](https://github.com/nf-core/viralmetagenome/pull/318)) - Document how to build a custom annotation database from NCBI Virus, and fix stale `customisation/databases.md` cross-references left over from a docs restructure (by @Joon-Klaps)
 - ([#318](https://github.com/nf-core/viralmetagenome/pull/318)) - Add param `--annotation_metadata` to read the consensus annotation fields from a csv/tsv table (optionally gzipped) instead of parsing them out of the annotation database fasta headers (by @Joon-Klaps)
 - ([#312](https://github.com/nf-core/viralmetagenome/pull/312)) - Fix [#282](https://github.com/nf-core/viralmetagenome/issues/282) - drop unmapped reads from the contig-coverage alignment and unmapped read pairs from the alignments used in polishing and consensus refinement, and add param `--keep_unmapped` to carry them through instead (by @Joon-Klaps)
+- ([#321](https://github.com/nf-core/viralmetagenome/pull/321)) - Template update to nf-core/tools v4.1.0. The lint workflow pins Nextflow to 25.10.7 until [nextflow-io/nextflow#7474](https://github.com/nextflow-io/nextflow/issues/7474) ships in a 26.04.x release (by @Joon-Klaps)
 
 ### `Fixed`
 
