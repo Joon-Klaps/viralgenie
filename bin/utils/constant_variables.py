@@ -97,11 +97,53 @@ CLUSTER_HEADERS = {
     },
 }
 
-CLUSTER_PCONFIG = {
-    "id": "summary_clusters_info",
-    "title": "Number of contig clusters",
+CONTIG_TAXONOMY_TOP_N = 5
+CONTIG_COMPLETENESS_TOP_N = 10 # Heatmap can fit more
+
+# Species and segment are read back from whatever the annotation database wrote, accomodating for a few
+# BV-BRC, virosaurus, and NCBI naming convetions.
+ANNOTATION_SPECIES_KEYS = ["species", "speciesname", "virusspecies", "organismname", "organism", "name"]
+ANNOTATION_SEGMENT_KEYS = ["segment", "segmentname", "genomesegment", "segmentnumber", "seg"]
+ANNOTATION_NULL_VALUES = frozenset({"", "n/a", "na", "nan", "none", "null", "unknown", "undefined", "-", ".", "?"})
+
+# Category names shared by the taxonomy barplot and the completeness heatmap.
+TAXON_OTHER = "Other species"
+TAXON_UNCLASSIFIED = "Unclassified"
+TAXON_UNRECONSTRUCTED = "Not reconstructed"
+
+# Joins a species to its genome segment in the completeness heatmap: "Influenza A virus | seg 4".
+SEGMENT_SEPARATOR = "|"
+
+CONTIG_TAXONOMY_PCONFIG = {
+    "id": "contig_taxonomy",
+    "title": "Contig clusters per sample",
     "ylab": "# clusters",
     "y_decimals": False,
+    "use_legend": True,
+}
+
+# Sequential (ColorBrewer Greens) instead of the diverging default: pale is an incomplete
+# genome, dark is a complete one, which reads more naturally for a 0-100% quality metric.
+CONTIG_COMPLETENESS_PCONFIG = {
+    "id": "contig_completeness",
+    "title": "Consensus genome completeness",
+    "xlab": "Species",
+    "ylab": "Sample",
+    "zlab": "Completeness",
+    "min": 0,
+    "max": 100,
+    "square": False,
+    "tt_decimals": 1,
+    "cluster_rows": False,
+    "cluster_cols": False,
+    "xcats_samples": False,
+    "colstops": [
+        [0, "#f7fcf5"],
+        [0.25, "#c7e9c0"],
+        [0.5, "#74c476"],
+        [0.75, "#31a354"],
+        [1, "#006d2c"],
+    ],
 }
 
 

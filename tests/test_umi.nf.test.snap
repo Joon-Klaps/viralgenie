@@ -134,6 +134,7 @@
                 "multiqc/multiqc_data/bcftools_stats_vqc_Count_SNP.txt",
                 "multiqc/multiqc_data/bcftools_stats_vqc_Count_Transitions.txt",
                 "multiqc/multiqc_data/bcftools_stats_vqc_Count_Transversions.txt",
+                "multiqc/multiqc_data/contig_taxonomy.txt",
                 "multiqc/multiqc_data/fastp-insert-size-plot.txt",
                 "multiqc/multiqc_data/fastp-seq-content-gc-plot_Read_1_After_filtering.txt",
                 "multiqc/multiqc_data/fastp-seq-content-gc-plot_Read_1_Before_filtering.txt",
@@ -217,6 +218,7 @@
                 "bcftools_stats_vqc_Count_SNP.txt:md5,54fec68f511444f47cd2efb6dd4054f8",
                 "bcftools_stats_vqc_Count_Transitions.txt:md5,98dcfb1b7bc8baee65c4411191a9b396",
                 "bcftools_stats_vqc_Count_Transversions.txt:md5,b061f887a7bc70589c77d07f62296a7e",
+                "contig_taxonomy.txt:md5,bd6c604ec9d117c12ed7a89dca49796f",
                 "humid-bargraph.txt:md5,6004c0f8bc12b172ada72f88e50f0b90",
                 "humid-clusters.txt:md5,62cfc0411dcdf12d593f66676757bada",
                 "humid-counts.txt:md5,62cfc0411dcdf12d593f66676757bada",
@@ -239,7 +241,7 @@
                 "umitools_stats_violin.txt:md5,d947cc2259c457ce5d6d4045c8dcdf41"
             ]
         ],
-        "timestamp": "2026-09-03T14:36:02.013394",
+        "timestamp": "2026-09-03T09:44:42.327076",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "25.10.4"

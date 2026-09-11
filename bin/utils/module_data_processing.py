@@ -10,7 +10,19 @@ from typing import Dict, List, Union, Tuple, Optional, Any
 
 import pandas as pd
 
-from utils.constant_variables import BLAST_COLUMNS, CONSTRAINT_GENERAL_STATS_COLUMNS, COLUMN_MAPPING, READ_DECLARATION
+from utils.constant_variables import (
+    ANNOTATION_NULL_VALUES,
+    ANNOTATION_SEGMENT_KEYS,
+    ANNOTATION_SPECIES_KEYS,
+    BLAST_COLUMNS,
+    COLUMN_MAPPING,
+    CONSTRAINT_GENERAL_STATS_COLUMNS,
+    READ_DECLARATION,
+    SEGMENT_SEPARATOR,
+    TAXON_OTHER,
+    TAXON_UNCLASSIFIED,
+    TAXON_UNRECONSTRUCTED,
+)
 from utils.file_tools import filelist_to_df, read_file_to_df
 from utils.pandas_tools import (
     coalesce_constraint,
@@ -205,6 +217,239 @@ def parse_annotation_data(annotation_str):
     for key, value in matches:
         annotation_dict[key] = value
     return annotation_dict
+
+
+def find_annotation_column(dataframe: pd.DataFrame, keys: List[str]) -> Optional[str]:
+    """
+    Find the `(annotation) ...` column matching the first of `keys` that the annotation database
+    actually provided.
+
+    Which keys exist depends entirely on the fasta headers of `--annotation_db`, so match
+    case-insensitively and ignore separators: `segment`, `Segment`, `segment_name` and
+    `segment name` all answer to the same alias. Columns that are present but empty are skipped,
+    which is what happens when a database declares a field it never fills in.
+    """
+    normalise = lambda text: re.sub(r"[\s_\-]+", "", text).lower()
+    available = {
+        normalise(col.removeprefix("(annotation) ")): col
+        for col in dataframe.columns
+        if col.startswith("(annotation) ")
+    }
+    for key in keys:
+        col = available.get(normalise(key))
+        if col is not None and dataframe[col].notna().any():
+            return col
+    return None
+
+
+def clean_annotation_value(value: object) -> Optional[str]:
+    """
+    Return a stripped annotation value, or None when it is one of the many ways the supported
+    databases spell "not recorded" - Virosaurus `N/A`, BV-BRC `nan`, an empty NCBI field.
+    """
+    if value is None or (isinstance(value, float) and pd.isna(value)):
+        return None
+    text = str(value).strip().strip('"')
+    return None if text.lower() in ANNOTATION_NULL_VALUES else text
+
+
+def normalise_segment(value: object) -> Optional[str]:
+    """
+    Normalise a segment label so the same segment from different databases lands in one column.
+
+    BV-BRC records bare numbers (`4`), GenBank-derived titles spell it out (`segment 4`), and
+    Virosaurus uses names (`HA`, `PB2`, `S`). Numbers become `seg 4`, names are kept as written.
+    """
+    segment = clean_annotation_value(value)
+    if segment is None:
+        return None
+
+    segment = re.sub(r"^(?:segment|seg\.?)\s*", "", segment, flags=re.IGNORECASE).strip()
+    if not segment or segment.lower() in ANNOTATION_NULL_VALUES:
+        return None
+    return f"seg {segment}" if segment.isdigit() else segment
+
+
+def collapse_taxa(dataframe: pd.DataFrame, top_n: int) -> pd.Series:
+    """
+    Return the taxon of every final cluster, keeping only the `top_n` most abundant taxa and
+    collapsing the remainder into a single "Other species" category. Each plot passes its own
+    cap, as a barplot runs out of distinguishable colours long before a heatmap runs out of
+    columns.
+
+    """
+    species_col = find_annotation_column(dataframe, ANNOTATION_SPECIES_KEYS)
+
+    if species_col is None:
+        return pd.Series(TAXON_UNCLASSIFIED, index=dataframe.index)
+
+    taxa = dataframe[species_col].map(clean_annotation_value).fillna(TAXON_UNCLASSIFIED)
+    keep = set(taxa[taxa != TAXON_UNCLASSIFIED].value_counts().head(top_n).index)
+    return taxa.map(lambda taxon: taxon if taxon in keep or taxon == TAXON_UNCLASSIFIED else TAXON_OTHER)
+
+
+def split_taxa_by_segment(dataframe: pd.DataFrame, taxa: pd.Series) -> pd.Series:
+    """
+    Append the genome segment to the taxon of segmented viruses, so influenza's eight segments
+    get a column each instead of being averaged into one number.
+    """
+    segment_col = find_annotation_column(dataframe, ANNOTATION_SEGMENT_KEYS)
+    if segment_col is None:
+        return taxa
+
+    segments = dataframe[segment_col].map(normalise_segment)
+    if not segments.notna().any():
+        return taxa
+
+    logger.info("Splitting segmented species by column %s", segment_col)
+    splittable = {
+        taxon
+        for taxon, group in segments.groupby(taxa)
+        if taxon not in (TAXON_OTHER, TAXON_UNCLASSIFIED) and group.nunique() > 1
+    }
+    return pd.Series(
+        [
+            f"{taxon} {SEGMENT_SEPARATOR} {segment}" if taxon in splittable and segment else taxon
+            for taxon, segment in zip(taxa, segments)
+        ],
+        index=taxa.index,
+    )
+
+
+def order_taxa(taxa: pd.Series) -> List[str]:
+    """
+    Order taxa by abundance, always ending with the two catch-all categories. Segments of the
+    same species stay together and in natural order (seg 2 before seg 10).
+    """
+    def split_segment(taxon: str) -> Tuple[str, str]:
+        species, _, segment = taxon.partition(f" {SEGMENT_SEPARATOR} ")
+        return species, segment
+
+    def sort_key(taxon: str) -> tuple:
+        species, segment = split_segment(taxon)
+        digits = re.sub(r"\D", "", segment)
+        return (-species_counts.get(species, 0), species, int(digits) if digits else 0, segment)
+
+    species_counts = taxa.map(lambda taxon: split_segment(taxon)[0]).value_counts().to_dict()
+    ranked = sorted(
+        (taxon for taxon in taxa.unique() if taxon not in (TAXON_OTHER, TAXON_UNCLASSIFIED)),
+        key=sort_key,
+    )
+    return ranked + [catch_all for catch_all in (TAXON_OTHER, TAXON_UNCLASSIFIED) if (taxa == catch_all).any()]
+
+
+def estimate_completeness(dataframe: pd.DataFrame) -> Tuple[Optional[pd.Series], str]:
+    """
+    Estimate how complete each final consensus genome is, as a percentage.
+
+    CheckV's own estimate is used only when it managed to place *every* cluster in the run.
+    CheckV leaves `completeness` empty whenever it cannot, which happens readily for short
+    genomes and for the individual segments of a segmented virus; taking it whenever the column
+    merely exists would mix two different metrics in one plot and leave gaps that read as "not
+    reconstructed" rather than "not estimated".
+
+    The fallback is the share of the annotation hit's reference genome (`slen`) that the
+    consensus (`qlen`) covers with called bases, so a 350bp contig of a 7kb genome scores ~5%
+    rather than the ~100% that `100 - % N's` on its own would report.
+
+    Returns (None, "") when neither source is available.
+    """
+    if "(checkv) completeness" in dataframe.columns:
+        checkv = pd.to_numeric(dataframe["(checkv) completeness"], errors="coerce")
+        missing = int(checkv.isna().sum())
+        if not checkv.empty and missing == 0:
+            return checkv, "CheckV"
+        logger.info(
+            "CheckV could not estimate completeness for %d of %d clusters - using the QUAST proxy "
+            "for all of them so the plot stays on one metric",
+            missing,
+            len(checkv),
+        )
+
+    if "(quast) % N's" not in dataframe.columns or not dataframe["(quast) % N's"].notna().any():
+        logger.info("No CheckV or QUAST data available - skipping the completeness heatmap")
+        return None, ""
+
+    called = 1 - pd.to_numeric(dataframe["(quast) % N's"], errors="coerce") / 100
+    if all(col in dataframe.columns for col in ("(annotation) qlen", "(annotation) slen")):
+        qlen = pd.to_numeric(dataframe["(annotation) qlen"], errors="coerce")
+        slen = pd.to_numeric(dataframe["(annotation) slen"], errors="coerce")
+        # A consensus can be longer than the reference it hit, either because the database entry
+        # is a partial sequence or because the contig carries contamination. Nothing can be more
+        # than complete, so cap the covered fraction at 1 - and cap it here rather than capping
+        # the percentage at the end, so that the ambiguous-base discount always still applies.
+        # The excess length itself shows up as a low "(annotation) % contig aligned" in
+        # contigs_overview.tsv, which is where to look for contamination.
+        #
+        # Unclassified clusters have no hit and so no reference length. Rather than dropping them
+        # out of the heatmap, fall back to the called fraction alone, which is an upper bound.
+        covered = (qlen / slen).where(slen > 0).fillna(1.0).clip(upper=1.0)
+        return called * covered * 100, "QUAST proxy"
+
+    return called * 100, "QUAST proxy"
+
+
+def summarise_clusters_per_taxon(
+    dataframe: pd.DataFrame, clusters_summary: pd.DataFrame, top_n: int
+) -> Tuple[pd.DataFrame, Optional[pd.DataFrame]]:
+    """
+    Count the final contig clusters per sample and taxon.
+
+    Returns (reconstructed, with_removed). `reconstructed` counts the clusters that reached a
+    consensus, one column per taxon in plotting order. `with_removed` is that same table with a
+    trailing "Not reconstructed" column completing each row to the number of clusters the sample
+    started with, and is None when no cluster summary was given. Samples that clustered but
+    reconstructed nothing are kept, as they are the ones worth spotting.
+    """
+    taxa = collapse_taxa(dataframe, top_n)
+    counts = dataframe.assign(taxon=taxa).groupby(["sample", "taxon"]).size().unstack(fill_value=0)
+    reconstructed = counts.reindex(columns=order_taxa(taxa), fill_value=0)
+
+    if clusters_summary.empty or not {"# Clusters", "# Removed clusters"}.issubset(clusters_summary.columns):
+        return reconstructed, None
+
+    reconstructed = reconstructed.reindex(reconstructed.index.union(clusters_summary.index), fill_value=0)
+    total = pd.to_numeric(clusters_summary[["# Clusters", "# Removed clusters"]].sum(axis=1), errors="coerce")
+    total = total.reindex(reconstructed.index).fillna(0)
+
+    with_removed = reconstructed.copy()
+    with_removed[TAXON_UNRECONSTRUCTED] = (total - reconstructed.sum(axis=1)).clip(lower=0)
+    return reconstructed, with_removed
+
+
+def summarise_completeness_per_taxon(dataframe: pd.DataFrame, top_n: int) -> Tuple[Optional[pd.DataFrame], str]:
+    """
+    Best consensus genome completeness per sample and taxon.
+
+    Taxa are resolved more finely than for the barplot: more of them are named, and segmented
+    viruses get one entry per genome segment, because collapsing influenza's eight segments into
+    a single number hides which of them were recovered.
+
+    Where a sample yields several clusters of the same taxon the most complete one is reported,
+    since that is the reconstruction carried forward; an average would let a spurious fragment
+    drag down a genome that was in fact recovered in full.
+
+    Returns (values, source) with a sample x taxon frame holding NaN where a taxon was not
+    reconstructed in a sample, and the name of the completeness estimate that was used. Returns
+    (None, "") when no completeness can be estimated at all.
+    """
+    completeness, source = estimate_completeness(dataframe)
+    if completeness is None:
+        return None, ""
+
+    segmented = split_taxa_by_segment(dataframe, collapse_taxa(dataframe, top_n))
+    values = (
+        dataframe.assign(completeness=completeness, segmented=segmented)
+        .dropna(subset=["completeness"])
+        .groupby(["sample", "segmented"])["completeness"]
+        .max()
+        .round(1)
+        .unstack()
+    )
+    if values.empty:
+        return None, ""
+
+    return values.reindex(columns=[t for t in order_taxa(segmented) if t in values.columns]), source
 
 
 def reformat_custom_df(df: pd.DataFrame, cluster_df: pd.DataFrame) -> pd.DataFrame:
