@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ([#318](https://github.com/nf-core/viralmetagenome/pull/318)) - Add param `--annotation_metadata` to read the consensus annotation fields from a csv/tsv table (optionally gzipped) instead of parsing them out of the annotation database fasta headers (by @Joon-Klaps)
 - ([#319](https://github.com/nf-core/viralmetagenome/pull/319)) - Add a "Contig Taxonomy" MultiQC bar chart summarising contig taxonomic classifications (species/taxon level, per sample) with a switchable genome-completeness dataset (by @Joon-Klaps)
 - ([#320](https://github.com/nf-core/viralmetagenome/pull/320)) - Fix [#281](https://github.com/nf-core/viralmetagenome/issues/281) - add opt-in param `--use_host_filtered_reads` to route host-filtered reads into the iterative consensus refinement and final variant-calling mapping steps. Defaults to `false` to preserve existing behaviour (by @Joon-Klaps)
+- ([#321](https://github.com/nf-core/viralmetagenome/pull/321)) - Template update to nf-core/tools v4.1.0. The lint workflow pins Nextflow to 25.10.7 until [nextflow-io/nextflow#7474](https://github.com/nextflow-io/nextflow/issues/7474) ships in a 26.04.x release (by @Joon-Klaps)
 - ([#322](https://github.com/nf-core/viralmetagenome/pull/322)) - Update all nf-core modules and subworkflows (by @Joon-Klaps)
 
 ### `Fixed`

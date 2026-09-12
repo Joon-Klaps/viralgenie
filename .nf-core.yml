@@ -18,7 +18,7 @@ lint:
         - params.arguments_bcftools_mpileup3
         - params.arguments_snpsift_extractfields
   nf_test_content: false
-nf_core_version: 4.0.3
+nf_core_version: 4.1.0
 repository_type: pipeline
 template:
   author: Joon Klaps, Philippe Lemey, Liana Kafetzopoulou
